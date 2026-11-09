@@ -22,11 +22,17 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -45,7 +51,8 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 
     private final List<Node> variables;
     private final Map<Node, Integer> nodeHash;
-    private final SimpleMatrix S; // correlation (or covariance)
+    private final SimpleMatrix S; // correlation (or covariance); null under test-wise deletion
+    private final TestwiseCovariance testwise; // per-test covariance over complete rows; null otherwise
     private final int n;
 
     // Block -> embedded/expanded column indices
@@ -73,7 +80,34 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
      *                  Must not be null. Throws IllegalArgumentException if blockSpec is null or invalid.
      */
     public IndTestBlocksWilkes(BlockSpec blockSpec) {
+        this(blockSpec, null);
+    }
+
+    /**
+     * Constructs the test with an explicit missing-data specification for the block data set. On data with missing
+     * values the supported policies are LISTWISE, TESTWISE and EM_COVARIANCE. Under TESTWISE each test's
+     * correlation matrix is computed over the rows complete on every embedded column the test uses (x, y, and z
+     * blocks), with the count of those rows as its sample size (an explicit effective sample size acts as a
+     * deflation factor). Under EM_COVARIANCE one correlation matrix is estimated by EM over all rows of the block
+     * data set and every test reads it, with the row count as the default sample size; set an effective sample size
+     * to discount it. A null spec on missing data throws.
+     *
+     * @param blockSpec The block specification.
+     * @param spec      The missing-data specification, or null.
+     */
+    public IndTestBlocksWilkes(BlockSpec blockSpec, MissingDataSpec spec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
+
+        // Decided before the deletion gate, which rejects EM_COVARIANCE: under EM no rows are deleted.
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
+                               && blockSpec.dataSet().existsMissingValue();
+
+        DataSet resolved = emCovariance ? blockSpec.dataSet()
+                : MissingDataUtils.resolveDeletionPolicy(blockSpec.dataSet(), spec, "IndTestBlocksWilkes");
+        if (resolved != blockSpec.dataSet()) {
+            blockSpec = new BlockSpec(resolved, blockSpec.blocks(), blockSpec.blockVariables(), blockSpec.ranks());
+        }
+
         this.blockSpec = blockSpec;
 
         final int B = blockSpec.blocks().size();
@@ -91,7 +125,19 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 
         this.n = blockSpec.dataSet().getNumRows();
         setEffectiveSampleSize(-1);
-        this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
+
+        if (emCovariance) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(blockSpec.dataSet(), spec);
+            this.testwise = null;
+            this.S = new CorrelationMatrix(estimated).getMatrix().getSimpleMatrix();
+        } else if (blockSpec.dataSet().existsMissingValue()) {
+            this.testwise = new TestwiseCovariance(blockSpec.dataSet().getDoubleData());
+            this.S = null;
+        } else {
+            this.testwise = null;
+            this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
+        }
         // If you prefer covariance:
         // this.S = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
 
@@ -196,7 +242,14 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
 
-        int rank = RankTests.estimateWilksRankConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, effN, alpha);
+        int rank;
+        if (this.testwise == null) {
+            rank = RankTests.estimateWilksRankConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, effN, alpha);
+        } else {
+            Local loc = local(pads.xAdj, pads.yAdj, kp.zCols);
+            rank = loc == null ? 0
+                    : RankTests.estimateWilksRankConditioned(loc.S, loc.x, loc.y, loc.z, loc.effN, alpha);
+        }
         if (rank < 0) rank = 0; // defensive
         rankCache.put(key, rank);
         return rank;
@@ -215,9 +268,18 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
             return 1.0;
         }
 
-        double p = RankTests.pValueIndepConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, n);
+        // Use the effective sample size here, consistent with getEstimatedRank; the cache key
+        // already includes effN. Prior to 2026-8 this used the raw row count n, so
+        // setEffectiveSampleSize had no effect on reported p-values.
+        double p;
+        if (this.testwise == null) {
+            p = RankTests.pValueIndepConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, effN);
+        } else {
+            Local loc = local(pads.xAdj, pads.yAdj, kp.zCols);
+            p = loc == null ? 1.0 : RankTests.pValueIndepConditioned(loc.S, loc.x, loc.y, loc.z, loc.effN);
+        }
         if (Double.isNaN(p) || Double.isInfinite(p)) p = 1.0;
-        p = Math.max(0.0, Math.min(1.0, p));
+        p = TMath.max(0.0, TMath.min(1.0, p));
 
         pvalCache.put(key, p);
         return p;
@@ -250,7 +312,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 //
 //            int need = X.length - Y.length;
 //            if (need > 0 && pool.cardinality() > 0) {
-//                int take = Math.min(need, pool.cardinality());
+//                int take = TMath.min(need, pool.cardinality());
 //                int[] Ypad = new int[Y.length + take];
 //                System.arraycopy(Y, 0, Ypad, 0, Y.length);
 //                int k = Y.length;
@@ -281,11 +343,19 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 //    }
 
     /**
-     * Make the CCA well-posed without padding from unrelated variables.
-     * Strategy:
-     *  1) Remove overlaps with Z.
-     *  2) If one side is bigger, shrink the bigger side to the smaller side (deterministic).
-     *  3) (Optional) if either side becomes empty, return empty.
+     * Clean up the X and Y blocks before CCA:
+     *  1) Deduplicate and sort for determinism.
+     *  2) Remove overlaps with Z.
+     *  3) If either side becomes empty, return empty.
+     * <p>
+     * Changes from the pre-2026-8 implementation: the blocks are no longer equalized in size.
+     * Previously, the larger of the two blocks was truncated to a deterministic prefix of the
+     * smaller block's length. That step is unnecessary — both the Wilks rank estimator and the
+     * Bartlett p-value handle rectangular blocks (min(p, q) canonical correlations, df = p * q
+     * rank-aware) — and it silently discarded detection power. In particular, testing a
+     * continuous variable (truncation-limit basis columns) against a binary variable (one
+     * indicator column) reduced the continuous side to its first basis column, making the test
+     * effectively linear on mixed data.
      */
     private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
         int[] X = uniqSorted(xCols0);
@@ -297,13 +367,6 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
             Y = minus(Y, Z);
         }
         if (X.length == 0 || Y.length == 0) return new XY(new int[0], new int[0]);
-
-        // Always shrink the larger side; never pad with unrelated columns.
-        if (X.length > Y.length) {
-            X = Arrays.copyOf(X, Y.length);
-        } else if (Y.length > X.length) {
-            Y = Arrays.copyOf(Y, X.length);
-        }
 
         return new XY(X, Y);
     }
@@ -335,8 +398,8 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         }
         Arrays.sort(zVars);
 
-        int a = Math.min(xiVar, yiVar);
-        int b = Math.max(xiVar, yiVar);
+        int a = TMath.min(xiVar, yiVar);
+        int b = TMath.max(xiVar, yiVar);
 
         // Embedded columns
         int[] xCols = allCols[xiVar];
@@ -372,6 +435,43 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
     private record XY(int[] xAdj, int[] yAdj) {
     }
 
+    /**
+     * Under test-wise deletion: the correlation matrix of the columns x, y, z over the rows complete on all of
+     * them, with x, y, z remapped to positions in it, and the effective sample size scaled to those rows.
+     */
+    private record Local(SimpleMatrix S, int[] x, int[] y, int[] z, int effN) {
+    }
+
+    private Local local(int[] xCols, int[] yCols, int[] zCols) {
+        int[] cols = new int[xCols.length + yCols.length + zCols.length];
+        System.arraycopy(xCols, 0, cols, 0, xCols.length);
+        System.arraycopy(yCols, 0, cols, xCols.length, yCols.length);
+        System.arraycopy(zCols, 0, cols, xCols.length + yCols.length, zCols.length);
+
+        TestwiseCovariance.Family fam = this.testwise.family(cols);
+        int k = cols.length;
+        if (fam.n() < k + 2) return null;
+
+        SimpleMatrix corr = new SimpleMatrix(k, k);
+        for (int i = 0; i < k; i++) {
+            double vi = fam.cov().get(i, i);
+            for (int j = 0; j < k; j++) {
+                double vj = fam.cov().get(j, j);
+                corr.set(i, j, fam.cov().get(i, j) / Math.sqrt(vi * vj));
+            }
+        }
+
+        int[] x = new int[xCols.length];
+        for (int i = 0; i < x.length; i++) x[i] = i;
+        int[] y = new int[yCols.length];
+        for (int i = 0; i < y.length; i++) y[i] = xCols.length + i;
+        int[] z = new int[zCols.length];
+        for (int i = 0; i < z.length; i++) z[i] = xCols.length + yCols.length + i;
+
+        int localEffN = (int) Math.max(1, Math.round(fam.n() * (this.effN / (double) this.n)));
+        return new Local(corr, x, y, z, localEffN);
+    }
+
     // === Small, thread-safe LRU (access-order) ===
     private static final class LruMap<K, V> {
         private final ReentrantLock lock = new ReentrantLock();
@@ -379,7 +479,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         private final LinkedHashMap<K, V> map;
 
         LruMap(int maxSize) {
-            this.maxSize = Math.max(16, maxSize);
+            this.maxSize = TMath.max(16, maxSize);
             this.map = new LinkedHashMap<>(1024, 0.75f, true);
         }
 
@@ -435,7 +535,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
             this.yVarMax = yVarMax;
             this.zVars = zVars.clone();
             this.n = n;
-            this.alphaBits = Double.doubleToLongBits(Math.rint(alpha * 1e12) / 1e12);
+            this.alphaBits = Double.doubleToLongBits(TMath.rint(alpha * 1e12) / 1e12);
             int h = 1;
             h = 31 * h + xVarMin;
             h = 31 * h + yVarMax;
@@ -503,5 +603,16 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         public int hashCode() {
             return hash;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test uses the rows complete on the
+     * embedded columns of x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

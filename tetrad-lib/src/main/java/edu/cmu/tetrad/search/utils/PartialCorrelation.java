@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * Calculates partial correlation using the recursive method.

@@ -1,7 +1,7 @@
 /// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software: you can redistribute it and/or modify      //
@@ -22,48 +22,142 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
-import static java.util.Collections.shuffle;
 
 /**
- * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
- * be correct for latent variables models. First, colliders from the Markov DAG are copied into the final circle-circle
- * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
- * graph. Then, the FCI final orientation rules are applied.
+ * *-FCI (StarFCI): the shipping latent-variable search of the StarFCI paper (Ramsey, Andrews, and Spirtes), in the
+ * sepset-map-as-state formulation due to Bryan Andrews. A score search supplied by the subclass
+ * ({@link #getMarkovCpdag(boolean)}: {@link Bfci} from BOSS, {@link Gfci} from FGES, {@link GraspFci} from
+ * GRaSP, {@link SpFci} from SP) gives a Markov CPDAG; this class then removes the extra edges that latent
+ * confounding leaves in such a CPDAG, by gated single removals with sepset RE-SELECTION, followed by a saturating
+ * joint-removal step (on by default; see {@link #setUseSaturatingStep(boolean)}).
  * <p>
- * The Markov CPDAG needs to be supplied by classes inheriting from this abstract class using the getMarkovCpdag()
- * methods.
+ * HISTORY. This formulation replaced the original *-FCI implementation on 2026-10-21; the original is preserved
+ * verbatim as {@link StarFciOriginal} (off the interface). The original froze the FIRST test-confirmed separating
+ * set found for a pair and gated single removals on that one sepset; when the frozen sepset's induced
+ * re-orientation is illegal, the pair deadlocks, and its saturating Pass 3 exists to clear such deadlocks by
+ * joint removal. This class instead keeps scanning: when a candidate separating set is gate-rejected, the NEXT
+ * separating set for the same pair is tried, within the same visit. Different separating sets induce different
+ * R0 colliders and hence different re-orientations, so a pair whose first sepset fails the gate can still be
+ * removed under another. On the OBS=6 single-removal deadlock witness (positional key cc...cc..ta.aaat.aaacat),
+ * re-selection alone recovers the true PAG exactly, with no saturating step, across 40 randomized
+ * edge/candidate orders (oracle verification 2026-10-18). Re-selection alone is NOT enough in general, though:
+ * on the 6-variable model ta...ca.aaat.aa.ataaaaat the search can reach, by moves the gate accepts, a state from
+ * which no single removal is legal under any true separator, while the joint removal of the two remaining
+ * spurious edges gives the true PAG (2026-10-20). Hence the final saturating step, which does nothing on a run
+ * that does not stall. With it, the search is correct in the oracle under the GFCI assumptions (I-map start,
+ * unbounded depth): every surviving spurious edge has a cached separator, the joint removal yields the true
+ * skeleton with true separators, and its projection is the true PAG.
  * <p>
- * The reference for the GFCI algorithm this is being modeled from is here:
+ * ALGORITHM (Bryan's pseudocode, with three corrections). State is the committed sepset map S alone; the
+ * carried graph G is always the PROJECTION of S: a full from-scratch re-orientation (circles, colliders at
+ * unshielded triples x-y-z from y's absence from S(x,z), Zhang's complete final rules with R4 reading S) with
+ * no other source of orientation. S is TOTAL on nonadjacencies throughout: it is seeded from the DAG
+ * representative D of the BOSS CPDAG (for each nonadjacent pair, PA(a) or PA(b), whichever d-separates in D;
+ * these entries reproduce exactly D's unshielded colliders), and every removal overwrites one entry. This is
+ * the same seeding and projection as {@link StarFciC}; the two classes differ only in the removal schedule
+ * (re-selection plus a final saturating step here; frozen sepsets plus a saturating step there), so StarFciC
+ * stands to this class as an optimization.
+ * <pre>
+ * G0 &lt;- BOSS CPDAG;  D &lt;- DAG representative of G0
+ * S &lt;- { (a,b) -&gt; PA_D(a) or PA_D(b), the one d-separating a,b in D : a,b nonadjacent in D }
+ * G &lt;- dagToPag(D)                                  // = projection of S, legal by construction
+ * Pass 0: for each (a,b) nonadjacent in D with NOT a _||_ b | S(a,b) in the data   // D not an I-map here
+ *   re-select S(a,b) by the same loop as an edge visit (Try over separating C, smallest first); keep D's
+ *   entry if nothing is accepted. Repeated once after Pass 2 for pairs still pending.
+ * Pass 1 (adjacency subsets), then Pass 2 (possible-D-SEP subsets), each to a fixpoint:
+ *   Repeat
+ *     changed &lt;- false
+ *     For (a,b) in EDGES(G)
+ *       For C in SUBSETS_d(pool(G,a)\{a,b}) ++ SUBSETS_d(pool(G,b)\{a,b})   // smallest first
+ *         If a _||_ b | C
+ *           If Try(G, S, a, b, C) = ACCEPT
+ *             changed &lt;- true; break          // next edge; REJECT =&gt; next C
+ *   While changed
+ * Return G
+ * </pre>
+ * where Try removes a-b on a copy (a no-op in Pass 0, where the pair is already nonadjacent), seeds C into a
+ * trial-local copy of S, re-projects from scratch, and commits G and S together iff the result passes the
+ * legality certificate (modulo background knowledge, exactly as in {@link StarFci}); a rejected trial leaves no
+ * trace. The corrections relative to the pseudocode as given: (1) S and G commit atomically (the original
+ * added C to S before the gate, so a revert left the sepset behind); (2) the fixpoint test is an explicit
+ * changed flag; (3) a pair with no recorded sepset gets no sepset collider in the re-orientation (with the
+ * total seeding this can no longer occur).
  * <p>
- * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
- * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
+ * WHY PASS 0 (2026-10-20). The initializer can return a D that is not an I-map of the test (seen in the
+ * exhaustive 5-variable certification of BFCI-C when BOSS ran without BES: a tied, non-I-map D claimed a false
+ * d-separation; projecting it stamped a false collider that closed to a legal PAG of the wrong class, which the
+ * legality gate cannot see). Pass 0 lets the test correct such entries, under the same gate as everything
+ * else. Overwriting them ungated instead would make S the projection of no single MAG and the baseline
+ * routinely illegal at scale. With BES on, D is an I-map under faithfulness and Pass 0 queues nothing.
  * <p>
- * We modify this by insistent that getMarkovCpdag() is overridden by a method that will return a CPDAG Markov to the
- * data or underlying generative model and removing the possible d-sep step of the original algorithm.
+ * COSTS, DISCLOSED. Re-selection runs one full re-orientation plus one legality check per SEPARATING candidate
+ * set scanned, not per pair, so {@code maxGateTrialsPerEdge} caps the gate trials per edge per visit (the cap
+ * is per visit; later sweeps rescan against the shrunken graph). A committed sepset is thereby selected partly
+ * for orientation coherence rather than independence strength alone; every committed sepset is still
+ * individually test-confirmed. The Pass-2 subset search keeps StarFci's clamp: when {@code depth} is unlimited
+ * (-1), subsets of possible-D-SEP pools are capped at size {@value #DSEP_DEPTH_CLAMP}.
  * <p>
- * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
- * tiers.
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of
+ * temporal tiers, by the same modulo-knowledge certificate as {@link StarFciOriginal}.
+ * <p>
+ * CORRECTNESS WARRANT (2026-11-08). Two further gates, developed in the {@code BfciBryan} and
+ * {@code BfciBryanScore} forks of this class and merged back here, may be placed after the legality certificate
+ * on every gated move (the edge visits of Passes 0 to 2 and the saturating batches). They are the same three-way
+ * choice the FCIT wrapper exposes as {@code fcitCorrectness}, and the wrappers for every subclass key the
+ * saturating step off whenever one of them is on:
+ * <ol>
+ * <li><b>Guarantee I-map</b> ({@link #setRequireImapStates(boolean)}): a legal candidate commits only if every
+ * nonadjacent pair of its Zhang MAG has a test-confirmed separator at {@link #setImapAlpha(double) imapAlpha}, pairs
+ * already uncertified in the committed state excepted. Proved: with it, every committed state after Pass 0 asserts
+ * no independence the test has not confirmed. Conjectured, not proved: that the gated search never stalls short of
+ * the true PAG; this rests on the generalized-Meek-for-projections conjecture, exhaustively supported at five and
+ * six observed variables and open in general. Observed on data (2026-10-21): with {@code imapAlpha} equal to the
+ * removal alpha the gate reduced accuracy, each false "dependent" vetoing a correct move; the smaller default
+ * {@code imapAlpha} is the response to that.</li>
+ * <li><b>Score step</b> ({@link #setUseScoreStep(boolean)}, {@link #setGateScore(Score)}): a legal candidate's Zhang
+ * MAG is scored by RICF BIC and commits only if the score strictly improves on the committed score (non-decreasing
+ * in Pass 0, where no edge is removed). Linear-Gaussian only: it requires a {@link SemBicScore} on a covariance
+ * matrix with zero structure prior, so that the DAG and MAG scores are on one scale. Note that this is a stricter
+ * rule than FCIT's "no score drop", which accepts a non-decreasing score everywhere.</li>
+ * <li><b>Saturating step</b> ({@link #setUseSaturatingStep(boolean)}): neither gate; stalled pairs are removed
+ * jointly at the end, as described above. This is the oracle-correct configuration under the GFCI assumptions.</li>
+ * </ol>
+ * Defaults differ by entry point, deliberately. This class's own defaults are option 3 (no gate, saturating step
+ * on), the configuration proved correct in the oracle, so direct callers and the existing oracle tests see the
+ * behavior they always have. The algorithm wrappers, which the interface and py-tetrad go through, read
+ * {@code fcitCorrectness} and default to option 1, by the November 2026 decision that the I-map gate be on by
+ * default for the latent-variable searches; {@link #setCorrectnessOption(int, Score, double)} is how they apply it.
+ * <p>
+ * The gates and the knowledge machinery compose as in the forks: each gate is evaluated after the modulo-knowledge
+ * certificate on the trial projection, and the final knowledge refinement is unchanged. Knowledge-forced marks can
+ * make a seeded entry fail the test; such pairs are refuted seeds, exempt from the I-map check until repaired, so a
+ * knowledge/data conflict in the start state cannot veto every later move.
  *
- * @author josephramsey
  * @author bryanandrews
- * @see #getMarkovCpdag()
- * @see Knowledge
+ * @author josephramsey
+ * @see Bfci
+ * @see Gfci
+ * @see GraspFci
+ * @see SpFci
+ * @see StarFciOriginal
  */
 public abstract class StarFci implements IGraphSearch {
+
+    /**
+     * Cap on the subset size searched over possible-D-SEP pools in Pass 2 when the global {@code depth} is
+     * unlimited (-1), as in {@link StarFciOriginal}.
+     */
+    private static final int DSEP_DEPTH_CLAMP = 4;
     /**
      * The independence test used in search.
      */
@@ -89,311 +183,242 @@ public abstract class StarFci implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
+     * Whether the final FCI orientation engine logs its rule-by-rule output; see
+     * {@link StarFci#setLogFinalOrientations(boolean)}.
      */
-    private boolean guaranteePag = false;
+    private boolean logFinalOrientations = false;
     /**
-     * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the Star-FCI
-     * algorithm. The default value is {@code true}, enabling the heuristic by default.
+     * Whether to exclude selection bias.
      */
-    private boolean useMaxP = false;
-    private boolean replicatingGraph = false;
     private boolean excludeSelectionBias = false;
+    /**
+     * Whether to do the possible-D-SEP pass (Pass 2). Required for exactness; switch retained for timing
+     * studies only, as in {@link StarFci}.
+     */
+    private boolean usePossibleDsep = true;
+    /**
+     * Maximum path length for possible d-sep.
+     */
+    private int maxPossibleDsepPathLength = -1;
+    /**
+     * Cap on legality-gate trials (re-orientation + certificate) per edge per visit. Independence tests that
+     * fail to separate do not count. The cap is a compute guard on real data, where many candidate sets may
+     * separate at moderate alpha; it is per visit, so later sweeps retry against the shrunken graph.
+     */
+    private int maxGateTrialsPerEdge = 100;
+    /**
+     * Whether to run a saturating step after the passes: jointly remove every still-adjacent pair for which a
+     * separating set was found but every gated single removal was rejected. Default true. Without it the search
+     * can stall from a reachable state in which no single removal is legal (6-variable instance: model
+     * ta...ca.aaat.aa.ataaaaat, reached by legal moves V2-V3 | {V6}, V2-V6 | {V1,V5}, V1-V5 | {V6}). In the oracle
+     * a pair gets a separator only if it is truly non-adjacent, so the joint removal yields the true skeleton
+     * with true separators, whose projection is G*. On a run that never stalls the step does nothing.
+     */
+    private boolean useSaturatingStep = true;
+    /**
+     * If true, returns dagToPag of the initializer's DAG representative with no edge removal (the "LV heuristic"
+     * of the paper's experiments). Default false.
+     */
+    private boolean lvHeuristicOnly = false;
+    /**
+     * If true, graphs are wrapped in a time-lag replication policy (time-series data created by
+     * {@code TsUtils.createLagData}); edits to one lag are replicated across lags. Default false.
+     */
+    private boolean replicatingGraph = false;
+    /** First separating set found for each pair, cached across visits (survives gate rejections). */
+    private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
 
     /**
-     * Constructs a new GFci algorithm with the given independence test and score.
+     * The two optional per-commit gates (I-map gate, score step), shared with FCIT and FCIT-ZM; see the class doc,
+     * CORRECTNESS WARRANT, and {@link CorrectnessGates}.
+     */
+    private final CorrectnessGates gates;
+
+    /**
+     * Constructor.
      *
      * @param test The independence test to use.
      */
     public StarFci(IndependenceTest test) {
+        if (test == null) throw new NullPointerException("Test is null");
         this.independenceTest = test;
+        this.gates = new CorrectnessGates(test);
     }
 
     /**
-     * Finds a separating set that is a subset of the adjacency of nodes x or y in the input graph.
+     * Returns the initial Markov model for the search: a CPDAG that is Markov to the data (paper, Alg. 1 line 1), or
+     * any DAG in its Markov equivalence class; the search uses a DAG representative of it. Supplied by the
+     * subclass from its score search.
      *
-     * @param graph      The graph being analyzed.
-     * @param x          The first node between which independence is checked.
-     * @param y          The second node between which independence is checked.
-     * @param containing A set of nodes that must be included in the separating set.
-     * @param test       The independence test used to evaluate separation.
-     * @param depth      The maximum size of subsets to be tested for independence.
-     * @param order      An optional list specifying the order of nodes for additional constraints.
-     * @param useMaxP    True if the maxP method should be used.
-     * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
-     * such set is found.
+     * @param verbose whether the initializer should log.
+     * @return the Markov CPDAG (or a DAG in its class).
+     * @throws InterruptedException if interrupted.
      */
-    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
-                                                     IndependenceTest test, int depth, List<Node> order, boolean useMaxP) {
-
-        // We need to look at the original adjx and adjy, not some modified version.
-        List<Node> adjx = graph.getAdjacentNodes(x);
-        List<Node> adjy = graph.getAdjacentNodes(y);
-        adjx.remove(y);
-        adjy.remove(x);
-
-        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx, useMaxP);
-        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy, useMaxP);
-
-        if (sepset1 == null && sepset2 == null) {
-            return null;
-        }
-
-        if (sepset1 != null && sepset2 == null) {
-            return sepset1;
-        }
-
-        if (sepset1 == null) {
-            return sepset2;
-        }
-
-        try {
-            double p1 = test.checkIndependence(x, y, sepset1).getPValue();
-            double p2 = test.checkIndependence(x, y, sepset2).getPValue();
-
-            return p1 > p2 ? sepset1 : sepset2;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public abstract Graph getMarkovCpdag(boolean verbose) throws InterruptedException;
 
     /**
-     * Finds a separating set between nodes x and y that satisfies certain conditions, including containing a specified
-     * set of nodes, maintaining optional ordering constraints, and ensuring the independence between x and y with
-     * respect to the separating set.
-     * <p>
-     * The separating set is constructed from the adjacency list of node x.
+     * Runs the search and returns the PAG.
      *
-     * @param x          The first node between which independence is being checked.
-     * @param y          The second node between which independence is being checked.
-     * @param containing A set of nodes that must be included in the separating set.
-     * @param test       The independence test used to evaluate separation between x and y.
-     * @param depth      The maximum size of subsets to be tested for independence.
-     * @param order      An optional list specifying the processing order of nodes, used to enforce additional
-     *                   constraints during the search.
-     * @param adjx       The adjacency list of node x, from which subsets are generated to test for separation.
-     * @return A separating set of nodes that fulfills all constraints and is a subset of adjx, or {@code null} if no
-     * such set is found.
-     */
-    private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
-                                                 List<Node> order, List<Node> adjx, boolean useMaxP) {
-        List<Set<Node>> choices = getChoices(adjx, depth);
-
-        if (useMaxP) {
-            // Max p for stability...
-            return choices.parallelStream()
-                    .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
-                    .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
-                    .orElse(null); // Return best set or null if none pass the threshold
-        } else { // Greedy
-
-            // Parallelize processing for adjx
-            // Generate combinations in parallel
-            // Filter combinations that don't contain 'containing'
-            return choices.parallelStream() // Generate combinations in parallel
-                    .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                    .filter(subset -> {
-                        try {
-                            return test.checkIndependence(x, y, subset).isIndependent();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).findFirst().orElse(null);
-        }
-    }
-
-    private static double computeScore(Node x, Node y, Set<Node> set, IndependenceTest test) {
-        try {
-            return test.checkIndependence(x, y, set).getPValue();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-     *
-     * @param graph The graph in which the nodes reside.
-     * @param a     The first node in the triple.
-     * @param b     The second node in the triple.
-     * @param c     The third node in the triple.
-     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-     */
-    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Checks if the given nodes are unshielded colliders when considering the given graph.
-     *
-     * @param graph the graph to consider
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return true if the nodes are unshielded colliders, false otherwise
-     */
-    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
-
-    /**
-     * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
-     * using combinations.
-     *
-     * @param adjx  The adjacency list of nodes to generate combinations from.
-     * @param depth The maximum size of the sublists to be generated. If the depth is negative or exceeds the size of
-     *              the adjacency list, it will be adjusted to the size of the adjacency list.
-     * @return A list of all possible lists of integers representing combinations of indices from the adjacency list up
-     * to the given depth.
-     */
-    private static @NotNull List<Set<Node>> getChoices(List<Node> adjx, int depth) {
-        List<Set<Node>> choices = new ArrayList<>();
-
-        if (depth < 0 || depth > adjx.size()) depth = adjx.size();
-
-        SublistGenerator cg = new SublistGenerator(adjx.size(), depth);
-        int[] choice;
-
-        while ((choice = cg.next()) != null) {
-            choices.add(GraphUtils.asSet(choice, adjx));
-        }
-
-        return choices;
-    }
-
-    /**
-     * Sets whether to use the maxP criterion during the search process.
-     *
-     * @param useMaxP A boolean indicating whether the maxP criterion should be applied (true) or not (false).
-     */
-    public void setUseMaxP(boolean useMaxP) {
-        this.useMaxP = useMaxP;
-    }
-
-    /**
-     * Runs the graph and returns the search PAG.
-     *
-     * @return This PAG.
-     * @throws InterruptedException if any
+     * @return The PAG.
+     * @throws InterruptedException if interrupted.
      */
     public Graph search() throws InterruptedException {
-        this.independenceTest.setVerbose(verbose);
-        List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
+//        this.independenceTest.setVerbose(verbose);
+        List<Node> nodes = new ArrayList<>(independenceTest.getVariables());
 
-        Graph cpdag = getMarkovCpdag();
-//        Graph pag = new EdgeListGraph(cpdag);
-        Graph pag = wrapWorkingGraph(cpdag);
-        Set<Triple> unshieldedColliders = new HashSet<>();
+        Graph cpdag = getMarkovCpdag(verbose);
+        Graph initDag = cpdag.paths().isLegalDag() ? cpdag : GraphTransforms.dagFromCpdag(cpdag);
+        Graph pag = rewrap(GraphTransforms.dagToPag(initDag, false));
+
+        if (lvHeuristicOnly) {
+            return rewrap(GraphUtils.replaceNodes(pag, nodes));
+        }
+
         SepsetMap sepsetMap = new SepsetMap();
+        foundSepsets.clear();
+        gates.reset();
+        gates.setVerbose(verbose);
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
-        }
+        // SEEDING (see class doc): a TOTAL sepset map from the DAG representative D -- for each nonadjacent
+        // pair, PA(a) if it d-separates a and b in D, else PA(b) (one always does: nonadjacent nodes cannot
+        // be mutual descendants). Identical to StarFciC's harvest. Entries that fail the actual test are
+        // queued for Pass 0 re-selection; D's entry stays in S meanwhile, so S remains D's projection.
+        List<Node[]> pendingReselect = new ArrayList<>();
 
-        List<Edge> edges = new ArrayList<>(pag.getEdges());
-        shuffle(edges);
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node a = nodes.get(i);
+                Node b = nodes.get(j);
+                Node ga = initDag.getNode(a.getName());
+                Node gb = initDag.getNode(b.getName());
 
-        for (Edge edge : edges) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+                if (ga == null || gb == null || initDag.isAdjacentTo(ga, gb)) {
+                    continue;
+                }
 
-            Node a = edge.getNode1();
-            Node c = edge.getNode2();
+                Set<Node> paA = new HashSet<>(initDag.getParents(ga));
+                Set<Node> sep = initDag.paths().isMSeparatedFrom(ga, gb, paA, false)
+                        ? paA : new HashSet<>(initDag.getParents(gb));
 
-            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
+                // Record against the search's own node objects.
+                Set<Node> sepMapped = new HashSet<>();
+                for (Node n : sep) {
+                    Node own = independenceTest.getVariable(n.getName());
+                    sepMapped.add(own != null ? own : n);
+                }
+                sepsetMap.set(a, b, sepMapped);
 
-            if (sepset != null) {
-                pag.removeEdge(a, c);
-                sepsetMap.set(a, c, sepset);
-
-                List<Node> adj = pag.getAdjacentNodes(a);
-                adj.retainAll(pag.getAdjacentNodes(c));
-
-                if (verbose) {
-                    IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-                    double pValue = result.getPValue();
-                    TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                                   + sepset + ", p-value = " + pValue + ".");
+                if (!independenceTest.checkIndependence(a, b, sepMapped).isIndependent()) {
+                    pendingReselect.add(new Node[]{a, b});
+                    gates.addRefutedSeed(a, b);
                 }
             }
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting *-FCI-R0.");
-        }
-
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
-
-        pag.reorientAllWith(Endpoint.CIRCLE);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
-
-        for (Node y : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
-
-                if (cpdag.isDefCollider(x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
-                        pag.setEndpoint(z, y, Endpoint.ARROW);
-                        unshieldedColliders.add(new Triple(x, y, z));
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Copied collider " + x + " â " + y + " â " + z + " from CPDAG.");
-                        }
-                    }
-                } else if (cpdag.isAdjacentTo(x, z)) {
-                    Set<Node> sepset = sepsetMap.get(x, z);
-
-                    if (sepset != null && !sepset.contains(y)) {
-                        if (colliderAllowed(pag, x, y, z, knowledge)) {
-                            pag.setEndpoint(x, y, Endpoint.ARROW);
-                            pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                            if (!pag.isAdjacentTo(x, z)) {
-                                unshieldedColliders.add(new Triple(x, y, z));
-                            }
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " â " + y + " â " + z);
-                            }
-                        }
-                    }
-                }
+        Set<Node> selection = new LinkedHashSet<>();
+        for (Node node : nodes) {
+            if (node.getNodeType() == NodeType.SELECTION) {
+                selection.add(node);
             }
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting final FCI orientation.");
+            TetradLogger.getInstance().log("Starting *-FCI extra edge removal (sepset projection, "
+                    + "sepset re-selection" + gates.describeActive()
+                    + (useSaturatingStep ? ", saturating step" : ", no saturating step")
+                    + "); " + pendingReselect.size()
+                    + " seeded sepset(s) failed the test and are queued for re-selection.");
         }
 
-        fciOrient.finalOrientation(pag, excludeSelectionBias);
+        gates.beginRun(pag, sepsetMap);
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
+        // Pass 0: re-select seeded sepsets the test rejects, by the ordinary edge-visit loop (the pair is
+        // already nonadjacent, so the trial's removeEdge is a no-op; only the entry changes). Gated like
+        // everything else; a pair with no accepted candidate keeps D's entry and is retried after Pass 2.
+        pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
+
+        // Pass 1: adjacency subsets, to a fixpoint.
+        boolean changed;
+        do {
+            changed = false;
+            for (Edge edge : new ArrayList<>(pag.getEdges())) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+                if (!pag.isAdjacentTo(a, b)) continue;
+
+                List<List<Node>> pools = new ArrayList<>();
+                pools.add(adjPool(pag, a, b));
+                pools.add(adjPool(pag, b, a));
+
+                Graph next = tryRemoveEdge(pag, a, b, pools, depth, cpdag, nodes, sepsetMap,
+                        selection, "adjacency-subset");
+                if (next != null) {
+                    pag = next;
+                    changed = true;
+                }
+            }
+        } while (changed);
+
+        // Pass 2: possible-D-SEP subsets, to a fixpoint. The carried graph is fully oriented (dagToPag
+        // start, or the last accepted commit's re-orientation), as possible-D-SEP presupposes.
+        if (usePossibleDsep) {
+            do {
+                changed = false;
+                for (Edge edge : new ArrayList<>(pag.getEdges())) {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                    Node a = edge.getNode1();
+                    Node b = edge.getNode2();
+                    if (!pag.isAdjacentTo(a, b)) continue;
+
+                    List<List<Node>> pools = new ArrayList<>();
+                    pools.add(dsepPool(pag, a, b));
+                    pools.add(dsepPool(pag, b, a));
+
+                    int poolMax = Math.max(pools.get(0).size(), pools.get(1).size());
+                    int dsepDepth = (depth < 0) ? Math.min(poolMax, DSEP_DEPTH_CLAMP) : depth;
+
+//                    if (verbose && depth < 0 && poolMax > DSEP_DEPTH_CLAMP) {
+//                        TetradLogger.getInstance().log("Possible-D-SEP subset search for " + a + " -- " + b
+//                                + " clamped to subsets of size <= " + DSEP_DEPTH_CLAMP + " (pool size "
+//                                + poolMax + "); set depth explicitly to override.");
+//                    }
+
+                    Graph next = tryRemoveEdge(pag, a, b, pools, dsepDepth, cpdag, nodes, sepsetMap,
+                            selection, "possible-D-SEP");
+                    if (next != null) {
+                        pag = next;
+                        changed = true;
+                    }
+                }
+            } while (changed);
         }
 
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(), excludeSelectionBias);
+        // Pass 0 again for pairs still pending: removals since may have made a re-selection legal.
+        pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
 
-//            pag = new DagToPag(pag).convert();
+        // Saturating step: clears states in which no single removal is legal (see the field doc).
+        if (useSaturatingStep) {
+            pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, selection);
         }
+
+        gates.logSummary("*-FCI");
+
+        // Uniform final knowledge refinement, as in StarFci: covers the path on which no removal ever
+        // committed, where pag is the untouched dagToPag start carrying no knowledge marks.
+        if (!knowledge.isEmpty()) {
+            FciOrient refineOrient = buildFciOrient(new SepsetMap(sepsetMap));
+            Graph refined = refineWithKnowledge(pag, refineOrient);
+
+            if (legalPagModuloKnowledge(refined, new LinkedHashSet<>(selection), refineOrient).isLegalPag()) {
+                pag = refined;
+            } else if (verbose) {
+                TetradLogger.getInstance().log("Final knowledge refinement failed the modulo-knowledge "
+                        + "certificate (likely a knowledge/data conflict); returning the unrefined graph.");
+            }
+        }
+
+        pag = rewrap(GraphUtils.replaceNodes(pag, nodes));
 
         if (verbose) {
             TetradLogger.getInstance().log("*-FCI finished.");
@@ -402,41 +427,440 @@ public abstract class StarFci implements IGraphSearch {
         return pag;
     }
 
-    private Graph wrapWorkingGraph(Graph cpdag) {
-        if (replicatingGraph) {
-            return new ReplicatingGraph(cpdag, new LagReplicationPolicy());
-        } else {
-            return new EdgeListGraph(cpdag);
-        }
-    }
-
     /**
-     * Returns the knowledge used in search.
-     *
-     * @return This knowledge
+     * Pass 0: for each queued nonadjacent pair, run the ordinary edge-visit loop over the adjacency pools of the
+     * current graph. An accepted candidate replaces the pair's seeded entry in the committed map (and the carried
+     * graph becomes the accepted projection); the pair is then dropped from the queue. Pairs with no accepted
+     * candidate keep D's entry and stay queued.
      */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
+    private Graph reselectPending(Graph pag, List<Node[]> pending, Graph cpdag, List<Node> nodes,
+                                  SepsetMap sepsetMap, Set<Node> selection) throws InterruptedException {
+        gates.setTiesAccepted(true);
+        try {
+            for (Iterator<Node[]> it = pending.iterator(); it.hasNext(); ) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                Node[] pr = it.next();
+                Node a = pr[0], b = pr[1];
+
+                List<List<Node>> pools = new ArrayList<>();
+                pools.add(adjPool(pag, a, b));
+                pools.add(adjPool(pag, b, a));
+
+                Graph next = tryRemoveEdge(pag, a, b, pools, depth, cpdag, nodes, sepsetMap, selection,
+                        "seeded-sepset re-selection");
+                if (next != null) {
+                    pag = next;
+                    it.remove();
+                }
+            }
+        } finally {
+            gates.setTiesAccepted(false);
+        }
+        return pag;
     }
 
     /**
-     * Sets the knowledge to use in search.
+     * Saturating step, run once after the passes. R = every still-adjacent pair with a cached separating set.
+     * Trial 1 removes all of R at once, records their separators, re-projects, and gates once on legality. If
+     * that fails, one leave-one-out rung is tried (each subset of size |R|-1, first legal wins) before keeping
+     * the graph as it is. Every removal in a batch is individually test-confirmed; the batch as a whole must
+     * pass the same legality certificate as a single removal.
+     */
+    private Graph saturatingRemoval(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
+                                    Set<Node> selection) throws InterruptedException {
+        List<Set<Node>> stalled = new ArrayList<>();
+        for (Set<Node> pair : foundSepsets.keySet()) {
+            List<Node> pn = new ArrayList<>(pair);
+            if (pag.isAdjacentTo(pn.get(0), pn.get(1))) {
+                stalled.add(pair);
+            }
+        }
+
+        if (stalled.isEmpty()) {
+            return pag;
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Saturating step: " + stalled.size()
+                    + " separable edge(s) survived the passes; trying joint removal: " + formatBatch(stalled) + ".");
+        }
+
+        List<List<Set<Node>>> batches = new ArrayList<>();
+        batches.add(stalled);
+        if (stalled.size() > 1) {
+            for (int skip = 0; skip < stalled.size(); skip++) {
+                List<Set<Node>> sub = new ArrayList<>(stalled);
+                sub.remove(skip);
+                batches.add(sub);
+            }
+        }
+
+        for (List<Set<Node>> batch : batches) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            Graph trial = pag.copy();
+            SepsetMap trialMap = new SepsetMap(sepsetMap);
+            for (Set<Node> pair : batch) {
+                List<Node> pn = new ArrayList<>(pair);
+                trial.removeEdge(pn.get(0), pn.get(1));
+                trialMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
+            }
+            FciOrient trialOrient = buildFciOrient(trialMap);
+            gfciOrientPag(trial, cpdag, nodes, trialMap, trialOrient);
+
+            // One Zhang MAG per trial, shared by the legality certificate and the gates.
+            Graph mag = CorrectnessGates.tryZhangMag(trial);
+            PagLegalityCheck.LegalPagRet legal =
+                    legalPagModuloKnowledge(trial, mag, new LinkedHashSet<>(selection), trialOrient);
+
+            if (legal.isLegalPag() && !gates.accepts(mag, trialMap, "joint removal of " + formatBatch(batch))) {
+                continue;   // gate veto: nothing was committed; try the next batch
+            }
+
+            if (legal.isLegalPag()) {
+                for (Set<Node> pair : batch) {
+                    List<Node> pn = new ArrayList<>(pair);
+                    sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
+                }
+                gates.committed(trial, sepsetMap);
+                if (verbose) {
+                    TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
+                            + stalled.size() + " edge(s) jointly (legal PAG): " + formatBatch(batch) + ".");
+                }
+                return rewrap(trial);
+            } else if (verbose) {
+                TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()
+                        + " edge(s) not legal (reverted): " + formatBatch(batch) + ". Reason: " + legal.getReason());
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Saturating step: no joint removal was legal; graph kept.");
+        }
+        return pag;
+    }
+
+    /** Formats a batch of pairs as "a -- b (sepset = [...])" for verbose logging. */
+    private String formatBatch(List<Set<Node>> batch) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < batch.size(); i++) {
+            if (i > 0) sb.append(", ");
+            List<Node> pn = new ArrayList<>(batch.get(i));
+            sb.append(pn.get(0)).append(" -- ").append(pn.get(1))
+                    .append(" (sepset = ").append(foundSepsets.get(batch.get(i))).append(")");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * One edge visit: scan candidate conditioning sets from the given pools, smallest first, trying each
+     * SEPARATING set against the legality gate until one is accepted or the gate-trial cap is reached. This is
+     * the sepset re-selection loop: a gate rejection moves to the NEXT separating set for the same pair rather
+     * than retiring the pair.
      *
-     * @param knowledge This knowledge.
+     * @return the accepted (re-oriented) graph, with the sepset committed to {@code sepsetMap}; or null if no
+     * candidate was accepted (graph and committed map untouched).
+     */
+    private Graph tryRemoveEdge(Graph pag, Node a, Node b, List<List<Node>> pools, int subsetDepth,
+                                Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Node> selection,
+                                String type) throws InterruptedException {
+        Set<Set<Node>> tried = new HashSet<>();
+        int gateTrials = 0;
+
+        for (List<Node> pool : pools) {
+            int d = (subsetDepth < 0 || subsetDepth > pool.size()) ? pool.size() : subsetDepth;
+            SublistGenerator gen = new SublistGenerator(pool.size(), d);
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+                Set<Node> C = GraphUtils.asSet(choice, pool);
+                if (!tried.add(C)) continue;
+
+                if (!independenceTest.checkIndependence(a, b, C).isIndependent()) continue;
+                foundSepsets.putIfAbsent(Set.of(a, b), C);
+
+                if (gateTrials >= maxGateTrialsPerEdge) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("\t" + a + " -- " + b + " (" + type + "): gate-trial cap of "
+                                + maxGateTrialsPerEdge + " reached; deferring to a later sweep.");
+                    }
+                    return null;
+                }
+                gateTrials++;
+
+                // Gated trial: copy, remove, re-orient from scratch against a trial-local sepset map seeded
+                // with this candidate, certify. Commit S and G together on acceptance; no trace on rejection.
+                Graph _pag = pag.copy();
+                _pag.removeEdge(a, b);
+
+                SepsetMap trialMap = new SepsetMap(sepsetMap);
+                trialMap.set(a, b, C);
+                FciOrient trialOrient = buildFciOrient(trialMap);
+                gfciOrientPag(_pag, cpdag, nodes, trialMap, trialOrient);
+
+                // One Zhang MAG per trial, shared by the legality certificate and the gates.
+                Graph mag = CorrectnessGates.tryZhangMag(_pag);
+                PagLegalityCheck.LegalPagRet legal =
+                        legalPagModuloKnowledge(_pag, mag, new LinkedHashSet<>(selection), trialOrient);
+
+                if (legal.isLegalPag() && !gates.accepts(mag, trialMap,
+                        a + " -- " + b + " (" + type + "), sepset = " + C)) {
+                    continue;   // gate veto: revert (nothing was committed) and try the next C
+                }
+
+                if (legal.isLegalPag()) {
+                    sepsetMap.set(a, b, C);
+                    gates.committed(_pag, sepsetMap);
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Removed edge " + a + " -- " + b + " (" + type
+                                + ", legal PAG); sepset = " + C + " (gate trial " + gateTrials + ").");
+                    }
+                    return rewrap(_pag);
+                } else if (verbose) {
+                    TetradLogger.getInstance().log("\tTried removing " + a + " -- " + b + " (" + type
+                            + "); sepset = " + C + ", but it didn't lead to a legal PAG; trying the next "
+                            + "separating set. Reason: " + legal.getReason());
+                }
+            }
+        }
+
+        if (verbose && gateTrials > 0) {
+            TetradLogger.getInstance().log("\t" + a + " -- " + b + " (" + type + "): all " + gateTrials
+                    + " separating set(s) gate-rejected this visit; edge kept.");
+        }
+
+        return null;
+    }
+
+    /**
+     * Adjacency pool for one endpoint: ADJ(G, a) \ {b}, latents removed.
+     */
+    private List<Node> adjPool(Graph graph, Node a, Node b) {
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.remove(b);
+        adj.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        return adj;
+    }
+
+    /**
+     * Possible-D-SEP pool for one endpoint: PSBLDSEP(G, a) \ {a, b}, latents removed.
+     */
+    private List<Node> dsepPool(Graph graph, Node a, Node b) {
+        List<Node> pool = graph.paths().possibleDsep(a, maxPossibleDsepPathLength);
+        pool.remove(a);
+        pool.remove(b);
+        pool.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        return pool;
+    }
+
+    /**
+     * The full from-scratch projection of the sepset map, verbatim from {@link StarFciC}: reorient everything to
+     * circles, apply background knowledge, stamp a collider at every unshielded triple x-y-z with y not in
+     * S(x,z) -- the map is total on nonadjacencies, and the CPDAG is NOT consulted -- then run the FCI
+     * final-orientation rules with R4 reading S. ({@code cpdag} is retained in the signature for symmetry with
+     * the trial loop; it is unused.)
+     */
+    private void gfciOrientPag(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
+                               FciOrient fciOrient) throws InterruptedException {
+        pag.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
+
+        for (Node y : nodes) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
+
+            for (int i = 0; i < adjacentNodes.size(); i++) {
+                for (int j = i + 1; j < adjacentNodes.size(); j++) {
+                    Node x = adjacentNodes.get(i);
+                    Node z = adjacentNodes.get(j);
+
+                    if (!pag.isAdjacentTo(x, z)) {
+                        Set<Node> sepset = sepsetMap.get(x, z);
+
+                        if (sepset != null && !sepset.contains(y)) {
+                            if (colliderAllowed(pag, x, y, z, knowledge)) {
+                                pag.setEndpoint(x, y, Endpoint.ARROW);
+                                pag.setEndpoint(z, y, Endpoint.ARROW);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
+    }
+
+    /**
+     * Builds a fresh FCI orientation engine bound to the given sepset map, exactly as in {@link StarFci}, so
+     * each trial's R4 discriminating-path sepset appends land in that trial's own map and are discarded with
+     * the trial.
+     */
+    private FciOrient buildFciOrient(SepsetMap sepsetMap) {
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased)
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, logFinalOrientations);
+        strategy.setDepth(this.depth);
+        strategy.setMaxLength(this.maxDiscriminatingPathLength);
+        strategy.setSepsetMap(sepsetMap);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
+        strategy.setVerbose(logFinalOrientations);
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(-1);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(true);
+        fciOrient.setVerbose(logFinalOrientations);
+        return fciOrient;
+    }
+
+    /**
+     * Legal PAG modulo background knowledge, verbatim from {@link StarFci}: with empty knowledge this is
+     * exactly {@link PagLegalityCheck#isLegalPag(Graph, Set)}; otherwise the round-trip equality is taken
+     * against the knowledge-refined canonical PAG of the implied Zhang MAG.
+     */
+    private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Set<Node> selection, FciOrient orient)
+            throws InterruptedException {
+        return legalPagModuloKnowledge(pag, knowledge.isEmpty() ? null : CorrectnessGates.tryZhangMag(pag), selection, orient);
+    }
+
+    /**
+     * As {@link #legalPagModuloKnowledge(Graph, Set, FciOrient)}, but taking the candidate's Zhang MAG when the
+     * caller already holds it, so that one MAG per trial serves the certificate and the gates. A null MAG means the
+     * conversion failed; with knowledge that is a failed certificate, and without knowledge it is ignored, since
+     * {@link PagLegalityCheck#isLegalPag(Graph, Set)} derives its own.
+     */
+    private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Graph mag, Set<Node> selection,
+                                                                 FciOrient orient) throws InterruptedException {
+        if (knowledge.isEmpty()) {
+            return PagLegalityCheck.isLegalPag(pag, selection);
+        }
+
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new PagLegalityCheck.LegalPagRet(false, "Node " + n + " is not measured");
+            }
+        }
+
+        if (mag == null) {
+            return new PagLegalityCheck.LegalPagRet(false, "PAG to MAG failed");
+        }
+
+        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(mag, selection);
+
+        if (!legalMag.isLegalMag()) {
+            return new PagLegalityCheck.LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
+        }
+
+        Graph pag2;
+        try {
+            MagToPag magToPag = new MagToPag(mag);
+            pag2 = magToPag.convert(false, false);
+        } catch (IllegalStateException e) {
+            return new PagLegalityCheck.LegalPagRet(false, "Legal PAG status could not be determined");
+        }
+
+        Graph pag2k = refineWithKnowledge(pag2, orient);
+
+        if (!pag.equals(pag2k)) {
+            String reason = "The MAG implied by this graph was a legal MAG, but the graph is not recoverable as the "
+                    + "knowledge-refined canonical PAG of that MAG -- it carries marks forced neither by the "
+                    + "equivalence class nor by background knowledge";
+            return new PagLegalityCheck.LegalPagRet(false, reason);
+        }
+
+        return new PagLegalityCheck.LegalPagRet(true, "This is a legal PAG refined by background knowledge");
+    }
+
+    /**
+     * Refines a graph with background knowledge and closes under the complete FCI final rules, verbatim from
+     * {@link StarFci}. Works on a copy; identity when knowledge is empty.
+     */
+    private Graph refineWithKnowledge(Graph graph, FciOrient orient) throws InterruptedException {
+        if (knowledge.isEmpty()) {
+            return graph;
+        }
+
+        Graph g = graph.copy();
+        orient.fciOrientbk(knowledge, g, g.getNodes(), excludeSelectionBias);
+        orient.finalOrientation(g, excludeSelectionBias);
+        return g;
+    }
+
+    // ---- Correctness gates: configuration. ----
+
+    /**
+     * Sets whether the I-map gate is on (see the class doc, CORRECTNESS WARRANT, option 1). Default false.
+     *
+     * @param requireImapStates true to require every committed state to be an I-map of the test.
+     */
+    public void setRequireImapStates(boolean requireImapStates) {
+        gates.setRequireImapStates(requireImapStates);
+    }
+
+    /**
+     * Sets the significance level of the I-map gate's tests. Default 0.001, deliberately below the removal alpha.
+     *
+     * @param imapAlpha a value in (0, 1).
+     */
+    public void setImapAlpha(double imapAlpha) {
+        gates.setImapAlpha(imapAlpha);
+    }
+
+    /**
+     * Sets whether the score step is on (see the class doc, CORRECTNESS WARRANT, option 2). Requires
+     * {@link #setGateScore(Score)} before {@link #search()}. Default false.
+     *
+     * @param useScoreStep true to require each committed removal to improve the RICF BIC of the implied MAG.
+     */
+    public void setUseScoreStep(boolean useScoreStep) {
+        gates.setUseScoreStep(useScoreStep);
+    }
+
+    /**
+     * Sets the score the score step uses for its covariance matrix and penalty discount. It must be a
+     * {@link SemBicScore} built on a covariance matrix with zero structure prior: the RICF MAG score is the
+     * linear-Gaussian BIC and is comparable only with that DAG score on one scale.
+     *
+     * @param score the score; null clears it.
+     * @throws IllegalArgumentException if the score is not usable for the score step.
+     */
+    public void setGateScore(Score score) {
+        gates.setGateScore(score);
+    }
+
+    /**
+     * Applies one of the three correctness options shared with FCIT's {@code fcitCorrectness}: 1 = Guarantee I-map
+     * (I-map gate on, saturating step off), 2 = Score step (score step on with the given score, saturating step
+     * off), 3 = Saturating step (both gates off, saturating step on). This is the single place the three options
+     * are interpreted for every subclass, so the wrappers cannot drift.
+     *
+     * @param option    1, 2, or 3.
+     * @param score     the SEM BIC score of the data, consulted only for option 2 (may be null otherwise).
+     * @param imapAlpha the I-map gate alpha, consulted only for option 1.
+     * @throws IllegalArgumentException if the option is unknown, or option 2 is chosen with a score the score step
+     *                                  cannot use (which includes every non-continuous data type).
+     */
+    public void setCorrectnessOption(int option, Score score, double imapAlpha) {
+        setUseSaturatingStep(gates.applyOption(option, score, imapAlpha));
+    }
+
+    /**
+     * Sets the background knowledge used by the initial search and by orientation.
+     *
+     * @param knowledge the knowledge; must not be null.
      */
     public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
+        if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
     /**
      * Sets whether Zhang's complete rules are used.
      *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. True by default.
+     * @param completeRuleSetUsed True if so.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -445,23 +869,23 @@ public abstract class StarFci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length, or -1 if unlimited.
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: "
+                    + maxDiscriminatingPathLength);
         }
-
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
-     * Indicates whether verbose output is enabled.
+     * Sets the depth of the sepset search.
      *
-     * @return true if verbose output is enabled, false otherwise.
+     * @param depth This depth.
      */
-    public boolean isVerbose() {
-        return verbose;
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 
     /**
@@ -474,58 +898,127 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
-     * Returns the independence test used in search.
+     * Sets whether the final FCI orientation engine logs its rule-by-rule output.
      *
-     * @return This test.
+     * @param logFinalOrientations True, if so.
      */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+    public void setLogFinalOrientations(boolean logFinalOrientations) {
+        this.logFinalOrientations = logFinalOrientations;
     }
 
     /**
-     * Sets the depth of the search for the possible m-sep search.
+     * Sets whether selection bias should be excluded.
      *
-     * @param depth This depth.
+     * @param excludeSelectionBias True to exclude.
      */
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
+        this.excludeSelectionBias = excludeSelectionBias;
     }
 
     /**
-     * Sets the flag indicating whether to guarantee the output is a legal PAG.
+     * Sets whether to do the possible-D-SEP pass (Pass 2). Required for exactness; the switch is for timing
+     * studies only.
      *
-     * @param guaranteePag A boolean value indicating whether to guarantee the output is a legal PAG.
+     * @param usePossibleDsep True to run Pass 2.
      */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
+    public void setUsePossibleDsep(boolean usePossibleDsep) {
+        this.usePossibleDsep = usePossibleDsep;
     }
 
     /**
-     * Returns a Markov CPDAG to use as the initial graph in the Star-FCI search.
+     * Sets the maximum path length for possible d-sep.
      *
-     * @return This CPDAG.
-     * @throws InterruptedException if interrupted.
+     * @param maxPossibleDsepPathLength the maximum path length, or -1 if unlimited.
      */
-    public abstract Graph getMarkovCpdag() throws InterruptedException;
+    public void setMaxPossibleDsepPathLength(int maxPossibleDsepPathLength) {
+        if (maxPossibleDsepPathLength < -1) {
+            throw new IllegalArgumentException("Maximum path length for possible d-sep must be >= -1 (-1 = unlimited).");
+        }
+        this.maxPossibleDsepPathLength = maxPossibleDsepPathLength;
+    }
 
     /**
-     * Sets the flag indicating whether the graph is being replicated.
+     * Sets the cap on legality-gate trials per edge per visit.
      *
-     * @param replicatingGraph A boolean value where {@code true} indicates that
-     *                         the graph is being replicated, and {@code false}
-     *                         otherwise.
+     * @param maxGateTrialsPerEdge the cap; must be at least 1.
+     */
+    public void setMaxGateTrialsPerEdge(int maxGateTrialsPerEdge) {
+        if (maxGateTrialsPerEdge < 1) {
+            throw new IllegalArgumentException("Gate-trial cap must be at least 1: " + maxGateTrialsPerEdge);
+        }
+        this.maxGateTrialsPerEdge = maxGateTrialsPerEdge;
+    }
+
+    /**
+     * Sets whether to run the saturating step after the passes. Default true; see the field documentation.
+     *
+     * @param useSaturatingStep true to run it.
+     */
+    public void setUseSaturatingStep(boolean useSaturatingStep) {
+        this.useSaturatingStep = useSaturatingStep;
+    }
+
+    /**
+     * Sets whether to return dagToPag of the initializer's DAG representative with no edge removal.
+     *
+     * @param lvHeuristicOnly true to skip the extra-edge-removal step.
+     */
+    public void setLvHeuristicOnly(boolean lvHeuristicOnly) {
+        this.lvHeuristicOnly = lvHeuristicOnly;
+    }
+
+    /**
+     * Sets whether graphs should replicate edits across time lags (time-series data).
+     *
+     * @param replicatingGraph true if the graph should replicate across time lags.
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
     }
 
     /**
-     * Sets whether selection bias should be excluded during the search process.
+     * Returns whether graphs replicate across time lags.
      *
-     * @param excludeSelectionBias A boolean indicating whether to exclude selection bias (true) or not (false).
+     * @return whether graphs replicate across time lags.
      */
-    public void setExcludeSelectionBias(boolean excludeSelectionBias) {
-        this.excludeSelectionBias = excludeSelectionBias;
+    public boolean isReplicatingGraph() {
+        return this.replicatingGraph;
+    }
+
+    /**
+     * Returns the background knowledge.
+     *
+     * @return the knowledge.
+     */
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Returns whether verbose output is on.
+     *
+     * @return whether verbose output is on.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Returns the independence test.
+     *
+     * @return the independence test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
+    /**
+     * Re-wraps a graph in the replication policy if it is in force (operations that build fresh graphs would
+     * otherwise silently drop the wrapper).
+     */
+    private Graph rewrap(Graph g) {
+        return this.replicatingGraph && !(g instanceof ReplicatingGraph)
+                ? new ReplicatingGraph(g, new LagReplicationPolicy())
+                : g;
     }
 }
-

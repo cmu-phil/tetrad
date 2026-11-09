@@ -20,12 +20,13 @@
 
 package edu.cmu.tetradapp.workbench;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,7 +42,52 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class LayoutUtils {
+
+    /**
+     * Constructs a new LayoutUtils. All methods are static.
+     */
+    public LayoutUtils() {
+    }
     static Layout layout = Layout.topToBottom;
+
+    /**
+     * The preference key under which the user's default layout is stored, by the name of a
+     * {@link LayoutUtil.DefaultLayout} constant.
+     */
+    public static final String DEFAULT_LAYOUT_PREF = "defaultLayout";
+
+    static {
+        LayoutUtils.applyStoredDefaultLayout();
+    }
+
+    /**
+     * Sets the library's default layout (the layout given to graphs that arrive without positions) from the
+     * user's stored choice, or to Richard's layout if there is none or it is not recognized. Called when Tetrad
+     * starts and whenever this class is first loaded.
+     */
+    public static void applyStoredDefaultLayout() {
+        String name = Preferences.userRoot().get(LayoutUtils.DEFAULT_LAYOUT_PREF,
+                LayoutUtil.DefaultLayout.RICHARDS.name());
+        LayoutUtil.DefaultLayout choice;
+
+        try {
+            choice = LayoutUtil.DefaultLayout.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            choice = LayoutUtil.DefaultLayout.RICHARDS;
+        }
+
+        LayoutUtil.setDefaultLayout(choice);
+    }
+
+    /**
+     * Makes the given layout the default layout, for now and for later runs of Tetrad.
+     *
+     * @param choice the layout.
+     */
+    public static void setDefaultLayout(LayoutUtil.DefaultLayout choice) {
+        LayoutUtil.setDefaultLayout(choice);
+        Preferences.userRoot().put(LayoutUtils.DEFAULT_LAYOUT_PREF, LayoutUtil.getDefaultLayout().name());
+    }
 
     /**
      * <p>Getter for the field <code>layout</code>.</p>
@@ -59,6 +105,69 @@ public class LayoutUtils {
      */
     public static void setLayout(Layout _layout) {
         LayoutUtils.layout = _layout;
+    }
+
+    /**
+     * Applies a laid-out graph to the workbench, first shifting it so that nothing sits off the left or top edge
+     * of the coordinate space. Every layout in this class goes through here rather than calling
+     * {@link LayoutEditable#layoutByGraph(Graph)} directly.
+     *
+     * @param layoutEditable the editable to lay out
+     * @param graph          the graph carrying the new node centers
+     */
+    private static void layoutByGraph(LayoutEditable layoutEditable, Graph graph) {
+        shiftIntoVisibleSpace(graph, layoutEditable);
+        layoutEditable.layoutByGraph(graph);
+    }
+
+    /**
+     * Translates every node of the graph by a single offset, if needed, so that no node's box extends past the left
+     * or top edge of the coordinate space. Node centers are the anchor the layouts set, but what the user sees is
+     * the box around the center, so a node whose center is comfortably positive can still have its left half or its
+     * label clipped; the box is what this checks. The offset is the same for every node, so the layout's shape,
+     * spacing and relative positions are untouched — the whole drawing simply moves right and/or down. A drawing
+     * already clear of both edges is left exactly as it is.
+     *
+     * <p>Sizes come from {@link #displayNodeSizes(LayoutEditable)}, so they are the real display boxes where a
+     * display node exists and the library's estimate otherwise. The gap left at the edges is
+     * {@link AbstractWorkbench#NODE_OVERLAP_MARGIN}, the same gap the workbench keeps between nodes.</p>
+     *
+     * @param graph          the graph whose node centers are to be shifted
+     * @param layoutEditable the editable, for the display node sizes
+     */
+    static void shiftIntoVisibleSpace(Graph graph, LayoutEditable layoutEditable) {
+        if (graph == null) return;
+
+        List<Node> nodes = graph.getNodes();
+        if (nodes.isEmpty()) return;
+
+        LayoutUtil.NodeSize sizes = displayNodeSizes(layoutEditable);
+        final int margin = AbstractWorkbench.NODE_OVERLAP_MARGIN;
+
+        double minLeft = Double.POSITIVE_INFINITY;
+        double minTop = Double.POSITIVE_INFINITY;
+
+        for (Node node : nodes) {
+            double w = sizes.width(node);
+            double h = sizes.height(node);
+            if (!Double.isFinite(w) || w < 0) w = 0;
+            if (!Double.isFinite(h) || h < 0) h = 0;
+
+            minLeft = TMath.min(minLeft, node.getCenterX() - w / 2.0);
+            minTop = TMath.min(minTop, node.getCenterY() - h / 2.0);
+        }
+
+        if (!Double.isFinite(minLeft) || !Double.isFinite(minTop)) return;
+
+        int dx = (minLeft < margin) ? (int) TMath.ceil(margin - minLeft) : 0;
+        int dy = (minTop < margin) ? (int) TMath.ceil(margin - minTop) : 0;
+
+        if (dx == 0 && dy == 0) return;
+
+        for (Node node : nodes) {
+            node.setCenterX(node.getCenterX() + dx);
+            node.setCenterY(node.getCenterY() + dy);
+        }
     }
 
     /**
@@ -108,7 +217,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = FastMath.max(lag0YDiff + 25, 100);
+        int ySpace = TMath.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -145,7 +254,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0TopToBottom;
     }
 
@@ -170,7 +279,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = FastMath.max(lag0YDiff + 25, 100);
+        int ySpace = TMath.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -207,7 +316,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0BottomToTop;
     }
 
@@ -232,7 +341,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = FastMath.max(lag0XDiff + 25, 90);
+        int xSpace = TMath.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -269,7 +378,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0LeftToRight;
     }
 
@@ -294,7 +403,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = FastMath.max(lag0XDiff + 25, 90);
+        int xSpace = TMath.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -331,7 +440,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0RightToLeft;
     }
 
@@ -372,7 +481,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.topToBottom;
     }
 
@@ -413,7 +522,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.leftToRight;
     }
 
@@ -454,7 +563,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.bottomToTop;
     }
 
@@ -495,7 +604,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.rightToLeft;
     }
 
@@ -514,7 +623,7 @@ public class LayoutUtils {
         }
 
         LayoutUtil.defaultLayout(graph);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.layered;
     }
 
@@ -529,7 +638,7 @@ public class LayoutUtils {
 
         Graph sourceGraph = layoutEditable.getSourceGraph();
         LayoutUtil.arrangeBySourceGraph(graph, sourceGraph);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.source;
     }
 
@@ -537,8 +646,9 @@ public class LayoutUtils {
      * <p>knowledgeLayout.</p>
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     * @param knowledge      the knowledge whose tiers determine the layout
      */
-    public static void knowledgeLayout(LayoutEditable layoutEditable) {
+    public static void layoutByKnowledgeTiers(LayoutEditable layoutEditable, Knowledge knowledge) {
         Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
         try {
@@ -549,8 +659,8 @@ public class LayoutUtils {
                 }
             }
 
-            GraphSearchUtils.arrangeByKnowledgeTiers(graph);
-            layoutEditable.layoutByGraph(graph);
+            LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
+            layoutByGraph(layoutEditable, graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     e1.getMessage());
@@ -559,7 +669,73 @@ public class LayoutUtils {
     }
 
     /**
-     * <p>circleLayout.</p>
+     * <p>knowledgeLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
+    public static void layoutByKnowledgeIndices(LayoutEditable layoutEditable) {
+        Graph graph = new EdgeListGraph(layoutEditable.getGraph());
+
+        try {
+
+            for (Node node : new ArrayList<>(graph.getNodes())) {
+                if (node.getNodeType() == NodeType.ERROR) {
+                    graph.removeNode(node);
+                }
+            }
+
+            LayoutUtil.layoutByKnowledgeIndices(graph);
+            layoutByGraph(layoutEditable, graph);
+        } catch (Exception e1) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    e1.getMessage());
+        }
+        LayoutUtils.layout = Layout.knowledge;
+    }
+
+    /**
+     * A {@link LayoutUtil.NodeSize} backed by the editable's display nodes, so layouts space nodes by their real
+     * rendered boxes. Nodes with no display node fall back to the lib's estimate.
+     *
+     * @param layoutEditable The editable whose display nodes supply the sizes.
+     * @return The size provider.
+     */
+    public static LayoutUtil.NodeSize displayNodeSizes(LayoutEditable layoutEditable) {
+        LayoutUtil.NodeSize fallback = LayoutUtil.estimatedNodeSize();
+
+        return new LayoutUtil.NodeSize() {
+            private Dimension dim(Node node) {
+                Object o = layoutEditable.getModelNodesToDisplay().get(node);
+                if (!(o instanceof DisplayNode d)) return null;
+                Dimension dim = d.getSize();
+                if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+
+                // Layouts work in model coordinates, so a zoomed display box is scaled back to model size.
+                double s = d.getScale();
+                if (s != 1.0) {
+                    dim = new Dimension((int) Math.round(dim.width / s), (int) Math.round(dim.height / s));
+                }
+
+                return dim;
+            }
+
+            @Override
+            public double width(Node node) {
+                Dimension d = dim(node);
+                return d == null ? fallback.width(node) : d.width;
+            }
+
+            @Override
+            public double height(Node node) {
+                Dimension d = dim(node);
+                return d == null ? fallback.height(node) : d.height;
+            }
+        };
+    }
+
+    /**
+     * Lays the graph out in a circle sized from the display nodes' real boxes; see
+     * {@link LayoutUtil#circleLayout(Graph, LayoutUtil.NodeSize)}.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -572,12 +748,8 @@ public class LayoutUtils {
             }
         }
 
-        Rectangle r = layoutEditable.getVisibleRect();
-
-        int m = FastMath.min(r.width, r.height) / 2;
-
-        LayoutUtil.circleLayout(graph);
-        layoutEditable.layoutByGraph(graph);
+        LayoutUtil.circleLayout(graph, displayNodeSizes(layoutEditable));
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.circle;
     }
 
@@ -595,11 +767,82 @@ public class LayoutUtils {
             }
         }
 
-        Rectangle r = layoutEditable.getVisibleRect();
-
         LayoutUtil.squareLayout(graph);
-        layoutEditable.layoutByGraph(graph);
+        respaceSquareForLabels(graph, layoutEditable);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.circle;
+    }
+
+    /**
+     * Respaces a square layout (see {@link LayoutUtil#squareLayout(Graph)}) for the display nodes' label sizes,
+     * keeping it a rectangle with aligned corners: the lib places the nodes, in natural order, along the top row
+     * (left to right), the right column (top to bottom), the bottom row (right to left), and the left column
+     * (bottom to top), on a grid with fixed 70 by 50 spacing. Here the grid's column positions are recomputed from
+     * the widest node in each column (the top node and the bottom node sharing that column) and its row positions
+     * from the tallest node in each row, each position just far enough from the previous to clear plus the
+     * workbench's overlap margin, but never closer than the lib's own spacing. A square already wide enough is left
+     * as is.
+     *
+     * @param graph          The graph, already laid out as a square by the lib.
+     * @param layoutEditable The editable, for the display node sizes.
+     */
+    static void respaceSquareForLabels(Graph graph, LayoutEditable layoutEditable) {
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        nodes.removeIf(node -> !(layoutEditable.getModelNodesToDisplay().get(node) instanceof DisplayNode));
+        nodes.sort(NaturalSort.naturalComparator());
+
+        int n = nodes.size();
+        if (n < 2) return;
+
+        int side = n / 4;
+        if (n % 4 != 0) side++;
+
+        // Grid coordinates (column index cIdx in 0..side, row index rIdx in 0..side) of each node, as the lib
+        // assigns them.
+        int[] cIdx = new int[n];
+        int[] rIdx = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (i < side) {
+                cIdx[i] = i;
+                rIdx[i] = 0;
+            } else if (i < 2 * side) {
+                cIdx[i] = side;
+                rIdx[i] = i - side;
+            } else if (i < 3 * side) {
+                cIdx[i] = side - (i - 2 * side);
+                rIdx[i] = side;
+            } else {
+                cIdx[i] = 0;
+                rIdx[i] = side - (i - 3 * side);
+            }
+        }
+
+        int[] colW = new int[side + 1];
+        int[] rowH = new int[side + 1];
+        for (int i = 0; i < n; i++) {
+            Dimension dim = ((DisplayNode) layoutEditable.getModelNodesToDisplay().get(nodes.get(i))).getPreferredSize();
+            colW[cIdx[i]] = Math.max(colW[cIdx[i]], dim.width);
+            rowH[rIdx[i]] = Math.max(rowH[rIdx[i]], dim.height);
+        }
+
+        final int libSpaceX = 70;
+        final int libSpaceY = 50;
+        int margin = AbstractWorkbench.NODE_OVERLAP_MARGIN;
+
+        // The lib's origin (70, 50) is kept unless a wide first column or tall first row needs more room, so
+        // that a square that already fits is left exactly where the lib put it.
+        int[] colX = new int[side + 1];
+        int[] rowY = new int[side + 1];
+        colX[0] = Math.max(70, colW[0] / 2 + margin);
+        rowY[0] = Math.max(50, rowH[0] / 2 + margin);
+        for (int k = 1; k <= side; k++) {
+            colX[k] = colX[k - 1] + Math.max(libSpaceX, (colW[k - 1] + colW[k]) / 2 + margin);
+            rowY[k] = rowY[k - 1] + Math.max(libSpaceY, (rowH[k - 1] + rowH[k]) / 2 + margin);
+        }
+
+        for (int i = 0; i < n; i++) {
+            nodes.get(i).setCenter(colX[cIdx[i]], rowY[rIdx[i]]);
+        }
     }
 
     /**
@@ -619,7 +862,9 @@ public class LayoutUtils {
                 }
             }
 
-            GraphEditorUtils.editkamadaKawaiLayoutParams();
+            if (!GraphEditorUtils.editkamadaKawaiLayoutParams()) {
+                return;
+            }
 
             boolean initializeRandomly = Preferences.userRoot()
                     .getBoolean(
@@ -636,7 +881,7 @@ public class LayoutUtils {
 
             LayoutUtil.kamadaKawaiLayout(graph, initializeRandomly,
                     naturalEdgeLength, springConstant, stopEnergy);
-            layoutEditable.layoutByGraph(graph);
+            layoutByGraph(layoutEditable, graph);
             LayoutUtils.layout = Layout.kamadaKawai;
         };
 
@@ -658,8 +903,15 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.fruchtermanReingoldLayout(graph);
-        layoutEditable.layoutByGraph(graph);
+        if (!GraphEditorUtils.editFruchtermanReingoldLayoutParams()) {
+            return;
+        }
+
+        double naturalEdgeLength = Preferences.userRoot().getDouble(
+                "fruchtermanReingoldNaturalEdgeLength", 0.0);
+
+        LayoutUtil.fruchtermanReingoldLayout(graph, naturalEdgeLength);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.fruchtermReingold;
     }
 
@@ -679,7 +931,7 @@ public class LayoutUtils {
 
         DistanceFromSelected layout1 = new DistanceFromSelected(layoutEditable);
         layout1.doLayout();
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.distanceFromSelected;
     }
 
@@ -721,7 +973,7 @@ public class LayoutUtils {
                 LayoutUtils.sourceGraphLayout(layoutEditable);
                 break;
             case knowledge:
-                LayoutUtils.knowledgeLayout(layoutEditable);
+                LayoutUtils.layoutByKnowledgeIndices(layoutEditable);
                 break;
             case circle:
                 LayoutUtils.circleLayout(layoutEditable);
@@ -737,7 +989,8 @@ public class LayoutUtils {
     }
 
     /**
-     * <p>layoutByCausalOrder.</p>
+     * Lays the graph out in rows by causal order, each row centered on the widest, spacing the nodes by their real
+     * display sizes. See {@link LayoutUtil#layoutByCausalOrder(Graph, LayoutUtil.NodeSize)}.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -750,9 +1003,44 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.layoutByCausalOrder(graph);
-        layoutEditable.layoutByGraph(graph);
+        LayoutUtil.layoutByCausalOrder(graph, displayNodeSizes(layoutEditable));
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.layered;
+    }
+
+    /**
+     * Richard's layout: layered by causal depth with barycenter crossing
+     * reduction and a rightward shear per layer, so the flow reads down and
+     * to the right. Uses the real display node sizes.
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
+    public static void richardsLayout(LayoutEditable layoutEditable) {
+        Graph graph = layoutEditable.getGraph();
+
+        for (Node node : new ArrayList<>(graph.getNodes())) {
+            if (node.getNodeType() == NodeType.ERROR) {
+                graph.removeNode(node);
+            }
+        }
+
+        if (!GraphEditorUtils.editRichardsLayoutParams()) {
+            return;
+        }
+
+        double xGap = Preferences.userRoot().getDouble(
+                "richardsLayoutXGap", 30.0);
+        double yGap = Preferences.userRoot().getDouble(
+                "richardsLayoutYGap", 90.0);
+        double shearPerLayer = Preferences.userRoot().getDouble(
+                "richardsLayoutShearPerLayer", 50.0);
+        boolean nudge = Preferences.userRoot().getBoolean(
+                "richardsLayoutNudge", true);
+
+        LayoutUtil.richardsLayout(graph, displayNodeSizes(layoutEditable),
+                xGap, yGap, shearPerLayer, nudge);
+        layoutByGraph(layoutEditable, graph);
+        LayoutUtils.layout = Layout.richards;
     }
 
 
@@ -839,7 +1127,12 @@ public class LayoutUtils {
         /**
          * square
          */
-        sqaure
+        sqaure,
+
+        /**
+         * richards
+         */
+        richards
     }
 }
 

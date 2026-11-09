@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -25,18 +25,16 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
-import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.prefs.Preferences;
 
 /**
  * Saves a session from a file.
@@ -56,10 +54,27 @@ public final class SaveSessionAction extends AbstractAction {
     public static boolean saved = false;
 
     /**
+     * Whether a successful save is acknowledged with a dialog naming the file written. Without it, Save to a session's
+     * known file gives no visible sign that anything happened.
+     */
+    private final boolean confirmSaved;
+
+    /**
      * <p>Constructor for SaveSessionAction.</p>
      */
     public SaveSessionAction() {
+        this(true);
+    }
+
+    /**
+     * Constructor for SaveSessionAction.
+     *
+     * @param confirmSaved whether to show a dialog naming the file once the session is saved. Callers that have just
+     *                     shown the user the file (such as the quit prompt) pass false.
+     */
+    public SaveSessionAction(boolean confirmSaved) {
         super("Save Session");
+        this.confirmSaved = confirmSaved;
     }
 
     /**
@@ -75,58 +90,55 @@ public final class SaveSessionAction extends AbstractAction {
         SessionWrapper sessionWrapper = workbench.getSessionWrapper();
         TetradMetadata metadata = new TetradMetadata();
 
-        Path outputFile = Paths.get(
-                Preferences.userRoot().get("sessionSaveLocation", Preferences.userRoot().absolutePath()),
-                sessionWrapper.getName());
+        // Each session remembers the file it was loaded from or last saved to. This path used to be reconstructed
+        // from the single global "sessionSaveLocation" preference plus the session name, so with several sessions
+        // open from different directories, whichever was touched last repointed the preference and Save wrote
+        // every session into that one directory -- or offered to overwrite an unrelated file of the same name
+        // there. A session that has not touched disk in this run, or whose file has since vanished, goes to Save
+        // As.
+        File outputFile = sessionWrapper.getSessionFile();
 
-        if (Files.notExists(outputFile) || sessionWrapper.isNewSession()) {
-            SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
+        if (outputFile == null || sessionWrapper.isNewSession() || Files.notExists(outputFile.toPath())) {
+            SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction(this.confirmSaved);
             saveSessionAsAction.actionPerformed(e);
             saved = SaveSessionAsAction.saved;
 
             return;
         }
 
-        if (Files.exists(outputFile)) {
-            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                    "File already exists. Overwrite?", "Save", JOptionPane.YES_NO_OPTION);
-            if (ret == JOptionPane.NO_OPTION) {
-                SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
-                saveSessionAsAction.actionPerformed(e);
-                saved = SaveSessionAsAction.saved;
-
-                return;
-            }
+        // Saving to the session's own file is a plain overwrite, as in any editor. The confirm dialog that used to
+        // sit here existed only because the path was a guess.
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile.toPath()))) {
+            sessionWrapper.setNewSession(false);
+            objOut.writeObject(metadata);
+            objOut.writeObject(sessionWrapper);
+        } catch (NotSerializableException exception) {
+            saved = false;
+            exception.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(
+                    JOptionUtils.centeringComp(),
+                    "An error occurred while attempting to save the session. The session could not be saved.");
+            return;
+        } catch (IOException exception) {
+            saved = false;
+            exception.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(
+                    JOptionUtils.centeringComp(),
+                    String.format(
+                            "An error occurred while attempting to save the session as %s.",
+                            outputFile.getAbsolutePath()));
+            return;
         }
 
-        class MyWatchedProceess extends WatchedProcess {
+        // Only a successful save marks the session unchanged; marking it unchanged on a failed save would let a
+        // close or quit silently discard the changes afterwards.
+        saved = true;
+        sessionWrapper.setSessionChanged(false);
+        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
 
-            @Override
-            public void watch() {
-                try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
-                    sessionWrapper.setNewSession(false);
-                    objOut.writeObject(metadata);
-                    objOut.writeObject(sessionWrapper);
-                } catch (NotSerializableException exception) {
-                    exception.printStackTrace(System.err);
-                    JOptionPane.showMessageDialog(
-                            JOptionUtils.centeringComp(),
-                            "An error occurred while attempting to save the session. The session could not be saved.");
-                } catch (IOException exception) {
-                    exception.printStackTrace(System.err);
-                    JOptionPane.showMessageDialog(
-                            JOptionUtils.centeringComp(),
-                            String.format(
-                                    "An error occurred while attempting to save the session as %s.",
-                                    outputFile.toAbsolutePath()));
-                }
-
-                sessionWrapper.setSessionChanged(false);
-                DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-            }
+        if (this.confirmSaved) {
+            SaveSessionAsAction.showSavedDialog(sessionWrapper.getName(), outputFile);
         }
-
-        new MyWatchedProceess();
     }
 
     /**

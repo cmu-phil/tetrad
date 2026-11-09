@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 
 /**
  * An example script to save out data files and graphs from a simulation.
@@ -72,8 +73,11 @@ public class ExampleSave {
 
         Simulation simulation = new SemSimulation(new RandomForward());
         Comparison comparison = new Comparison();
-        comparison.saveToFiles("/Users/user/comparison-data/condition_2", simulation, parameters);
-
+        try {
+            comparison.saveToFiles("/Users/user/comparison-data/condition_2", simulation, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

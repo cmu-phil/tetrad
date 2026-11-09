@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.Misclassifications;
@@ -74,7 +76,7 @@ public class MisclassificationsEditor extends JPanel {
 
         JPanel pane = new JPanel();
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        Font font = ThemeUtils.monospaced(14);
         area = new JTextArea();
         area.setText(this.comparison.getComparisonString());
 
@@ -95,7 +97,7 @@ public class MisclassificationsEditor extends JPanel {
     private JMenuBar menubar() {
         JMenuBar menubar = new JMenuBar();
         JMenu menu = new JMenu("Compare To...");
-        JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        JMenuItem graph = new JCheckBoxMenuItem("Truth");
         graph.setBackground(Color.WHITE);
         JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
         cpdag.setBackground(Color.YELLOW);
@@ -129,7 +131,7 @@ public class MisclassificationsEditor extends JPanel {
         }
 
         graph.addActionListener(e -> {
-            this.params.set("graphComparisonType", "DAG");
+            this.params.set("graphComparisonType", "Truth");
             menu.setText("Compare to Truth...");
             menu.setBackground(Color.WHITE);
             Graph referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);

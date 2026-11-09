@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -178,7 +179,7 @@ public class PreserveMarkov {
         if (this.preserveMarkov) {
             double initialFraction = GraphUtils.localMarkovInitializePValues(
                     graph, preserveMarkov, test, pValues);
-            System.out.println("Initial percent dependent = " + initialFraction);
+            TetradLogger.getInstance().log("Initial percent dependent = " + initialFraction);
         } else {
             pValues.clear();
         }

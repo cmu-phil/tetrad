@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.ui.model;
 
@@ -39,15 +39,17 @@ import java.util.stream.Stream;
  */
 public final class ScoreModels {
 
-    private static final ScoreModels INSTANCE = new ScoreModels();
+    // Changed 2026-8-24: see IndependenceTestModels; the same restart bug applied here.
+    private static final ScoreModels WITH_EXPERIMENTAL = new ScoreModels(true);
+    private static final ScoreModels WITHOUT_EXPERIMENTAL = new ScoreModels(false);
 
     private final List<ScoreModel> models;
     private final Map<DataType, List<ScoreModel>> modelMap = new EnumMap<>(DataType.class);
     private final Map<DataType, ScoreModel> defaultModelMap = new EnumMap<>(DataType.class);
 
-    private ScoreModels() {
+    private ScoreModels(boolean includeExperimental) {
         ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
-        List<AnnotatedClass<Score>> list = Tetrad.enableExperimental
+        List<AnnotatedClass<Score>> list = includeExperimental
                 ? scoreAnno.getAnnotatedClasses()
                 : scoreAnno.filterOutExperimental(scoreAnno.getAnnotatedClasses());
 
@@ -67,17 +69,25 @@ public final class ScoreModels {
      * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModels} object
      */
     public static ScoreModels getInstance() {
-        return ScoreModels.INSTANCE;
+        return getInstance(Tetrad.enableExperimental);
+    }
+
+    /**
+     * Returns the registry with or without experimental scores, regardless of the global preference. Added 2026-8-24.
+     *
+     * @param includeExperimental true to include scores marked {@code @Experimental}.
+     * @return the registry.
+     */
+    public static ScoreModels getInstance(boolean includeExperimental) {
+        return includeExperimental ? WITH_EXPERIMENTAL : WITHOUT_EXPERIMENTAL;
     }
 
     private void initModelMap() {
-        // initialize enum map
         DataType[] dataTypes = DataType.values();
         for (DataType dataType : dataTypes) {
             this.modelMap.put(dataType, new LinkedList<>());
         }
 
-        // group by datatype
         this.models.forEach(e -> {
             DataType[] types = e.getScore().annotation().dataType();
             for (DataType dataType : types) {
@@ -86,19 +96,48 @@ public final class ScoreModels {
         });
 
         // merge continuous datatype with mixed datatype
-        List<ScoreModel> mergedModels = Stream.concat(this.modelMap.get(DataType.Continuous).stream(), this.modelMap.get(DataType.Mixed).stream())
+        List<ScoreModel> mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.Mixed).stream())
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Continuous, mergedModels);
 
         // merge discrete datatype with mixed datatype
-        mergedModels = Stream.concat(this.modelMap.get(DataType.Discrete).stream(), this.modelMap.get(DataType.Mixed).stream())
+        // As in IndependenceTestModels: a score annotated with both Continuous and Mixed has declared its data
+        // types explicitly and is left out of the Discrete list.
+        mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Discrete).stream(),
+                        this.modelMap.get(DataType.Mixed).stream()
+                                .filter(e -> !Arrays.asList(e.getScore().annotation().dataType())
+                                        .contains(DataType.Continuous)))
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);
 
-        // make map values unmodifiable
+        // ContinuousGeneral gets the same models as Continuous
+        List<ScoreModel> continuousGeneralModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.ContinuousGeneral).stream())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        this.modelMap.put(DataType.ContinuousGeneral, continuousGeneralModels);
+
         this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
+    }
+
+    private String getProperty(DataType dataType) {
+        return switch (dataType) {
+            case Continuous -> "datatype.continuous.score.default";
+            case ContinuousGeneral -> "datatype.continuous.score.general.default";
+            case Discrete -> "datatype.discrete.score.default";
+            case Mixed -> "datatype.mixed.score.default";
+            case Blocks -> "datatype.blocks.score.default";
+            case Covariance, Graph, All -> null;
+        };
     }
 
     private void initDefaultModelMap() {
@@ -121,21 +160,6 @@ public final class ScoreModels {
                     }
                 }
             }
-        }
-    }
-
-    private String getProperty(DataType dataType) {
-        switch (dataType) {
-            case Continuous:
-                return "datatype.continuous.score.default";
-            case Discrete:
-                return "datatype.discrete.score.default";
-            case Mixed:
-                return "datatype.mixed.score.default";
-            case Blocks:
-                return "datatype.blocks.score.default";
-            default:
-                return null;
         }
     }
 

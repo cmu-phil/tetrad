@@ -21,12 +21,13 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.min;
 
 /**
  * The RandomGraph class provides methods for generating random graphs. It includes methods for generating random
@@ -613,39 +614,40 @@ public class RandomGraph {
     // JMO's method for fixing latents
 
     /**
-     * <p>fixLatents4.</p>
+     * Adjusts the latent nodes in the given graph based on the specified number of latent confounders.
+     * This method modifies the graph by transforming certain nodes into latent nodes.
      *
-     * @param numLatentConfounders a int
-     * @param graph                a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param numLatentConfounders The number of latent confounders to be fixed in the graph. If this is 0, no changes are made.
+     * @param graph The graph to be modified. Nodes in the graph will be analyzed to determine which can be
+     *              converted into latent nodes based on their type or whether they are common causes.
      */
     public static void fixLatents4(int numLatentConfounders, Graph graph) {
         if (numLatentConfounders == 0) {
             return;
         }
 
-//        List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
-        List<Node> commonCausesAndEffects = getCommonCauses(graph);
+        List<Node> commonCauses = getCommonCauses(graph);
         int index = 0;
 
         while (index++ < numLatentConfounders) {
-            if (commonCausesAndEffects.isEmpty()) {
+            if (commonCauses.isEmpty()) {
                 index--;
                 break;
             }
-            int i = RandomUtil.getInstance().nextInt(commonCausesAndEffects.size());
-            Node node = commonCausesAndEffects.get(i);
+            int i = RandomUtil.getInstance().nextInt(commonCauses.size());
+            Node node = commonCauses.get(i);
             node.setNodeType(NodeType.LATENT);
-            commonCausesAndEffects.remove(i);
+            commonCauses.remove(i);
         }
 
-        List<Node> nodes = graph.getNodes();
-        while (index++ < numLatentConfounders) {
-            int r = RandomUtil.getInstance().nextInt(nodes.size());
-            if (nodes.get(r).getNodeType() != NodeType.LATENT) {
-                index--;
-            } else {
-                nodes.get(r).setNodeType(NodeType.LATENT);
-            }
+        List<Node> nonLatent = graph.getNodes().stream()
+                .filter(n -> n.getNodeType() != NodeType.LATENT)
+                .collect(Collectors.toList());
+
+        while (index++ < numLatentConfounders && !nonLatent.isEmpty()) {
+            int r = RandomUtil.getInstance().nextInt(nonLatent.size());
+            nonLatent.get(r).setNodeType(NodeType.LATENT);
+            nonLatent.remove(r);
         }
     }
 
@@ -1164,7 +1166,7 @@ public class RandomGraph {
             NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(0);
 
-            int numDigits = (int) FastMath.ceil(FastMath.log(this.numNodes) / FastMath.log(10.0));
+            int numDigits = (int) TMath.ceil(TMath.log(this.numNodes) / TMath.log(10.0));
             nf.setMinimumIntegerDigits(numDigits);
             nf.setGroupingUsed(false);
 
@@ -1443,7 +1445,7 @@ public class RandomGraph {
          * Initializes the graph to have no edges.
          */
         private void initializeGraphAsEmpty() {
-            int max = FastMath.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
+            int max = TMath.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
             max += 1;
 
             this.parentMatrix = new int[getNumNodes()][max];

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -31,33 +31,55 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
+/**
+ * Parameter editor for unmixing a dataset into latent components (clusters) based on residual signatures. Edits an
+ * {@link UnmixSpec}, choosing the number of components K explicitly or by BIC over a range, along with parent-superset,
+ * residual-scaling, covariance, EM-stability and diagnostics options, and stores the spec in the parameters under
+ * "unmixSpec".
+ */
 public class UnmixParamsEditor extends JPanel implements FinalizingParameterEditor {
 
+    /** The unmixing specification edited by this panel. */
     private final UnmixSpec spec = new UnmixSpec();
+    /** The parameters into which the spec is stored. */
     private Parameters parameters;
     // Basic
+    /** Whether to select K automatically by BIC. */
     private JCheckBox autoKCheck;
+    /** Spinners for the fixed K and for the minimum and maximum K searched when K is auto-selected. */
     private JSpinner kSpinner, kminSpinner, kmaxSpinner;
 
     // Parent-superset
+    /** Whether to use a parent superset. */
     private JCheckBox supersetCheck;
+    /** The number of top candidate parents kept in the parent superset. */
     private JSpinner topMSpinner;
+    /** The score used to rank candidate parents for the superset. */
     private JComboBox<UnmixSpec.SupersetScore> supersetScoreBox;
 
     // Residual scaling
+    /** Whether to robustly scale residuals (by MAD). */
     private JCheckBox robustScaleCheck;
 
     // Covariance
+    /** Buttons selecting the covariance mode: auto, full, or diagonal. */
     private JRadioButton covAuto, covFull, covDiag;
+    /** The safety margin used when deciding whether a full covariance can be estimated in auto mode. */
     private JSpinner safetyMarginSpinner;
 
     // EM stability
+    /**
+     * Spinners for EM stability settings: k-means restarts, maximum EM iterations, ridge, shrinkage, annealing steps and
+     * annealing start temperature.
+     */
     private JSpinner restartsSpinner, itersSpinner, ridgeSpinner, shrinkageSpinner,
-            annealStepsSpinner, annealTSpinner, seedSpinner;
+            annealStepsSpinner, annealTSpinner;
 
     // Diagnostics
+    /** Whether to save diagnostics (responsibilities, per-K BIC, and cluster sizes). */
     private JCheckBox diagCheck;
 
+    /** Constructs a new editor with controls initialized from a default {@link UnmixSpec}. */
     public UnmixParamsEditor() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -150,7 +172,7 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
             pushToParams();
         });
 
-        robustScaleCheck = new JCheckBox("Robustly scale residuals (median/IQR)", spec.isRobustScaleResiduals());
+        robustScaleCheck = new JCheckBox("Robustly scale residuals (MAD)", spec.isRobustScaleResiduals());
         robustScaleCheck.addActionListener(e -> {
             spec.setRobustScaleResiduals(robustScaleCheck.isSelected());
             pushToParams();
@@ -247,18 +269,11 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
             pushToParams();
         });
 
-        seedSpinner = intSpinner((int) spec.getRandomSeed(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1, v -> {
-            spec.setRandomSeed(v);
-            pushToParams();
-        });
-
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row1.add(new JLabel("K-means restarts:"));
         row1.add(restartsSpinner);
         row1.add(new JLabel("EM iters:"));
         row1.add(itersSpinner);
-        row1.add(new JLabel("Seed:"));
-        row1.add(seedSpinner);
 
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         row2.add(new JLabel("Ridge:"));
@@ -345,8 +360,78 @@ public class UnmixParamsEditor extends JPanel implements FinalizingParameterEdit
     @Override
     public void setParams(Parameters params) {
         this.parameters = params;
-        // seed defaults into Parameters so downstream can fetch
+
+        // If a spec was stored by a previous invocation, restore it into the controls rather than clobbering it
+        // with defaults, so the user's settings persist across reopenings of this dialog.
+        Object stored = params.get("unmixSpec");
+        if (stored instanceof UnmixSpec storedSpec) {
+            copySpec(storedSpec, this.spec);
+            applySpecToControls();
+        }
+
+        // seed defaults (or the restored values) into Parameters so downstream can fetch
         pushToParams();
+    }
+
+    /**
+     * Copies all fields of one spec into another. Fields not shown in this editor are copied too, so nothing stored
+     * is lost on a round trip.
+     */
+    private static void copySpec(UnmixSpec from, UnmixSpec to) {
+        to.setAutoSelectK(from.isAutoSelectK());
+        to.setK(from.getK());
+        to.setKmin(from.getKmin());
+        to.setKmax(from.getKmax());
+        to.setGraphLearner(from.getGraphLearner());
+        to.setPcAlpha(from.getPcAlpha());
+        to.setPcColliderStyle(from.getPcColliderStyle());
+        to.setBossPenaltyDiscount(from.getBossPenaltyDiscount());
+        to.setUseParentSuperset(from.isUseParentSuperset());
+        to.setSupersetTopM(from.getSupersetTopM());
+        to.setSupersetScore(from.getSupersetScore());
+        to.setRobustScaleResiduals(from.isRobustScaleResiduals());
+        to.setCovarianceMode(from.getCovarianceMode());
+        to.setFullSigmaSafetyMargin(from.getFullSigmaSafetyMargin());
+        to.setKmeansRestarts(from.getKmeansRestarts());
+        to.setEmMaxIters(from.getEmMaxIters());
+        to.setRidge(from.getRidge());
+        to.setShrinkage(from.getShrinkage());
+        to.setAnnealSteps(from.getAnnealSteps());
+        to.setAnnealStartT(from.getAnnealStartT());
+        to.setSaveDiagnostics(from.isSaveDiagnostics());
+        to.setLogIntermediate(from.isLogIntermediate());
+    }
+
+    /**
+     * Sets every control from the current spec. The controls' listeners write the same values back into the spec,
+     * which is harmless.
+     */
+    private void applySpecToControls() {
+        autoKCheck.setSelected(spec.isAutoSelectK());
+        kSpinner.setValue(spec.getK());
+        kminSpinner.setValue(spec.getKmin());
+        kmaxSpinner.setValue(spec.getKmax());
+
+        supersetCheck.setSelected(spec.isUseParentSuperset());
+        topMSpinner.setValue(spec.getSupersetTopM());
+        supersetScoreBox.setSelectedItem(spec.getSupersetScore());
+        robustScaleCheck.setSelected(spec.isRobustScaleResiduals());
+
+        covAuto.setSelected(spec.getCovarianceMode() == UnmixSpec.CovarianceMode.AUTO);
+        covFull.setSelected(spec.getCovarianceMode() == UnmixSpec.CovarianceMode.FULL);
+        covDiag.setSelected(spec.getCovarianceMode() == UnmixSpec.CovarianceMode.DIAGONAL);
+        safetyMarginSpinner.setValue(spec.getFullSigmaSafetyMargin());
+
+        restartsSpinner.setValue(spec.getKmeansRestarts());
+        itersSpinner.setValue(spec.getEmMaxIters());
+        ridgeSpinner.setValue(spec.getRidge());
+        shrinkageSpinner.setValue(spec.getShrinkage());
+        annealStepsSpinner.setValue(spec.getAnnealSteps());
+        annealTSpinner.setValue(spec.getAnnealStartT());
+
+        diagCheck.setSelected(spec.isSaveDiagnostics());
+
+        syncEnableStates();
     }
 
     @Override

@@ -64,6 +64,7 @@ public class NumCorrectPDAncestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
         int tp = 0;
@@ -74,7 +75,7 @@ public class NumCorrectPDAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     tp++;
                 } else {
                     fp++;

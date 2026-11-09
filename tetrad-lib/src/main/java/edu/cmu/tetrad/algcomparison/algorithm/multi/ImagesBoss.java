@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -54,15 +54,20 @@ import java.util.List;
  *
  * @author josephramsey
  * @version $Id: $Id
+ * <p>
+ * <b>Backward compatibility only.</b> This class is retained under its original name so that sessions
+ * saved by Tetrad 7.6.10 and earlier, which refer to it by this class name, continue to load. Its
+ * registration annotations are commented out, so it is not offered in the algorithm chooser; new work
+ * should use the current class. The implementation is unchanged, so a restored session re-runs as before.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES-BOSS",
-        command = "images-boss",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.All
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IMaGES-BOSS",
+//        command = "images-boss",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.All
+//)
 @Bootstrapping
-public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesScoreWrapper {
+public class ImagesBoss implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -227,9 +232,11 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, TakesSco
     }
 
     /**
-     * {@inheritDoc}
+     * Not used. Retained because the 7.6.10 class declared it; {@code MultiDataSetAlgorithm} no longer does, so
+     * this is no longer an override.
+     *
+     * @param test ignored
      */
-    @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.
     }

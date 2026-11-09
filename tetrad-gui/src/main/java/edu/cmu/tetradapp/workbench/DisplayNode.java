@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 import javax.swing.*;
@@ -66,6 +67,14 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * True iff this node is a selection bias node.
      */
     private boolean selectionBias;
+
+    /**
+     * The workbench's zoom factor, which this node's display coordinates and font size are multiplied by. The model
+     * node always keeps unzoomed coordinates: {@link #setLocation(int, int)} divides by this scale when it writes
+     * the center back to the model. Transient and never serialized, so a deserialized node reads as 0 and the
+     * getter normalizes that to 1; the workbench sets it when it places the node.
+     */
+    private transient double scale = 1.0;
 
     //===========================CONSTRUCTORS==============================//
 
@@ -159,7 +168,39 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         super.setLocation(x, y);
 
         if (getModelNode() != null) {
-            getModelNode().setCenter(x + getWidth() / 2, y + getHeight() / 2);
+            double s = getScale();
+            getModelNode().setCenter((int) Math.round((x + getWidth() / 2) / s),
+                    (int) Math.round((y + getHeight() / 2) / s));
+        }
+    }
+
+    /**
+     * The zoom factor between this node's display coordinates and its model node's coordinates; 1 when the
+     * workbench is unzoomed.
+     *
+     * @return the scale; always positive.
+     */
+    public final double getScale() {
+        return this.scale > 0 ? this.scale : 1.0;
+    }
+
+    /**
+     * Sets the zoom factor between this node's display coordinates and its model node's coordinates. Called by the
+     * workbench when it places the node; a nonpositive value is read as 1.
+     *
+     * @param scale the scale.
+     */
+    public final void setScale(double scale) {
+        scale = scale > 0 ? scale : 1.0;
+
+        if (this.scale != scale) {
+            this.scale = scale;
+
+            // The node is a container, and Container caches its preferred size while the component is valid, so
+            // without this the workbench keeps measuring the node at its old scale: the box stays its old size
+            // while the text paints at the new one. Invalidating makes the next measurement recompute through
+            // the display comp's scaled font.
+            invalidate();
         }
     }
 
@@ -313,30 +354,15 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Orders display nodes by the shared display order for possibly-lagged names: unlagged names
+     * first, then increasing lag, with natural ordering of base names within a lag group. This
+     * formerly compared lag suffixes and base names as raw strings, which put "X:10" before "X:2"
+     * and "X10" before "X2".
      */
     @Override
     public int compareTo(Node node) {
-        String name = getName();
-        String[] tokens1 = name.split(":");
-        String _name = node.getName();
-        String[] tokens2 = _name.split(":");
-
-        if (tokens1.length == 1) {
-            tokens1 = new String[]{tokens1[0], "0"};
-        }
-
-        if (tokens2.length == 1) {
-            tokens2 = new String[]{tokens2[0], "0"};
-        }
-
-        int i1 = tokens1[1].compareTo(tokens2[1]);
-        int i2 = tokens1[0].compareTo(tokens2[0]);
-
-        if (i1 == 0) {
-            return i2;
-        } else {
-            return i1;
-        }
+        return NaturalSort.lagAscendingComparator().compare(getName(), node.getName());
     }
 
     /**

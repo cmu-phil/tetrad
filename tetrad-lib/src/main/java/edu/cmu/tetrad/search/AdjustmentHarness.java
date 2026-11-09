@@ -6,10 +6,13 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -134,7 +137,12 @@ public class AdjustmentHarness {
         // --- 2) SEM on the true graph + simulate data ---
         SemPm pm = new SemPm(G);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(N, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(N, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // Optional CSV
         PrintWriter csv = null;
@@ -185,7 +193,7 @@ public class AdjustmentHarness {
                     long e1 = System.nanoTime();
                     double olsMs = (e1 - e0) / 1_000_000.0;
 
-                    double ae = Math.abs(betaHat - trueTE);
+                    double ae = TMath.abs(betaHat - trueTE);
                     absErrSum += ae;
                     estCount++;
 
@@ -244,7 +252,7 @@ public class AdjustmentHarness {
         if (Z.isEmpty()) return "{}";
         List<String> names = new ArrayList<>();
         for (Node n : Z) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 
@@ -289,17 +297,17 @@ public class AdjustmentHarness {
         for (int r = 0; r < n; r++) X[r][col] = 1.0; // intercept
         col++;
 
-        int xIdx = data.getColumn(data.getVariable(x.getName()));
+        int xIdx = data.getColumnIndex(data.getVariable(x.getName()));
         for (int r = 0; r < n; r++) X[r][col] = data.getDouble(r, xIdx);
         col++;
 
         for (Node z : zList) {
-            int zi = data.getColumn(data.getVariable(z.getName()));
+            int zi = data.getColumnIndex(data.getVariable(z.getName()));
             for (int r = 0; r < n; r++) X[r][col] = data.getDouble(r, zi);
             col++;
         }
 
-        int yIdx = data.getColumn(data.getVariable(y.getName()));
+        int yIdx = data.getColumnIndex(data.getVariable(y.getName()));
         for (int r = 0; r < n; r++) Y[r] = data.getDouble(r, yIdx);
 
         double lambda = 1e-8;
@@ -343,7 +351,7 @@ public class AdjustmentHarness {
                 double sum = S[i][j];
                 for (int k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
                 if (i == j) {
-                    L[i][j] = Math.sqrt(Math.max(sum, 1e-12));
+                    L[i][j] = TMath.sqrt(TMath.max(sum, 1e-12));
                 } else {
                     L[i][j] = sum / L[j][j];
                 }

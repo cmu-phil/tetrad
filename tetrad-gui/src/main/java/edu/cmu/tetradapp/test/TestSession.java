@@ -35,6 +35,12 @@ import static org.junit.Assert.*;
 public class TestSession {
 
     /**
+     * Constructs a new test instance.
+     */
+    public TestSession() {
+    }
+
+    /**
      * The session being tested.
      */
     private Session session;

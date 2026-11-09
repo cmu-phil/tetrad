@@ -49,6 +49,10 @@ public final class GraphTypes {
      */
     public static final String RANDOM_MIM = "Random MIM";
     /**
+     * Constant <code>RANDOM_MIMIC="Random MIMIC"</code>
+     */
+    public static final String RANDOM_MIMIC = "Random MIMIC";
+    /**
      * Constant <code>RANDOM_ONE_FACTOR_MIM="Random One Factor MIM"</code>
      */
     public static final String RANDOM_ONE_FACTOR_MIM = "Random One Factor MIM";

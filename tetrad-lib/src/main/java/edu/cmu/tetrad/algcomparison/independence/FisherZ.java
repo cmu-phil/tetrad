@@ -28,6 +28,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -68,6 +70,7 @@ public class FisherZ implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, true, "Fisher Z");
         double alpha = parameters.getDouble(Params.ALPHA);
 
         IndTestFisherZ test;
@@ -75,7 +78,7 @@ public class FisherZ implements IndependenceWrapper {
         if (dataModel instanceof ICovarianceMatrix) {
             test = new IndTestFisherZ((ICovarianceMatrix) dataModel, alpha);
         } else if (dataModel instanceof DataSet) {
-            test = new IndTestFisherZ((DataSet) dataModel, alpha);
+            test = new IndTestFisherZ((DataSet) dataModel, alpha, MissingDataUtils.fromParameters(parameters));
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
@@ -97,7 +100,7 @@ public class FisherZ implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Fisher Z";
+        return "Fisher-Z";
     }
 
     /**
@@ -122,6 +125,11 @@ public class FisherZ implements IndependenceWrapper {
         params.add(Params.SHRINKAGE_MODE);
         params.add(Params.REGULARIZATION_LAMBDA);
         params.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        params.add(Params.MISSING_DATA_POLICY);
+        params.add(Params.MISSING_EM_RIDGE);
+        params.add(Params.MISSING_EM_TOLERANCE);
+        params.add(Params.MISSING_EM_MAX_ITERATIONS);
+        params.add(Params.MISSING_ESS_MODE);
         return params;
     }
 }

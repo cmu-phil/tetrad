@@ -45,17 +45,31 @@ public class DirichletBayesImEditor extends JPanel {
     /**
      * The wizard for editing the probabilities.
      */
-    private final DirichletBayesImProbsWizard probsWizard;
+    private DirichletBayesImProbsWizard probsWizard;
 
     /**
      * The wizard for editing the pseudocounts.
      */
-    private final DirichletBayesImCountsWizard countsWizard;
+    private DirichletBayesImCountsWizard countsWizard;
+
+    /**
+     * The workbench showing now; replaced whenever the display is rebuilt.
+     */
+    private GraphWorkbench workbench;
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
      */
     private DirichletBayesImEditor(DirichletBayesIm dirichletBayesIm) {
+        build(dirichletBayesIm);
+    }
+
+    /**
+     * Lays out the editor for the given IM, replacing whatever it showed before.
+     */
+    private void build(DirichletBayesIm dirichletBayesIm) {
+        removeAll();
+
         if (dirichletBayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
@@ -66,6 +80,7 @@ public class DirichletBayesImEditor extends JPanel {
         BayesPm bayesPm = dirichletBayesIm.getBayesPm();
         Graph graph = bayesPm.getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
+        this.workbench = workbench;
 
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
@@ -148,6 +163,43 @@ public class DirichletBayesImEditor extends JPanel {
     public DirichletBayesImEditor(
             DirichletEstimatorWrapper dirichletEstWrapper) {
         this(dirichletEstWrapper.getEstimatedBayesIm());
+
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it from the same prior.
+        // The bar along the bottom: the data chooser, if there is a choice, and the plot matrix button.
+        Box south = Box.createHorizontalBox();
+        south.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        Box[] dataChooser = new Box[1];
+
+        dataChooser[0] = DataSetChooser.create(dirichletEstWrapper.getDataSets(),
+                dirichletEstWrapper.getDataIndex(), index -> {
+                    try {
+                        dirichletEstWrapper.setDataIndex(index);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this,
+                                "Could not estimate on that data set; the estimate shown is still from data set "
+                                + (dirichletEstWrapper.getDataIndex() + 1) + ".\n" + ex.getMessage());
+                        return;
+                    }
+
+                    build(dirichletEstWrapper.getEstimatedBayesIm());
+                    add(south, BorderLayout.SOUTH);
+                    revalidate();
+                    repaint();
+                    firePropertyChange("modelChanged", null, null);
+                });
+
+        if (dataChooser[0] != null) south.add(dataChooser[0]);
+        south.add(Box.createHorizontalGlue());
+
+        if (!dirichletEstWrapper.getDataSets().isEmpty()) {
+            south.add(PlotMatrixForSelected.button(() -> this.workbench,
+                    () -> dirichletEstWrapper.getDataSets().get(dirichletEstWrapper.getDataIndex()),
+                    dirichletEstWrapper::getDataSets));
+            add(south, BorderLayout.SOUTH);
+        } else if (dataChooser[0] != null) {
+            add(south, BorderLayout.SOUTH);
+        }
     }
 
     /**

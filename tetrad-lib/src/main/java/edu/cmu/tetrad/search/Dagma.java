@@ -23,8 +23,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.LUDecomposition_F64;
@@ -32,7 +34,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the DAGMA algorithm. The reference is here:
@@ -122,7 +124,7 @@ public class Dagma {
      */
     public Dagma(DataSet dataset) {
         this.variables = dataset.getVariables();
-        this.cov = dataset.getCorrelationMatrix().getSimpleMatrix();
+        this.cov = dataset.getCovarianceMatrix().getSimpleMatrix();
         this.d = cov.getNumRows();
         this.I = SimpleMatrix.identity(this.d);
 
@@ -347,8 +349,14 @@ public class Dagma {
         SimpleMatrix grad = null;
 
         for (int iter = 1; iter <= innerIter; iter++) {
-            SimpleMatrix M = getMMatrix(W, s).invert();
-            addToEntries(M, 1e-16);
+//            SimpleMatrix M = getMMatrix(W, s).invert();
+//            addToEntries(M, 1e-16);
+
+            SimpleMatrix Mraw = getMMatrix(W, s);
+            for (int i = 0; i < this.d; i++) {
+                Mraw.set(i, i, Mraw.get(i, i) + 1e-16);
+            }
+            SimpleMatrix M = Mraw.invert();
 
             while (notMMatrix(M)) {
                 if ((iter == 1) || (s <= 0.9)) {
@@ -360,8 +368,11 @@ public class Dagma {
                 } else {
                     lrAdam *= 0.5;
                     addToEntries(W, grad, lrAdam);
-                    M = getMMatrix(W, s).invert();
-                    addToEntries(M, 1e-16);
+                    Mraw = getMMatrix(W, s);
+                    for (int i = 0; i < this.d; i++) {
+                        Mraw.set(i, i, Mraw.get(i, i) + 1e-16);
+                    }
+                    M = Mraw.invert();
                 }
             }
 
@@ -430,20 +441,6 @@ public class Dagma {
     }
 
     /**
-     * Adds a constant value to each entry of the provided matrix.
-     *
-     * @param A The matrix to be updated.
-     * @param c The constant value to be added.
-     */
-    private void addToEntries(SimpleMatrix A, double c) {
-        for (int i = 0; i < this.d; i++) {
-            for (int j = 0; j < this.d; j++) {
-                A.set(i, j, A.get(i, j) + c);
-            }
-        }
-    }
-
-    /**
      * Adds each element of matrix B multiplied by constant c to the corresponding element in matrix A.
      *
      * @param A The matrix to be updated.
@@ -475,7 +472,10 @@ public class Dagma {
         DMatrixRMaj L = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
         DMatrixRMaj U = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
         DMatrixRMaj P = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
-        lu.decompose(_M);
+        // KEEP and move the check BEFORE extracting L/U/P:
+        if (!lu.decompose(_M)) {
+            throw new RuntimeException("LU Decomposition failed!");
+        }
         lu.getLower(L);
         lu.getUpper(U);
         lu.getRowPivot(P);
@@ -484,14 +484,8 @@ public class Dagma {
             throw new RuntimeException("LU Decomposition failed!");
         }
 
-        double trace = 0.0;
-        for (int i = 0; i < Math.min(P.getNumRows(), P.getNumCols()); i++) {
-            trace += M.get(i, i); // Add diagonal elements
-        }
-
-        double logDet = log(abs(d - trace - 1));
+        double logDet = 0.0;
         for (int i = 0; i < d; i++) {
-            logDet += log(abs(L.get(i, i)));
             logDet += log(abs(U.get(i, i)));
         }
 
@@ -546,30 +540,16 @@ public class Dagma {
      * @return The Graph representation of the input matrix.
      */
     private Graph toGraph(SimpleMatrix W) {
+        double wThreshold = this.wThreshold;
         SimpleMatrix W_ = new SimpleMatrix(this.d, this.d);
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
-                W_.set(i, j, abs(W.get(i, j)));
-            }
-        }
-
-        double wThreshold = this.wThreshold;
-        double wMin;
-
-        do {
-            wMin = Double.MAX_VALUE;
-            for (int i = 0; i < this.d; i++) {
-                for (int j = 0; j < this.d; j++) {
-                    double w_ = W_.get(i, j);
-                    if (w_ < wThreshold) {
-                        W_.set(i, j, 0);
-                    } else if (w_ < wMin) {
-                        wMin = w_;
-                    }
+                double w = abs(W.get(i, j));
+                if (w > wThreshold) {
+                    W_.set(i, j, w);
                 }
             }
-            wThreshold = wMin + 1e-6;
-        } while (power(W_, this.d).trace() > 0);
+        }
 
         Graph graph = new EdgeListGraph(this.variables);
         for (int i = 0; i < this.d; i++) {
@@ -580,9 +560,7 @@ public class Dagma {
         }
 
         if (this.cpdag) {
-            MeekRules rules = new MeekRules();
-            rules.setVerbose(false);
-            rules.orientImplied(graph);
+            graph = GraphTransforms.dagToCpdag(graph);
         }
 
         return graph;

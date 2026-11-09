@@ -1,10 +1,11 @@
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.is.IsBDeuScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -22,7 +23,7 @@ import java.util.Map;
         command = "is-bdeu-score",
         dataType = {DataType.Discrete}
 )
-public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
+public final class IsBDeuScoreWrapper implements ScoreWrapper, AcceptsKnowledge {
 
     /**
      * Represents a knowledge structure used within the IsBDeuScoreWrapper class. This variable stores an instance of
@@ -51,7 +52,7 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
             if (ov == null) {
                 throw new IllegalArgumentException("Testing dataset missing variable: " + name);
             }
-            cols[j] = other.getColumn(ov);
+            cols[j] = other.getColumnIndex(ov);
         }
 
         DataSet projected = other.subsetColumns(cols);
@@ -112,6 +113,7 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
      */
     @Override
     public Score getScore(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "Instance-specific BDeu Score");
         if (!(dataModel instanceof DataSet train) || !train.isDiscrete()) {
             throw new IllegalArgumentException("Requires a discrete DataSet.");
         }
@@ -182,7 +184,8 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, HasKnowledge {
         return List.of(
                 Params.INSTANCE_SPECIFIC_ALPHA,
                 Params.INSTANCE_ROW,
-                Params.PRIOR_EQUIVALENT_SAMPLE_SIZE
+                Params.PRIOR_EQUIVALENT_SAMPLE_SIZE,
+                Params.MISSING_DATA_POLICY
                 // Params.TESTING_DATA is injected by the algorithm wrapper
         );
     }

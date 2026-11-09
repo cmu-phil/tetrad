@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.util.TMath;
+
 import java.io.Serializable;
 
 /**
@@ -29,6 +31,15 @@ import java.io.Serializable;
  * @author josephramsey
  */
 public final class UnmixSpec implements Serializable {
+
+    /**
+     * Pinned to the value the JVM computed implicitly for this class before any serialVersionUID was declared (checked
+     * against both this source and the published beta jar), so that sessions saved with earlier builds still load, and
+     * so that future edits to this class cannot silently change the UID and break saved sessions.
+     */
+    @java.io.Serial
+    private static final long serialVersionUID = -7113246204343961993L;
+
     /**
      * A flag that determines whether the value of 'k' in an operation or calculation should be automatically selected
      * by the system. When set to true, the system determines the appropriate value of 'k' without user intervention. If
@@ -251,7 +262,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setKmin(int kmin) {
-        this.Kmin = Math.max(1, kmin);
+        this.Kmin = TMath.max(1, kmin);
         return this;
     }
 
@@ -272,7 +283,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setKmax(int kmax) {
-        this.Kmax = Math.max(1, kmax);
+        this.Kmax = TMath.max(1, kmax);
         return this;
     }
 
@@ -402,7 +413,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setSupersetTopM(int m) {
-        this.supersetTopM = Math.max(1, m);
+        this.supersetTopM = TMath.max(1, m);
         return this;
     }
 
@@ -482,7 +493,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setFullSigmaSafetyMargin(int m) {
-        this.fullSigmaSafetyMargin = Math.max(0, m);
+        this.fullSigmaSafetyMargin = TMath.max(0, m);
         return this;
     }
 
@@ -502,7 +513,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setKmeansRestarts(int r) {
-        this.kmeansRestarts = Math.max(1, r);
+        this.kmeansRestarts = TMath.max(1, r);
         return this;
     }
 
@@ -522,7 +533,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setEmMaxIters(int it) {
-        this.emMaxIters = Math.max(1, it);
+        this.emMaxIters = TMath.max(1, it);
         return this;
     }
 
@@ -542,7 +553,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setRidge(double r) {
-        this.ridge = Math.max(0.0, r);
+        this.ridge = TMath.max(0.0, r);
         return this;
     }
 
@@ -562,7 +573,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setShrinkage(double s) {
-        this.shrinkage = Math.max(0.0, Math.min(1.0, s));
+        this.shrinkage = TMath.max(0.0, TMath.min(1.0, s));
         return this;
     }
 
@@ -582,7 +593,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setAnnealSteps(int s) {
-        this.annealSteps = Math.max(0, s);
+        this.annealSteps = TMath.max(0, s);
         return this;
     }
 
@@ -602,27 +613,7 @@ public final class UnmixSpec implements Serializable {
      * @return the current instance of UnmixSpec for method chaining.
      */
     public UnmixSpec setAnnealStartT(double t) {
-        this.annealStartT = Math.max(0.0, t);
-        return this;
-    }
-
-    /**
-     * Retrieves the random seed.
-     *
-     * @return the random seed.
-     */
-    public long getRandomSeed() {
-        return randomSeed;
-    }
-
-    /**
-     * Sets the random seed.
-     *
-     * @param s the random seed to set; must be non-negative.
-     * @return the current instance of UnmixSpec for method chaining.
-     */
-    public UnmixSpec setRandomSeed(long s) {
-        this.randomSeed = s;
+        this.annealStartT = TMath.max(0.0, t);
         return this;
     }
 

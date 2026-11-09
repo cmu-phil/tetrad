@@ -37,13 +37,13 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.util.StatUtils.skewness;
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * @author josephramsey
@@ -214,7 +214,7 @@ public class SpecialDataClark implements Simulation {
         double[] s = new double[N];
 
         for (int i = 0; i < N; i++) {
-            s[i] = FastMath.pow(RandomUtil.getInstance().nextUniform(0, 1), abs((1 + f)));
+            s[i] = TMath.pow(RandomUtil.getInstance().nextUniform(0, 1), abs((1 + f)));
         }
 
         return skewness(s);

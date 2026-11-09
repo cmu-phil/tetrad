@@ -93,7 +93,7 @@ public class BayesImEditorObs extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
+//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
         add(menuBar, BorderLayout.NORTH);

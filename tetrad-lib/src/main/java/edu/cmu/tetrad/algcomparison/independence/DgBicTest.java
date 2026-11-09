@@ -39,12 +39,18 @@ import java.util.List;
 /**
  * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
  * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+ * <p>
+ * <b>Backward compatibility only.</b> This class is retained under its original name so that sessions
+ * saved by Tetrad 7.6.10 and earlier, which refer to it by this class name, continue to load. Its
+ * registration annotations are commented out, so it is not offered in the algorithm chooser; new work
+ * should use the current class. The implementation is unchanged, so a restored session re-runs as before.
  */
 //@TestOfIndependence(
 //        name = "DG BIC Test",
 //        command = "dg-bic-test",
 //        dataType = {DataType.Continuous, DataType.Covariance}
 //)
+@LinearGaussian
 public class DgBicTest implements IndependenceWrapper {
 
     @Serial

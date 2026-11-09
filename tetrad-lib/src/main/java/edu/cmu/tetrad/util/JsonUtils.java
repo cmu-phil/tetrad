@@ -295,16 +295,49 @@ public class JsonUtils {
      * @param jObj a {@link org.json.JSONObject} object
      * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
+//    public static Node parseJSONObjectToTetradNode(JSONObject jObj) {
+//        JSONObject nodeType = jObj.getJSONObject("nodeType");
+//        int ordinal = nodeType.getInt("ordinal");
+//        int centerX = jObj.getInt("centerX");
+//        int centerY = jObj.getInt("centerY");
+//        String name = jObj.getString("name");
+//
+//        GraphNode graphNode = new GraphNode(name);
+//        NodeType[] types = NodeType.values();
+//        graphNode.setNodeType(types[ordinal]);
+//        graphNode.setCenter(centerX, centerY);
+//
+//        return graphNode;
+//    }
+
+    /**
+     * <p>parseJSONObjectToTetradNode.</p>
+     *
+     * @param jObj a {@link org.json.JSONObject} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public static Node parseJSONObjectToTetradNode(JSONObject jObj) {
-        JSONObject nodeType = jObj.getJSONObject("nodeType");
-        int ordinal = nodeType.getInt("ordinal");
-        int centerX = jObj.getInt("centerX");
-        int centerY = jObj.getInt("centerY");
         String name = jObj.getString("name");
 
         GraphNode graphNode = new GraphNode(name);
-        NodeType[] types = NodeType.values();
-        graphNode.setNodeType(types[ordinal]);
+
+        Object nodeTypeObj = jObj.opt("nodeType");
+
+        if (nodeTypeObj instanceof JSONObject nodeTypeJson) {
+            // Old format: "nodeType": { "ordinal": ... }
+            int ordinal = nodeTypeJson.getInt("ordinal");
+            NodeType[] types = NodeType.values();
+            graphNode.setNodeType(types[ordinal]);
+        } else if (nodeTypeObj instanceof String nodeTypeName) {
+            // New format: "nodeType": "MEASURED"
+            graphNode.setNodeType(NodeType.valueOf(nodeTypeName));
+        } else {
+            // Default if missing
+            graphNode.setNodeType(NodeType.MEASURED);
+        }
+
+        int centerX = jObj.optInt("centerX", -1);
+        int centerY = jObj.optInt("centerY", -1);
         graphNode.setCenter(centerX, centerY);
 
         return graphNode;

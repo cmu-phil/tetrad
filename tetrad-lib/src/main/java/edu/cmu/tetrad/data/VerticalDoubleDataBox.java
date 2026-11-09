@@ -74,6 +74,13 @@ public class VerticalDoubleDataBox implements DataBox {
      * @param data an array of  objects
      */
     public VerticalDoubleDataBox(double[][] data) {
+        if (data.length == 0) {
+            this.data = data;
+            this.numRows = 0;
+            this.numCols = 0;
+            return;
+        }
+
         int length = data[0].length;
 
         for (double[] datum : data) {
@@ -177,10 +184,15 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        double[][] copy = new double[this.data.length][this.data[0].length];
+        if (this.data.length == 0) {
+            return new VerticalDoubleDataBox(new double[0][0]);
+        }
+
+        int cols = this.data[0].length;
+        double[][] copy = new double[this.data.length][cols];
 
         for (int i = 0; i < this.data.length; i++) {
-            System.arraycopy(this.data[i], 0, copy[i], 0, this.data[0].length);
+            System.arraycopy(this.data[i], 0, copy[i], 0, cols);
         }
 
         return new VerticalDoubleDataBox(copy);

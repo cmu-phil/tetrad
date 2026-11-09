@@ -24,6 +24,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
+import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
@@ -31,7 +37,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -39,8 +45,8 @@ import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier on the BIC penalty. The formula used
@@ -71,7 +77,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @see edu.cmu.tetrad.search.Grasp
  * @see edu.cmu.tetrad.search.Boss
  */
-public class SemBicScore implements Score, EffectiveSampleSizeSettable {
+public class SemBicScore implements Score, EffectiveSampleSizeSettable, ProvidesCalibratedPValue {
 
     /**
      * The sample size of the covariance matrix.
@@ -82,9 +88,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private final Map<Node, Integer> indexMap;
     /**
-     * The log of the sample size.
+     * The log of the effective sample size, kept in step with nEff by setEffectiveSampleSize. It was previously a
+     * final field set once in the constructors, so that a caller setting an effective sample size afterwards (as the
+     * algcomparison wrappers do from the effectiveSampleSize parameter) changed the likelihood term but not the BIC
+     * penalty. Fixed 2026-9-11.
      */
-    private final double logN;
+    private double logN;
     /**
      * True if row subsets should be calculated.
      */
@@ -110,9 +119,19 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private boolean verbose;
     /**
-     * The penalty penaltyDiscount, 1 for standard BIC.
+     * The penalty penaltyDiscount, 1 for standard BIC. Initialized to 1 so that every constructor yields standard
+     * BIC unless a discount is set; previously the constructors that take a data set and no discount left the field
+     * at 0 on complete data (no penalty at all) while setting 1 on missing data.
      */
-    private double penaltyDiscount;
+    private double penaltyDiscount = 1.0;
+    /**
+     * How many singularities to log in full before only counting them.
+     */
+    private static final int MAX_SINGULARITIES_LOGGED = 10;
+    /**
+     * The number of local-score evaluations that failed with a singularity.
+     */
+    private final java.util.concurrent.atomic.AtomicInteger numSingularities = new java.util.concurrent.atomic.AtomicInteger();
     /**
      * The structure prior, 0 for standard BIC.
      */
@@ -130,6 +149,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private double lambda = 0.0;
     private int nEff;
+    /**
+     * Experimental: under test-wise deletion, compute each localScoreDiff on the rows shared by its two sides.
+     * Off by default; see setTestwiseCommonRowsDiff.
+     */
+    private boolean testwiseCommonRowsDiff = false;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -146,7 +170,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         this.sampleSize = covariances.getSampleSize();
         setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(nEff);
         penaltyDiscount = 1.0;
     }
 
@@ -170,7 +193,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         this.sampleSize = covariances.getSampleSize();
         setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -181,15 +203,52 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
+        this(dataSet, precomputeCovariances, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. If the spec is null and the
+     * dataset contains missing values, TESTWISE deletion is used for backward compatibility and a warning is logged;
+     * see MissingDataUtils.resolveOrWarn.
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly (complete
+     *                              data only).
+     * @param spec                  The missing-data specification, or null for the legacy default.
+     * @throws IllegalArgumentException      If the policy is FAIL and the dataset has missing values.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public SemBicScore(DataSet dataSet, boolean precomputeCovariances, MissingDataSpec spec) {
 
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = MissingDataUtils.resolveOrWarn(dataSet, spec, "SemBicScore");
+
+        if (missing) {
+            switch (policy) {
+                case FAIL -> throw new IllegalArgumentException(
+                        "SemBicScore: The dataset contains missing values and the missing-data policy is FAIL. "
+                                + MissingDataUtils.briefSummary(dataSet));
+                case LISTWISE -> {
+                    dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                    missing = false;
+                }
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "SemBicScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, "
+                                + "not by a single score.");
+                default -> {
+                }
+            }
+        }
+
         this.dataModel = dataSet;
         this.data = dataSet.getDoubleData();
 
-        if (!dataSet.existsMissingValue()) {
+        if (!missing) {
             setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
 
             this.variables = this.covariances.getVariables();
@@ -197,17 +256,28 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(nEff);
-            return;
-        }
+        } else if (policy.estimatesCovariance()) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
+            setCovariances(estimated);
 
-        this.variables = dataSet.getVariables();
-        this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
-        this.indexMap = indexMap(this.variables);
-        this.calculateRowSubsets = true;
-        this.logN = log(nEff);
-        this.penaltyDiscount = 1.0;
+            this.variables = this.covariances.getVariables();
+            this.sampleSize = this.covariances.getSampleSize();
+            setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(dataSet, spec));
+            this.indexMap = indexMap(this.variables);
+            this.calculateRowSubsets = false;
+        } else { // TESTWISE
+            this.variables = dataSet.getVariables();
+            this.sampleSize = dataSet.getNumRows();
+            // The spec's effective-sample-size mode discounts the likelihood, as it does under EM_COVARIANCE here
+            // and under TESTWISE in the degenerate-Gaussian and basis-function scores. Previously it was ignored on
+            // this path, so choosing minPairwise or meanPairwise with test-wise deletion had no effect. A null spec
+            // (the legacy default) keeps the full row count.
+            setEffectiveSampleSize(spec == null ? -1 : MissingDataUtils.effectiveSampleSize(dataSet, spec));
+            this.indexMap = indexMap(this.variables);
+            this.calculateRowSubsets = true;
+            this.penaltyDiscount = 1.0;
+        }
     }
 
     /**
@@ -218,37 +288,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public SemBicScore(DataSet dataSet, double penaltyDiscount, boolean precomputeCovariances) {
-
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
+        this(dataSet, precomputeCovariances, null);
 
         if (penaltyDiscount <= 0) {
             throw new IllegalArgumentException("Penalty discount must be positive");
         }
 
-        this.dataModel = dataSet;
-        this.data = dataSet.getDoubleData();
-
-        if (!dataSet.existsMissingValue()) {
-            setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
-
-            this.variables = this.covariances.getVariables();
-            this.sampleSize = this.covariances.getSampleSize();
-            setEffectiveSampleSize(-1);
-            this.indexMap = indexMap(this.variables);
-            this.calculateRowSubsets = false;
-            this.logN = log(nEff);
-            this.penaltyDiscount = penaltyDiscount;
-            return;
-        }
-
-        this.variables = dataSet.getVariables();
-        this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
-        this.indexMap = indexMap(this.variables);
-        this.calculateRowSubsets = true;
-        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -340,62 +385,58 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
             return covarianceMatrix.getSelection(rows, cols);
         }
 
+        // Under test-wise deletion the family covariance is taken from TestwiseCovariance, which computes each
+        // column set once (means hoisted out of the cell loop, one pass for the cross products) and, when the
+        // candidate rows are the whole dataset, memoizes it by column set across calls. Previously every call
+        // rebuilt the matrix from the raw data and recomputed both column means inside every cell, so a single
+        // local score cost O(k^2 m) row visits with no reuse between calls; with a basis-function embedding
+        // multiplying k, this dominated BOSS on modest data. The numerics are unchanged: both paths divide by
+        // n - 1 over the rows complete on every column in 'rows' and 'cols'. (calcCovWithTestwiseDeletion still
+        // divides by n; that preexisting inconsistency is untouched here.)
+        int[] union = unionPreservingOrder(cols, rows);
+        TestwiseCovariance.Family family = TestwiseCovariance.forMatrix(data).family(union, rowsInData);
+
+        // With no more complete rows than variables, the sample covariance is undefined (0 or 1 rows gives NaN) or
+        // rank deficient, and chooseInverse would fail on NaN with an IllegalArgumentException that no caller
+        // catches. Report it as a singularity instead, so that localScore returns NaN and the search treats the
+        // parent set as unscorable rather than dying. This arises with test-wise deletion on sparse data, e.g. a
+        // wide table in which few units are observed on every one of several assessments. Added 2026-9-10.
+        if (family.n() <= cols.length) {
+            throw new SingularMatrixException();
+        }
+
+        if (Arrays.equals(rows, cols) && Arrays.equals(union, cols)) {
+            return family.cov();
+        }
+
         Matrix cov = new Matrix(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
+            int a = indexOf(union, rows[i]);
             for (int j = 0; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
-                double sampleSize = 0;//data.getNumRows();
-
-                K1:
-                for (int k : rowsInData) {
-                    for (int c : cols) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K1;
-                        }
-                    }
-
-                    for (int c : rows) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K1;
-                        }
-                    }
-
-                    mui += data.get(k, cols[i]);
-                    muj += data.get(k, cols[j]);
-                    sampleSize++;
-                }
-
-                mui /= sampleSize;
-                muj /= sampleSize;
-
-                double _cov = 0.0;
-
-                K2:
-                for (int k : rowsInData) {
-                    for (int c : cols) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K2;
-                        }
-                    }
-
-                    for (int c : rows) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K2;
-                        }
-                    }
-
-                    _cov += (data.get(k, cols[i]) - mui) * (data.get(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (sampleSize - 1);
-                cov.set(i, j, mean);
-                cov.set(j, i, mean);
+                cov.set(i, j, family.cov().get(a, indexOf(union, cols[j])));
             }
         }
 
         return cov;
+    }
+
+    /**
+     * The distinct entries of the two arrays, first array's order first, then any new entries of the second.
+     */
+    private static int[] unionPreservingOrder(int[] first, int[] second) {
+        LinkedHashSet<Integer> set = new LinkedHashSet<>();
+        for (int c : first) set.add(c);
+        for (int c : second) set.add(c);
+        int[] out = new int[set.size()];
+        int k = 0;
+        for (int c : set) out[k++] = c;
+        return out;
+    }
+
+    private static int indexOf(int[] array, int value) {
+        for (int i = 0; i < array.length; i++) if (array[i] == value) return i;
+        throw new IllegalStateException("Column " + value + " not in family.");
     }
 
     private static List<Integer> getRows(Matrix data, boolean calculateRowSubsets) {
@@ -491,20 +532,9 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     private static @NotNull Matrix calcCovWithTestwiseDeletion(List<Integer> rows, int[] cols, int[] all, DataSet dataSet) {
         Matrix _cov = new Matrix(cols.length, cols.length);
 
-        // Precompute valid rows
-        List<Integer> validRows = new ArrayList<>();
-        for (int k : rows) {
-            boolean isValid = true;
-            for (int c : all) {
-                if (Double.isNaN(dataSet.getDouble(k, c))) {
-                    isValid = false;
-                    break;
-                }
-            }
-            if (isValid) {
-                validRows.add(k);
-            }
-        }
+        // Valid rows (complete on the columns in 'all'), computed once per column set and cached; see
+        // TestwiseRows. Custom row subsets (e.g., from subsampling) bypass the cache.
+        List<Integer> validRows = TestwiseRows.forDataSet(dataSet).validRows(all, rows);
 
         // Parallel computation of covariance matrix
         IntStream.range(0, cols.length).parallel().forEach(i -> {
@@ -526,7 +556,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
                 if (validCount > 1) {
                     mui /= validCount;
                     muj /= validCount;
-                    __cov = (__cov - validCount * mui * muj) / validCount;
+                    __cov = (__cov - validCount * mui * muj) / (validCount - 1);
                 } else {
                     __cov = 0.0; // Handle cases with no valid rows
                 }
@@ -558,9 +588,68 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
             return nandyBic(x, y, z);
+        } else if (this.calculateRowSubsets && this.testwiseCommonRowsDiff) {
+            return commonRowsDiff(x, y, z);
         } else {
             return localScore(y, append(z, x)) - localScore(y, z);
         }
+    }
+
+    /**
+     * Experimental. Under test-wise deletion, makes {@link #localScoreDiff(int, int, int[])} compute both sides of
+     * each comparison on one shared row set--the rows complete on the child, the current parents, and the
+     * candidate--so that the difference is a genuine nested-model likelihood ratio on one sample, with the
+     * standard BIC penalty at that sample's own row count. The default difference of two local scores instead
+     * subtracts fits computed on different row sets, which is not a likelihood ratio of anything well defined and
+     * empirically over-adds edges. Only searches that decide through localScoreDiff (FGES) are affected; sums of
+     * local scores (BOSS, GRaSP via TeyssierScorer) do not call it and have no coherent analogue of this fix. The
+     * effective-sample-size mode is deliberately ignored here: the shared rows are an actual sample, and the
+     * penalty uses their actual count. Off by default; no effect on complete data or under any
+     * covariance-estimating policy.
+     *
+     * @param testwiseCommonRowsDiff True to turn the common-rows difference on.
+     */
+    public void setTestwiseCommonRowsDiff(boolean testwiseCommonRowsDiff) {
+        this.testwiseCommonRowsDiff = testwiseCommonRowsDiff;
+    }
+
+    /**
+     * The common-rows score difference for adding x as a parent of y given parents z: both residual variances are
+     * fit on the m rows complete on {y} union z union {x}, giving 2 delta-lik = m log(var(y|z) / var(y|z,x)),
+     * penalized by the penalty discount times log m for the one added parameter, with the structure-prior
+     * difference matching {@link #localScore(int, int...)}. Returns NaN when the shared rows cannot support both
+     * fits, which the searches treat as unscorable, as they do for NaN local scores.
+     */
+    private double commonRowsDiff(int x, int y, int[] z) {
+        int[] zx = append(z, x);
+        List<Integer> rows = TestwiseRows.forMatrix(this.data).validRows(concat(y, zx));
+        int m = rows.size();
+
+        // Both fits need more rows than columns; getCov enforces the same bound by throwing.
+        if (m <= zx.length + 1) return Double.NaN;
+
+        try {
+            double varSmall = residualVarianceOnRows(y, z, rows);
+            double varLarge = residualVarianceOnRows(y, zx, rows);
+
+            if (!(varSmall > 0) || !(varLarge > 0)) return Double.NaN;
+
+            double lr = m * log(varSmall / varLarge);
+            return lr - getPenaltyDiscount() * log(m)
+                   - (getStructurePrior(zx.length) - getStructurePrior(z.length));
+        } catch (SingularMatrixException e) {
+            noteSingularity(y, zx);
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * The residual variance of the regression of variable i on the given parents, computed over exactly the given
+     * rows, with the same ridge handling as every other local fit in this score.
+     */
+    private double residualVarianceOnRows(int i, int[] parents, List<Integer> rows) {
+        CovAndCoefs cc = getCovAndCoefs(i, parents, this.data, this.covariances, this.lambda, rows);
+        return bStar(cc.b()).transpose().times(cc.cov()).times(bStar(cc.b())).get(0, 0);
     }
 
     /**
@@ -589,7 +678,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
 
         double c = getPenaltyDiscount();
 
-        return -this.nEff * log(1.0 - r * r) - c * log(this.nEff) - 2.0 * (sp1 - sp2);
+        // Under test-wise deletion the penalty is scaled by how few rows the partial correlation rests on; see
+        // localPenaltyLogN.
+        double logN = rows == null ? log(this.nEff) : penaltyLogN(rows.size());
+
+        return -this.nEff * log(1.0 - r * r) - c * logN - 2.0 * (sp1 - sp2);
     }
 
     /**
@@ -608,7 +701,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return Double.NaN;
         }
 
@@ -617,8 +710,10 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
 
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
-            // Standard BIC, with penalty discount and structure prior.
-            double _score = 2 * lik - c * (k) * logN - getStructurePrior(k);
+            // Standard BIC, with penalty discount and structure prior. Under test-wise deletion the penalty is
+            // the per-observation BIC penalty of the local fit scaled up to the common sample size; see
+            // localPenaltyLogN.
+            double _score = 2 * lik - c * (k) * localPenaltyLogN(i, parents) - getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;
@@ -649,7 +744,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, nEff);
         }
 
@@ -674,7 +769,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return Double.NaN;
         }
 
@@ -697,6 +792,69 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
+     * Under test-wise deletion, the factor that puts the residual variance of i given parents, estimated on the
+     * rows complete on i and its parents, on the same footing as the marginal variance of i estimated on all of
+     * i's own rows: the ratio of i's variance over its own rows to i's variance over the local rows. Multiplying
+     * the residual variance by it makes the local score depend on the local R-squared, computed within one row
+     * subset, times the common n, rather than on a ratio of variances estimated on two different subsets.
+     * Without it the comparison of parent sets was dominated by the sampling noise of the subset marginal
+     * variances (relative standard deviation about sqrt(2 / m) on m rows), which the common n then multiplied:
+     * on 200 complete rows out of 250, a parent with zero true effect was accepted by plain BIC about 30% of the
+     * time in simulation, against the 2 to 3% expected on complete data; with this correction it is about 2%.
+     * On complete data the factor is 1. Added 2026-9-11.
+     *
+     * @param i       The index of the variable.
+     * @param parents The indices of its parents (non-empty).
+     * @return The factor.
+     */
+    private double testwiseVarianceCorrection(int i, int[] parents) {
+        // Both variances are read from the shared family cache: the family over concat(i, parents) is exactly the
+        // one getCov just built for this call, and i's own family is a single column. Both divide by n - 1 over
+        // the same row sets the previous inline passes used, so the value is unchanged; the two extra passes over
+        // boxed row lists per local score are gone.
+        TestwiseCovariance testwise = TestwiseCovariance.forMatrix(this.data);
+        double ownVariance = testwise.column(i).cov().get(0, 0);
+        double localVariance = testwise.family(concat(i, parents)).cov().get(0, 0);
+        return ownVariance / localVariance;
+    }
+
+    /**
+     * The "log n" in the BIC penalty for the local score of i given parents. On complete data, or with an EM
+     * covariance, this is log of the effective sample size. Under test-wise deletion the residual variance was
+     * estimated on only the rows complete on i and all of its parents, m of them, while the likelihood term is
+     * scaled to the common sample size n so that local scores of different parent sets remain comparable (the
+     * constant -n/2 (log 2 pi + 1) must be common, or the comparison would depend on the scale of the data).
+     * Previously the penalty used log n regardless of m, so a variance reduction achieved by overfitting 20
+     * complete rows was scored exactly like one seen on 200: the count of supporting rows made no difference.
+     * Here the local fit is treated as a BIC on m rows, normalized per observation and scaled to n: the penalty
+     * becomes c k log(m) (n / m), which equals the standard penalty when m = n and grows as m shrinks (about
+     * seven times the standard penalty at m = 20, n = 250). This is a heuristic for comparing fits on different
+     * available-case subsets, not a decomposition of one joint likelihood; it reduces to standard BIC on
+     * complete data. Added 2026-9-11.
+     *
+     * @param i       The index of the variable.
+     * @param parents The indices of its parents.
+     * @return The penalty's log-n term.
+     */
+    private double localPenaltyLogN(int i, int[] parents) {
+        if (!this.calculateRowSubsets) {
+            return this.logN;
+        }
+
+        int m = TestwiseRows.forMatrix(this.data).validRows(concat(i, parents)).size();
+        return penaltyLogN(m);
+    }
+
+    /**
+     * The penalty's log-n term for a local fit on m complete rows out of sampleSize; see localPenaltyLogN. If the
+     * user has set an effective sample size, m is scaled by the same ratio.
+     */
+    private double penaltyLogN(int m) {
+        double mEff = m * (this.nEff / (double) this.sampleSize);
+        return log(mEff) * (this.nEff / mEff);
+    }
+
+    /**
      * Calculates the likelihood for the given variable and its parent variables based on the provided data and
      * covariance matrices. This method computes the variance for the residuals and uses it to determine the likelihood
      * score.
@@ -708,8 +866,43 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
-        return -0.5 * this.nEff * (Math.log(2 * Math.PI * sigmaSquared) + 1);
+
+        if (this.calculateRowSubsets && parents.length > 0) {
+            sigmaSquared *= testwiseVarianceCorrection(i, parents);
+        }
+
+        return -0.5 * this.nEff * (TMath.log(2 * TMath.PI * sigmaSquared) + 1);
 //        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
+    }
+
+    /**
+     * Records a singularity in a local-score evaluation. The first few are logged in full, after which they are
+     * only counted: on sparse data under test-wise deletion there can be many thousands, which swamps the log.
+     * See getNumSingularities().
+     */
+    private void noteSingularity(int i, int[] parents) {
+        int n = this.numSingularities.incrementAndGet();
+
+        if (n <= MAX_SINGULARITIES_LOGGED) {
+            TetradLogger.getInstance().warn("Singularity encountered when scoring "
+                    + LogUtilsSearch.getScoreFact(i, parents, variables));
+
+            if (n == MAX_SINGULARITIES_LOGGED) {
+                TetradLogger.getInstance().warn("Further singularities will be counted but not logged; see "
+                        + "SemBicScore.getNumSingularities().");
+            }
+        }
+    }
+
+    /**
+     * Returns the number of local-score evaluations that failed with a singularity (and so returned NaN) since
+     * this score was constructed. A large count, e.g. under test-wise deletion on sparse data, means many parent
+     * sets could not be scored at all.
+     *
+     * @return The count.
+     */
+    public int getNumSingularities() {
+        return this.numSingularities.get();
     }
 
     /**
@@ -840,7 +1033,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(log(this.nEff));
+        return (int) TMath.ceil(log(this.nEff));
     }
 
     /**
@@ -907,6 +1100,167 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     public String toString() {
         return "SEM BIC Score";
+    }
+
+    /**
+     * Returns true just in case the likelihood-ratio statistic can be recovered from the local score difference,
+     * which requires a zero structure prior. With a non-zero structure prior the score difference carries a
+     * prior term that depends on the size of the conditioning set, so the effective rejection threshold varies
+     * from fact to fact and no single alpha describes the rule.
+     *
+     * @return True if calibrated p-values are available.
+     */
+    @Override
+    public boolean providesCalibratedPValue() {
+        return abs(getStructurePrior()) <= 0;
+    }
+
+    /**
+     * Returns the p-value of the likelihood-ratio test for x _||_ y | z, recovered from the local score
+     * difference. Under either rule type the local score difference is
+     * <p>
+     * v = G - c * ln(N),
+     * <p>
+     * where G = 2 * (log-likelihood with x added minus log-likelihood without) is the likelihood-ratio statistic
+     * for the single extra parameter (the coefficient of x in the regression of y on z and x), c is the penalty
+     * discount, and N is the effective sample size. So G = v + c * ln(N), which is asymptotically chi-square on 1
+     * degree of freedom under the null. NOTE that the resulting p-value does not depend on the penalty discount:
+     * c cancels between v and the added term. Only the score's accept/reject DECISION depends on c.
+     *
+     * @param x The index of the first variable.
+     * @param y The index of the second variable.
+     * @param z The indices of the conditioning variables.
+     * @return The p-value, in [0, 1].
+     */
+    @Override
+    public double calibratedPValue(int x, int y, int[] z) {
+        double v = localScoreDiff(x, y, z);
+
+        if (Double.isNaN(v)) {
+            return Double.NaN;
+        }
+
+        // Floor at zero: the recovered statistic is non-negative in exact arithmetic, but a singular or
+        // near-singular fit can push it slightly below zero.
+        double g = TMath.max(0.0, v + getPenaltyDiscount() * this.logN);
+
+        return StatUtils.getChiSquareP(1, g);
+    }
+
+    /**
+     * Returns the significance level at which this score's sign rule operates, P(chi-square(1) &gt; c * ln(N)).
+     * Rejecting when the calibrated p-value is at or below this level reproduces the rule "dependent iff the local
+     * score difference is positive".
+     *
+     * @return The implied alpha, in [0, 1].
+     */
+    @Override
+    public double impliedAlpha() {
+        return PenaltyDiscountCalibration.alpha(getPenaltyDiscount(), 1, getSampleSize());
+    }
+
+    /**
+     * Inverse of {@link #impliedAlpha()}: the penalty discount at which this score's sign rule operates at
+     * significance level {@code alpha}, i.e. the c such that P(chi-square(1) &gt; c * ln(N)) = alpha.
+     *
+     * <p>The local score difference for adding a single parent x to y given Z is -N ln(1 - r^2) - c ln(N), where r
+     * is the partial correlation (see {@link #localScoreDiff(int, int, int[])}). Under the null x _||_ y | Z the
+     * first term is asymptotically chi-square(1), so the edge is added exactly when a chi-square(1) variate exceeds
+     * c ln(N). Solving for c gives this method.</p>
+     *
+     * @param alpha      The per-test significance level, in (0, 1).
+     * @param sampleSize The sample size N used in the penalty (the effective sample size, if one is set).
+     * @return The penalty discount c = Q_chi2(1)(1 - alpha) / ln(N).
+     */
+    public static double penaltyDiscountForAlpha(double alpha, int sampleSize) {
+        return PenaltyDiscountCalibration.penaltyDiscountForAlpha(alpha, 1, sampleSize);
+    }
+
+    /**
+     * The penalty discount that holds the expected number of spurious edges over the whole search at approximately
+     * {@code expectedFalseEdges}, for {@code numVariables} variables and sample size {@code sampleSize}.
+     *
+     * <p>Rationale. Each non-adjacent pair is an opportunity for a spurious edge, and by
+     * {@link #penaltyDiscountForAlpha(double, int)} each such opportunity is taken with probability
+     * alpha(c) = P(chi-square(1) &gt; c ln N). In a sparse true graph nearly all of the p(p-1)/2 pairs are
+     * non-adjacent, so by linearity of expectation (no independence assumption is needed for the first moment)
+     * the expected number of spurious edges is approximately M alpha(c) with M = p(p-1)/2. Setting this equal to
+     * the budget and inverting gives</p>
+     *
+     * <pre>    c* = Q_chi2(1)(1 - E_FP / M) / ln(N).</pre>
+     *
+     * <p>For small alpha the chi-square(1) quantile is roughly 2 ln(1/alpha), so c* grows like 4 ln(p) / ln(N):
+     * the same ln(p)/ln(N) dependence as EBIC (Chen &amp; Chen 2008), with the multiplier fixed by a false-edge budget
+     * rather than a model-space prior. At p = 100, N = 1000, E_FP = 1 this returns c* = 2.00, which is the
+     * conventional discount at the conventional benchmark size; at p = 5000, N = 1000 it returns 4.17.</p>
+     *
+     * <p>Caveats. (1) The chi-square(1) null is asymptotic in N. (2) During search the conditioning set is the
+     * current parent set, not the true one, so the null is approximate; the greedy forward step also takes the
+     * best of many candidates, which makes M alpha an estimate of the first moment rather than a bound. Observed
+     * counts have landed within a factor of ~1.5 of the prediction. (3) This controls false positives only; the
+     * recall side is the smallest partial correlation the same rule can detect,
+     * {@link #minDetectablePartialCorrelation(double, int)}, which rises with c.</p>
+     *
+     * @param numVariables       The number of variables p.
+     * @param sampleSize         The sample size N.
+     * @param expectedFalseEdges The tolerated expected number of spurious edges over the whole graph, e.g. 1.0.
+     * @return The recommended penalty discount.
+     */
+    public static double penaltyDiscountForExpectedFalseEdges(int numVariables, int sampleSize,
+                                                              double expectedFalseEdges) {
+        return PenaltyDiscountCalibration.penaltyDiscountForExpectedFalseEdges(
+                PenaltyDiscountCalibration.uniformPairDofHistogram(numVariables, 1), sampleSize, expectedFalseEdges);
+    }
+
+    /**
+     * The smallest |partial correlation| that the sign rule accepts at penalty discount c and sample size N,
+     * i.e. the r solving -N ln(1 - r^2) = c ln(N). Edges whose true partial correlation given the rest of the
+     * parent set is below this are expected to be missed; it is the recall-side companion to
+     * {@link #penaltyDiscountForExpectedFalseEdges(int, int, double)}.
+     *
+     * @param penaltyDiscount The penalty discount c.
+     * @param sampleSize      The sample size N.
+     * @return r_min = sqrt(1 - N^(-c/N)), approximately sqrt(c ln(N) / N) for large N.
+     */
+    public static double minDetectablePartialCorrelation(double penaltyDiscount, int sampleSize) {
+        return Math.sqrt(1.0 - Math.exp(-penaltyDiscount * log(sampleSize) / sampleSize));
+    }
+
+    /**
+     * Inverse of {@link #minDetectablePartialCorrelation(double, int)}: the penalty discount at which partial
+     * correlations below {@code minPartialCorrelation} are ignored. See
+     * {@link PenaltyDiscountCalibration#penaltyDiscountForMinPartialCorrelation(double, int)}.
+     *
+     * @param minPartialCorrelation r_min.
+     * @param sampleSize            N.
+     * @return c.
+     */
+    public static double penaltyDiscountForMinPartialCorrelation(double minPartialCorrelation, int sampleSize) {
+        return PenaltyDiscountCalibration.penaltyDiscountForMinPartialCorrelation(minPartialCorrelation, sampleSize);
+    }
+
+    /**
+     * The penalty discount that holds the expected number of spurious edges at a fraction {@code fdr} of the
+     * expected number of true edges, p * expectedDegree / 2. This is the false-discovery-proportion analogue of
+     * {@link #penaltyDiscountForExpectedFalseEdges(int, int, double)}, which controls an absolute count.
+     *
+     * <p>The two differ in how the per-test level scales with p: an absolute budget gives alpha ~ 1/p^2 and hence
+     * c* ~ 4 ln(p)/ln(N), which is EBIC at gamma = 2; a fractional budget gives alpha = fdr * degree / (p - 1) ~ 1/p
+     * and hence c* ~ 2 ln(p)/ln(N), which is EBIC at gamma = 1. For a large sparse graph the fractional budget is
+     * usually the one a practitioner means. The expected degree enters only as ln(1/(fdr * degree)), so an
+     * estimate within a factor of two changes c* by about 2 ln(2)/ln(N), roughly 0.2 at N = 1000.</p>
+     *
+     * @param numVariables   The number of variables p.
+     * @param sampleSize     The sample size N.
+     * @param expectedDegree The expected average degree of the true graph (a prior guess is fine).
+     * @param fdr            The tolerated ratio of spurious to true edges, e.g. 0.01.
+     * @return The recommended penalty discount.
+     */
+    public static double penaltyDiscountForFalseDiscoveryRate(int numVariables, int sampleSize,
+                                                              double expectedDegree, double fdr) {
+        return PenaltyDiscountCalibration.penaltyDiscountForFalseDiscoveryRate(
+                PenaltyDiscountCalibration.uniformPairDofHistogram(numVariables, 1), sampleSize,
+                numVariables, expectedDegree, fdr);
     }
 
     private double getStructurePrior(int parents) {
@@ -992,6 +1346,17 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        this.logN = log(this.nEff);
+    }
+
+    /**
+     * Declares this score's native missing-value support: test-wise deletion.
+     *
+     * @return This support level.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     /**

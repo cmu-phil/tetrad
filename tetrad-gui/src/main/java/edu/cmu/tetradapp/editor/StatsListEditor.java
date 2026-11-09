@@ -20,7 +20,10 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
+import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -109,7 +112,7 @@ public class StatsListEditor extends JPanel {
 
         this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        this.area.setFont(ThemeUtils.monospaced(14, Font.BOLD));
 //        this.area.setPreferredSize(new Dimension(1200, 1800));
 
         JScrollPane pane = new JScrollPane(this.area);
@@ -123,16 +126,46 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private String tableTextWithHeader() {
-        String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, this.targetGraph, this.dataModel, this.comparison.getElapsedTime());
-        return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from " + this.comparison.getTargetName()
-               + "\n\n" + table;
+        java.util.List<Graph> targetGraphs = this.comparison.getTargetGraphs();
+        java.util.List<String> targetNames = this.comparison.getTargetNames();
+
+        if (targetGraphs.isEmpty()) {
+            return "True graph from " + this.comparison.getReferenceName()
+                   + "\n\nNo target graphs to compare to it.";
+        }
+
+        // Null means no choice stored (e.g., old sessions): use the default table methods and default statistics.
+        java.util.List<Statistic> statistics = StatsListStatisticsChooser.selected(this.params);
+
+        // The reference graph as wired in (normally the true DAG, with latents) goes down as the true DAG; the
+        // graph it was converted to under "Compare to..." goes down as the comparison graph. Statistics about
+        // ancestry or latent confounding use the former, adjacency and endpoint statistics the latter.
+        Graph trueDag = this.comparison.getReferenceGraph();
+
+        if (targetGraphs.size() == 1) {
+            String table = statistics == null
+                    ? CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs.getFirst(),
+                    this.dataModel, this.comparison.getElapsedTime())
+                    : CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs.getFirst(),
+                    this.dataModel, this.comparison.getElapsedTime(), statistics);
+            return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from "
+                   + targetNames.getFirst() + "\n\n" + table;
+        }
+
+        String table = statistics == null
+                ? CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs, targetNames,
+                this.dataModel, this.comparison.getElapsedTimes())
+                : CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs, targetNames,
+                this.dataModel, this.comparison.getElapsedTimes(), statistics);
+        return "True graph from " + this.comparison.getReferenceName() + "\nTarget graphs from "
+               + String.join(", ", targetNames) + "\n\n" + table;
     }
 
     @NotNull
     private JMenuBar menubar() {
         JMenuBar menubar = new JMenuBar();
         JMenu menu = new JMenu("Compare To...");
-        JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        JMenuItem graph = new JCheckBoxMenuItem("Truth");
         graph.setBackground(Color.WHITE);
         JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
         cpdag.setBackground(Color.YELLOW);
@@ -149,6 +182,19 @@ public class StatsListEditor extends JPanel {
         menu.add(pag);
 
         menubar.add(menu);
+
+        JMenu statisticsMenu = new JMenu("Statistics");
+        JMenuItem chooseStatistics = new JMenuItem("Choose Statistics...");
+        statisticsMenu.add(chooseStatistics);
+        menubar.add(statisticsMenu);
+
+        chooseStatistics.addActionListener(e -> {
+            if (StatsListStatisticsChooser.show(this, this.params)) {
+                this.area.setText(tableTextWithHeader());
+                this.area.setCaretPosition(0);
+                this.area.repaint();
+            }
+        });
 
         this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
@@ -168,7 +214,7 @@ public class StatsListEditor extends JPanel {
         }
 
         graph.addActionListener(e -> {
-            this.params.set("graphComparisonType", "DAG");
+            this.params.set("graphComparisonType", "Truth");
             menu.setText("Compare to Truth...");
             menu.setBackground(Color.WHITE);
 //            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);

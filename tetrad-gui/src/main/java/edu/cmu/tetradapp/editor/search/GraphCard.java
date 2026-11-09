@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,19 +20,25 @@
 
 package edu.cmu.tetradapp.editor.search;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
+import edu.cmu.tetradapp.workbench.TieLayoutMenu;
 
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -62,6 +68,16 @@ public class GraphCard extends JPanel {
      * The workbench.
      */
     private GraphWorkbench workbench;
+
+    /**
+     * The workbenches of the results, in order, when there are several; the menu bar acts on the one in view.
+     */
+    private final java.util.List<GraphWorkbench> workbenches = new java.util.ArrayList<>();
+
+    /**
+     * The index of the result whose panel is being built; its data set is the one its plot matrix opens on.
+     */
+    private int resultIndex = 0;
 
     /**
      * The knowledge.
@@ -124,29 +140,40 @@ public class GraphCard extends JPanel {
         java.util.List<Graph> graphs = this.algorithmRunner.getGraphs();
         java.util.List<String> names = this.algorithmRunner.getResultNames();
 
+        this.workbenches.clear();
+
         if (graphs != null && graphs.size() > 1) {
             // Multi-graph UI
             JTabbedPane tabs = new JTabbedPane(SwingConstants.LEFT);
             tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+            ArrowKeyNavigation.install(tabs);
 
             for (int i = 0; i < graphs.size(); i++) {
                 Graph g = graphs.get(i);
                 String title = (names != null && i < names.size()) ? names.get(i) : ("Result " + (i + 1));
 
                 // Reuse your existing single-graph panel builder
+                this.resultIndex = i;
                 JPanel graphPanel = new PaddingPanel(createGraphPanel(g));
+                GraphWorkbench resultWorkbench = this.workbench;
+                this.workbenches.add(resultWorkbench);
 
                 Graph graph = this.algorithmRunner.getGraphs().get(i);
 
+                JTextArea ta = new JTextArea(String.valueOf(graph));
+                ta.setEditable(false);
+                ta.setCaretPosition(0);
+                JScrollPane textScroll = new JScrollPane(ta);
 
                 EdgeTypeTable edgePanel = createEdgeTypeTable(g);
 
                 JTabbedPane inner = new JTabbedPane(SwingConstants.RIGHT);
                 inner.addTab("Graph", graphPanel);
                 inner.addTab("Edges", edgePanel);
+                inner.addTab("Text", textScroll);
                 inner.addChangeListener(ev -> {
                     if (inner.getSelectedComponent() == edgePanel) {
-                        Graph wbGraph = this.workbench.getGraph();
+                        Graph wbGraph = resultWorkbench.getGraph();
                         if (edgePanel.getGraph() != wbGraph) edgePanel.update(wbGraph);
                     }
                 });
@@ -159,17 +186,60 @@ public class GraphCard extends JPanel {
                 tabs.addTab(title, inner);
             }
 
-            add(menuBar(), BorderLayout.NORTH);
+            // The selected tab is the result that downstream boxes analyze. Selecting another one records the
+            // choice in the runner and reports the model as changed, so that on closing this editor the session
+            // offers to re-execute the children, as it does for any other edit.
+            JLabel downstream = new JLabel();
+            downstream.setBorder(new EmptyBorder(4, 8, 4, 8));
+            tabs.setSelectedIndex(this.algorithmRunner.getSelectedResultIndex());
+            downstream.setText(downstreamNote(tabs.getTitleAt(tabs.getSelectedIndex()), false));
+
+            // The menu bar acts on the result in view, not on the last one built, so it is rebuilt for the
+            // workbench of the tab selected. The results keep the same layout: a layout applied to the one in
+            // view is given to the others.
+            AbstractWorkbench.shareLayout(this.workbenches);
+            this.workbench = this.workbenches.get(tabs.getSelectedIndex());
+            JMenuBar[] menuBar = {menuBar()};
+
+            tabs.addChangeListener(ev -> {
+                int index = tabs.getSelectedIndex();
+                if (index < 0 || this.workbenches.get(index) == this.workbench) return;
+                this.workbench = this.workbenches.get(index);
+                remove(menuBar[0]);
+                menuBar[0] = menuBar();
+                add(menuBar[0], BorderLayout.NORTH);
+                revalidate();
+                repaint();
+            });
+
+            tabs.addChangeListener(ev -> {
+                int index = tabs.getSelectedIndex();
+                if (index < 0 || index == this.algorithmRunner.getSelectedResultIndex()) return;
+                this.algorithmRunner.setSelectedResultIndex(index);
+                downstream.setText(downstreamNote(tabs.getTitleAt(index), true));
+                firePropertyChange("modelChanged", null, null);
+            });
+
+            add(menuBar[0], BorderLayout.NORTH);
             add(tabs, BorderLayout.CENTER);
+            add(downstream, BorderLayout.SOUTH);
         } else {
             // Legacy single-graph UI (unchanged)
+            this.resultIndex = 0;
             Graph graph = (graphs != null && !graphs.isEmpty()) ? graphs.get(0) : this.algorithmRunner.getGraph();
             PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
             EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
 
+            JTextArea ta = new JTextArea(String.valueOf(graph));
+            ta.setEditable(false);
+            ta.setCaretPosition(0);
+            JScrollPane textScroll = new JScrollPane(ta);
+
             JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
             tabbedPane.addTab("Graph", graphPanel);
             tabbedPane.addTab("Edges", edgePanel);
+            tabbedPane.addTab("Text", textScroll);
+
             tabbedPane.addChangeListener(event -> {
                 if (tabbedPane.getSelectedComponent() == edgePanel) {
                     Graph wbGraph = this.workbench.getGraph();
@@ -183,6 +253,11 @@ public class GraphCard extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    private static String downstreamNote(String resultName, boolean changed) {
+        return "<html>Downstream boxes analyze the selected result: <b>" + resultName + "</b>."
+               + (changed ? " Close this window and choose Execute to update them." : "") + "</html>";
     }
 
     JMenuBar menuBar() {
@@ -211,16 +286,22 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench, algorithmRunner.getParameters()));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.add(new FindVariableAction(this.workbench));
         graph.addSeparator();
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
         addGraphManipItems(graph, this.workbench);
+        graph.add(new CheckMSeparationFacts(this.workbench));
         graph.addSeparator();
 
         graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         menuBar.add(graph);
+
+        // The same Layout menu the workbench offers on its right-click popup, where it was easy to miss; the
+        // workbench is itself the LayoutEditable, as in the popup. Added 2026-9-12.
+        menuBar.add(new LayoutMenu(this.workbench));
 
         return menuBar;
     }
@@ -234,6 +315,18 @@ public class GraphCard extends JPanel {
     }
 
     private JPanel createGraphPanel(Graph graph) {
+
+        // Whether the result arrives without a layout, noted before the workbench lays it out by default. See
+        // TieLayoutMenu.reapplyTie(LayoutEditable, boolean).
+        boolean unpositioned = false;
+
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                unpositioned = true;
+                break;
+            }
+        }
+
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.setKnowledge(knowledge);
 //        graphWorkbench.setEnableEditing(false);
@@ -245,15 +338,68 @@ public class GraphCard extends JPanel {
 
         this.workbench = graphWorkbench;
 
+        // Reapply any recorded layout tie to this newly created result workbench, so a
+        // finished search is laid out by its reference node without the user reselecting
+        // the "Tie Layout To" menu item. (The once-per-opening application in
+        // TieLayoutMenu fires only when the editor window opens; a search finishing in
+        // an already-open editor replaces the workbench without reopening the window.)
+        TieLayoutMenu.reapplyTie(graphWorkbench, unpositioned);
+
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
 
-        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
-            mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
+        Box south = Box.createVerticalBox();
+        DataSet dataSet = plotDataSet();
+
+        if (dataSet != null) {
+            Box plotBox = Box.createHorizontalBox();
+            plotBox.add(PlotMatrixForSelected.button(() -> graphWorkbench, () -> dataSet, this::plotDataSets));
+            plotBox.add(Box.createHorizontalGlue());
+            south.add(plotBox);
         }
 
+        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
+            south.add(createLatentVariableInstructionBox());
+        }
+
+        mainPanel.add(south, BorderLayout.SOUTH);
+
         return mainPanel;
+    }
+
+    /**
+     * The data set to plot from: the first tabular data set the search was given, or null if there is none (a
+     * search from a graph, or from a covariance matrix).
+     */
+    private DataSet plotDataSet() {
+        java.util.List<DataSet> dataSets = plotDataSets();
+        if (dataSets.isEmpty()) return null;
+
+        // One result per data set: the data set this result was found from.
+        java.util.List<Graph> graphs = this.algorithmRunner.getGraphs();
+
+        if (graphs != null && graphs.size() == this.algorithmRunner.getDataModelList().size()
+            && this.resultIndex < graphs.size()
+            && this.algorithmRunner.getDataModelList().get(this.resultIndex) instanceof DataSet dataSet
+            && dataSet.getNumRows() > 0) {
+            return dataSet;
+        }
+
+        return dataSets.getFirst();
+    }
+
+    /**
+     * All the tabular data sets the search was given.
+     */
+    private java.util.List<DataSet> plotDataSets() {
+        java.util.List<DataSet> dataSets = new java.util.ArrayList<>();
+
+        for (DataModel model : this.algorithmRunner.getDataModelList()) {
+            if (model instanceof DataSet dataSet && dataSet.getNumRows() > 0) dataSets.add(dataSet);
+        }
+
+        return dataSets;
     }
 
     private Box createLatentVariableInstructionBox() {
@@ -268,24 +414,52 @@ public class GraphCard extends JPanel {
         infoBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Initialize helpSet
-                final String helpHS = "/docs/javahelp/TetradHelp.hs";
+                final String helpPage = "/docs/javahelp/manual/graph_edge_types.html";
 
                 try {
-                    URL url = this.getClass().getResource(helpHS);
-                    HelpSet helpSet = new HelpSet(null, url);
+                    URL url = getClass().getResource(helpPage);
+                    if (url == null) {
+                        throw new IllegalArgumentException("Help page not found: " + helpPage);
+                    }
 
-                    helpSet.setHomeID("graph_edge_types");
-                    HelpBroker broker = helpSet.createHelpBroker();
-                    ActionListener listener = new CSH.DisplayHelpFromSource(broker);
-                    listener.actionPerformed(e);
+                    JEditorPane editorPane = new JEditorPane();
+                    editorPane.setEditable(false);
+                    editorPane.setContentType("text/html");
+                    editorPane.setPage(url);
+                    editorPane.setCaretPosition(0);
+
+                    JScrollPane scrollPane = new JScrollPane(editorPane);
+                    scrollPane.setPreferredSize(new Dimension(900, 650));
+
+                    Window owner = SwingUtilities.getWindowAncestor(infoBtn);
+                    JDialog dialog = new JDialog(owner, "PAG Edge Types", Dialog.ModalityType.APPLICATION_MODAL);
+                    dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                    dialog.getContentPane().setLayout(new BorderLayout());
+                    dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+                    JButton closeButton = new JButton("Close");
+                    closeButton.addActionListener(ev -> dialog.dispose());
+
+                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                    buttonPanel.add(closeButton);
+                    dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(owner);
+                    dialog.setVisible(true);
                 } catch (Exception ee) {
-                    System.out.println("HelpSet " + ee.getMessage());
-                    System.out.println("HelpSet " + helpHS + " not found");
-                    throw new IllegalArgumentException();
+                    ee.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                            SwingUtilities.getWindowAncestor(infoBtn),
+                            "Could not load help page:\n" + ee.getMessage(),
+                            "Help Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                 }
             }
         });
+        ;
+        ;
 
         Box instruction = Box.createHorizontalBox();
         instruction.add(label);

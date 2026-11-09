@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -16,10 +16,12 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.Bfci;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.cdnod_pag.CgLrtChangeTest;
 import edu.cmu.tetrad.search.cdnod_pag.ChangeTest;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
@@ -40,11 +42,11 @@ import java.util.function.Function;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CD-NOD-PAG",
         command = "cdnodpag",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, TakesScoreWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
@@ -98,7 +100,9 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
                     default -> throw new IllegalArgumentException("Invalid collider orientation style");
                 };
 
-        R0R4Strategy strategy = new R0R4StrategyTestBased(test.getTest(data, parameters));
+        IndependenceTest test1 = test.getTest(data, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        R0R4Strategy strategy = new R0R4StrategyTestBased(test1);
         FciOrient fciOrient = new FciOrient(strategy);
 
         // Configure core search. We pass the dataset that ALREADY has C as the last column.
@@ -106,8 +110,9 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
         edu.cmu.tetrad.search.cdnod_pag.CdnodPag.PagBuilder pagBuilder = (DataSet dataWithoutEnv) -> {
             Score _score = score.getScore(dataWithoutEnv, parameters);
             IndependenceTest _test = test.getTest(dataWithoutEnv, parameters);
+            _test = new CachedIndependenceQueries(_test);
 
-            Fcit fcit = new Fcit(_test, _score);
+            Bfci fcit = new Bfci(_test, _score);
             fcit.setKnowledge(knowledge);
             try {
                 return fcit.search();
@@ -139,8 +144,8 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, H
                 legalityCheck,
                 prop,
                 knowledge)
-                .withMaxSubsetSize(1)
-                .withProxyGuard(true);
+                .withMaxSubsetSize(1);
+//                .withProxyGuard(true);
 
         return cdnodPag.run();
     }

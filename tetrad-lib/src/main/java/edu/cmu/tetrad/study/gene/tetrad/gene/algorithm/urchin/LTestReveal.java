@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.*;
 import java.util.StringTokenizer;
@@ -203,7 +203,7 @@ public class LTestReveal {
     public static double entropy(int[] x) {
         double h = 0.0;
         int n = x.length;
-        double ln2 = FastMath.log(2.0);
+        double ln2 = TMath.log(2.0);
 
         int n0 = 0;
         for (int j : x) {
@@ -217,7 +217,7 @@ public class LTestReveal {
             return h;
         } else {
             p = (double) n0 / (double) n;
-            h = -(p * FastMath.log(p) + (1.0 - p) * FastMath.log(1.0 - p)) / ln2;
+            h = -(p * TMath.log(p) + (1.0 - p) * TMath.log(1.0 - p)) / ln2;
         }
         return h;
     }
@@ -233,7 +233,7 @@ public class LTestReveal {
         double h = 0.0;
         int n = LTestReveal.cases.length - lag;
 
-        double ln2 = FastMath.log(2.0);
+        double ln2 = TMath.log(2.0);
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
@@ -247,7 +247,7 @@ public class LTestReveal {
             return h;
         } else {
             p = (double) n0 / (double) n;
-            h = -(p * FastMath.log(p) + (1.0 - p) * FastMath.log(1.0 - p)) / ln2;
+            h = -(p * TMath.log(p) + (1.0 - p) * TMath.log(1.0 - p)) / ln2;
         }
         return h;
     }
@@ -263,7 +263,7 @@ public class LTestReveal {
         double h = 0.0;
         int[][] ns = new int[2][2];
         int n = x.length;
-        double ln2 = FastMath.log(2.0);
+        double ln2 = TMath.log(2.0);
 
         ns[0][0] = 0;
         ns[0][1] = 0;
@@ -292,22 +292,22 @@ public class LTestReveal {
         if (p[0][0] == 0.0) {
             lp00 = 0.0;
         } else {
-            lp00 = -p[0][0] * FastMath.log(p[0][0]);
+            lp00 = -p[0][0] * TMath.log(p[0][0]);
         }
         if (p[0][1] == 0.0) {
             lp01 = 0.0;
         } else {
-            lp01 = -p[0][1] * FastMath.log(p[0][1]);
+            lp01 = -p[0][1] * TMath.log(p[0][1]);
         }
         if (p[1][0] == 0.0) {
             lp10 = 0.0;
         } else {
-            lp10 = -p[1][0] * FastMath.log(p[1][0]);
+            lp10 = -p[1][0] * TMath.log(p[1][0]);
         }
         if (p[1][1] == 0.0) {
             lp11 = 0.0;
         } else {
-            lp11 = -p[1][1] * FastMath.log(p[1][1]);
+            lp11 = -p[1][1] * TMath.log(p[1][1]);
         }
 
         h = lp00 + lp01 + lp10 + lp11;
@@ -327,7 +327,7 @@ public class LTestReveal {
         int m = y.length;
         //System.out.println("m = " + m);
         int n = x.length;
-        double ln2 = FastMath.log(2.0);
+        double ln2 = TMath.log(2.0);
 
         if (y[0].length != n) {
             System.out.println("x and rows of y and must have same length");
@@ -369,7 +369,7 @@ public class LTestReveal {
             if (p == 0.0) {
                 continue;
             }
-            h -= p * FastMath.log(p);
+            h -= p * TMath.log(p);
         }
 
         h /= ln2;

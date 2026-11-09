@@ -345,4 +345,3 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         throw new NullPointerException("Session node wrapper not in map.");
     }
 }
-

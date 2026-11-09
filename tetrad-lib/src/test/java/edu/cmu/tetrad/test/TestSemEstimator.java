@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +71,12 @@ public class TestSemEstimator {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
     }
@@ -151,7 +157,12 @@ public class TestSemEstimator {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         SemIm im2 = new SemIm(pm);
         im2.setDataSet(data);
@@ -174,7 +185,12 @@ public class TestSemEstimator {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         SemIm im2 = new SemIm(pm);
         im2.setDataSet(data);

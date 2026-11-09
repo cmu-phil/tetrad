@@ -106,6 +106,8 @@ public final class LagReplicationPolicy implements EdgeReplicationPolicy, Tetrad
      */
     @Override
     public Set<Edge> mirrorsFor(EdgeListGraph g, Edge e) {
+        if (e == null) return Collections.emptySet();
+
         Node a = e.getNode1();
         Node b = e.getNode2();
 

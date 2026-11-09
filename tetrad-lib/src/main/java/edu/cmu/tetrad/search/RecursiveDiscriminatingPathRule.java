@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -24,133 +24,318 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.IndependenceCheckCounter;
 import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Implements the R4 Discriminating Path rule in the final FCI orientation rules (Zhang 2008) using the
- * block_paths_recursively method as a optimization.
+ * Finds separating sets for the discriminating path rule (R4 of the final FCI orientation rules, Zhang 2008) by
+ * recursive path blocking rather than by searching over subsets of adjacents.
+ * <p>
+ * R4 needs, for a discriminating path from x to y through v, a set that renders x and y independent; whether that set
+ * contains v then decides v's orientation. The difficulty is that some nodes on the candidate paths have circle
+ * endpoints and so might be colliders (which must not be followed when blocking) or non-colliders (which may be).
+ * This class handles that by first running {@link RecursiveBlocking#blockPathsRecursively} with nothing excluded to
+ * obtain a pool of "ambiguous" nodes (those in the blocking set with a circle endpoint on some incident edge; or, if
+ * the unconstrained pass fails, the v-nodes of the discriminating paths from x to y), and then enumerating subsets of
+ * that pool as the not-followed set, re-blocking for each and testing the resulting set for independence. The first
+ * passing set is returned, or, under the max-p option, the passing set with the strongest evidence of independence.
+ * <p>
+ * All methods are static; the class is not instantiable.
  *
  * @author josephramsey
+ * @see RecursiveBlocking
+ * @see edu.cmu.tetrad.search.utils.FciOrient
  */
 public class RecursiveDiscriminatingPathRule {
 
     /**
-     * Creates a new instance of the RecursiveDiscriminatingPathRule class. This constructor is private to ensure that
-     * the class cannot be instantiated directly. The class is designed to provide static methods for evaluating
-     * conditional independence and finding separating sets in graph structures through recursive analysis of
-     * discriminating paths.
+     * Private constructor; this class provides only static methods and is not meant to be instantiated.
      */
     private RecursiveDiscriminatingPathRule() {
 
     }
 
     /**
-     * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph. This method uses a
-     * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
-     * provided graph {@code pag}.
+     * Finds a separating set for the non-adjacent nodes x and y by recursive blocking over discriminating paths,
+     * returning the first passing candidate, with no independence-check counter and the given timeout. See
+     * {@link #findDdpSepsetRecursive(IndependenceTest, Graph, Node, Node, int, int, int, PreserveMarkov,
+     * IndependenceCheckCounter, long, boolean)} for the algorithm and the meaning of the parameters.
      *
-     * @param test                  The independence test object used to check for conditional independence between
-     *                              nodes.
-     * @param pag                   The graph structure, typically a partial ancestral graph (PAG), being analyzed.
-     * @param x                     The first target node in the analysis.
-     * @param y                     The second target node in the analysis.
-     * @param fciOrient             An orientation helper object used to apply FCI rules to edges in the graph.
-     * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
-     * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
-     * @param preserveMarkovHelper  A helper object for additional Markov property checks during the independence
-     *                              tests.
-     * @param depth                 The maximum subset depth allowed during subset evaluations; a value of -1 allows all
-     *                              subsets.
-     * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
-     * {@code null} if no such set exists.
-     * @throws InterruptedException If any.
+     * @param test                 the independence test used to check candidate separating sets.
+     * @param pag                  the partially oriented graph being oriented.
+     * @param x                    one endpoint; must not be adjacent to y.
+     * @param y                    the other endpoint.
+     * @param recursiveDepth       the maximum recursion depth of the path-blocking search (-1 for unlimited).
+     * @param maxDdpPathLength     the maximum length of discriminating paths considered when the ambiguous pool has
+     *                             to be built from the paths themselves (-1 for unlimited).
+     * @param depth                the maximum size of a candidate separating set (-1 for unlimited).
+     * @param preserveMarkovHelper if non-null, candidates are checked through this helper instead of the test, so
+     *                             that its running Markov bookkeeping is respected; may be null.
+     * @param timeout              the maximum time allowed, in milliseconds; a negative value means no timeout.
+     * @return a separating set for x and y, or null if none was found within the limits.
+     * @throws InterruptedException     if the thread is interrupted.
+     * @throws IllegalArgumentException if x and y are adjacent in the graph.
      */
-    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
-                                                   int maxBlockingPathLength, int maxDdpPathLength, PreserveMarkov preserveMarkovHelper, int depth)
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper, long timeout)
+            throws InterruptedException {
+        return findDdpSepsetRecursive(test, pag, x, y, recursiveDepth, maxDdpPathLength,
+                depth, preserveMarkovHelper, null, timeout);
+    }
+
+    /**
+     * Finds a separating set for the non-adjacent nodes x and y by recursive blocking over discriminating paths,
+     * returning the first passing candidate, with an independence-check counter and no timeout. See
+     * {@link #findDdpSepsetRecursive(IndependenceTest, Graph, Node, Node, int, int, int, PreserveMarkov,
+     * IndependenceCheckCounter, long, boolean)} for the algorithm and the meaning of the parameters.
+     *
+     * @param test                 the independence test used to check candidate separating sets.
+     * @param pag                  the partially oriented graph being oriented.
+     * @param x                    one endpoint; must not be adjacent to y.
+     * @param y                    the other endpoint.
+     * @param recursiveDepth       the maximum recursion depth of the path-blocking search (-1 for unlimited).
+     * @param maxDdpPathLength     the maximum length of discriminating paths considered when the ambiguous pool has
+     *                             to be built from the paths themselves (-1 for unlimited).
+     * @param depth                the maximum size of a candidate separating set (-1 for unlimited).
+     * @param preserveMarkovHelper if non-null, candidates are checked through this helper instead of the test, so
+     *                             that its running Markov bookkeeping is respected; may be null.
+     * @param counter              a counter incremented once per independence check performed; may be null.
+     * @return a separating set for x and y, or null if none was found within the limits.
+     * @throws InterruptedException     if the thread is interrupted.
+     * @throws IllegalArgumentException if x and y are adjacent in the graph.
+     */
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper,
+                                                   IndependenceCheckCounter counter)
+            throws InterruptedException {
+        return findDdpSepsetRecursive(test, pag, x, y, recursiveDepth, maxDdpPathLength, depth, preserveMarkovHelper, counter, Long.MAX_VALUE);
+    }
+
+    /**
+     * Finds a separating set for the non-adjacent nodes x and y by recursive blocking over discriminating paths,
+     * returning the first passing candidate. See
+     * {@link #findDdpSepsetRecursive(IndependenceTest, Graph, Node, Node, int, int, int, PreserveMarkov,
+     * IndependenceCheckCounter, long, boolean)} for the algorithm and the meaning of the parameters; this overload
+     * fixes {@code useMaxP} to false.
+     *
+     * @param test                 the independence test used to check candidate separating sets.
+     * @param pag                  the partially oriented graph being oriented.
+     * @param x                    one endpoint; must not be adjacent to y.
+     * @param y                    the other endpoint.
+     * @param recursiveDepth       the maximum recursion depth of the path-blocking search (-1 for unlimited).
+     * @param maxDdpPathLength     the maximum length of discriminating paths considered when the ambiguous pool has
+     *                             to be built from the paths themselves (-1 for unlimited).
+     * @param depth                the maximum size of a candidate separating set (-1 for unlimited).
+     * @param preserveMarkovHelper if non-null, candidates are checked through this helper instead of the test, so
+     *                             that its running Markov bookkeeping is respected; may be null.
+     * @param counter              a counter incremented once per independence check performed; may be null.
+     * @param timeout              the maximum time allowed, in milliseconds; a negative value means no timeout.
+     * @return a separating set for x and y, or null if none was found within the limits.
+     * @throws InterruptedException     if the thread is interrupted.
+     * @throws IllegalArgumentException if x and y are adjacent in the graph.
+     */
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper,
+                                                   IndependenceCheckCounter counter, long timeout)
+            throws InterruptedException {
+        return findDdpSepsetRecursive(test, pag, x, y, recursiveDepth, maxDdpPathLength, depth,
+                preserveMarkovHelper, counter, timeout, false);
+    }
+
+    /**
+     * Finds a separating set for the non-adjacent nodes x and y by recursive blocking over discriminating paths,
+     * with control over how the set is chosen when more than one candidate renders x and y independent.
+     * <p>
+     * The algorithm: (1) run {@link RecursiveBlocking#blockPathsRecursively} from x to y with nothing excluded; (2)
+     * take as the ambiguous pool those nodes of the resulting blocking set that have a circle endpoint on some
+     * incident edge, or, if that pass found no blocking set or timed out, the v-nodes of the discriminating paths
+     * from x to y of length at most {@code maxDdpPathLength}; (3) for each subset of the pool, re-run the blocking
+     * with that subset marked not-followed (treating those nodes as colliders), add back any pool node the blocking
+     * itself placed in the set, and check the resulting set for independence, skipping sets already checked.
+     * <p>
+     * With {@code useMaxP} false the FIRST passing candidate is returned, so the result depends on the order in
+     * which {@link SublistGenerator} enumerates the subsets. With it true, every candidate is checked and the one
+     * with the STRONGEST evidence of independence is returned (largest p-value for a p-value test, smallest score
+     * for a score wrapped as a test), which removes that order dependence. The choice matters: R4 reads the returned
+     * set twice, once to check that it contains the collider path and once to decide (by whether it contains V)
+     * whether V is a collider on the discriminating path, and the set is recorded in the caller's sepset map.
+     * <p>
+     * Two caveats. First, max-p forces the full enumeration on every call rather than exiting at the first hit; the
+     * enumeration is over subsets of the ambiguous pool, so the cost is bounded by the same worst case the greedy
+     * rule already faces, but the average case is worse. If the timeout cuts the enumeration short, the strongest
+     * candidate seen so far is returned, whereas the greedy rule returns null on timeout unless a hit was already
+     * found. Second, when a {@link PreserveMarkov} helper is supplied the greedy rule is used regardless of this
+     * flag: that helper's accept path mutates its running p-value bookkeeping, so evaluating every candidate would
+     * fold rejected candidates' updates into the state that later calls depend on. That restriction can be lifted if
+     * PreserveMarkov grows a side-effect-free query.
+     *
+     * @param test                 the independence test used to check candidate separating sets, and, under max-p,
+     *                             to rank them.
+     * @param pag                  the partially oriented graph being oriented.
+     * @param x                    one endpoint; must not be adjacent to y.
+     * @param y                    the other endpoint.
+     * @param recursiveDepth       the maximum recursion depth of the path-blocking search (-1 for unlimited).
+     * @param maxDdpPathLength     the maximum length of discriminating paths considered when the ambiguous pool has
+     *                             to be built from the paths themselves (-1 for unlimited).
+     * @param depth                the maximum size of a candidate separating set (-1 for unlimited).
+     * @param preserveMarkovHelper if non-null, candidates are checked through this helper instead of the test, so
+     *                             that its running Markov bookkeeping is respected, and the greedy rule is used
+     *                             regardless of {@code useMaxP}; may be null.
+     * @param counter              a counter incremented once per independence check performed; may be null.
+     * @param timeout              the maximum time allowed, in milliseconds, shared by the blocking passes and the
+     *                             enumeration; a negative value means no timeout.
+     * @param useMaxP              whether to return the passing candidate with the strongest evidence of independence
+     *                             rather than the first one found.
+     * @return a separating set for x and y, or null if none was found within the limits.
+     * @throws InterruptedException     if the thread is interrupted.
+     * @throws IllegalArgumentException if x and y are adjacent in the graph.
+     */
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper,
+                                                   IndependenceCheckCounter counter, long timeout,
+                                                   boolean useMaxP)
             throws InterruptedException {
 
-        // Get the V nodes--these need to be blocked in every combination, as we don't know which of these are colliders
-        // on their respective discriminating paths.
-        List<Node> vNodes = getVNodes(pag, x, y, maxDdpPathLength);
+        if (pag.isAdjacentTo(x, y)) {
+            throw new IllegalArgumentException("Nodes must be non-adjacent to each other.");
+        }
 
-        // Get the common neighbors, some subset of which are common childeren (hence length-2 collider paths that
-        // must not be conditioned on in order to block them.
-        List<Node> common = getCommonNeighbors(pag, x, y);
+        long deadlineMs = timeout >= 0L ? System.currentTimeMillis() + timeout : Long.MAX_VALUE;
 
-        // (B) For each subset of "common," check independence
-        SublistGenerator gen1 = new SublistGenerator(common.size(), common.size());
-        int[] choice2;
+//        List<Node> notFollowedSuperset = getVNodes(pag, x, y, maxDdpPathLength);
 
-        while ((choice2 = gen1.next()) != null) {
-            Set<Node> c = GraphUtils.asSet(choice2, common);
-            Set<Node> perhapsNotFollowed = new HashSet<>(vNodes);
-            perhapsNotFollowed.addAll(c);
+        RecursiveBlocking.BlockingResult result0 = RecursiveBlocking.blockPathsRecursively(
+                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, -1,
+                1, true, deadlineMs);
 
-            // Generate all subsets from vNodes
-            SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
-            List<int[]> allChoices = new ArrayList<>();
+//        Set<Node> noFollowsBlocking = result0.blockingSet();
+//        List<Node> notFollowedSuperset = new ArrayList<>();
+//
+//        // Remove any node from the notFollowedSuperset whose orientations are already completely
+//        // determined. We don't need to consider both possibilities for these.
+//        for (Node f : noFollowsBlocking) {
+        Set<Node> noFollowsBlocking = result0.indeterminate() ? null : result0.blockingSet();
 
-            int[] choice;
-            while ((choice = gen.next()) != null) {
-                allChoices.add(choice.clone());
-            }
+        // The unconstrained pass can legitimately fail to block (not-found, or timed out),
+        // in which case there is no blocking set to mine for ambiguous nodes. Fall back to
+        // the structural candidate pool instead of dereferencing null: the not-followed
+        // enumeration is precisely what may rescue a pair the unconstrained pass cannot block.
+        Collection<Node> ambiguousPool = (noFollowsBlocking != null)
+                ? noFollowsBlocking
+                : getVNodes(pag, x, y, maxDdpPathLength);
 
-            List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
+        List<Node> notFollowedSuperset = new ArrayList<>();
 
-            // 6) Build a Callable for each subset. We throw an exception if no solution is found.
-            for (int[] indices : allChoices) {
-
-                // Convert indices -> actual nodes
-                Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
-
-                // (A) blockPathsRecursively
-                Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
-
-                if (blocking == null) {
-                    continue;
-                }
-
-                for (Node f : vNodes) {
-                    if (!vNodesNotFollowed.contains(f)) {
-                        blocking.add(f);
-                    }
-                }
-
-                // b minus c
-                Set<Node> testSet = new HashSet<>(blocking);
-                testSet.removeAll(c);
-
-                // Check independence
-                boolean independent;
-                if (preserveMarkovHelper != null) {
-                    independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
-                } else {
-                    independent = test.checkIndependence(x, y, testSet).isIndependent();
-                }
-
-                if (independent) {
-                    return testSet;
+        for (Node f : ambiguousPool) {
+            for (Node s : pag.getAdjacentNodes(f)) {
+                if (pag.getEndpoint(s, f) == Endpoint.CIRCLE) {
+                    notFollowedSuperset.add(f);
+                    break;
                 }
             }
         }
 
-        return null;
-    }
+        // Try all subsets of notFollowedSuperset as the not-followed set, since we don't know
+        // which are colliders on their discriminating paths.
+        SublistGenerator gen = new SublistGenerator(notFollowedSuperset.size(), notFollowedSuperset.size());
+        int[] choice;
+        Set<Set<Node>> testSets = new HashSet<>();
 
-    private static @NotNull List<Node> getCommonNeighbors(Graph pag, Node x, Node y) {
-        List<Node> common = new ArrayList<>(pag.getAdjacentNodes(x));
-        common.retainAll(pag.getAdjacentNodes(y));
-        return common;
+        // Max-p state. The greedy rule returns at the first hit, so these stay unused unless useMaxP is on and
+        // no PreserveMarkov helper is in play (see the javadoc for why that helper forces the greedy rule).
+        boolean maxP = useMaxP && preserveMarkovHelper == null;
+        Set<Node> bestSet = null;
+        double bestStrength = Double.NEGATIVE_INFINITY;
+
+        while ((choice = gen.next()) != null) {
+            if (System.currentTimeMillis() > deadlineMs) {
+                TetradLogger.getInstance().log("\tTimeout reached while searching for DDP sepset");
+                break;
+            }
+
+            Set<Node> vNodesNotFollowed = GraphUtils.asSet(choice, notFollowedSuperset);
+
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+                    pag, x, y, Set.of(), vNodesNotFollowed, recursiveDepth, depth, -1,
+                    1, true, deadlineMs);
+
+            if (result.indeterminate()) {
+                continue;
+            }
+
+            if (!result.found()) {
+                continue;
+            }
+
+            // Only add back followed vNodes if the path analysis itself
+            // determined they were needed (i.e., they appear in the blocking set).
+            // Unconditionally adding them can condition on colliders, opening
+            // paths and causing the Markov check to fail.
+            Set<Node> blockingSet = result.blockingSet();
+            Set<Node> testSet = new HashSet<>(blockingSet);
+
+            if (testSets.contains(testSet)) {
+                continue;
+            }
+
+            testSets.add(testSet);
+
+            for (Node f : notFollowedSuperset) {
+                if (!vNodesNotFollowed.contains(f) && blockingSet.contains(f)) {
+                    testSet.add(f);
+                }
+            }
+
+            boolean independent;
+            if (preserveMarkovHelper != null) {
+                if (counter != null) counter.increment("findDdpSepsetRecursive (markov)");
+                independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
+            } else {
+                if (counter != null) counter.increment("findDdpSepsetRecursive (test)");
+                IndependenceResult independenceResult = test.checkIndependence(x, y, testSet);
+                independent = independenceResult.isIndependent();
+            }
+
+            if (independent) {
+                if (!maxP) {
+                    return testSet;
+                }
+
+                // Rank by strength of independence, which is LARGER-is-stronger for a p-value test and
+                // SMALLER-is-stronger for a score wrapped as a test; see IndependenceTest.isPValueAProbability.
+                // Comparing raw reported values would select the weakest sepset whenever the test is score-based.
+                IndependenceResult r = test.checkIndependence(x, y, testSet);
+                double strength = test.isPValueAProbability() ? r.getPValue() : -r.getScore();
+
+                if (strength > bestStrength) {
+                    bestStrength = strength;
+                    bestSet = testSet;
+                }
+            }
+        }
+
+        // Under max-p this is the strongest candidate seen; note that if the deadline broke the loop early it is
+        // the strongest among those reached, which is still a better answer than the null the greedy rule
+        // returns on timeout.
+        if (maxP && bestSet != null) {
+            return bestSet;
+        }
+
+//        TetradLogger.getInstance().log("\tRecursive DDP: No sepset found for " + x + " and " + y);
+        return null;
     }
 
     private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
@@ -172,8 +357,9 @@ public class RecursiveDiscriminatingPathRule {
             }
 
         }
-        List<Node> _vNodes = new ArrayList<>(vNodes);
-        return _vNodes;
+
+        return new ArrayList<>(vNodes);
     }
+
 }
 

@@ -135,11 +135,11 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
 
             ++current;
 
-            if (current == max) {
-                JOptionPane.showMessageDialog(
-                        StructEMBayesSearchEditorWizard.this,
-                        "There are no more variables.");
-            }
+//            if (current == max) {
+//                JOptionPane.showMessageDialog(
+//                        StructEMBayesSearchEditorWizard.this,
+//                        "There are no more variables.");
+//            }
 
             int set = (current < max) ? current : 0;
 

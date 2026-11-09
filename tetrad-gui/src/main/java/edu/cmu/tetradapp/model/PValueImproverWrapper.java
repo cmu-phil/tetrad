@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.work_in_progress.Hbsms;
 import edu.cmu.tetrad.search.work_in_progress.HbsmsBeam;
@@ -145,7 +144,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -161,7 +160,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -178,7 +177,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -194,7 +193,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -211,7 +210,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -227,7 +226,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -244,7 +243,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -260,7 +259,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -374,7 +373,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(this.graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
+            LayoutUtil.layoutByKnowledgeTiers(this.graph, knowledge);
         } else {
             LayoutUtil.defaultLayout(this.graph);
         }
@@ -494,7 +493,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+                exoData[i] = RandomUtil.getInstance().nextGaussian();
                 //            exoData[i] = randomUtil.nextUniform(-1, 1);
             }
 

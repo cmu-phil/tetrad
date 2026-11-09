@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.blocks;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 
 /**
@@ -46,7 +47,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code BpcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer bpc(DataSet data, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         return new BpcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
@@ -65,7 +66,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code FofcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer fofc(DataSet data, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer fofc(DataSet data, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         return new FofcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
@@ -81,7 +82,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code FtfcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer ftfc(DataSet data, double alpha, int ess, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer ftfc(DataSet data, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
         return new FtfcBlockDiscoverer(data, alpha, ess, policy, verbose);
     }
 
@@ -98,7 +99,7 @@ public final class BlockDiscoverers {
      * @param verbose a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code GffcBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer gffc(DataSet data, double alpha, int ess, int rMax, SingleClusterPolicy policy, boolean verbose) {
+    public static BlockDiscoverer gffc(DataSet data, double alpha, int ess, int rMax, SingletonClusterPolicy policy, boolean verbose) {
         return new GffcBlockDiscoverer(data, alpha, ess, rMax, policy, verbose);
     }
 
@@ -121,7 +122,114 @@ public final class BlockDiscoverers {
      * @param verbose       a flag indicating whether verbose output is enabled for debugging or detailed logs
      * @return a {@code TscTestBlockDiscoverer} instance configured with the specified parameters
      */
-    public static BlockDiscoverer tsc(DataSet data, double alpha, int ess, double ridge, int rMax, SingleClusterPolicy policy, int minRedundancy, boolean verbose) {
+    public static BlockDiscoverer tsc(DataSet data, double alpha, int ess, double ridge, int rMax, SingletonClusterPolicy policy, int minRedundancy, boolean verbose) {
         return new TscTestBlockDiscoverer(data, alpha, ess, ridge, rMax, policy, minRedundancy, verbose);
+    }
+
+    // ----- Pooled-covariance variants: run the algorithm on a supplied covariance matrix (for example, the -----
+    // ----- averaged covariance of several imputations; see BlocksUtil.pooledCovariance), with the           -----
+    // ----- representative data set anchoring the resulting BlockSpec.                                       -----
+
+    /**
+     * BPC over a pooled covariance matrix; see {@link BpcBlockDiscoverer}.
+     *
+     * @param data    the representative data set for the resulting BlockSpec
+     * @param pooled  the covariance matrix to run on, or null to compute it from the data set
+     * @param alpha   the significance level
+     * @param ess     the equivalent sample size
+     * @param policy  the single-cluster policy
+     * @param verbose whether verbose output is enabled
+     * @return a {@code BpcBlockDiscoverer} over the pooled matrix
+     */
+    public static BlockDiscoverer bpc(DataSet data, CovarianceMatrix pooled, double alpha, int ess,
+                                      SingletonClusterPolicy policy, boolean verbose) {
+        return new BpcBlockDiscoverer(data, pooled, alpha, ess, policy, verbose);
+    }
+
+    /**
+     * FOFC over a pooled covariance matrix; see {@link FofcBlockDiscoverer}.
+     *
+     * @param data    the representative data set for the resulting BlockSpec
+     * @param pooled  the covariance matrix to run on, or null to compute it from the data set
+     * @param alpha   the significance level
+     * @param ess     the equivalent sample size
+     * @param policy  the single-cluster policy
+     * @param verbose whether verbose output is enabled
+     * @return a {@code FofcBlockDiscoverer} over the pooled matrix
+     */
+    public static BlockDiscoverer fofc(DataSet data, CovarianceMatrix pooled, double alpha, int ess,
+                                       SingletonClusterPolicy policy, boolean verbose) {
+        return new FofcBlockDiscoverer(data, pooled, alpha, ess, policy, verbose);
+    }
+
+    /**
+     * Creates a FOFC block discoverer that runs in stratified (domain-pooled) mode when a domain column is named;
+     * see {@link FofcBlockDiscoverer#FofcBlockDiscoverer(DataSet, CovarianceMatrix, double, int,
+     * SingletonClusterPolicy, boolean, String)}.
+     *
+     * @param data         the dataset to analyze.
+     * @param pooled       the pooled covariance, or null; must be null when domainColumn is set.
+     * @param alpha        the significance level.
+     * @param ess          the equivalent sample size; ignored in stratified mode.
+     * @param policy       the single-cluster policy.
+     * @param verbose      whether verbose output is enabled.
+     * @param domainColumn the name of the domain column, or null for the ordinary behavior.
+     * @return the discoverer.
+     */
+    public static BlockDiscoverer fofc(DataSet data, CovarianceMatrix pooled, double alpha, int ess,
+                                       SingletonClusterPolicy policy, boolean verbose, String domainColumn) {
+        return new FofcBlockDiscoverer(data, pooled, alpha, ess, policy, verbose, domainColumn);
+    }
+
+    /**
+     * FTFC over a pooled covariance matrix; see {@link FtfcBlockDiscoverer}.
+     *
+     * @param data    the representative data set for the resulting BlockSpec
+     * @param pooled  the covariance matrix to run on, or null to compute it from the data set
+     * @param alpha   the significance level
+     * @param ess     the equivalent sample size
+     * @param policy  the single-cluster policy
+     * @param verbose whether verbose output is enabled
+     * @return a {@code FtfcBlockDiscoverer} over the pooled matrix
+     */
+    public static BlockDiscoverer ftfc(DataSet data, CovarianceMatrix pooled, double alpha, int ess,
+                                       SingletonClusterPolicy policy, boolean verbose) {
+        return new FtfcBlockDiscoverer(data, pooled, alpha, ess, policy, verbose);
+    }
+
+    /**
+     * GFFC over a pooled covariance matrix; see {@link GffcBlockDiscoverer}.
+     *
+     * @param data    the representative data set for the resulting BlockSpec
+     * @param pooled  the covariance matrix to run on, or null to compute it from the data set
+     * @param alpha   the significance level
+     * @param ess     the equivalent sample size
+     * @param rMax    the maximum rank
+     * @param policy  the single-cluster policy
+     * @param verbose whether verbose output is enabled
+     * @return a {@code GffcBlockDiscoverer} over the pooled matrix
+     */
+    public static BlockDiscoverer gffc(DataSet data, CovarianceMatrix pooled, double alpha, int ess, int rMax,
+                                       SingletonClusterPolicy policy, boolean verbose) {
+        return new GffcBlockDiscoverer(data, pooled, alpha, ess, rMax, policy, verbose);
+    }
+
+    /**
+     * TSC over a pooled covariance matrix; see {@link TscTestBlockDiscoverer}.
+     *
+     * @param data          the representative data set for the resulting BlockSpec
+     * @param pooled        the covariance matrix to run on, or null to compute it from the data set
+     * @param alpha         the significance level
+     * @param ess           the equivalent sample size
+     * @param ridge         the ridge regularization parameter
+     * @param rMax          the maximum rank
+     * @param policy        the single-cluster policy
+     * @param minRedundancy the minimum redundancy threshold
+     * @param verbose       whether verbose output is enabled
+     * @return a {@code TscTestBlockDiscoverer} over the pooled matrix
+     */
+    public static BlockDiscoverer tsc(DataSet data, CovarianceMatrix pooled, double alpha, int ess, double ridge,
+                                      int rMax, SingletonClusterPolicy policy, int minRedundancy, boolean verbose) {
+        return new TscTestBlockDiscoverer(data, pooled, alpha, ess, ridge, rMax, policy, minRedundancy, verbose);
     }
 }

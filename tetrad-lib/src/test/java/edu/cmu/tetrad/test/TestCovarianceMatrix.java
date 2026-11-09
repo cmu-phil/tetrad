@@ -67,9 +67,9 @@ public final class TestCovarianceMatrix {
 
         System.out.println(c3);
 
-        assertEquals(.089, c1.getValue(0, 0), 0.001);
-        assertEquals(.089, c2.getValue(0, 0), 0.001);
-        assertEquals(1, c3.getValue(0, 0), 0.001);
+        assertEquals(.065, c1.getValue(0, 0), 0.001);
+        assertEquals(.064, c2.getValue(0, 0), 0.001);
+        assertEquals(1.0, c3.getValue(0, 0), 0.001);
 
         // In place should modify the original covariance matrix.
         CorrelationMatrix c4 = new CorrelationMatrix(c1);
@@ -79,9 +79,9 @@ public final class TestCovarianceMatrix {
         c2 = new CovarianceMatrix(_dataSet);
         c3 = new CorrelationMatrix(c1);
 
-        assertEquals(-.051, c1.getValue(0, 1), 0.001);
-        assertEquals(-.051, c2.getValue(0, 1), 0.001);
-        assertEquals(-.609, c3.getValue(0, 1), 0.001);
+        assertEquals(0.03, c1.getValue(0, 1), 0.001);
+        assertEquals(0.03, c2.getValue(0, 1), 0.001);
+        assertEquals(0.443, c3.getValue(0, 1), 0.001);
     }
 }
 

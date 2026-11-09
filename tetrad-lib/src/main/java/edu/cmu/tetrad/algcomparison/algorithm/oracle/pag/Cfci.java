@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,6 +33,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -42,23 +45,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Conservative FCI. This is a wrapper for the CFCI algorithm in Tetrad, which is conservative in the same sense as CPC,
- * Conservative PC. That is, it checks, for triple &lt;X, Y, Z&gt;, whether orienting colliders or noncoliders can be
- * done unambiguously. If not, it leaves the edge undirected. It is also similar to FCI in that it allows for latent
- * common causes.
+ * CFCI (Conservative FCI). This is FCI with the first collider orientation rule (R0) replaced by the conservative
+ * rule: for each unshielded triple X *-* Z *-* Y with X and Y nonadjacent, all subsets S that render X and Y
+ * independent are enumerated, and Z is oriented as a collider only if Z is in none of them and as a noncollider only
+ * if Z is in all of them. Triples on which the subsets disagree are left unoriented and marked ambiguous.
+ * <p>
+ * This is a thin wrapper over {@link edu.cmu.tetrad.search.Fci} with the R0 collider rule pinned to
+ * {@code ColliderRule.CONSERVATIVE}; the collider orientation style is therefore deliberately not offered as a
+ * parameter here. The equivalent search can also be had from the FCI box by setting the collider orientation style to
+ * Conservative. This class is retained under its own name because CFCI is a published algorithm, and because sessions
+ * saved by Tetrad 7.6.10 and earlier refer to it by this class name.
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see edu.cmu.tetrad.search.Fci
+ * @see Fci
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CFCI",
         command = "cfci",
-        algoType = AlgType.allow_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.All
 )
-@Deprecated(since = "7.9", forRemoval = true)
 @Bootstrapping
-public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -74,36 +85,35 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Constructs a new conservative FCI algorithm.
+     * Constructor.
      */
     public Cfci() {
     }
 
     /**
-     * Constructs a new conservative FCI algorithm with the given independence test.
+     * Constructor.
      *
-     * @param test the independence test
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      */
     public Cfci(IndependenceWrapper test) {
         this.test = test;
     }
 
     /**
-     * Runs the search algorithm to discover the causal graph.
+     * Runs the search.
      *
-     * @param dataModel  The data model used for the search.
-     * @param parameters The parameters for the search algorithm.
-     * @return The discovered causal graph.
-     * @throws IllegalArgumentException if the data model is not an instance of DataSet when time lag is specified.
+     * @param dataModel  the data model containing the dataset
+     * @param parameters the parameters for the search algorithm
+     * @return the resulting PAG
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -111,23 +121,45 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(this.test.getTest(dataModel, parameters));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setKnowledge(this.knowledge);
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setPossibleDsepSearchDone(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test = new CachingIndependenceTest(test);
 
-        return search.search();
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+
+        // CFCI is FCI with the conservative R0 rule.
+        search.setR0ColliderRule(edu.cmu.tetrad.search.Fci.ColliderRule.CONSERVATIVE);
+
+        search.setKnowledge(this.knowledge);
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
-     * Retrieves the comparison graph by converting the given true directed graph into a partially directed graph (PAG)
-     * using the DAG to PAG transformation.
+     * Returns the comparison graph based on the true directed graph, if there is one.
      *
      * @param graph The true directed graph, if there is one.
-     * @return The comparison graph as a partially directed graph (PAG).
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -136,16 +168,17 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns the description of the algorithm.
+     * Returns a short, one-line description of this algorithm.
      *
      * @return The description of the algorithm.
      */
+    @Override
     public String getDescription() {
         return "CFCI (Conservative Fast Causal Inference) using " + this.test.getDescription();
     }
 
     /**
-     * Retrieves the data type required by the search algorithm.
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
      *
      * @return The data type required by the search algorithm.
      */
@@ -155,18 +188,24 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns the list of parameters used by the algorithm.
+     * Retrieves the list of parameters used by this algorithm.
      *
-     * @return The list of parameters used by the algorithm.
+     * @return The list of parameters used by this algorithm.
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        parameters.add(Params.FDR_Q);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
+        parameters.add(Params.GUARANTEE_PAG);
+
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
 
         parameters.add(Params.VERBOSE);
 
@@ -174,9 +213,9 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns the knowledge.
+     * Retrieves the knowledge object.
      *
-     * @return The knowledge.
+     * @return The knowledge object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -184,9 +223,9 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Sets the knowledge object for the algorithm.
+     * Sets the knowledge object for this method.
      *
-     * @param knowledge a knowledge object
+     * @param knowledge The knowledge object to set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -194,9 +233,9 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Retrieves the IndependenceWrapper used by the algorithm.
+     * Retrieves the {@link IndependenceWrapper} object associated with this method.
      *
-     * @return The IndependenceWrapper object.
+     * @return The IndependenceWrapper object associated with this method.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -204,7 +243,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Sets the independence wrapper for the algorithm.
+     * Sets the IndependenceWrapper object associated with this method.
      *
      * @param test the independence wrapper to set
      */
@@ -213,4 +252,3 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         this.test = test;
     }
 }
-

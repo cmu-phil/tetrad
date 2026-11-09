@@ -41,12 +41,17 @@ import java.util.List;
  *
  * @author josephramsey
  * @version $Id: $Id
+ * <p>
+ * <b>Backward compatibility only.</b> This class is retained under its original name so that sessions
+ * saved by Tetrad 7.6.10 and earlier, which refer to it by this class name, continue to load. Its
+ * registration annotations are commented out, so it is not offered in the algorithm chooser; new work
+ * should use the current class. The implementation is unchanged, so a restored session re-runs as before.
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Rank BIC Score",
-        command = "rank-bic-score",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Rank BIC Score",
+//        command = "rank-bic-score",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 @LinearGaussian
 public class RankBicScore implements ScoreWrapper {
 
@@ -81,7 +86,7 @@ public class RankBicScore implements ScoreWrapper {
         // If youâre using the Wilks-rank test:
         BlocksBicScore score = new BlocksBicScore(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
+        // BlocksBicScore no longer offers setEbicGamma, so the EBIC gamma parameter is not applied here.
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
 
         return score;

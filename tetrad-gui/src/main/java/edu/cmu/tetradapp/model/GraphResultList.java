@@ -25,31 +25,73 @@ import edu.cmu.tetrad.graph.Graph;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An ordered list of graphs, each paired with a name.
+ */
 public final class GraphResultList {
     private final List<Graph> graphs = new ArrayList<>();
     private final List<String> names = new ArrayList<>();
 
+    /**
+     * Constructs a new, empty GraphResultList.
+     */
+    public GraphResultList() {
+    }
+
+    /**
+     * Appends a graph with the given name.
+     *
+     * @param g    the graph
+     * @param name the name of the graph
+     */
     public void add(Graph g, String name) {
         graphs.add(g);
         names.add(name);
     }
 
+    /**
+     * Returns the graphs, in the order added. The returned list is the live backing list.
+     *
+     * @return the graphs
+     */
     public List<Graph> getGraphs() {
         return graphs;
     }
 
+    /**
+     * Returns the graph names, in the order added. The returned list is the live backing list.
+     *
+     * @return the names
+     */
     public List<String> getNames() {
         return names;
     }
 
+    /**
+     * Returns the number of graphs in the list.
+     *
+     * @return the number of graphs
+     */
     public int size() {
         return graphs.size();
     }
 
+    /**
+     * Returns the graph at the given index.
+     *
+     * @param i the index
+     * @return the graph at index i
+     */
     public Graph get(int i) {
         return graphs.get(i);
     }
 
+    /**
+     * Returns the name of the graph at the given index.
+     *
+     * @param i the index
+     * @return the name of the graph at index i
+     */
     public String getName(int i) {
         return names.get(i);
     }

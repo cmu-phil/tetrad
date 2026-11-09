@@ -22,6 +22,8 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.text.ParseException;
+
 /**
  * Created by jdramsey on 12/22/15.
  *
@@ -40,7 +42,8 @@ public interface Simulator extends TetradSerializable {
      * @param sampleSize      the number of rows to simulate.
      * @param latentDataSaved if true, latent variables are saved in the data set.
      * @return the simulated data set.
+     * @throws ParseException if the data set cannot be parsed.
      */
-    DataSet simulateData(int sampleSize, boolean latentDataSaved);
+    DataSet simulateData(int sampleSize, boolean latentDataSaved) throws ParseException;
 }
 

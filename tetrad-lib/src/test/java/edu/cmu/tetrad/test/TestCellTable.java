@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -300,24 +301,39 @@ public final class TestCellTable {
     }
 
     public void setUp() {
-
-//        // Add data to table.
-        List<Node> variables = new LinkedList<>();
+        List<DiscreteVariable> variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X1", 2));
         variables.add(new DiscreteVariable("X2", 2));
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
-        int[] indices = {0, 1, 2, 3};
+        // Convert row-major this.data (int[row][col]) to column-major int[][] (int[col][row])
+        // as expected by the new CellTableCountSample constructor
+        int numRows = this.data.length;
+        int numCols = this.data[0].length;
+        int[][] columnMajorData = new int[numCols][numRows];
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                columnMajorData[j][i] = this.data[i][j];
+            }
+        }
 
-        for (int i = 0; i < this.data.length; i++) {
-            for (int j = 0; j < this.data[0].length; j++) {
+        int[] indices = {0, 1, 2, 3};
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < numRows; i++) rows.add(i);
+
+        this.table1 = new CellTableCountSample(columnMajorData, variables, indices, rows);
+
+        List<Node> nodes = new ArrayList<>(variables);
+
+        // CellTableAdTree still takes a DataSet, so build one for table2
+        BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(numRows, numCols), nodes);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
                 dataSet.setInt(i, j, this.data[i][j]);
             }
         }
 
-        this.table1 = new CellTableCountSample(dataSet, indices);
         this.table2 = new CellTableAdTree(dataSet, indices);
     }
 

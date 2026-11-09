@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.TimeSeriesData;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -129,7 +129,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
-        return FastMath.max(this.maxRowCount, 100);
+        return TMath.max(this.maxRowCount, 100);
     }
 
     /**

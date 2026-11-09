@@ -152,11 +152,11 @@ public class CompareTwoGraphs {
                 if (edge2 == null) {
                     wrong = true;
                 } else {
-                    if (edge1.getEndpoint(x) == Endpoint.ARROW && edge2.getEndpoint(x) == Endpoint.TAIL) {
+                    if (edge1.getProximalEndpoint(x) == Endpoint.ARROW && edge2.getProximalEndpoint(x) == Endpoint.TAIL) {
                         wrong = true;
                     }
 
-                    if (edge1.getEndpoint(x) == Endpoint.TAIL && edge2.getEndpoint(x) == Endpoint.ARROW) {
+                    if (edge1.getProximalEndpoint(x) == Endpoint.TAIL && edge2.getProximalEndpoint(x) == Endpoint.ARROW) {
                         wrong = true;
                     }
 
@@ -271,12 +271,58 @@ public class CompareTwoGraphs {
      * @return The comparison string.
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
+        return getStatsListTable(trueGraph, targetGraph, dataModel, elapsedTime, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long)}, but with the true DAG given separately from the
+     * comparison graph; see {@link #getStatsListTable(Graph, Graph, Graph, DataModel, long, List)}.
+     *
+     * @param trueDag     The true DAG, including latents, or null if none is available.
+     * @param trueGraph   The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, Graph targetGraph, DataModel dataModel,
+                                           long elapsedTime) {
+        return getStatsListTable(trueDag, trueGraph, targetGraph, dataModel, elapsedTime, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long)}, but with the statistics to show given
+     * explicitly, in display order.
+     *
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @param statistics  The statistics to show.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime,
+                                           List<Statistic> statistics) {
+        return getStatsListTable(trueGraph, trueGraph, targetGraph, dataModel, elapsedTime, statistics);
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long, List)}, but with the true DAG given separately
+     * from the comparison graph. Statistics that ask DAG-level questions (ancestry, latent confounding) read them
+     * off trueDag; statistics that compare adjacencies and endpoints use trueGraph, which may be the CPDAG or PAG
+     * of trueDag. The overloads without a trueDag pass trueGraph for both.
+     *
+     * @param trueDag     The true DAG, including latents, or null if none is available.
+     * @param trueGraph   The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @param statistics  The statistics to show.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, Graph targetGraph, DataModel dataModel,
+                                           long elapsedTime, List<Statistic> statistics) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
-
-//        System.out.println("_target graph =  " + _targetGraph);
-//        System.out.println("target graph = " + targetGraph);
-
-        List<Statistic> statistics = statistics();
 
         TextTable table = new TextTable(statistics.size() + 1, 3);
         NumberFormat nf = new DecimalFormat("0.###");
@@ -287,7 +333,7 @@ public class CompareTwoGraphs {
 
         for (Statistic statistic : statistics) {
             try {
-                values.add(statistic.getValue(trueGraph, trueGraph, _targetGraph, dataModel, new Parameters()));
+                values.add(statistic.getValue(trueDag, trueGraph, _targetGraph, dataModel, new Parameters()));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {
@@ -312,7 +358,213 @@ public class CompareTwoGraphs {
         return table.toString();
     }
 
+    /**
+     * Returns a string representing a table of statistics for several target graphs against a single true graph,
+     * one column per target. Statistics that fail (or return NaN) for a target are shown as "-" in that column;
+     * rows where every target fails are omitted. This is the multi-target generalization of
+     * {@link #getStatsListTable(Graph, Graph, DataModel, long)}, used by the GUI comparison boxes when more than
+     * one graph source is attached, and usable from py-tetrad as well.
+     *
+     * @param trueGraph    The true graph.
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
+                                           DataModel dataModel, List<Long> elapsedTimes) {
+        return getStatsListTable(trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List)}, but with the true DAG given separately from
+     * the comparison graph; see {@link #getStatsListTable(Graph, Graph, Graph, DataModel, long, List)}.
+     *
+     * @param trueDag      The true DAG, including latents, or null if none is available.
+     * @param trueGraph    The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, List<Graph> targetGraphs,
+                                           List<String> targetNames, DataModel dataModel, List<Long> elapsedTimes) {
+        return getStatsListTable(trueDag, trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List)}, but with the statistics to show given
+     * explicitly, in display order.
+     *
+     * @param trueGraph    The true graph.
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @param statistics   The statistics to show.
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
+                                           DataModel dataModel, List<Long> elapsedTimes,
+                                           List<Statistic> statistics) {
+        return getStatsListTable(trueGraph, trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics);
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List, List)}, but with the true DAG given
+     * separately from the comparison graph; see {@link #getStatsListTable(Graph, Graph, Graph, DataModel, long, List)}
+     * for the division of labor between the two.
+     *
+     * @param trueDag      The true DAG, including latents, or null if none is available.
+     * @param trueGraph    The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @param statistics   The statistics to show.
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, List<Graph> targetGraphs,
+                                           List<String> targetNames, DataModel dataModel, List<Long> elapsedTimes,
+                                           List<Statistic> statistics) {
+        if (targetGraphs.size() != targetNames.size()) {
+            throw new IllegalArgumentException("One name per target graph expected.");
+        }
+        NumberFormat nf = new DecimalFormat("0.###");
+        int numTargets = targetGraphs.size();
+
+        String[][] cells = new String[statistics.size()][numTargets];
+        boolean[] anyValue = new boolean[statistics.size()];
+
+        for (int j = 0; j < numTargets; j++) {
+            Graph _targetGraph = GraphUtils.replaceNodes(targetGraphs.get(j), trueGraph.getNodes());
+
+            for (int i = 0; i < statistics.size(); i++) {
+                try {
+                    double value = statistics.get(i).getValue(trueDag, trueGraph, _targetGraph, dataModel,
+                            new Parameters());
+                    cells[i][j] = Double.isNaN(value) ? "-" : nf.format(value);
+                    anyValue[i] = true;
+                } catch (Exception e) {
+                    cells[i][j] = "-";
+                }
+            }
+        }
+
+        boolean anyElapsed = false;
+
+        if (elapsedTimes != null) {
+            for (Long time : elapsedTimes) {
+                if (time != null && time >= 0) {
+                    anyElapsed = true;
+                    break;
+                }
+            }
+        }
+
+        int numRows = 1; // header
+
+        for (boolean b : anyValue) {
+            if (b) {
+                numRows++;
+            }
+        }
+
+        if (anyElapsed) {
+            numRows++;
+        }
+
+        TextTable table = new TextTable(numRows, numTargets + 2);
+        table.setJustification(TextTable.LEFT_JUSTIFIED);
+
+        table.setToken(0, 0, "Stat");
+
+        for (int j = 0; j < numTargets; j++) {
+            table.setToken(0, j + 1, targetNames.get(j));
+        }
+
+        table.setToken(0, numTargets + 1, "Description");
+
+        int row = 1;
+
+        for (int i = 0; i < statistics.size(); i++) {
+            if (!anyValue[i]) {
+                continue;
+            }
+
+            table.setToken(row, 0, statistics.get(i).getAbbreviation());
+
+            for (int j = 0; j < numTargets; j++) {
+                table.setToken(row, j + 1, cells[i][j]);
+            }
+
+            table.setToken(row, numTargets + 1, statistics.get(i).getDescription());
+            row++;
+        }
+
+        if (anyElapsed) {
+            table.setToken(row, 0, "Elapsed");
+
+            for (int j = 0; j < numTargets; j++) {
+                Long time = elapsedTimes.get(j);
+                table.setToken(row, j + 1, (time == null || time < 0) ? "-" : nf.format(time / 1000.0));
+            }
+
+            table.setToken(row, numTargets + 1, "Wall time (s)");
+        }
+
+        return table.toString();
+    }
+
+    /**
+     * Returns the statistics shown by default in the stats list comparison, in display order. The Elapsed (wall
+     * time) row is not a statistic; the table methods append it separately when an elapsed time is supplied.
+     *
+     * @return a new list of the default statistics.
+     */
+    public static List<Statistic> defaultStatistics() {
+        return statistics();
+    }
+
+    /**
+     * Returns a broader, curated set of statistics suitable for the stats list comparison, with duplicate
+     * abbreviations removed. This includes some statistics (e.g., SHD compared to the CPDAG) that need constructor
+     * arguments and so cannot be found by a reflection scan for no-argument constructors; choosers should offer
+     * these in addition to the defaults.
+     *
+     * @return a new list of the curated statistics.
+     */
+    public static List<Statistic> curatedStatistics() {
+        List<Statistic> unique = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+
+        for (Statistic statistic : allCuratedStatistics()) {
+            if (seen.add(statistic.getAbbreviation())) {
+                unique.add(statistic);
+            }
+        }
+
+        return unique;
+    }
+
     private static List<Statistic> statistics() {
+        List<Statistic> statistics = new ArrayList<>();
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new NumberOfEdgesEst());
+        statistics.add(new NumberOfEdgesTrue());
+        return statistics;
+    }
+
+    private static List<Statistic> allCuratedStatistics() {
         List<Statistic> statistics = new ArrayList<>();
 
         // Others
@@ -361,9 +613,13 @@ public class CompareTwoGraphs {
         statistics.add(new NumPartiallyOrientedEdges());
         statistics.add(new NumNondirectedEdges());
         statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new AncestorPrecision());
+        statistics.add(new AncestorRecall());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
+        statistics.add(new NumVisibleEdges());
+        statistics.add(new NumCorrectVisibleEdges());
         statistics.add(new LegalCpdag());
         statistics.add(new LegalPag());
         statistics.add(new Maximal());

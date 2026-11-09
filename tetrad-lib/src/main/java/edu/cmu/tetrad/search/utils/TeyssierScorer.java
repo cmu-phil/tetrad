@@ -25,12 +25,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static org.apache.commons.math3.util.FastMath.floor;
+import static edu.cmu.tetrad.util.TMath.floor;
 
 
 /**
@@ -77,7 +78,7 @@ public class TeyssierScorer {
         if (test == null && score == null) throw new IllegalArgumentException("Required: test or score");
 //        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        this.variables = score.getVariables();
+        this.variables = score != null ? score.getVariables() : test.getVariables();
         this.pi = new ArrayList<>(this.variables);
         Map<Node, Integer> variablesHash = new HashMap<>();
         nodesHash(variablesHash, this.variables);
@@ -86,7 +87,7 @@ public class TeyssierScorer {
         this.test = test;
         this.score = score;
 
-        setUseScore(true);
+        setUseScore(score != null);
         if (this.useScore) {
             for (Node node : this.variables) {
                 this.trees.put(node, new GrowShrinkTree(score, variablesHash, node));
@@ -111,6 +112,14 @@ public class TeyssierScorer {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+
+        // If the test is GraphScore, this.trees won't have been populated, so
+        // we can't set the knowledge on the trees. We still need to set the
+        // knowledge on the score, though. This is an issue for GraSP-FCI, which
+        // uses the GraphScore to compute the score. jdramsey 2026-4-9
+        if (this.score == null || this.score instanceof GraphScore) {
+            return;
+        }
 
         for (Node node : this.variables) {
             List<Node> required = new ArrayList<>();
@@ -208,8 +217,8 @@ public class TeyssierScorer {
         int minj = Integer.MAX_VALUE;
         for (Node node : j) {
             jIndices.add(index(node));
-            maxj = Math.max(maxj, index(node));
-            minj = Math.min(minj, index(node));
+            maxj = TMath.max(maxj, index(node));
+            minj = TMath.min(minj, index(node));
         }
 
         int kIndex = index(k);
@@ -402,12 +411,12 @@ public class TeyssierScorer {
     }
 
     /**
-     * Returns the DAG build for the current permutation, or its CPDAG.
+     * Returns the DAG build for the current permutation, or its PDAG.
      *
-     * @param cpDag True iff the CPDAG should be returned, False if the DAG.
+     * @param cpdag True iff the PDAG should be returned, False if the DAG.
      * @return This graph.
      */
-    public Graph getGraph(boolean cpDag) {
+    public Graph getGraph(boolean cpdag) {
         Graph graph = new EdgeListGraph(this.variables);
         for (Node a : this.variables) {
             for (Node b : getParents(a)) {
@@ -415,7 +424,7 @@ public class TeyssierScorer {
             }
         }
 
-        if (cpDag) {
+        if (cpdag) {
             MeekRules rules = new MeekRules();
             rules.setKnowledge(this.knowledge);
             rules.setVerbose(false);

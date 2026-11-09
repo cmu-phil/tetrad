@@ -27,6 +27,8 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -67,14 +69,20 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "CG-BIC (Conditional Gaussian BIC Score)");
         this.dataSet = dataSet;
         ConditionalGaussianScore conditionalGaussianScore =
                 new ConditionalGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet),
                         parameters.getDouble("penaltyDiscount"),
-                        parameters.getBoolean("discretize"));
+                        parameters.getBoolean("discretize"),
+                        MissingDataUtils.fromParameters(parameters));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));
         conditionalGaussianScore.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt(Params.MIN_SAMPLE_SIZE_PER_CELL));
+        // Before 2026-8-25 the next line called setNumCategoriesToDiscretize with the MIN_SAMPLE_SIZE_PER_CELL
+        // value, so the minimum cell size never reached the likelihood (it stayed at its internal default) and
+        // the discretization category count was silently replaced by the min-cell value (4 by default, not 3).
+        conditionalGaussianScore.setMinSampleSizePerCell(parameters.getInt(Params.MIN_SAMPLE_SIZE_PER_CELL));
+        conditionalGaussianScore.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return conditionalGaussianScore;
     }
 
@@ -106,6 +114,8 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         parameters.add(Params.DISCRETIZE);
         parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         parameters.add(Params.MIN_SAMPLE_SIZE_PER_CELL);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

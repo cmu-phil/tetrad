@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -36,7 +38,7 @@ import java.io.Serial;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class EdgewiseComparisonEditor extends JPanel {
+public class EdgewiseComparisonEditor extends JPanel implements DoNotScroll {
 
     @Serial
     private static final long serialVersionUID = 7921819261142670181L;
@@ -71,9 +73,9 @@ public class EdgewiseComparisonEditor extends JPanel {
     private void setup() {
         setLayout(new BorderLayout());
 
-        JPanel pane = new JPanel();
+//        JPanel pane = new JPanel();
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        Font font = ThemeUtils.monospaced(14);
         area = new JTextArea();
         area.setText(tableTextWithHeader());
 
@@ -87,11 +89,11 @@ public class EdgewiseComparisonEditor extends JPanel {
         }
 
         JScrollPane scrollTextPane = new JScrollPane(area);
-        scrollTextPane.setPreferredSize(new Dimension(500, 600));
+//        scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
-        pane.add(scrollTextPane, new BorderLayout());
+//        pane.add(scrollTextPane, new BorderLayout());
 
-        add(pane);
+        add(scrollTextPane);
 
         add(menubar(), BorderLayout.NORTH);
     }
@@ -100,8 +102,8 @@ public class EdgewiseComparisonEditor extends JPanel {
     private JMenuBar menubar() {
         JMenuBar menubar = new JMenuBar();
         JMenu menu = new JMenu("Compare To...");
-        JMenuItem graph = new JCheckBoxMenuItem("DAG");
-        graph.setBackground(Color.WHITE);
+        JMenuItem graph = new JCheckBoxMenuItem("Truth");
+//        graph.setBackground(Color.WHITE);
         JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
         cpdag.setBackground(Color.YELLOW);
         JMenuItem pag = new JCheckBoxMenuItem("PAG");
@@ -134,9 +136,9 @@ public class EdgewiseComparisonEditor extends JPanel {
         }
 
         graph.addActionListener(e -> {
-            this.params.set("graphComparisonType", "DAG");
+            this.params.set("graphComparisonType", "Truth");
             menu.setText("Compare to Truth...");
-            menu.setBackground(Color.WHITE);
+//            menu.setBackground(Color.WHITE);
 
             new WatchedProcess() {
                 @Override

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -396,7 +396,7 @@ class BayesEstimatorNodeEditingTable extends JTable {
             col = getNumParents();
         }
 
-        this.focusCol = FastMath.max(col, getNumParents());
+        this.focusCol = TMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
             this.focusCol < getColumnCount()) {
@@ -560,6 +560,12 @@ class BayesEstimatorNodeEditingTable extends JTable {
             if ("".equals(aValue) || aValue == null) {
                 getBayesIm().setProbability(getNodeIndex(), row, colIndex,
                         Double.NaN);
+
+                // If the deleted cell was the only empty cell in the row, immediately fill it in with one minus
+                // the sum of the other cells, so that deleting a cell recomputes it as the complement rather than
+                // leaving a hole. Rows with two or more empty cells are left alone.
+                fillInSingleRemainingColumn(row);
+
                 fireTableRowsUpdated(row, row);
                 getPcs().firePropertyChange("modelChanged", null, null);
                 return;
@@ -636,6 +642,12 @@ class BayesEstimatorNodeEditingTable extends JTable {
 
             if (leftOverColumn != -1) {
                 double difference = 1.0 - sumInRow(rowIndex, leftOverColumn);
+
+                // The other cells are rounded for display, so the complement can come out a hair below zero.
+                if (difference < 0.0) {
+                    difference = 0.0;
+                }
+
                 getBayesIm().setProbability(getNodeIndex(), rowIndex,
                         leftOverColumn, difference);
             }

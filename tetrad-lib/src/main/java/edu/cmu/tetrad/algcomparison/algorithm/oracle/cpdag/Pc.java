@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,6 +33,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -57,7 +59,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -95,7 +97,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -113,6 +115,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         };
 
         IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test = new CachingIndependenceTest(test);
 
         Graph graph;
 
@@ -125,6 +128,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         search.setColliderOrientationStyle(colliderOrientationStyle);
         search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
                 : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
+        search.setOrderRefinement(parameters.getBoolean(Params.PC_ORDER_REFINEMENT));
+        search.setRefinementAlpha(parameters.getDouble(Params.PC_REFINEMENT_ALPHA));
 
         double fdrQ = parameters.getDouble(Params.FDR_Q);
 
@@ -176,6 +181,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.ALLOW_BIDIRECTED);
+        parameters.add(Params.PC_ORDER_REFINEMENT);
+        parameters.add(Params.PC_REFINEMENT_ALPHA);
         parameters.add(Params.DEPTH);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
@@ -213,8 +220,10 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
+        if (test == null) {
+            throw new NullPointerException("Independence test must not be null.");
+        }
         this.test = test;
     }
-
 }
 

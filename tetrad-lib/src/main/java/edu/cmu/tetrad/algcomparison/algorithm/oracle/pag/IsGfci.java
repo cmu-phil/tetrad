@@ -24,11 +24,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -37,6 +34,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.is.IsBDeuScore2;
 import edu.cmu.tetrad.search.is.IsScore;
@@ -52,14 +50,14 @@ import java.util.List;
  * IS-GFCI (Instance-Specific GFCI) wrapper for the algcomparison interface. Uses a discrete instance-specific score
  * (ISBDeuScore), a score for FGES, plus a population BDeu score for the base FGES machinery.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IS-GFCI",
-        command = "is-gfci",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-@Experimental
-public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IS-GFCI",
+//        command = "is-gfci",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
+public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -106,7 +104,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
             if (instVar == null) {
                 throw new IllegalArgumentException("Instance dataset missing variable: " + name);
             }
-            cols[i] = other.getColumn(instVar);
+            cols[i] = other.getColumnIndex(instVar);
         }
 
         DataSet projected = other.subsetColumns(cols);
@@ -194,6 +192,7 @@ public class IsGfci extends AbstractBootstrapAlgorithm implements Algorithm, Has
 
         // Independence test on the training data
         IndependenceTest independenceTest = this.test.getTest(dataModel, parameters);
+        independenceTest = new CachedIndependenceQueries(independenceTest);
 
         // IGFCI driver (constructor signature must match your work_in_progress IGFci)
         IsGFci search =

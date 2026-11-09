@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -36,11 +36,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -52,6 +54,19 @@ import java.util.List;
  * causal structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based
  * steps afterward.
  *
+ * <p><b>Thoroughness settings.</b> The underlying search now exposes a set of knobs that trade completeness for speed.
+ * Every one of them defaults to the full algorithm, so this wrapper leaves them alone; the {@code runSearch} method
+ * carries a commented block showing each knob at its default with a note on what turning it down costs. The
+ * output-identical optimizations (legality memo, negative sweep cache, independence-query cache) are always on and need
+ * no configuration: the first two are unconditional inside the search, and the third is the
+ * {@link CachedIndependenceQueries} wrap performed below.</p>
+ *
+ * <p>None of the thoroughness knobs are registered as {@link Params} constants, deliberately: turning one of them down
+ * changes what the algorithm is guaranteed to find, and that is a decision to make in code with the reason recorded,
+ * not a checkbox in a GUI. To promote one anyway, add a constant to {@code Params}, a description to the parameter
+ * properties file, a line to {@link #getParameters()}, and replace the commented setter with a
+ * {@code parameters.get...} call.</p>
+ *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -62,7 +77,7 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -133,7 +148,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -144,39 +159,205 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
 
-        if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-                throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
-            }
+        // Oracle input with a BOSS start is supported since 2026-10-10 (Boss accepts a GraphScore and scores a
+        // permutation by the edge count of its grow-shrink DAG; see Boss and TestBossOracle). The one caveat is
+        // BOSS's own: with an m-separation oracle, the BES step is what guarantees that the CPDAG of the true DAG
+        // is returned, so warn if it has been turned off rather than refuse the run.
+        if (test instanceof MsepTest && parameters.getInt(Params.FCIT_STARTS_WITH) == 1
+            && !parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE)) {
+            TetradLogger.getInstance().log("FCIT with a d-separation oracle and a BOSS start: the BES step is off, "
+                                           + "so BOSS is not guaranteed to return the CPDAG of the true DAG; turn "
+                                           + "useBes on for an exact oracle run.");
         }
 
-        edu.cmu.tetrad.search.Fcit search = new edu.cmu.tetrad.search.Fcit(test, score);
+        // Tier-0 optimization (output-identical): the sweep retests the same (x, y, S) across the two proposal views,
+        // across rounds, and in the completion layer. Caching those queries changes nothing about which candidates are
+        // proposed or which separator is recorded.
+        //
+        // CAVEAT for tests with internal randomness (RCIT and friends): caching makes repeated queries CONSISTENT
+        // rather than independently random, which is a behavior change -- arguably an improvement, since it makes the
+        // run self-consistent, but not a no-op. If that is not wanted, drop the wrap for those tests.
+        test = new CachedIndependenceQueries(test);
+
+        edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations fcit = new edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations(test, score);
 
         // BOSS
-        search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
-        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        fcit.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
+        fcit.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        fcit.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
 
         // FCIT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        fcit.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        fcit.setDepth(parameters.getInt(Params.DEPTH));
+        fcit.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        fcit.setRbRadius(parameters.getInt(Params.RB_RADIUS));
+        fcit.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
+        fcit.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+//        fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.OFF);
+
+//        fcit.setUseMarkFlipEscalation(true);
+//        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
+
+        fcit.setUseMarkFlipEscalation(true);
+        // The warrant for the result, a three-way choice (the saturating step is not a separate switch: it runs
+        // exactly when neither gate is on). 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step.
+        int correctness = parameters.getInt(Params.FCIT_CORRECTNESS);
+        if (correctness == 1) {
+            fcit.setRequireImapStates(true);
+            fcit.setUseSaturatingStep(false);
+        } else if (correctness == 2) {
+            fcit.setRequireNoScoreDrop(true);
+            fcit.setUseSaturatingStep(false);
+        } else if (correctness == 3) {
+            fcit.setUseSaturatingStep(true);
+        } else {
+            throw new IllegalArgumentException("Unknown FCIT correctness option: " + correctness
+                    + " (1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step).");
+        }
+        fcit.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
+
+        // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
+        // different candidate family and can return a different graph. For enumeration harnesses and any experiment
+        // that must reproduce, set TEST_TIMEOUT to -1 and use setMaxTestsPerPair(...) below instead. A wall-clock
+        // budget also degrades the negative sweep cache, since budget-truncated failures are indeterminate and are
+        // deliberately not cached.
+        fcit.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+
+        fcit.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+
+        fcit.setGraspUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.SP);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
 
-        // General
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setKnowledge(this.knowledge);
+        // =====================================================================================================
+        // THOROUGHNESS SETTINGS
+        //
+        // Every line below is COMMENTED OUT and shows the value the fcit already uses by default, so the code as
+        // written runs the full algorithm. Uncommenting any of them trades completeness for speed. The knobs are
+        // listed in rough order of value-per-fidelity-lost: take them from the top.
+        //
+        // Anything uncommented here invalidates the exhaustive-enumeration certification, so re-run PKE12 before
+        // trusting a tuned configuration on anything that matters.
+        // =====================================================================================================
 
-        return search.search();
+        // --- Sweep enumeration caps -------------------------------------------------------------------------
+        //
+        // The sweep's outer layer is a powerset over the ambiguous nodes (the not-followed enumeration), and it is
+        // the only exponential on the common path: 2^|A| recursive-blocking calls per edge per view. Capping it is
+        // by far the largest speedup available short of changing what gets recorded. Withholding many nodes from
+        // traversal at once is rarely what finds a separator, so a cap of 2-3 keeps most of the reach.
+        //
+        // Cost: the family is no longer the one Def. rb-step specifies, and the coverage argument over labelings of
+        // B no longer applies -- missed separators fall through to the completion layer, which is slower, so an
+        // over-aggressive cap can be a net loss. Measure.
+        //
+//         fcit.setSweepNfMaxSize(3);        // default -1 (unlimited)
+//         fcit.setSweepAddMaxSize(2);       // default -1 (unlimited)
+//         fcit.setSweepRemoveMaxSize(-1);   // default -1 (unlimited)
+
+        // --- Second proposal view ---------------------------------------------------------------------------
+        //
+        // Halves sweep cost by searching only the marked graph, never the bare skeleton. Forfeits Rem.
+        // blind-proposal: separators hidden by a wrong interim mark become unreachable except through the
+        // completion layer.
+        //
+        // fcit.setUseBlindView(false);      // default true
+
+        // --- Deterministic per-pair budget ------------------------------------------------------------------
+        //
+        // Reproducible replacement for TEST_TIMEOUT: caps independence tests per pair across both views.
+        // Exhausting it yields an INDETERMINATE sweep, not a not-found verdict, so the final report still
+        // distinguishes "no phantom confirmed within budget" from "no phantom exists". Use this, not the
+        // wall-clock timeout, in enumeration runs.
+        //
+        // fcit.setMaxTestsPerPair(20000L);  // default -1 (unlimited)
+
+        // --- Completion layer -------------------------------------------------------------------------------
+        //
+        // This is the layer that makes the oracle guarantee unconditional (Prop. completion). Turn it down LAST.
+        //
+        //   FULL      possible-D-SEP stage plus all-nodes escalation. Default. The only setting under which
+        //             every spurious edge is confirmable with no coverage hypothesis.
+        //   POOL_ONLY drops the escalation. Sound, and complete unless an unsound TAIL hides a pool member --
+        //             a case not yet observed at six variables, so this is cheap insurance to give up.
+        //   OFF       reverts to the recursive-blocking family alone, i.e. to the out-of-B coverage condition,
+        //             which is REFUTED at six observed variables. Use only to measure the gap.
+        //
+//         fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.POOL_ONLY);  // default FULL
+//         fcit.setCompletionMaxSubsetSize(4);   // default -1 (DEPTH still applies)
+
+        // --- Final detection scan ---------------------------------------------------------------------------
+        //
+        // Skips the discriminating-path scan and the discharge it feeds. Confirmed-spurious legs that neither
+        // single-edge removal nor the saturating pass caught are then neither reported nor removed. Reasonable in
+        // a benchmark; wrong in a harness.
+        //
+//         fcit.setDetectionEnabled(false);  // default true
+
+        // --- Small-subset shortcut pass (NOT output-identical) ----------------------------------------------
+        //
+        // Tests subsets of the common neighborhood by increasing size before invoking recursive blocking. Most
+        // separators are small and live there, so this answers the majority of pairs in a handful of tests. It
+        // records SMALLER separators, which changes orientations and therefore trajectories -- PKE12 must be
+        // re-run to bless any nonzero value.
+        //
+        // Worth running as an experiment rather than adopting blind: per Rem. displacement, minimal separators may
+        // be less likely to contain the far endpoint that arms R1's displacement, so this could lower the
+        // completion-layer firing rate as well as the runtime. Compare violation counts AND "PDS COMPLETION" log
+        // counts against a default run.
+        //
+        // fcit.setQuickSubsetDepth(2);      // default -1 (off)
+
+        // --- Recursive-blocking sweep, i.e. completion-only mode (NOT output-identical) ---------------------
+        //
+        // Turns the sweep off entirely. The completion layer then becomes the sole source of separators: it
+        // records them in foundSepsets, the legality-gated removal loop and the saturating pass discharge them
+        // from there, and no recursive blocking runs anywhere. What is left is FCI-style subset enumeration with
+        // a legality gate and a saturating close -- unconditionally complete at the oracle (Prop. completion),
+        // since the guarantee never depended on the sweep in the first place.
+        //
+        // Counterintuitively this may be FASTER at small p, not slower: a pair admits at most 2^(p-2) candidate
+        // sets, while the sweep runs a powerset of not-followed sets with a recursive-blocking call apiece. At
+        // six observed variables that is 16 candidates against a considerably larger family, so completion-only
+        // is a serious contender for enumeration harnesses. The trade inverts sharply as p grows, which is the
+        // whole reason recursive blocking exists and why the sweep is the default.
+        //
+        // Recorded separators become minimal, since completion enumerates by increasing size, so orientations
+        // and trajectories change and PKE12 must be re-run to bless it -- the same caveat as the shortcut pass
+        // above, and the same reason to be curious: minimal separators may lower the displacement firing rate.
+        //
+        // Do not combine with CompletionPolicy.OFF: that configuration has no separator-finding machinery left
+        // and will remove no edges at all.
+        //
+        // fcit.setUseRecursiveBlockingSweep(false);  // default true
+
+        // --- Legality memo audit ----------------------------------------------------------------------------
+        //
+        // The legality memo assumes the from-scratch reorientation is a deterministic function of
+        // (skeleton, sepsets). Audit mode recomputes every memo hit and logs mismatches, which is how residual
+        // hash-order dependence in FciOrient would show itself. Slower than either memo-on or memo-off; run once
+        // after touching the orientation code, then turn it back off.
+        //
+        // fcit.setAuditLegalityMemo(true);  // default false
+
+        // =====================================================================================================
+
+        // General
+        fcit.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        fcit.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
+        fcit.setKnowledge(this.knowledge);
+
+        return fcit.search();
     }
 
     /**
@@ -198,7 +379,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      */
     @Override
     public String getDescription() {
-        return "FCIT (FCI Targeted Testing) using "+ this.test.getDescription() + " and " + this.score.getDescription();
+        return "FCIT (FCI Targeted Testing) using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
@@ -214,6 +395,11 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     /**
      * Retrieves the list of parameters used by the algorithm.
      *
+     * <p>The thoroughness knobs of {@link #runSearch} are intentionally absent: each of them changes what the
+     * algorithm is guaranteed to find, which is a decision that belongs in code next to its justification rather than
+     * in a settings dialog. To expose one, add a {@link Params} constant, a description in the parameter properties
+     * file, a line here, and a {@code parameters.get...} call in place of the commented setter.</p>
+     *
      * @return The list of parameters used by the algorithm.
      */
     @Override
@@ -221,19 +407,31 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+
+        // GRaSP (used only when starting with GRaSP)
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
 
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.RB_RADIUS);
+        params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.TEST_TIMEOUT);
+        params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.IMAP_ALPHA);
 
         // General
         params.add(Params.TIME_LAG);
+        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
+
         params.add(Params.VERBOSE);
+        params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         return params;
     }
@@ -288,4 +486,3 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         this.test = independenceWrapper;
     }
 }
-

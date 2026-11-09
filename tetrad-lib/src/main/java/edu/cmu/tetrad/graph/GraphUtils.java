@@ -21,17 +21,19 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.AndersonDarlingTest;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MagToPag;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -392,8 +394,8 @@ public final class GraphUtils {
             } else if (graph.getEdges(n0, n1).size() == 2) {
                 buf.append("<=>");
             } else {
-                Endpoint endpoint0 = edge.getEndpoint(n0);
-                Endpoint endpoint1 = edge.getEndpoint(n1);
+                Endpoint endpoint0 = edge.getProximalEndpoint(n0);
+                Endpoint endpoint1 = edge.getProximalEndpoint(n1);
 
                 if (endpoint0 == Endpoint.ARROW) {
                     buf.append("<");
@@ -471,7 +473,23 @@ public final class GraphUtils {
         for (Edge edge : originalGraph.getEdges()) {
             Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
             Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
+
             Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
+
+            for (Property property : edge.getProperties()) {
+                newEdge.addProperty(property);
+            }
+
+            for (EdgeTypeProbability p : edge.getEdgeTypeProbabilities()) {
+                newEdge.addEdgeTypeProbability(p);
+            }
+
+            // Carry over display attributes; graph copies pass through here, so dropping them would lose any
+            // special line color or annotation before the workbench ever sees the edge.
+            newEdge.setLineColor(edge.getLineColor());
+            newEdge.setAnnotation(edge.getAnnotation());
+            newEdge.setHighlighted(edge.isHighlighted());
+
             convertedGraph.addEdge(newEdge);
         }
 
@@ -498,6 +516,106 @@ public final class GraphUtils {
         }
 
         return convertedGraph;
+    }
+
+    /**
+     * Returns a copy of the given node that is equal to it (same name, type, and, for a discrete variable, the same
+     * categories, so that it indexes the same column of a data set) and has the same position, but is a distinct
+     * object, so that a position later set on either is not seen through the other. Node-level attributes are
+     * copied.
+     *
+     * <p>Positions (the center used by the workbench) live on node objects, not in graphs. Two graphs that share
+     * node objects therefore share a layout: a data set's variable objects are shared by every graph built from
+     * that data set, and a graph handed from one session box to another is shared by both. See
+     * {@link #detachNodes} and {@link EdgeListGraph#EdgeListGraph(Graph, boolean)}.</p>
+     *
+     * @param node the node to copy
+     * @return the copy
+     */
+    public static Node copyNode(Node node) {
+        Node copy;
+
+        if (node instanceof DiscreteVariable discrete) {
+            copy = new DiscreteVariable(discrete);
+        } else if (node instanceof ContinuousVariable continuous) {
+            copy = new ContinuousVariable(continuous);
+        } else if (node instanceof GraphNode graphNode) {
+            copy = new GraphNode(graphNode);
+        } else {
+            copy = node.like(node.getName());
+            copy.setNodeType(node.getNodeType());
+            copy.setNodeVariableType(node.getNodeVariableType());
+        }
+
+        for (Map.Entry<String, Object> entry : node.getAllAttributes().entrySet()) {
+            copy.addAttribute(entry.getKey(), entry.getValue());
+        }
+
+        copy.setCenter(node.getCenterX(), node.getCenterY());
+        return copy;
+    }
+
+    /**
+     * Returns a copy of the graph whose nodes are fresh objects (see {@link #copyNode}), equal to the originals and
+     * in the same positions, with the same edges (including their properties, edge type probabilities, and display
+     * attributes), underlines, ambiguous triples, and graph attributes. Unlike {@link #replaceNodes}, latent nodes
+     * are copied too.
+     *
+     * <p>Use this on a graph that is about to become the graph of a session box and whose nodes are shared with
+     * something else: a search result, whose nodes are usually the data set's variable objects, or the graph of
+     * another box. Once detached, the box starts with the layout the graph came with, but the layout the workbench
+     * writes to it afterwards stays with it, and it no longer follows positions set on the shared objects by some
+     * other box. Where a fresh layout is wanted instead, lay the copy out afterwards.</p>
+     *
+     * @param graph the graph
+     * @return the copy
+     */
+    public static Graph detachNodes(Graph graph) {
+        Map<String, Node> copies = new HashMap<>();
+        Graph detached = new EdgeListGraph();
+
+        for (Node node : graph.getNodes()) {
+            Node copy = copyNode(node);
+            copies.put(node.getName(), copy);
+            detached.addNode(copy);
+        }
+
+        for (Edge edge : graph.getEdges()) {
+            Node a = copies.get(edge.getNode1().getName());
+            Node b = copies.get(edge.getNode2().getName());
+            Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
+
+            for (Property property : edge.getProperties()) {
+                newEdge.addProperty(property);
+            }
+
+            for (EdgeTypeProbability p : edge.getEdgeTypeProbabilities()) {
+                newEdge.addEdgeTypeProbability(p);
+            }
+
+            newEdge.setLineColor(edge.getLineColor());
+            newEdge.setAnnotation(edge.getAnnotation());
+            newEdge.setHighlighted(edge.isHighlighted());
+            detached.addEdge(newEdge);
+        }
+
+        for (Triple t : graph.getUnderLines()) {
+            detached.addUnderlineTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
+                    copies.get(t.getZ().getName()));
+        }
+
+        for (Triple t : graph.getDottedUnderlines()) {
+            detached.addDottedUnderlineTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
+                    copies.get(t.getZ().getName()));
+        }
+
+        for (Triple t : graph.getAmbiguousTriples()) {
+            detached.addAmbiguousTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
+                    copies.get(t.getZ().getName()));
+        }
+
+        detached.transferAttributes(graph);
+        return detached;
     }
 
     /**
@@ -1789,8 +1907,8 @@ public final class GraphUtils {
         String type = params.getString("graphComparisonType");
 
         switch (type) {
-            case "DAG" -> {
-                params.set("graphComparisonType", "DAG");
+            case "Truth" -> {
+                params.set("graphComparisonType", "Truth");
                 return new EdgeListGraph(graph);
             }
             case "CPDAG" -> {
@@ -1799,10 +1917,14 @@ public final class GraphUtils {
             }
             case "PAG" -> {
                 params.set("graphComparisonType", "PAG");
-                return GraphTransforms.dagToPag(graph, params.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+                try {
+                    return GraphTransforms.dagToPag(graph, new Knowledge(), params.getBoolean(Params.EXCLUDE_SELECTION_BIAS), 15);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
             case null, default -> {
-                params.set("graphComparisonType", "DAG");
+                params.set("graphComparisonType", "Truth");
                 return new EdgeListGraph(graph);
             }
         }
@@ -1874,70 +1996,69 @@ public final class GraphUtils {
         Node x = edge1.getNode1();
         Node y = edge1.getNode2();
 
-        Endpoint ex1 = edge1.getEndpoint(x);
-        Endpoint ey1 = edge1.getEndpoint(y);
+        Endpoint ex1 = edge1.getProximalEndpoint(x);
+        Endpoint ey1 = edge1.getProximalEndpoint(y);
 
-        Endpoint ex2 = edge2.getEndpoint(x);
-        Endpoint ey2 = edge2.getEndpoint(y);
+        Endpoint ex2 = edge2.getProximalEndpoint(x);
+        Endpoint ey2 = edge2.getProximalEndpoint(y);
 
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
     /**
-     * Returns a Markov blanket of a node for a DAG, CPDAG, MAG, or PAG. This is not necessarily minimal (i.e. not
-     * necessarily a Markov Boundary).
+     * Computes the Markov blanket for a given node in a graph. The Markov blanket
+     * of a node x is the set of nodes that include the parents of x, the children
+     * of x, and all other parents of x's children (i.e., colliders involving x).
      *
-     * @param x The target node.
-     * @param G The PAG.
-     * @return A Markov blanket of the target node.
+     * @param x the target node for which the Markov blanket is computed
+     * @param G the graph containing the nodes and edges
+     * @return a set of nodes representing the Markov blanket of x
      */
     public static Set<Node> markovBlanket(Node x, Graph G) {
-        Set<Node> mb = new HashSet<>();
-
-        LinkedList<Node> path = new LinkedList<>();
-
-        // Follow all the colliders.
-        markovBlanketFollowColliders(null, x, path, G, mb);
-        mb.addAll(G.getAdjacentNodes(x));
+        Set<Node> mb = new HashSet<>(G.getAdjacentNodes(x));
         mb.remove(x);
-        return mb;
-    }
 
-    /**
-     * This method calculates the Markov Blanket by following colliders in a given graph.
-     *
-     * @param d    The node representing the direct cause (can be null).
-     * @param a    The node for which the Markov Blanket is calculated.
-     * @param path A linked list of nodes in the current path.
-     * @param G    The graph in which the Markov Blanket is calculated.
-     * @param mb   A set to store the nodes in the Markov Blanket.
-     */
-    private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
-        if (path.contains(a)) return;
-        path.add(a);
+        // BFS queue entries are (predecessor, current) pairs, mirroring the
+        // collider-following logic of the original recursive version.
+        record Entry(Node pred, Node curr) {}
 
-        for (Node b : G.getNodesOutTo(a, Endpoint.ARROW)) {
-            if (path.contains(b)) continue;
+        Deque<Entry> queue = new ArrayDeque<>();
+        Set<String> visited = new HashSet<>();
 
-            // Make sure that d*->a<-* b is a collider.
-            if (d != null && !G.isDefCollider(d, a, b)) continue;
-
-            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
-                if (path.contains(c)) continue;
-
-                if (!G.isDefCollider(a, b, c)) continue;
-
-                // a *-> b <-* c
-                mb.add(b);
-                mb.add(c);
-
-                markovBlanketFollowColliders(a, b, path, G, mb);
+        // Seed from x: follow arrows out of x to find colliders x *-> b <-* c.
+        for (Node b : G.getNodesOutTo(x, Endpoint.ARROW)) {
+            String key = x.getName() + "->" + b.getName();
+            if (visited.add(key)) {
+                queue.add(new Entry(x, b));
             }
         }
 
-        path.remove(a);
-    }
+        while (!queue.isEmpty()) {
+            Entry e = queue.poll();
+            Node a = e.pred();
+            Node b = e.curr();
 
+            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
+                if (c == a) continue;
+                if (!G.isDefCollider(a, b, c)) continue;
+
+                // a *-> b <-* c confirmed.
+                mb.add(b);
+                mb.add(c);
+
+                // Now follow colliders out of b, with b as the new predecessor.
+                for (Node next : G.getNodesOutTo(b, Endpoint.ARROW)) {
+                    String key = b.getName() + "->" + next.getName();
+                    if (visited.add(key)) {
+                        queue.add(new Entry(b, next));
+                    }
+                }
+            }
+        }
+
+        return mb;
+    }
+    
     /**
      * Calculates the district of a given node in a graph.
      *
@@ -2525,6 +2646,112 @@ public final class GraphUtils {
         return allLatent;
     }
 
+
+    /**
+     * Checks if the souce L of the given trek in a graph (not equal to x or y) is a latent.
+     * This is a trek from measured node x to measured node y with a latent source. Other nodes
+     * on the path may be measured or latent.
+     *
+     * @param trueGraph the true graph representing the causal relationships between nodes
+     * @param trek      the trek to be checked
+     * @param x         the first node in the trek
+     * @param y         the last node in the trek
+     * @return true if the source of the trek (not equal to x or y) is latent, false otherwise.
+     */
+    public static boolean trekSourceLatent(Graph trueGraph, List<Node> trek, Node x, Node y) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            return false;
+        }
+
+        Node source = getTrekSource(trueGraph, trek);
+
+        if (source == x || source == y) {
+            return false;
+        }
+
+        return source.getNodeType() == NodeType.LATENT;
+    }
+
+    /**
+     * Determines whether the given bidirected edge has a latent common cause in the true graph via a trek
+     * x &lt;~~ L ~~&gt; y whose source L is latent, but where at least one consecutive pair of nodes (w, r) along
+     * the trek is NOT adjacent in the estimated graph. Other nodes on the trek may be measured or latent; only
+     * the source L is required to be latent.
+     * <p>
+     * This is a variation of {@link #bidirectedExistsLatentCommonCause(Edge, Graph)} that additionally requires
+     * the trek to contain an edge (w, r) for which {@code !estGraph.isAdjacentTo(w, r)} -- i.e., the trek is not
+     * fully "covered" by adjacencies in the estimated graph.
+     *
+     * @param edge      The edge to check.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph against which consecutive-pair adjacency is checked.
+     * @return true if such a trek exists, false otherwise.
+     * @throws IllegalArgumentException if the edge is not bidirected.
+     */
+    public static boolean bidirectedExistsLatentCommonCauseUncovered(Edge edge, Graph trueGraph, Graph estGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+
+        for (List<Node> trek : treks) {
+            if (trekSourceLatent(trueGraph, trek, x, y) && trekIsUncovered(trueGraph, estGraph, trek)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether the given trek is "uncovered" relative to the estimated graph in the following sense:
+     * every consecutive pair along the trek is adjacent in the true graph, and among the consecutive pairs whose
+     * BOTH endpoints are measured, at least one is non-adjacent in the estimated graph. If the trek has no
+     * measured-to-measured consecutive pair, the condition is vacuously satisfied.
+     * <p>
+     * Nodes are matched into the estimated graph by name, so the trek (from the true graph) and the estimated
+     * graph need not share node objects.
+     *
+     * @param trueGraph the true graph, used to confirm consecutive-pair adjacency along the trek
+     * @param estGraph  the estimated graph in which measured-to-measured adjacency is checked
+     * @param trek      the trek whose consecutive pairs are examined
+     * @return true if the trek is uncovered as defined above, false otherwise
+     */
+    public static boolean trekIsUncovered(Graph trueGraph, Graph estGraph, List<Node> trek) {
+        boolean sawMeasuredPair = false;
+        boolean sawUncoveredMeasuredPair = false;
+
+        for (int i = 0; i < trek.size() - 1; i++) {
+            Node w = trek.get(i);
+            Node r = trek.get(i + 1);
+
+            // Every consecutive pair must be a true-graph adjacency.
+            if (!trueGraph.isAdjacentTo(w, r)) {
+                return false;
+            }
+
+            // Only measured-to-measured pairs are candidates for the estimated-graph check.
+            if (w.getNodeType() != NodeType.MEASURED || r.getNodeType() != NodeType.MEASURED) {
+                continue;
+            }
+
+            sawMeasuredPair = true;
+
+            Node ew = estGraph.getNode(w.getName());
+            Node er = estGraph.getNode(r.getName());
+
+            if (ew == null || er == null || !estGraph.isAdjacentTo(ew, er)) {
+                sawUncoveredMeasuredPair = true;
+            }
+        }
+
+        return !sawMeasuredPair || sawUncoveredMeasuredPair;
+    }
+
     /**
      * This method returns the source node of a given trek in a graph.
      *
@@ -2558,7 +2785,7 @@ public final class GraphUtils {
      * @return true if the given bidirected has a latent confounder in the true graph, false otherwise.
      * @throws IllegalArgumentException if the edge is not bidirected.
      */
-    public static boolean isCorrectBidirectedEdge(Edge edge, Graph trueGraph) {
+    public static boolean bidirectedExistsLatentConfounder(Edge edge, Graph trueGraph) {
         if (!Edges.isBidirectedEdge(edge)) {
             throw new IllegalArgumentException("The edge is not bidirected: " + edge);
         }
@@ -2572,6 +2799,7 @@ public final class GraphUtils {
         for (List<Node> trek : treks) {
             if (isConfoundingTrek(trueGraph, trek, x, y)) {
                 existsLatentConfounder = true;
+                break;
             }
         }
 
@@ -2579,33 +2807,391 @@ public final class GraphUtils {
     }
 
     /**
-     * Guarantees the correctness of a Partial Ancestral Graph (PAG) by repairing faulty structures such as cycles,
-     * violations of maximality, and incorrectly oriented edges. It uses FCI orientation rules and knowledge constraints
-     * to perform the repair process.
+     * Determines whether a bidirected edge exists due to a latent common cause in the given graph.
+     * A latent common cause refers to an unobserved variable responsible for the relationship
+     * between the two nodes connected by the bidirected edge.
      *
-     * @param pag                  the initial PAG to be repaired
+     * @param edge the bidirected edge to be checked. Must be bidirected, otherwise an
+     *             IllegalArgumentException will be thrown.
+     * @param trueGraph the graph in which the check for a latent common cause is performed.
+     *                  This graph is assumed to contain the necessary structure and properties
+     *                  for validating the existence of a latent common cause.
+     * @return {@code true} if the bidirected edge exists due to a latent common cause in the
+     *         provided graph; {@code false} otherwise.
+     * @throws IllegalArgumentException if the input edge is not a bidirected edge.
+     */
+    public static boolean bidirectedExistsLatentCommonCause(Edge edge, Graph trueGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        boolean trekSourceLatent = false;
+
+        for (List<Node> trek : treks) {
+            if (trekSourceLatent(trueGraph, trek, x, y)) {
+                trekSourceLatent = true;
+                break;
+            }
+        }
+
+        return trekSourceLatent;
+    }
+
+//    /**
+//     * Guarantees the correctness of a Partial Ancestral Graph (PAG) by repairing faulty structures such as cycles,
+//     * violations of maximality, and incorrectly oriented edges. It uses FCI orientation rules and knowledge constraints
+//     * to perform the repair process.
+//     *
+//     * @param pag                  the initial PAG to be repaired
+//     * @param fciOrient            the FCI (Fast Causal Inference) orientation utility for edge orientation
+//     * @param knowledge            the background knowledge to enforce during the repair process
+//     * @param knownColliders       a set of triples representing unshielded colliders to be enforced
+//     * @param verbose              whether to provide detailed logging of the repair process
+//     * @param selection            a set of nodes to be considered during the maximality repair
+//     * @param excludeSelectionBias whether to exclude the selection bias during the repair process
+//     * @param recursiveDepth       the maximum current depth of recursion in the repair process
+//     * @return the repaired PAG that satisfies required constraints and is free of faults
+//     */
+//    public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+//                                     Set<Triple> knownColliders,
+//                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias,
+//                                     int recursiveDepth) {
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Repairing faulty PAG...");
+//        }
+//
+//
+//        Graph orig = new EdgeListGraph(pag);
+//
+//        if (orig.paths().isLegalPag()) {
+//            return orig;
+//        }
+//
+//        boolean changed;
+//
+//        do {
+//            changed = false;
+//
+//            changed |= removeAlmostCycles(pag, knownColliders, verbose);
+//            changed |= repairMaximality(pag, verbose, selection, fciOrient, knowledge, knownColliders);
+//            changed |= removeCycles(pag, verbose);
+//            reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
+//        } while (changed);
+//
+//// Snapshot the repaired loop state before the MAG round-trip; it is an
+//        // independent legal-PAG candidate if the round-trip does not produce one.
+//        Graph repaired = new EdgeListGraph(pag);
+//
+//        // MagToPag.convert(true, ...) throws IllegalArgumentException when
+//        // zhangMagFromPag yields an illegal MAG, so a failed round-trip shows up
+//        // either as an exception here or as a pag2 that fails isLegalPag below.
+//        Graph pag2 = null;
+//
+//        try {
+//            MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+//            magToPag.setRecursiveDepth(recursiveDepth);
+//            magToPag.setKnowledge(knowledge);
+//            pag2 = magToPag.convert(true, excludeSelectionBias);
+//        } catch (IllegalArgumentException e) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("guaranteePag: MAG round-trip failed (" + e.getMessage() + ").");
+//            }
+//        }
+//
+//        // Accept the round-trip result only if it is actually a legal PAG.
+//        if (pag2 != null && PagLegalityCheck.isLegalPagQuiet(pag2, selection)) {
+//            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+//            return pag2;
+//        }
+//
+//        // Round-trip did not yield a legal PAG. Revert to the repaired loop state if
+//        // that is legal, rather than returning an illegal graph from a method whose
+//        // contract is to guarantee one (cf. Fcit.tryToModifyGraph).
+//        if (PagLegalityCheck.isLegalPagQuiet(repaired, selection)) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("guaranteePag: round-trip result not a legal PAG; "
+//                        + "returning repaired pre-round-trip state.");
+//            }
+//            return repaired;
+//        }
+//
+//        // Neither candidate is legal: the guarantee cannot be met. Fail loudly with the
+//        // reason instead of silently returning an illegal graph.
+//        throw new IllegalStateException("guaranteePag could not produce a legal PAG: "
+//                + PagLegalityCheck.isLegalPag(repaired, selection).getReason());
+//    }
+//
+//    private static boolean removeAlmostCycles(Graph pag,
+//                                              Set<Triple> extraKnownColliders,
+//                                              boolean verbose) {
+//
+//        boolean changedOverall = false;
+//
+//        boolean changedThisRound;
+//        int round = 0;
+//
+//        do {
+//            changedThisRound = false;
+//            round++;
+//
+//            Graph mag = GraphTransforms.zhangMagFromPag(pag);
+//            Map<Node, Set<Node>> reachable =
+//                    buildDescendantsMap(mag);
+//
+//            List<Edge> candidates = mag.getEdges().stream()
+//                    .filter(Edges::isBidirectedEdge)
+//                    .filter(e ->
+//                            reachable.getOrDefault(e.getNode1(), Set.of()).contains(e.getNode2()) ||
+//                            reachable.getOrDefault(e.getNode2(), Set.of()).contains(e.getNode1()))
+//                    .toList();
+//
+//            for (Edge edge : candidates) {
+//                Node x = edge.getNode1(), y = edge.getNode2();
+//
+//                for (Iterator<Triple> it = extraKnownColliders.iterator();
+//                     it.hasNext(); ) {
+//
+//                    Triple t = it.next();
+//                    if (t.getY().equals(x) &&
+//                        (t.getZ().equals(y) || t.getX().equals(y))) {
+//
+//                        Node u = t.getX().equals(y) ? t.getZ() : t.getX();
+//
+//                        if (!pag.isAdjacentTo(u, y)) {
+//                            pag.addNondirectedEdge(u, y);
+//                            it.remove();
+//                            changedThisRound = true;
+//                            changedOverall = true;
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (verbose) {
+//                TetradLogger.getInstance()
+//                        .log("Round " + round +
+//                             ", candidates = " + candidates.size() +
+//                             ", changed = " + changedThisRound);
+//            }
+//        } while (changedThisRound);   // stop when a complete pass makes no changes
+//
+//        return changedOverall;        // tell the caller whether anything changed *at all*
+//    }
+//
+//    /**
+//     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that any inducing path between two nodes
+//     * not currently adjacent in the graph results in an added non-directed edge. The method modifies the graph
+//     * in-place.
+//     *
+//     * @param pag            the Partial Ancestral Graph to be repaired for maximality
+//     * @param verbose        if true, logs the actions performed during the repair process
+//     * @param selection      a set of nodes to be considered during the inducing path check
+//     * @param fciOrient      The Fci orientation procedure.
+//     * @param knowledge      The knowledge.
+//     * @param knownColliders Known colliders.
+//     * @return true if the graph was modified during the repair process; false otherwise
+//     */
+//    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection, FciOrient fciOrient,
+//                                           Knowledge knowledge, Set<Triple> knownColliders) {
+//        boolean changed = false;
+//        for (Node x : pag.getNodes()) {
+//            for (Node y : pag.getNodes()) {
+//                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
+//                    if (!pag.isAdjacentTo(x, y)) {
+//                        pag.addNondirectedEdge(x, y);
+//                        changed = true;
+//                        if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
+//                    }
+//                }
+//
+////                reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
+//            }
+//        }
+//        return changed;
+//    }
+//
+//    private static boolean removeCycles(Graph pag, boolean verbose) {
+//        boolean changed = false;
+//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+//        Map<Node, Set<Node>> reachableFrom = buildDescendantsMap(mag);
+//
+//        for (Node x : mag.getNodes()) {
+//            if (reachableFrom.get(x).contains(x)) {
+//                Set<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
+//                for (List<Node> path : paths) {
+//                    for (int i = 1; i < path.size() - 1; i++) {
+//                        Node y = path.get(i);
+//                        Node a = path.get(i - 1);
+//                        Node b = path.get(i + 1);
+//                        if (pag.isParentOf(a, y) && pag.isParentOf(b, y) && !pag.isAdjacentTo(a, b)) {
+//                            if (!pag.isAdjacentTo(a, b)) {
+//                                pag.addNondirectedEdge(a, b);
+//                                changed = true;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (verbose && changed) {
+//            TetradLogger.getInstance().log("Cycles removed via covering colliders.");
+//        }
+//
+//        return changed;
+//    }
+//
+//    private static void reorientWithFci(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+//                                        Set<Triple> unshieldedColliders, boolean excludeSelectionBias, boolean verbose) {
+//        reorientWithCircles(pag, verbose);
+//        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
+//        recallInitialColliders(pag, unshieldedColliders, knowledge);
+//        fciOrient.finalOrientation(pag, excludeSelectionBias);
+//    }
+//
+//    private static Map<Node, Set<Node>> buildDescendantsMap(Graph graph) {
+//        Map<Node, Set<Node>> map = new HashMap<>();
+//        for (Node node : graph.getNodes()) {
+//            Set<Node> descendants = new HashSet<>(graph.paths().getDescendants(node));
+//            descendants.remove(node);
+//            map.put(node, descendants);
+//        }
+//        return map;
+//    }
+
+    /**
+     * Guarantees the correctness of a Partial Ancestral Graph (PAG) by repairing faulty structures such as cycles,
+     * violations of maximality, and incorrectly oriented edges, using FCI orientation rules and knowledge constraints.
+     * <p>
+     * The method works down a ladder of increasingly aggressive fallbacks, returning at the first rung that yields a
+     * legal PAG (as judged by {@link PagLegalityCheck#isLegalPagQuiet}, uniformly, with the given selection set):
+     * <ol>
+     *   <li>the repair loop (monotone edge additions to a fixpoint);</li>
+     *   <li>a MAG round-trip of the repaired graph;</li>
+     *   <li>a second repair pass and round-trip applied to the round-trip output, if it made progress;</li>
+     *   <li>the pre-round-trip repaired state itself;</li>
+     *   <li>a DAG orientation of the repaired skeleton (cannot fail: every DAG is a legal MAG). This rung preserves
+     *       the estimated adjacencies but discards orientation information, and respects background knowledge only
+     *       up to tier ordering.</li>
+     * </ol>
+     * <p>
+     * NOTE: {@code pag} is modified in place, and {@code knownColliders} is destructively consumed as colliders are
+     * sacrificed to shielding repairs. Callers that need either object afterward should pass copies.
+     *
+     * @param pag                  the initial PAG to be repaired (modified in place)
      * @param fciOrient            the FCI (Fast Causal Inference) orientation utility for edge orientation
      * @param knowledge            the background knowledge to enforce during the repair process
-     * @param knownColliders       a set of triples representing unshielded colliders to be enforced
+     * @param knownColliders       a set of triples representing unshielded colliders to be enforced; consumed
      * @param verbose              whether to provide detailed logging of the repair process
      * @param selection            a set of nodes to be considered during the maximality repair
      * @param excludeSelectionBias whether to exclude the selection bias during the repair process
-     * @return the repaired PAG that satisfies required constraints and is free of faults
+     * @param recursiveDepth       the maximum current depth of recursion in the repair process
+     * @return a legal PAG
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
-                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias) {
+                                     boolean verbose, Set<Node> selection, boolean excludeSelectionBias,
+                                     int recursiveDepth) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-
         Graph orig = new EdgeListGraph(pag);
 
-        if (orig.paths().isLegalPag()) {
+        // Use the same legality predicate at the entry as at every exit, so the method's
+        // contract is defined by a single predicate (in particular, selection handling).
+        if (PagLegalityCheck.isLegalPagQuiet(orig, selection)) {
             return orig;
         }
 
+        // Rung 1: the repair loop.
+        repairLoop(pag, fciOrient, knowledge, knownColliders, selection, excludeSelectionBias, verbose);
+
+        // Snapshot the repaired loop state before the MAG round-trip; it is an
+        // independent legal-PAG candidate if the round-trip does not produce one.
+        Graph repaired = new EdgeListGraph(pag);
+
+        // Rung 2: MAG round-trip.
+        Graph pag2 = magRoundTrip(pag, knowledge, recursiveDepth, excludeSelectionBias, verbose);
+
+        if (pag2 != null && PagLegalityCheck.isLegalPagQuiet(pag2, selection)) {
+            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired (round-trip).");
+            return pag2;
+        }
+
+        // Rung 3: the round-trip often makes progress even when it doesn't land. If it
+        // produced a graph, run the repair loop once on that graph and round-trip again.
+        if (pag2 != null) {
+            repairLoop(pag2, fciOrient, knowledge, knownColliders, selection, excludeSelectionBias, verbose);
+
+            if (PagLegalityCheck.isLegalPagQuiet(pag2, selection)) {
+                if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired (round-trip + second repair pass).");
+                return pag2;
+            }
+
+            Graph pag3 = magRoundTrip(pag2, knowledge, recursiveDepth, excludeSelectionBias, verbose);
+
+            if (pag3 != null && PagLegalityCheck.isLegalPagQuiet(pag3, selection)) {
+                if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired (second round-trip).");
+                return pag3;
+            }
+        }
+
+        // Rung 4: revert to the repaired pre-round-trip state if that is legal, rather
+        // than returning an illegal graph from a method whose contract is to guarantee
+        // one (cf. Fcit.tryToModifyGraph).
+        if (PagLegalityCheck.isLegalPagQuiet(repaired, selection)) {
+            if (verbose) {
+                TetradLogger.getInstance().log("guaranteePag: round-trip did not yield a legal PAG; "
+                        + "returning repaired pre-round-trip state.");
+            }
+            return repaired;
+        }
+
+        // Rung 5 (last resort; cannot fail): orient the repaired skeleton as a DAG --
+        // every DAG is a legal MAG -- and convert. Preserves adjacencies and, via a
+        // peeling order derived from the repaired graph's own directed edges, as much
+        // of the estimated orientation as acyclicity permits. Knowledge is respected
+        // only up to tier ordering; individual required/forbidden edges may be
+        // violated, so log loudly.
+        if (verbose) {
+            TetradLogger.getInstance().log("guaranteePag: falling back to a DAG orientation of the repaired "
+                    + "skeleton; acyclicity-violating orientations dropped, knowledge respected only up to tiers.");
+        }
+
+        Graph dag = orientSkeletonAsDag(repaired, knowledge);
+
+        MagToPag magToPag = new MagToPag(dag);
+        magToPag.setRecursiveDepth(recursiveDepth);
+        // Deliberately not setting knowledge on this rung: it may conflict with the
+        // imposed orientation and cause the conversion to fail, and this rung must not fail.
+        Graph pag4 = magToPag.convert(true, excludeSelectionBias);
+
+        if (PagLegalityCheck.isLegalPagQuiet(pag4, selection)) {
+            return pag4;
+        }
+
+        // Should be unreachable: the PAG of a DAG is legal by construction. Reaching this
+        // point means the legality checker and the converter disagree -- fail loudly.
+        throw new IllegalStateException("guaranteePag could not produce a legal PAG even from a DAG "
+                + "orientation of the skeleton: "
+                + PagLegalityCheck.isLegalPag(pag4, selection).getReason());
+    }
+
+    /**
+     * The core repair loop: shielding repairs and maximality repair followed by reorientation, iterated to a
+     * fixpoint. Since repairs only ever add adjacencies, the loop terminates.
+     * <p>
+     * NOTE: correctness of the exit state assumes {@code reorientWithFci} is deterministic and idempotent for a
+     * fixed skeleton and collider set, since the final reorientation is not re-checked by the repair steps.
+     */
+    private static void repairLoop(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                   Set<Triple> knownColliders, Set<Node> selection,
+                                   boolean excludeSelectionBias, boolean verbose) {
         boolean changed;
 
         do {
@@ -2613,84 +3199,150 @@ public final class GraphUtils {
 
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
             changed |= repairMaximality(pag, verbose, selection, fciOrient, knowledge, knownColliders);
-            changed |= removeCycles(pag, verbose);
+            changed |= removeCycles(pag, knownColliders, verbose);
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
-
-        MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-        dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert(true, excludeSelectionBias);
-
-        if (pag2.equals(orig)) {
-            if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-        } else {
-            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
-        }
-
-        return pag2;
     }
 
+    /**
+     * Attempts the MAG round-trip. MagToPag.convert(true, ...) throws IllegalArgumentException when zhangMagFromPag
+     * yields an illegal MAG, so a failed round-trip shows up either as null here or as a result that fails the
+     * legality check at the call site.
+     */
+    private static Graph magRoundTrip(Graph pag, Knowledge knowledge, int recursiveDepth,
+                                      boolean excludeSelectionBias, boolean verbose) {
+        try {
+            MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+            magToPag.setRecursiveDepth(recursiveDepth);
+            magToPag.setKnowledge(knowledge);
+            return magToPag.convert(true, excludeSelectionBias);
+        } catch (IllegalArgumentException e) {
+            if (verbose) {
+                TetradLogger.getInstance().log("guaranteePag: MAG round-trip failed (" + e.getMessage() + ").");
+            }
+            return null;
+        }
+    }
+
+    /**
+     * One pass of almost-cycle repair. For each bidirected edge x &lt;-&gt; y in the Zhang MAG that lies on an
+     * almost-directed cycle, looks for a known unshielded collider whose arrowhead produced one of the edge's
+     * endpoints and shields it, consuming the collider from {@code knownColliders}.
+     * <p>
+     * Single pass by design: shields only take effect once {@code reorientWithFci} has run, so iterating internally
+     * (as the old version did) re-detects the same almost-cycles each round and sacrifices colliders that are no
+     * longer implicated. Each shield is an adjacency that cannot be taken back, so the outer loop's
+     * repair-then-reorient cadence is the right granularity.
+     */
     private static boolean removeAlmostCycles(Graph pag,
-                                              Set<Triple> extraKnownColliders,
+                                              Set<Triple> knownColliders,
                                               boolean verbose) {
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Map<Node, Set<Node>> descendants = buildDescendantsMap(mag);
 
-        boolean changedOverall = false;
+        List<Edge> candidates = mag.getEdges().stream()
+                .filter(Edges::isBidirectedEdge)
+                .filter(e ->
+                        descendants.getOrDefault(e.getNode1(), Set.of()).contains(e.getNode2()) ||
+                                descendants.getOrDefault(e.getNode2(), Set.of()).contains(e.getNode1()))
+                .toList();
 
-        boolean changedThisRound;
-        int round = 0;
+        boolean changed = false;
 
-        do {
-            changedThisRound = false;
-            round++;
+        for (Edge edge : candidates) {
+            // At most one shield per candidate edge per pass. Try the node1 endpoint first;
+            // fall back to node2 only if node1 has no shieldable collider. If one shield
+            // does not resolve the almost-cycle, the outer loop re-detects it after
+            // reorientation and we spend another collider then -- not before.
+            boolean shielded = shieldColliderAt(pag, knownColliders, edge.getNode1(), edge.getNode2(), verbose);
 
-            Graph mag = GraphTransforms.zhangMagFromPag(pag);
-            Map<Node, Set<Node>> reachable =
-                    buildDescendantsMap(mag);
+            if (!shielded) {
+                shielded = shieldColliderAt(pag, knownColliders, edge.getNode2(), edge.getNode1(), verbose);
+            }
 
-            List<Edge> candidates = mag.getEdges().stream()
-                    .filter(Edges::isBidirectedEdge)
-                    .filter(e ->
-                            reachable.getOrDefault(e.getNode1(), Set.of()).contains(e.getNode2()) ||
-                            reachable.getOrDefault(e.getNode2(), Set.of()).contains(e.getNode1()))
-                    .toList();
+            changed |= shielded;
+        }
 
-            for (Edge edge : candidates) {
-                Node x = edge.getNode1(), y = edge.getNode2();
+        if (verbose) {
+            TetradLogger.getInstance().log("Almost-cycle pass: candidates = " + candidates.size()
+                    + ", changed = " + changed);
+        }
 
-                for (Iterator<Triple> it = extraKnownColliders.iterator();
-                     it.hasNext(); ) {
+        return changed;
+    }
 
-                    Triple t = it.next();
-                    if (t.getY().equals(x) &&
-                        (t.getZ().equals(y) || t.getX().equals(y))) {
+    /**
+     * Cycle repair by collider shielding, mirroring {@code removeAlmostCycles}. An edge a -&gt; y lies on a directed
+     * cycle in the Zhang MAG iff a is a descendant of y; for each such edge, shield a known collider at y involving
+     * a, freeing the arrowhead for reorientation.
+     * <p>
+     * (The previous implementation required {@code pag.isParentOf(b, y)} for the successor b on a directed path
+     * through y, which contradicts the MAG orientation y -&gt; b -- zhangMagFromPag never reverses arrows -- so the
+     * repair branch could not fire. This version also replaces the exponential {@code directedPaths(x, x, -1)}
+     * enumeration with the descendants map.)
+     */
+    private static boolean removeCycles(Graph pag, Set<Triple> knownColliders, boolean verbose) {
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Map<Node, Set<Node>> descendants = buildDescendantsMap(mag);
 
-                        Node u = t.getX().equals(y) ? t.getZ() : t.getX();
+        boolean changed = false;
 
-                        if (!pag.isAdjacentTo(u, y)) {
-                            pag.addNondirectedEdge(u, y);
-                            it.remove();
-                            changedThisRound = true;
-                            changedOverall = true;
-                        }
+        for (Edge edge : mag.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) continue;
+
+            Node tail = Edges.getDirectedEdgeTail(edge);
+            Node head = Edges.getDirectedEdgeHead(edge);
+
+            // tail -> head lies on a directed cycle iff tail is reachable from head.
+            if (descendants.getOrDefault(head, Set.of()).contains(tail)) {
+                changed |= shieldColliderAt(pag, knownColliders, head, tail, verbose);
+            }
+        }
+
+        if (verbose && changed) {
+            TetradLogger.getInstance().log("Cycle repair: shielded known colliders on cycle edges.");
+        }
+
+        return changed;
+    }
+
+    /**
+     * Looks for a known unshielded collider u *-&gt; collider &lt;-* spouse and shields it by adding u o-o spouse,
+     * consuming the triple from {@code knownColliders}. First match wins: at most ONE shield is added per call.
+     * Every added shield both densifies the graph and destroys unshielded triples (the orientation anchors), so
+     * shields must be spent as parsimoniously as possible; if one shield does not resolve the fault, the outer
+     * repair loop re-detects it after reorientation and we spend another then.
+     */
+    private static boolean shieldColliderAt(Graph pag, Set<Triple> knownColliders,
+                                            Node collider, Node spouse, boolean verbose) {
+        for (Iterator<Triple> it = knownColliders.iterator(); it.hasNext(); ) {
+            Triple t = it.next();
+
+            if (t.getY().equals(collider) && (t.getX().equals(spouse) || t.getZ().equals(spouse))) {
+                Node u = t.getX().equals(spouse) ? t.getZ() : t.getX();
+
+                if (!pag.isAdjacentTo(u, spouse)) {
+                    pag.addNondirectedEdge(u, spouse);
+                    it.remove();
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Shielded collider " + t + ": added "
+                                + u + " o-o " + spouse);
                     }
+
+                    return true;
                 }
             }
+        }
 
-            if (verbose) {
-                TetradLogger.getInstance()
-                        .log("Round " + round +
-                             ", candidates = " + candidates.size() +
-                             ", changed = " + changedThisRound);
-            }
-        } while (changedThisRound);   // stop when a complete pass makes no changes
-
-        return changedOverall;        // tell the caller whether anything changed *at all*
+        return false;
     }
 
     /**
      * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that any inducing path between two nodes
      * not currently adjacent in the graph results in an added non-directed edge. The method modifies the graph
-     * in-place.
+     * in-place. (fciOrient, knowledge, and knownColliders are retained in the signature for API compatibility but
+     * are not used; reorientation happens once per pass in the repair loop.)
      *
      * @param pag            the Partial Ancestral Graph to be repaired for maximality
      * @param verbose        if true, logs the actions performed during the repair process
@@ -2703,51 +3355,98 @@ public final class GraphUtils {
     public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection, FciOrient fciOrient,
                                            Knowledge knowledge, Set<Triple> knownColliders) {
         boolean changed = false;
-        for (Node x : pag.getNodes()) {
-            for (Node y : pag.getNodes()) {
-                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
-                    if (!pag.isAdjacentTo(x, y)) {
-                        pag.addNondirectedEdge(x, y);
-                        changed = true;
-                        if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
-                    }
-                }
+        List<Node> nodes = pag.getNodes();
 
-//                reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
+        // Inducing-path existence is symmetric, so unordered pairs suffice.
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
+                    pag.addNondirectedEdge(x, y);
+                    changed = true;
+                    if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
+                }
             }
         }
+
         return changed;
     }
 
-    private static boolean removeCycles(Graph pag, boolean verbose) {
-        boolean changed = false;
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        Map<Node, Set<Node>> reachableFrom = buildDescendantsMap(mag);
+    /**
+     * Last-resort orientation. An arbitrary (e.g., name-based) order yields, for dense skeletons, a DAG whose
+     * equivalence class has few or no v-structures, hence a PAG that is nearly all circles -- the orientation
+     * information is discarded wholesale. Instead, derive the order from the repaired graph's OWN directed edges:
+     * repeatedly peel the node with (in order of priority) the earliest knowledge tier, then the fewest remaining
+     * directed parents, then the alphabetically first name. Wherever the estimated directed structure is acyclic,
+     * this order agrees with it, so those orientations survive into the DAG and its PAG; only cycle-breaking edges
+     * and previously unoriented/bidirected edges receive imposed orientations. The result is a DAG, hence a legal
+     * MAG, and deterministic.
+     */
+    private static Graph orientSkeletonAsDag(Graph skeleton, Knowledge knowledge) {
+        List<Node> nodes = skeleton.getNodes();
 
-        for (Node x : mag.getNodes()) {
-            if (reachableFrom.get(x).contains(x)) {
-                Set<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
-                for (List<Node> path : paths) {
-                    for (int i = 1; i < path.size() - 1; i++) {
-                        Node y = path.get(i);
-                        Node a = path.get(i - 1);
-                        Node b = path.get(i + 1);
-                        if (pag.isParentOf(a, y) && pag.isParentOf(b, y) && !pag.isAdjacentTo(a, b)) {
-                            if (!pag.isAdjacentTo(a, b)) {
-                                pag.addNondirectedEdge(a, b);
-                                changed = true;
-                            }
-                        }
-                    }
-                }
+        // Remaining directed parents/children, taken from the repaired graph's fully
+        // directed edges. (Partially oriented o-> edges could be added here as soft
+        // constraints if desired.)
+        Map<Node, Set<Node>> parents = new HashMap<>();
+        Map<Node, Set<Node>> children = new HashMap<>();
+
+        for (Node n : nodes) {
+            parents.put(n, new HashSet<>());
+            children.put(n, new HashSet<>());
+        }
+
+        for (Edge e : skeleton.getEdges()) {
+            if (Edges.isDirectedEdge(e)) {
+                Node tail = Edges.getDirectedEdgeTail(e);
+                Node head = Edges.getDirectedEdgeHead(e);
+                parents.get(head).add(tail);
+                children.get(tail).add(head);
             }
         }
 
-        if (verbose && changed) {
-            TetradLogger.getInstance().log("Cycles removed via covering colliders.");
+        Comparator<Node> pick = Comparator
+                .comparingInt((Node n) -> {
+                    int tier = knowledge != null ? knowledge.isInWhichTier(n) : -1;
+                    return tier == -1 ? Integer.MAX_VALUE : tier;
+                })
+                .thenComparingInt((Node n) -> parents.get(n).size())
+                .thenComparing(Node::getName);
+
+        List<Node> order = new ArrayList<>();
+        Set<Node> remaining = new LinkedHashSet<>(nodes);
+
+        while (!remaining.isEmpty()) {
+            Node next = remaining.stream().min(pick).orElseThrow();
+            order.add(next);
+            remaining.remove(next);
+
+            for (Node c : children.get(next)) {
+                parents.get(c).remove(next);
+            }
         }
 
-        return changed;
+        Map<Node, Integer> index = new HashMap<>();
+        for (int i = 0; i < order.size(); i++) {
+            index.put(order.get(i), i);
+        }
+
+        Graph dag = new EdgeListGraph(nodes);
+
+        for (Edge e : skeleton.getEdges()) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+
+            if (index.get(a) < index.get(b)) {
+                dag.addDirectedEdge(a, b);
+            } else {
+                dag.addDirectedEdge(b, a);
+            }
+        }
+
+        return dag;
     }
 
     private static void reorientWithFci(Graph pag, FciOrient fciOrient, Knowledge knowledge,
@@ -2767,6 +3466,7 @@ public final class GraphUtils {
         }
         return map;
     }
+
 
     /**
      * Calculates the number of induced adjacencies in the given estiamted Partial Ancestral (PAG) with respect to the
@@ -3174,6 +3874,7 @@ public final class GraphUtils {
         if (verbose) {
             TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
         }
+
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
@@ -3194,7 +3895,9 @@ public final class GraphUtils {
                 throw new IllegalArgumentException("Nodes not distinct.");
             }
 
-            if (triple(pag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y, knowledge)) {
+            // Any collider triple in the BOSS data, regardless of whether it is unshielded, cam be copied over
+            // into the PAG so long as the adjacencies still exist.
+            if (triple(pag, x, b, y) && /*!pag.isAdjacentTo(x, y) &&*/ colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
             }
@@ -3374,6 +4077,47 @@ public final class GraphUtils {
         g.setEndpoint(y, z, Endpoint.ARROW);
     }
 
+    /**
+     * Identifies all connected components in a given graph.
+     * A connected component is a subset of the graph's nodes such that
+     * each pair of nodes is connected by a path, and which is not connected
+     * to any additional nodes in the graph.
+     *
+     * @param g The graph for which to find connected components. It is assumed
+     *          to be an undirected graph and implemented as a data structure providing
+     *          access to its nodes and the adjacency list for each node.
+     * @return A list of sets, where each set contains the nodes that belong
+     *         to a single connected component of the graph.
+     */
+    public static List<Set<Node>> connectedComponents(Graph g) {
+        List<Set<Node>> comps = new ArrayList<>();
+        Set<Node> visited = new HashSet<>();
+
+        for (Node start : g.getNodes()) {
+            if (visited.contains(start)) continue;
+
+            Set<Node> comp = new LinkedHashSet<>();
+            Deque<Node> queue = new ArrayDeque<>();
+            queue.add(start);
+            visited.add(start);
+
+            while (!queue.isEmpty()) {
+                Node v = queue.remove();
+                comp.add(v);
+
+                for (Node w : g.getAdjacentNodes(v)) {
+                    if (!visited.contains(w)) {
+                        visited.add(w);
+                        queue.add(w);
+                    }
+                }
+            }
+
+            comps.add(comp);
+        }
+
+        return comps;
+    }
 
     /**
      * Compute strongly connected components (SCCs) of a directed graph. Uses Tarjan's algorithm. Each SCC is returned
@@ -3417,9 +4161,9 @@ public final class GraphUtils {
         for (Node w : g.getChildren(v)) {  // outgoing edges only
             if (!index.containsKey(w)) {
                 strongConnect(w, g, index, lowlink, stack, onStack, counter, sccs);
-                lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
+                lowlink.put(v, TMath.min(lowlink.get(v), lowlink.get(w)));
             } else if (onStack.contains(w)) {
-                lowlink.put(v, Math.min(lowlink.get(v), index.get(w)));
+                lowlink.put(v, TMath.min(lowlink.get(v), index.get(w)));
             }
         }
 
@@ -3434,6 +4178,77 @@ public final class GraphUtils {
             } while (!w.equals(v));
             sccs.add(comp);
         }
+    }
+
+    /**
+     * Creates a replicating graph based on the provided graph. The method generates a new graph
+     * where edges are replicated only for child nodes that are lag-0 (i.e., nodes without a colon
+     * in their name). Lag-0 nodes and their parent relationships are preserved and replicated
+     * automatically to all other lag-slices.
+     *
+     * @param graph the source graph from which the replicating graph is generated. The input
+     *              graph contains nodes and edges that determine the structure of the resulting
+     *              replicating graph.
+     * @return a new {@code Graph} instance representing the replicating graph. This graph includes
+     *         all the replicated relationships as described.
+     */
+    public static @NotNull Graph getReplicatingGraph(Graph graph) {
+        Graph replicating = GraphFactoryUtil.newGraph(graph.getNodes(), true);
+
+        // Seed edges where at least one endpoint is a lag-0 node (no colon in name).
+        // This covers:
+        //   - contemporaneous edges: X -> Y (both lag-0)
+        //   - cross-lag edges: X:1 -> Y (parent is lagged, child is lag-0)
+        //   - latent->observed: L -> Y where L is lag-0
+        // Replication mirrors these to all other lag-slices automatically.
+        // Edges entirely within higher lags (X:1 -> Y:1) are skipped —
+        // replication will produce them.
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+
+            boolean n1IsLag0 = !n1.getName().contains(":");
+            boolean n2IsLag0 = !n2.getName().contains(":");
+
+            if (n1IsLag0 || n2IsLag0) {
+                replicating.addEdge(edge);
+            }
+        }
+
+        return replicating;
+    }
+
+    /**
+     * Resolves forbidden circles in the given partially oriented graph (PAG) based on the provided knowledge.
+     * Updates edge endpoints to arrowheads where forbidden relationships are detected.
+     *
+     * Temp method to try to fix a putative knowledge issue in FCI.
+     *
+     * @param pag the partially oriented graph to be processed
+     * @param knowledge the knowledge object containing forbidden relationships between nodes
+     * @return {@code true} if any changes were made to the graph; {@code false} otherwise
+     */
+    public static boolean applyForbiddenCircleResolution(Graph pag, Knowledge knowledge) {
+        boolean anyChanged = false;
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Edge edge : new ArrayList<>(pag.getEdges())) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+                // Check A end: if circle at A and A->B is forbidden, resolve to arrowhead
+                if (edge.getEndpoint1() == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+                    edge.setEndpoint1(Endpoint.ARROW);
+                    changed = true; anyChanged = true;
+                }
+                // Check B end symmetrically
+                if (edge.getEndpoint2() == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), a.getName())) {
+                    edge.setEndpoint2(Endpoint.ARROW);
+                    changed = true; anyChanged = true;
+                }
+            }
+        }
+        return anyChanged;
     }
 
     /**
@@ -3798,5 +4613,6 @@ public final class GraphUtils {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }
     }
+
 }
 

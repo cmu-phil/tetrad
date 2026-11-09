@@ -53,5 +53,16 @@ public interface CovarianceData extends Data {
      */
     double[][] getData();
 
+    /**
+     * Returns human-readable warnings recorded while reading the data, such as an assumed sample size when the file
+     * did not state one. Empty if there were none. The default implementation returns an empty list, so existing
+     * implementations are unaffected.
+     *
+     * @return the warnings, empty if none.
+     */
+    default List<String> getWarnings() {
+        return List.of();
+    }
+
 }
 

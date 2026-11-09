@@ -23,7 +23,8 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -61,7 +62,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -115,7 +116,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -123,15 +124,18 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        Score score = this.score.getScore(dataModel, parameters);
+        edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), score);
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
-        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS), score,
+                parameters.getDouble(Params.IMAP_ALPHA));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         search.setOut(System.out);
 
         return search.search();
@@ -180,14 +184,16 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
         List<String> params = new ArrayList<>();
 
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
-        params.add(Params.GUARANTEE_PAG);
-        params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.DO_POSSIBLE_DSEP);
+        params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.IMAP_ALPHA);
         params.add(Params.VERBOSE);
+        params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         // Flags
         params.add(Params.VERBOSE);

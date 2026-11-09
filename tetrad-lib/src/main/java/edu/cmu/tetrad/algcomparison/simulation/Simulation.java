@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -48,8 +49,9 @@ public interface Simulation extends HasParameters, TetradSerializable {
      *
      * @param parameters The parameters to use in the simulation.
      * @param newModel   If true, a new model is created. If false, the model is reused.
+     * @throws ParseException if there is an error parsing the hidden dimensions string
      */
-    void createData(Parameters parameters, boolean newModel);
+    void createData(Parameters parameters, boolean newModel) throws ParseException;
 
     /**
      * Returns the number of data models.

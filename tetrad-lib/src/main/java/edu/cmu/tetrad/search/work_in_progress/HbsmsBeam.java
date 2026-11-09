@@ -30,8 +30,9 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -402,7 +403,7 @@ public final class HbsmsBeam implements Hbsms {
 
         // Add moves:
         List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
@@ -783,14 +784,14 @@ public final class HbsmsBeam implements Hbsms {
             int sampleSize = scorer.getSampleSize();
 
             this.chisq = (sampleSize - 1) * getFml();
-            this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
+            this.bic = this.chisq - this.dof * TMath.log(sampleSize);
         }
 
         private Score() {
             int sampleSize = 1000;
             this.fml = Double.POSITIVE_INFINITY;
             this.chisq = (sampleSize - 1) * this.fml;
-            this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
+            this.bic = this.chisq - this.dof * TMath.log(sampleSize);
         }
 
         /**

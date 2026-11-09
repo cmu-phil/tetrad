@@ -21,10 +21,12 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
@@ -82,14 +84,27 @@ public final class Knowledge implements TetradSerializable {
     private final List<Set<String>> tierSpecs;
 
     /**
-     * The knowledge groups.
+     * The knowledge groups. These are enforced directly, as groups, by {@link #isForbidden} and
+     * {@link #isRequired} (through {@link #isForbiddenByGroups} and {@link #isRequiredByGroups});
+     * they are not compiled into {@link #forbiddenRulesSpecs} or {@link #requiredRulesSpecs}.
+     * (Formerly they were mirrored into those lists, which made removing a group delete any
+     * identical explicitly set rule; {@link #readObject} migrates old serialized objects.)
      */
     private final List<KnowledgeGroup> knowledgeGroups;
 
     /**
-     * The knowledge group rules.
+     * The resolved extents of the knowledge groups: for each group, the pair of variable sets its
+     * from- and to-specs matched when the group was added or last set. Wildcards are resolved
+     * against the variables known at that time.
      */
     private final Map<KnowledgeGroup, OrderedPair<Set<String>>> knowledgeGroupRules;
+
+    /**
+     * Additional, named tier structures, independent of the main tiers and of one another; see
+     * {@link KnowledgeTierStructure}. May be null in objects serialized before this field existed;
+     * always accessed through {@link #tierStructures()}.
+     */
+    private List<KnowledgeTierStructure> tierStructures;
 
     /**
      * The default to knowledge layout.
@@ -111,6 +126,7 @@ public final class Knowledge implements TetradSerializable {
         this.tierSpecs = new ArrayList<>();
         this.knowledgeGroups = new LinkedList<>();
         this.knowledgeGroupRules = new HashMap<>();
+        this.tierStructures = new ArrayList<>();
     }
 
     /**
@@ -150,6 +166,7 @@ public final class Knowledge implements TetradSerializable {
             this.tierSpecs = copy.tierSpecs;
             this.knowledgeGroups = copy.knowledgeGroups;
             this.knowledgeGroupRules = copy.knowledgeGroupRules;
+            this.tierStructures = copy.tierStructures();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -162,6 +179,64 @@ public final class Knowledge implements TetradSerializable {
      */
     public static Knowledge serializableInstance() {
         return new Knowledge();
+    }
+
+    /**
+     * The additional tier structures, never null. Objects serialized before the field existed
+     * deserialize with it null; this lazily supplies the empty list.
+     */
+    private List<KnowledgeTierStructure> tierStructures() {
+        if (this.tierStructures == null) {
+            this.tierStructures = new ArrayList<>();
+        }
+
+        return this.tierStructures;
+    }
+
+    /**
+     * Migrates serialized objects from before knowledge groups were enforced directly: the pairwise
+     * rules that mirrored each group are removed from the forbidden and required rule lists, so
+     * that the groups (still present, and now consulted directly) are not double-counted and
+     * editing or removing a group behaves as it does for newly built objects. This matches the old
+     * {@code removeKnowledgeGroup}, which removed the mirrored rule on removal. Also ensures every
+     * group has a cached extent.
+     *
+     * @param in the stream to read from.
+     * @throws IOException            if the stream cannot be read.
+     * @throws ClassNotFoundException if a class in the stream cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        if (this.knowledgeGroups != null && this.knowledgeGroupRules != null) {
+
+            // The old code added each distinct rule to the lists once, however many groups shared
+            // it, so each distinct rule is removed once; removing it per group could delete an
+            // identical explicitly set rule as well.
+            Set<OrderedPair<Set<String>>> removed = new HashSet<>();
+
+            for (KnowledgeGroup group : this.knowledgeGroups) {
+                OrderedPair<Set<String>> rule = this.knowledgeGroupRules.get(group);
+
+                if (rule == null) {
+                    this.knowledgeGroupRules.put(group, getGroupRule(group));
+                    continue;
+                }
+
+                if (!removed.add(rule)) {
+                    continue;
+                }
+
+                if (this.forbiddenRulesSpecs != null) {
+                    this.forbiddenRulesSpecs.remove(rule);
+                }
+
+                if (this.requiredRulesSpecs != null) {
+                    this.requiredRulesSpecs.remove(rule);
+                }
+            }
+        }
     }
 
     // Checking this spec can cause the drag and drop feature to fail.
@@ -187,7 +262,7 @@ public final class Knowledge implements TetradSerializable {
 
         if (spec.contains("*")) {
             split(spec).stream()
-                    .map(e -> e.replace("*", ".*"))
+                    .map(Knowledge::wildcardToRegex)
                     .forEach(e -> {
                         Pattern cpdag = Pattern.compile(e);
                         this.variables.stream()
@@ -201,6 +276,32 @@ public final class Knowledge implements TetradSerializable {
         }
 
         return vars;
+    }
+
+    /**
+     * Translates a wildcard expression into a regular expression in which '*' matches any string
+     * of characters and every other character, including regex metacharacters such as '.' and
+     * '(', is matched literally. This keeps variable names containing such characters from being
+     * misread as regex syntax, which formerly caused wildcard specs either to match the wrong
+     * variables (a spec like "X.*" also matching "Xa1") or to throw a PatternSyntaxException
+     * outright (a spec like "V(*"). This matches the semantics of the knowledge editor's own
+     * wildcard matching.
+     */
+    private static String wildcardToRegex(String glob) {
+        StringBuilder sb = new StringBuilder();
+        int start = 0;
+        int star;
+        while ((star = glob.indexOf('*', start)) >= 0) {
+            if (star > start) {
+                sb.append(Pattern.quote(glob.substring(start, star)));
+            }
+            sb.append(".*");
+            start = star + 1;
+        }
+        if (start < glob.length()) {
+            sb.append(Pattern.quote(glob.substring(start)));
+        }
+        return sb.toString();
     }
 
     private Set<String> split(String spec) {
@@ -311,28 +412,33 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Adds a knowledge group. Legacy method, replaced by setForbidden, setRequired with cpdags. Needed for the
-     * interface.
+     * Adds a knowledge group. The group is enforced directly by {@link #isForbidden} and
+     * {@link #isRequired}; nothing is compiled into the pairwise rule lists. Plain (non-wildcard)
+     * member names are added as variables, so a group over names the object has not seen is not
+     * silently inert.
      *
      * @param group a {@link edu.cmu.tetrad.data.KnowledgeGroup} object
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
         if (group == null) throw new NullPointerException("Knowledge group is null.");
 
+        addGroupVariables(group);
+
         this.knowledgeGroups.add(group);
+        this.knowledgeGroupRules.put(group, getGroupRule(group));
+    }
 
-        OrderedPair<Set<String>> o = getGroupRule(group);
-        this.knowledgeGroupRules.put(group, o);
-
-        if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            if (!forbiddenRulesSpecs.contains(o)) {
-                this.forbiddenRulesSpecs.add(o);
-            }
-        } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            if (!requiredRulesSpecs.contains(o)) {
-                this.requiredRulesSpecs.add(o);
-            }
-        }
+    /**
+     * Adds the plain (non-wildcard) member names of the group as variables, so that resolving the
+     * group's extent finds them.
+     */
+    private void addGroupVariables(KnowledgeGroup group) {
+        group.getFromVariables().forEach(e -> {
+            if (!e.contains("*")) addVariable(e);
+        });
+        group.getToVariables().forEach(e -> {
+            if (!e.contains("*")) addVariable(e);
+        });
     }
 
     /**
@@ -352,6 +458,9 @@ public final class Knowledge implements TetradSerializable {
         this.forbiddenRulesSpecs.clear();
         this.requiredRulesSpecs.clear();
         this.tierSpecs.clear();
+        this.knowledgeGroups.clear();
+        this.knowledgeGroupRules.clear();
+        tierStructures().clear();
     }
 
     /**
@@ -410,7 +519,7 @@ public final class Knowledge implements TetradSerializable {
 
         try {
             List<String> list = new ArrayList<>(tierSpecs.get(tier));
-            Collections.sort(list);
+            list.sort(NaturalSort.naturalComparator());
             return list;
         } catch (Exception e) {
             throw new RuntimeException("Expecting tiered knowledge", e);
@@ -462,11 +571,12 @@ public final class Knowledge implements TetradSerializable {
      * @return a boolean
      */
     public boolean isForbidden(String var1, String var2) {
-        return isForbiddenByRules(var1, var2) || isForbiddenByTiers(var1, var2);
+        return isForbiddenByRules(var1, var2) || isForbiddenByGroups(var1, var2)
+               || isForbiddenByTiers(var1, var2);
     }
 
     /**
-     * Legacy.
+     * Determines whether the edge var1 --&gt; var2 is forbidden by some forbidden knowledge group.
      *
      * @param var1 a {@link java.lang.String} object
      * @param var2 a {@link java.lang.String} object
@@ -476,6 +586,7 @@ public final class Knowledge implements TetradSerializable {
         for (KnowledgeGroup group : this.knowledgeGroups) {
             if (group.getType() == KnowledgeGroup.FORBIDDEN) {
                 OrderedPair<Set<String>> o = this.knowledgeGroupRules.get(group);
+                if (o == null) o = getGroupRule(group);
                 if (o.getFirst().contains(var1) && o.getSecond().contains(var2)) {
                     return true;
                 }
@@ -501,6 +612,12 @@ public final class Knowledge implements TetradSerializable {
             }
         }
 
+        for (KnowledgeTierStructure structure : tierStructures()) {
+            if (structure.isForbidden(var1, var2)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -518,11 +635,11 @@ public final class Knowledge implements TetradSerializable {
             }
         }
 
-        return false;
+        return isRequiredByGroups(var1, var2);
     }
 
     /**
-     * Legacy.
+     * Determines whether the edge var1 --&gt; var2 is required by some required knowledge group.
      *
      * @param var1 a {@link java.lang.String} object
      * @param var2 a {@link java.lang.String} object
@@ -532,6 +649,7 @@ public final class Knowledge implements TetradSerializable {
         for (KnowledgeGroup group : this.knowledgeGroups) {
             if (group.getType() == KnowledgeGroup.REQUIRED) {
                 OrderedPair<Set<String>> o = this.knowledgeGroupRules.get(group);
+                if (o == null) o = getGroupRule(group);
                 if (o.getFirst().contains(var1) && o.getSecond().contains(var2)) {
                     return true;
                 }
@@ -549,7 +667,10 @@ public final class Knowledge implements TetradSerializable {
     public boolean isEmpty() {
         return this.forbiddenRulesSpecs.isEmpty()
                && this.requiredRulesSpecs.isEmpty()
-               && this.tierSpecs.isEmpty();
+               && this.tierSpecs.isEmpty()
+               && this.knowledgeGroups.stream().allMatch(g ->
+                g.getFromVariables().isEmpty() || g.getToVariables().isEmpty())
+               && tierStructures().stream().allMatch(KnowledgeTierStructure::isEmpty);
     }
 
     /**
@@ -580,14 +701,32 @@ public final class Knowledge implements TetradSerializable {
             throw new NullPointerException("Sorry, a graph hasn't been provided.");
         }
 
-        return graph.getEdges().stream()
-                .filter(Edge::isDirected)
-                .anyMatch(edge -> {
-                    Node from = Edges.getDirectedEdgeTail(edge);
-                    Node to = Edges.getDirectedEdgeHead(edge);
+        for (Edge edge : graph.getEdges()) {
+            if (edge.isDirected()) {
+                Node from = Edges.getDirectedEdgeTail(edge);
+                Node to = Edges.getDirectedEdgeHead(edge);
 
-                    return isForbidden(from.getName(), to.getName());
-                });
+                if (isForbidden(from.getName(), to.getName())) {
+                    return true;
+                }
+            } else if (Edges.isUndirectedEdge(edge)) {
+                // An undirected edge in a CPDAG/PDAG stands for "either orientation in some member
+                // of the class." If BOTH orientations are forbidden, no member is legal, so the
+                // edge violates the knowledge. (Previously this method filtered to directed edges
+                // only, so, e.g., an undirected edge between two variables in a forbidden-within
+                // tier passed the check.) If exactly one direction is forbidden the edge is not a
+                // violation of the class per se - it is under-oriented - and callers that require
+                // knowledge-compiled graphs should check for that case themselves.
+                String a = edge.getNode1().getName();
+                String b = edge.getNode2().getName();
+
+                if (isForbidden(a, b) && isForbidden(b, a)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -622,17 +761,14 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Removes the knowledge group at the given index.
+     * Removes the knowledge group at the given index. Explicitly set rules and tiers are
+     * untouched, even where they coincide with the group.
      *
      * @param index a int
      */
     public void removeKnowledgeGroup(int index) {
-        OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
-
-        this.forbiddenRulesSpecs.remove(old);
-        this.requiredRulesSpecs.remove(old);
-
-        this.knowledgeGroups.remove(index);
+        KnowledgeGroup removed = this.knowledgeGroups.remove(index);
+        this.knowledgeGroupRules.remove(removed);
     }
 
     /**
@@ -641,15 +777,7 @@ public final class Knowledge implements TetradSerializable {
      * @return a {@link java.util.Iterator} object
      */
     public Iterator<KnowledgeEdge> requiredEdgesIterator() {
-        Set<KnowledgeEdge> edges = new HashSet<>();
-
-        this.requiredRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
-            if (!s1.equals(s2)) {
-                edges.add(new KnowledgeEdge(s1, s2));
-            }
-        })));
-
-        return edges.iterator();
+        return getListOfRequiredEdges().iterator();
     }
 
     /**
@@ -748,31 +876,22 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Legacy, do not use.
+     * Replaces the knowledge group at the given index. Explicitly set rules and tiers are
+     * untouched.
      *
      * @param index a int
      * @param group a {@link edu.cmu.tetrad.data.KnowledgeGroup} object
      */
     public void setKnowledgeGroup(int index, KnowledgeGroup group) {
-        OrderedPair<Set<String>> o = getGroupRule(group);
-        OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
+        addGroupVariables(group);
 
-        this.forbiddenRulesSpecs.remove(old);
-        this.requiredRulesSpecs.remove(old);
+        KnowledgeGroup old = this.knowledgeGroups.set(index, group);
 
-        knowledgeGroupRules.put(group, o);
-
-        if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            if (!forbiddenRulesSpecs.contains(o)) {
-                this.forbiddenRulesSpecs.add(o);
-            }
-        } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            if (!requiredRulesSpecs.contains(o)) {
-                this.requiredRulesSpecs.add(o);
-            }
+        if (!this.knowledgeGroups.contains(old)) {
+            this.knowledgeGroupRules.remove(old);
         }
 
-        this.knowledgeGroups.set(index, group);
+        this.knowledgeGroupRules.put(group, getGroupRule(group));
     }
 
     /**
@@ -871,6 +990,20 @@ public final class Knowledge implements TetradSerializable {
             }
         })));
 
+        for (KnowledgeGroup group : this.knowledgeGroups) {
+            if (group.getType() != KnowledgeGroup.REQUIRED) continue;
+            OrderedPair<Set<String>> rule = this.knowledgeGroupRules.get(group);
+            if (rule == null) rule = getGroupRule(group);
+
+            for (String e1 : rule.getFirst()) {
+                for (String e2 : rule.getSecond()) {
+                    if (!e1.equals(e2)) {
+                        edges.add(new KnowledgeEdge(e1, e2));
+                    }
+                }
+            }
+        }
+
         return new ArrayList<>(edges);
     }
 
@@ -926,6 +1059,32 @@ public final class Knowledge implements TetradSerializable {
             }
         })));
 
+        for (KnowledgeGroup group : this.knowledgeGroups) {
+            if (group.getType() != KnowledgeGroup.FORBIDDEN) continue;
+            OrderedPair<Set<String>> rule = this.knowledgeGroupRules.get(group);
+            if (rule == null) rule = getGroupRule(group);
+
+            for (String e1 : rule.getFirst()) {
+                for (String e2 : rule.getSecond()) {
+                    if (!e1.equals(e2)) {
+                        edges.add(new KnowledgeEdge(e1, e2));
+                    }
+                }
+            }
+        }
+
+        for (KnowledgeTierStructure structure : tierStructures()) {
+            Set<String> vars = structure.getVariables();
+
+            for (String x : vars) {
+                for (String y : vars) {
+                    if (!x.equals(y) && structure.isForbidden(x, y)) {
+                        edges.add(new KnowledgeEdge(x, y));
+                    }
+                }
+            }
+        }
+
         return new ArrayList<>(edges);
     }
 
@@ -935,10 +1094,11 @@ public final class Knowledge implements TetradSerializable {
      * @return a {@link java.util.List} object
      */
     public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
+
+        // Group rules are no longer mirrored into the forbidden rules list, so, unlike before,
+        // there are no group rules to subtract here; only the tier-flag rules are.
         Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
         forbiddenTierRules().forEach(copy::remove);
-
-        this.knowledgeGroups.forEach(e -> copy.remove(this.knowledgeGroupRules.get(e)));
 
         Set<KnowledgeEdge> edges = new HashSet<>();
         for (OrderedPair<Set<String>> e : copy)
@@ -1001,6 +1161,52 @@ public final class Knowledge implements TetradSerializable {
         }
     }
 
+    // --- Additional tier structures ---
+
+    /**
+     * Returns the additional tier structures, in order, as a shallow copy of the list. The
+     * structures themselves are the live objects, and editing one in place edits this knowledge;
+     * see {@link KnowledgeTierStructure}.
+     *
+     * @return a copy of the list of tier structures
+     */
+    public List<KnowledgeTierStructure> getTierStructures() {
+        return new ArrayList<>(tierStructures());
+    }
+
+    /**
+     * Adds an additional tier structure. Its member variable names are added as variables of this
+     * knowledge.
+     *
+     * @param structure a {@link edu.cmu.tetrad.data.KnowledgeTierStructure} object
+     */
+    public void addTierStructure(KnowledgeTierStructure structure) {
+        if (structure == null) {
+            throw new NullPointerException("Tier structure is null.");
+        }
+
+        structure.getVariables().forEach(this::addVariable);
+        tierStructures().add(structure);
+    }
+
+    /**
+     * Removes the additional tier structure at the given index.
+     *
+     * @param index a int
+     */
+    public void removeTierStructure(int index) {
+        tierStructures().remove(index);
+    }
+
+    /**
+     * Returns the number of additional tier structures.
+     *
+     * @return the number of tier structures
+     */
+    public int getNumTierStructures() {
+        return tierStructures().size();
+    }
+
     // --- IS helpers ---
 
     /**
@@ -1028,6 +1234,8 @@ public final class Knowledge implements TetradSerializable {
         hash += 17 * this.forbiddenRulesSpecs.hashCode() + 37;
         hash += 17 * this.requiredRulesSpecs.hashCode() + 37;
         hash += 17 * this.tierSpecs.hashCode() + 37;
+        hash += 17 * this.knowledgeGroups.hashCode() + 37;
+        hash += 17 * tierStructures().hashCode() + 37;
         return hash;
     }
 
@@ -1044,7 +1252,9 @@ public final class Knowledge implements TetradSerializable {
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
                && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)
-               && this.tierSpecs.equals(that.tierSpecs);
+               && this.tierSpecs.equals(that.tierSpecs)
+               && this.knowledgeGroups.equals(that.knowledgeGroups)
+               && tierStructures().equals(that.tierStructures());
     }
 
     /**

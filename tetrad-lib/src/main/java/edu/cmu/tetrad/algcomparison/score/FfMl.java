@@ -1,0 +1,160 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.algcomparison.score;
+
+import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+
+import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Wrapper for FF-ML MIxed Marginal Likelihood Score.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Score(
+        name = "FFML Score",
+        command = "ffml-score",
+        dataType = {DataType.Mixed}
+)
+@General
+@Mixed
+//@Experimental
+public class FfMl implements ScoreWrapper {
+
+    @Serial
+    private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
+    private transient DataModel dataSet;
+
+    /**
+     * Constructs a new instance of the SemBicScore.
+     */
+    public FfMl() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "FFML Score");
+        edu.cmu.tetrad.search.score.FfMl score;
+
+        if (dataSet instanceof DataSet) {
+            this.dataSet = DataTransforms.standardizeData((DataSet) dataSet);
+            score = new edu.cmu.tetrad.search.score.FfMl((DataSet) this.dataSet);
+        } else {
+            throw new IllegalArgumentException("Expecting a dataset.");
+        }
+
+        score.setLambda(parameters.getDouble(Params.FFML_RIDGE));
+        score.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
+        score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        score.setNumFeatures(parameters.getInt(Params.FFML_FF_FEATURES));
+        score.setCatRho(parameters.getDouble(Params.CAT_RHO));
+        score.setInteractionLambda(parameters.getDouble(Params.FFML_INTERACTION_LAMBDA));
+
+        return score;
+    }
+
+    /**
+     * Returns the description of the Score.
+     *
+     * @return the description of the Score
+     */
+    @Override
+    public String getDescription() {
+        return "FFML Score";
+    }
+
+    /**
+     * Returns the data type of the current score.
+     *
+     * @return the data type of the score
+     */
+    @Override
+    public DataType getDataType() {
+        return DataType.Mixed;
+    }
+
+    /**
+     * Returns a list of parameters applicable to this method.
+     *
+     * @return a list of parameters
+     */
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = new ArrayList<>();
+        parameters.add(Params.FFML_RIDGE);
+        parameters.add(Params.BW_MAX_ROWS);
+        parameters.add(Params.FFML_FF_FEATURES);
+        parameters.add(Params.CAT_RHO);
+        parameters.add(Params.FFML_INTERACTION_LAMBDA);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
+        return parameters;
+    }
+
+    /**d
+     * Retrieves the variable with the given name from the data set.
+     *
+     * @param name the name of the variable
+     * @return the variable with the given name, or null if no such variable exists
+     */
+    @Override
+    public Node getVariable(String name) {
+        return this.dataSet.getVariable(name);
+    }
+
+    /**
+     * Deserializes the object from the given {@link java.io.ObjectInputStream}.
+     * Resets the transient {@code dataSet} field to {@code null} to ensure that
+     * it is properly reinitialized after deserialization.
+     *
+     * @param in the {@link java.io.ObjectInputStream} from which the object is read
+     * @throws java.io.IOException if an I/O error occurs while reading the stream
+     * @throws ClassNotFoundException if the class of a serialized object cannot be found
+     */
+    @Serial
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.dataSet = null;             // <-- force rebind after load
+    }
+
+}
+

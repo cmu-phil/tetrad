@@ -87,6 +87,7 @@ public final class TestEdgeListGraph {
         assertEquals(this.graph, graph3);
     }
 
+    @Test
     public void testSequence2() {
         setUp();
 
@@ -120,6 +121,95 @@ public final class TestEdgeListGraph {
         this.graph.setEndpoint(this.x3, this.x4, Endpoint.ARROW);
 
         assertTrue(this.graph.paths().existsDirectedCycle());
+    }
+
+    @Test
+    public void testIsDefNoncollider() {
+        setUp();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+
+        // x1 --- x2 --- x3  (undirected)
+        this.graph.addUndirectedEdge(this.x1, this.x2);
+        this.graph.addUndirectedEdge(this.x2, this.x3);
+
+        // In the current implementation, undirected edges are NOT def noncolliders
+        // unless they have a tail at the middle node.
+        // x1 --- x2 is Tail-Tail. x2 --- x3 is Tail-Tail.
+        // So x1 --- x2 --- x3 should be a def noncollider because of the tails at x2.
+        assertTrue(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+
+        this.graph.clear();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        // x1 -> x2 <- x3
+        this.graph.addDirectedEdge(this.x1, this.x2);
+        this.graph.addDirectedEdge(this.x3, this.x2);
+        assertFalse(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertTrue(this.graph.isDefCollider(this.x1, this.x2, this.x3));
+
+        this.graph.clear();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        // x1 -> x2 -> x3
+        this.graph.addDirectedEdge(this.x1, this.x2);
+        this.graph.addDirectedEdge(this.x2, this.x3);
+        assertTrue(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertFalse(this.graph.isDefCollider(this.x1, this.x2, this.x3));
+    }
+
+    /**
+     * The circle case of the definite-noncollider test, which the test above never exercised and which was
+     * inverted until October 2026. In a PAG, x1 *-o x2 o-* x3 makes x2 a definite noncollider exactly when x1 and
+     * x3 are NOT adjacent: were x2 a collider in any graph of the class, the triple would be an unshielded
+     * collider, which is invariant across the class and so would carry arrowheads at x2 (FCI R0), not circles.
+     * When x1 and x3 are adjacent the triple is shielded, some graphs in the class orient x2 as a collider and
+     * others do not, and its status is undetermined. (Zhang 2008; Perković, Textor, Kalisch and Maathuis 2018.)
+     * The inversion made RecursiveAdjustment treat an open unshielded circle path as needing no blocking and
+     * return adjustment sets that were not GAC-valid; see TestAdjustmentSetValidity.
+     */
+    @Test
+    public void testIsDefNoncolliderCircleCase() {
+        setUp();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+
+        // x1 o-o x2 o-o x3, x1 and x3 not adjacent: definite noncollider.
+        this.graph.addEdge(new Edge(this.x1, this.x2, Endpoint.CIRCLE, Endpoint.CIRCLE));
+        this.graph.addEdge(new Edge(this.x2, this.x3, Endpoint.CIRCLE, Endpoint.CIRCLE));
+        assertTrue("unshielded circle triple must be a definite noncollider",
+                this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertFalse(this.graph.isDefCollider(this.x1, this.x2, this.x3));
+
+        // Shield it: x1 o-o x3. Now x2's status is undetermined, so NOT a definite noncollider.
+        this.graph.addEdge(new Edge(this.x1, this.x3, Endpoint.CIRCLE, Endpoint.CIRCLE));
+        assertFalse("shielded circle triple must not be a definite noncollider",
+                this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertFalse(this.graph.isDefCollider(this.x1, this.x2, this.x3));
+
+        // One arrowhead, one circle at x2, unshielded: x1 <-> x2 o-o x3. No tail and not both circles, so not
+        // definite either way.
+        this.graph.clear();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        this.graph.addEdge(new Edge(this.x1, this.x2, Endpoint.ARROW, Endpoint.ARROW));
+        this.graph.addEdge(new Edge(this.x2, this.x3, Endpoint.CIRCLE, Endpoint.CIRCLE));
+        assertFalse(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
+        assertFalse(this.graph.isDefCollider(this.x1, this.x2, this.x3));
+
+        // A tail at x2 decides it regardless of the other mark: x1 o-o x2 --> x3.
+        this.graph.clear();
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        this.graph.addEdge(new Edge(this.x1, this.x2, Endpoint.CIRCLE, Endpoint.CIRCLE));
+        this.graph.addDirectedEdge(this.x2, this.x3);
+        assertTrue(this.graph.isDefNoncollider(this.x1, this.x2, this.x3));
     }
 
     @Test

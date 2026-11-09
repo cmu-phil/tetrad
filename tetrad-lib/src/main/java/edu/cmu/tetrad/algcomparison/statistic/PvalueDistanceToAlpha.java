@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimates whether the
@@ -78,7 +78,7 @@ public class PvalueDistanceToAlpha implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
         markovCheck.generateResults(true, true);
         return abs(alpha - markovCheck.getKsPValue(true));
     }

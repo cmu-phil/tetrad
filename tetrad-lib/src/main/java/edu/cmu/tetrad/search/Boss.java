@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -26,6 +26,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -69,6 +71,12 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * tiered (e.g., time series) problems with larger numbers of variables.
  * However, knowledge of required and forbidden edges is correctly implemented
  * for arbitrary such knowledge.
+ * <p>
+ * BOSS can be run in oracle mode by giving it a GraphScore, which answers m-separation queries on a graph (or
+ * looks them up in a list of independence facts) instead of scoring data. In oracle mode a permutation is scored by
+ * minus the number of edges in the DAG built from it by grow-shrink, so the search is for a sparsest permutation;
+ * see GrowShrinkTree. With a d-separation oracle for a DAG and no knowledge, the BES step guarantees that the
+ * CPDAG of that DAG is returned. Without the BES step the search can stop at a permutation with extra edges.
  * <p>
  * A parameter is included to restart the search a certain number of times.
  * The idea is that the goal is to optimize a BIC score, so if several runs
@@ -119,6 +127,13 @@ public class Boss implements SuborderSearch {
      * The number of random starts to use.
      */
     private int numStarts = 1;
+    /**
+     * True if restarts after the first should use iterated local search (ILS) in the style of the FLOP algorithm
+     * (Wienobst, Henckel, &amp; Weichwald, 2026): each restart perturbs the best suborder found so far with about
+     * ln(m) random transpositions, rather than starting from a fresh random permutation. False (the default) gives
+     * the original BOSS behavior of independent random restarts.
+     */
+    private boolean useIlsRestarts = false;
     /**
      * True if the order of the variables in the data should be used for an initial best-order search, false if a random
      * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
@@ -193,61 +208,83 @@ public class Boss implements SuborderSearch {
 
         this.pool = new ForkJoinPool(this.numThreads);
 
-        for (int i = 0; i < this.numStarts; i++) {
+        try {
+            for (int i = 0; i < this.numStarts; i++) {
 
-            double time = System.currentTimeMillis();
+                double time = System.currentTimeMillis();
 
-            if ((i == 0 && !this.useDataOrder) || i > 0) {
-                shuffle(suborder);
-            }
-
-            if (i > 0 && this.resetAfterRS) {
-                for (Node root : suborder) {
-                    this.gsts.get(root).reset();
+                if (i == 0) {
+                    if (!this.useDataOrder) {
+                        shuffle(suborder);
+                    }
+                } else if (this.useIlsRestarts && bestSuborder != null) {
+                    // Iterated local search: perturb the best suborder found so far with about ln(m) random
+                    // transpositions, rather than starting from a fresh random permutation.
+                    suborder.clear();
+                    suborder.addAll(bestSuborder);
+                    perturb(suborder);
+                } else {
+                    shuffle(suborder);
                 }
-            }
 
-            makeValidKnowledgeOrder(suborder);
-
-            do {
-                improved = false;
-                for (Node x : new ArrayList<>(suborder)) {
-
-                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
-
-                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
-                    else {
-                        try {
-                            improved |= betterMutationAsync(prefix, suborder, x);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                if (i > 0 && this.resetAfterRS) {
+                    for (Node root : suborder) {
+                        this.gsts.get(root).reset();
                     }
                 }
 
-                if (this.verbose && (suborder.size() > 1)) {
-                    System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
+                makeValidKnowledgeOrder(suborder);
+                int maxIter = suborder.size() * suborder.size() + 1;
+                int iter = 0;
+
+                do {
+                    improved = false;
+                    for (Node x : new ArrayList<>(suborder)) {
+                        if (this.verbose && (suborder.size() > 1)) TetradLogger.getInstance().log(x.toString());
+
+                        if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
+                        else {
+                            improved |= betterMutationAsync(prefix, suborder, x);
+                        }
+                    }
+
+                    if (this.verbose && (suborder.size() > 1)) {
+                        TetradLogger.getInstance().log(String.format("Score: %.3f", update(prefix, suborder)));
+                    }
+
+                    if (++iter >= maxIter) {
+                        if (improved) {
+                            TetradLogger.getInstance().warn(String.format(
+                                    "BOSS hit its iteration cap (%d sweeps over %d variables) while still "
+                                    + "finding score-improving moves; terminating this suborder search early. "
+                                    + "Persistent non-convergence can indicate near-tied scores, e.g., under "
+                                    + "near-deterministic relations among variables (see the Data Audit).",
+                                    maxIter, suborder.size()));
+                        }
+                        break;
+                    }
+                } while (improved);
+
+                if (this.bes != null) bes(prefix, suborder);
+
+                score = update(prefix, suborder);
+                time = System.currentTimeMillis() - time;
+
+                if (suborder.size() > 1) {
+                    this.bics.add(score);
+                    this.times.add(time);
+                    if (this.verbose) {
+                        TetradLogger.getInstance().log(String.format("Restart: %d\t Score: %.3f\t Time: %.3f", i, score, time / 1e3));
+                    }
                 }
 
-            } while (improved);
-
-            if (this.bes != null) bes(prefix, suborder);
-
-            score = update(prefix, suborder);
-            time = System.currentTimeMillis() - time;
-
-            if (suborder.size() > 1) {
-                this.bics.add(score);
-                this.times.add(time);
-                if (this.verbose) {
-                    System.out.printf("\nRestart: %d\t Score: %.3f\t Time: %.3f\n\n", i, score, time / 1e3);
+                if (score > bestScore) {
+                    bestSuborder = new ArrayList<>(suborder);
+                    bestScore = score;
                 }
             }
-
-            if (score > bestScore) {
-                bestSuborder = new ArrayList<>(suborder);
-                bestScore = score;
-            }
+        } finally {
+            this.pool.shutdownNow();
         }
 
         if (this.numThreads > 1) this.pool.shutdown();
@@ -294,6 +331,43 @@ public class Boss implements SuborderSearch {
      */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
+    }
+
+    /**
+     * Sets whether restarts after the first should use iterated local search (ILS) in the style of the FLOP
+     * algorithm (Wienobst, Henckel, &amp; Weichwald, 2026): each restart perturbs the best suborder found so far
+     * with about ln(m) random transpositions, where m is the size of the suborder, rather than starting from a
+     * fresh random permutation. ILS restarts typically reconverge much faster than random restarts and are more
+     * effective at escaping local optima per unit of compute. The default is false, giving the original BOSS
+     * behavior of independent random restarts.
+     *
+     * @param useIlsRestarts True to use ILS-style restarts.
+     */
+    public void setUseIlsRestarts(boolean useIlsRestarts) {
+        this.useIlsRestarts = useIlsRestarts;
+    }
+
+    /**
+     * Perturbs the given suborder in place with about ln(m) random transpositions, where m is the size of the
+     * suborder. This is the ILS perturbation of the FLOP algorithm; the number of swaps is large enough to escape
+     * the basin of the current local optimum but small enough to stay in a promising region of the order space.
+     * Randomness comes from RandomUtil, so results are reproducible under a set seed.
+     *
+     * @param suborder The suborder to perturb.
+     */
+    private void perturb(List<Node> suborder) {
+        int m = suborder.size();
+        if (m < 2) return;
+
+        int numSwaps = Math.max(1, (int) Math.round(Math.log(m)));
+
+        for (int s = 0; s < numSwaps; s++) {
+            int a = RandomUtil.getInstance().nextInt(m);
+            int b = RandomUtil.getInstance().nextInt(m);
+            Node tmp = suborder.get(a);
+            suborder.set(a, suborder.get(b));
+            suborder.set(b, tmp);
+        }
     }
 
     /**
@@ -394,78 +468,108 @@ public class Boss implements SuborderSearch {
      *
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
-     * @param x        The node to be moved in the suborder.
+     * @param nodeToMove The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      * @throws InterruptedException if any
      */
-    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
+    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node nodeToMove)
+            throws InterruptedException {
+
         List<Callable<Void>> tasks = new ArrayList<>();
 
-        double[] scores = new double[suborder.size()];
-        double[] with = new double[suborder.size() - 1];
-        double[] without = new double[suborder.size() - 1];
+        int numNodes = suborder.size();
+        if (numNodes <= 1) return false;
 
-        Set<Node> Z = new HashSet<>(prefix);
-        int i = 0, curr = 0;
+        double[] insertionScores = new double[numNodes + 1];
+        double[] scoreWithNode = new double[numNodes];
+        double[] scoreWithoutNode = new double[numNodes];
 
-        tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
+        Set<Node> currentPrefix = new HashSet<>(prefix);
 
-        for (Node z : suborder) {
+        int index = 0;
+        int originalPosition = 0;
+
+        // ---- Forward scan: identify valid insertion points and collect scoring tasks ----
+        ListIterator<Node> iterator = suborder.listIterator();
+
+        tasks.add(new Trace(this.gsts.get(nodeToMove), this.all, currentPrefix, insertionScores, index));
+
+        while (iterator.hasNext()) {
+
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted");
+                throw new InterruptedException();
             }
-            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
-            if (x == z) {
-                curr = i;
+
+            Node neighborNode = iterator.next();
+
+            // Constraint: nodeToMove must precede neighborNode.
+            if (this.knowledge.isRequired(nodeToMove.getName(), neighborNode.getName())) {
+                iterator.previous(); // <-- critical rewind to match sequential behavior
+                break;
+            }
+
+            if (neighborNode == nodeToMove) {
+                originalPosition = index;
                 continue;
             }
 
-            Z.add(x);
-            tasks.add(new Trace(this.gsts.get(z), this.all, Z, with, i));
-            Z.remove(x);
-            tasks.add(new Trace(this.gsts.get(z), this.all, Z, without, i));
-            Z.add(z);
-            tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, ++i));
+            currentPrefix.add(nodeToMove);
+            tasks.add(new Trace(this.gsts.get(neighborNode), this.all, currentPrefix, scoreWithNode, index));
+            currentPrefix.remove(nodeToMove);
+
+            tasks.add(new Trace(this.gsts.get(neighborNode), this.all, currentPrefix, scoreWithoutNode, index));
+
+            currentPrefix.add(neighborNode);
+            tasks.add(new Trace(this.gsts.get(nodeToMove), this.all, currentPrefix, insertionScores, ++index));
         }
 
-        shuffle(tasks);
+        int lastValidIndex = index;
+
+        // ---- Execute tasks in parallel ----
         try {
             pool.invokeAll(tasks);
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             throw e;
         }
-        if (this.resetAfterBM) this.gsts.get(x).reset();
-        double runningScore = 0;
 
-        for (i = with.length - 1; i >= 0; i--) {
-            runningScore += with[i];
-            scores[i] += runningScore;
+        if (this.resetAfterBM) this.gsts.get(nodeToMove).reset();
+
+        // ---- Accumulate relative scores from right (with nodeToMove) ----
+        double runningScoreSum = 0.0;
+        for (int j = lastValidIndex - 1; j >= 0; j--) {
+            runningScoreSum += scoreWithNode[j];
+            insertionScores[j] += runningScoreSum;
         }
 
-        runningScore = 0;
-
-        for (i = 0; i < without.length; i++) {
-            runningScore += without[i];
-            scores[i + 1] += runningScore;
+        // ---- Accumulate relative scores from left (without nodeToMove) ----
+        runningScoreSum = 0.0;
+        for (int j = 0; j < lastValidIndex; j++) {
+            runningScoreSum += scoreWithoutNode[j];
+            insertionScores[j + 1] += runningScoreSum;
         }
 
-        int best = curr;
+        // ---- Backward constraint scan to find the best insertion position ----
+        int bestPosition = originalPosition;
 
-        for (i = scores.length - 1; i >= 0; i--) {
-            if (this.knowledge.isRequired(suborder.get(i).getName(), x.getName())) break;
-            if (scores[i] + 1e-6 > scores[best]) best = i;
+        for (int j = lastValidIndex; j >= 0; j--) {
+
+            // Constraint: neighborNode must precede nodeToMove.
+            if (j < suborder.size()) {
+                Node neighborNode = suborder.get(j);
+                if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) break;
+            }
+
+            if (insertionScores[j] + 1e-6 > insertionScores[bestPosition]) bestPosition = j;
         }
 
-        if (scores[best] == Double.POSITIVE_INFINITY) {
-            throw new IllegalStateException("Determination detected.");
-        }
+        if (insertionScores[originalPosition] + 1e-6 > insertionScores[bestPosition]) return false;
 
-        if (scores[curr] + 1e-6 > scores[best]) return false;
-        suborder.remove(x);
-        suborder.add(best, x);
+        if (bestPosition > originalPosition) bestPosition--;
+
+        suborder.remove(nodeToMove);
+        suborder.add(bestPosition, nodeToMove);
 
         return true;
     }
@@ -475,63 +579,80 @@ public class Boss implements SuborderSearch {
      *
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
-     * @param x        The node to be moved in the suborder.
+     * @param nodeToMove The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      */
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
-        ListIterator<Node> itr = suborder.listIterator();
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node nodeToMove) throws InterruptedException {
+        ListIterator<Node> iterator = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
-        Set<Node> Z = new HashSet<>(prefix);
+        Set<Node> currentPrefix = new HashSet<>(prefix);
 
-        int i = 0;
-        double score = 0;
-        int curr = 0;
+        int index = 0;
+        double scoreSum = 0;
+        int originalPosition = 0;
 
-        while (itr.hasNext()) {
+        // Forward pass: find valid insertion positions from the left up to any required edge constraint.
+        while (iterator.hasNext()) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted");
+                throw new InterruptedException("Interrupted");
             }
 
-            Node z = itr.next();
+            Node neighborNode = iterator.next();
 
-            if (this.knowledge.isRequired(x.getName(), z.getName())) {
-                itr.previous();
+            // Constraint: nodeToMove must precede neighborNode.
+            if (this.knowledge.isRequired(nodeToMove.getName(), neighborNode.getName())) {
+                iterator.previous();
                 break;
             }
 
-            scores[i++] = this.gsts.get(x).trace(Z, this.all) + score;
-            if (z != x) {
-                score += this.gsts.get(z).trace(Z, this.all);
-                Z.add(z);
-            } else curr = i - 1;
+            scores[index++] = this.gsts.get(nodeToMove).trace(currentPrefix, this.all) + scoreSum;
+            if (neighborNode != nodeToMove) {
+                scoreSum += this.gsts.get(neighborNode).trace(currentPrefix, this.all);
+                currentPrefix.add(neighborNode);
+            } else {
+                originalPosition = index - 1;
+            }
         }
 
-        scores[i] = this.gsts.get(x).trace(Z, this.all) + score;
-        int best = i;
+        // The position after the last valid neighborNode.
+        scores[index] = this.gsts.get(nodeToMove).trace(currentPrefix, this.all) + scoreSum;
+        int bestPosition = index;
 
-        Z.add(x);
-        score = 0;
+        currentPrefix.add(nodeToMove);
+        scoreSum = 0;
 
-        while (itr.hasPrevious()) {
-            Node z = itr.previous();
+        // Backward pass: find valid insertion positions from the right up to any required edge constraint.
+        while (iterator.hasPrevious()) {
+            Node neighborNode = iterator.previous();
 
-            if (this.knowledge.isRequired(z.getName(), x.getName())) break;
-
-            if (z != x) {
-                Z.remove(z);
-                score += gsts.get(z).trace(Z, this.all);
+            // Constraint: neighborNode must precede nodeToMove.
+            if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) {
+                break;
             }
 
-            scores[--i] += score;
-            if (scores[i] + 1e-6 > scores[best]) best = i;
+            if (neighborNode != nodeToMove) {
+                currentPrefix.remove(neighborNode);
+                scoreSum += gsts.get(neighborNode).trace(currentPrefix, this.all);
+            }
+
+            scores[--index] += scoreSum;
+            if (scores[index] + 1e-6 > scores[bestPosition]) {
+                bestPosition = index;
+            }
         }
 
-        if (scores[curr] + 1e-6 > scores[best]) return false;
-        if (best > curr) best--;
-        suborder.remove(x);
-        suborder.add(best, x);
+        if (scores[originalPosition] + 1e-6 > scores[bestPosition]) {
+            return false;
+        }
+
+        if (bestPosition > originalPosition) {
+            bestPosition--;
+        }
+
+        suborder.remove(nodeToMove);
+        suborder.add(bestPosition, nodeToMove);
 
         return true;
     }
@@ -546,6 +667,11 @@ public class Boss implements SuborderSearch {
     private void bes(List<Node> prefix, List<Node> suborder) throws InterruptedException {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
+
+        // Bring this.parents up to date with the current suborder, so that BES starts from the graph the
+        // permutation search arrived at. (Previously the parents were refreshed before this point only in verbose
+        // mode, so otherwise BES was run on a stale graph, on the first start the empty graph.)
+        update(prefix, suborder);
 
         Graph graph = PermutationSearch.getGraph(all, this.parents, this.knowledge, true);
         this.bes.bes(graph, all, suborder);

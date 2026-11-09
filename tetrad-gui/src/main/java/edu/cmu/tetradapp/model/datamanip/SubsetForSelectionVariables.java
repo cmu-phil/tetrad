@@ -71,7 +71,7 @@ class SubsetForSelectionVariables implements DataFilter {
 //                }
 
                 if (variable.getNodeType() == NodeType.SELECTION) {
-                    if (data.getDouble(row, col) < 0) {
+                    if (data.getDouble(row, col) <= 0) {
                         continue ROWS;
                     }
                 }

@@ -23,9 +23,10 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.AdTree;
+import edu.cmu.tetrad.search.utils.AdTreeStoreRows;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class MvpLikelihood {
     // Discrete data only.
     private final int[][] discreteData;
     // Partitions
-    private final AdTree adTree;
+    private final AdTreeStoreRows adTree;
     // Fix degree
     private final int fDegree;
     // Structure Prior
@@ -123,7 +124,7 @@ public class MvpLikelihood {
         if (discretize) {
             DataSet discreteDataSet = useErsatzVariables();
             this.discreteVariables = discreteDataSet.getVariables();
-            this.adTree = new AdTree(discreteDataSet);
+            this.adTree = new AdTreeStoreRows(discreteDataSet);
             // All discrete data
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
                 int[] col = new int[discreteDataSet.getNumRows()];
@@ -133,7 +134,7 @@ public class MvpLikelihood {
                 this.discreteData[j] = col;
             }
         } else {
-            this.adTree = new AdTree(dataSet);
+            this.adTree = new AdTreeStoreRows(dataSet);
         }
 
     }
@@ -188,28 +189,24 @@ public class MvpLikelihood {
                 for (int i = 0; i < p; i++) {
                     for (Integer integer : cell) {
                         mean[i] += this.continuousData[continuousCols[i]][integer];
-                        var[i] += FastMath.pow(this.continuousData[continuousCols[i]][integer], 2);
+                        var[i] += TMath.pow(this.continuousData[continuousCols[i]][integer], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
-                    var[i] -= FastMath.pow(mean[i], 2);
-                    var[i] = FastMath.sqrt(var[i]);
-
-                    if (Double.isNaN(var[i])) {
-                        System.out.println(var[i]);
-                    }
+                    var[i] -= TMath.pow(mean[i], 2);
+                    var[i] = TMath.sqrt(var[i]);
                 }
 
                 int degree = this.fDegree;
                 if (this.fDegree < 1) {
-                    degree = (int) FastMath.floor(FastMath.log(r));
+                    degree = (int) TMath.floor(TMath.log(r));
                 }
                 Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
                         for (int d = 0; d < degree; d++) {
-                            subset.set(i, p * d + j, FastMath.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
+                            subset.set(i, p * d + j, TMath.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
                         }
                     }
                 }
@@ -273,7 +270,7 @@ public class MvpLikelihood {
 
                 int degree = this.fDegree;
                 if (this.fDegree < 1) {
-                    degree = (int) FastMath.floor(FastMath.log(r));
+                    degree = (int) TMath.floor(TMath.log(r));
                 }
                 if (c instanceof ContinuousVariable) {
                     dof += degree * continuous_parents.size() + 1;
@@ -304,7 +301,7 @@ public class MvpLikelihood {
         if (this.structurePrior == 0) {
             return 0;
         }
-        return k * FastMath.log(p) + (n - k) * FastMath.log(1 - p);
+        return k * TMath.log(p) + (n - k) * TMath.log(1 - p);
 
     }
 
@@ -317,7 +314,7 @@ public class MvpLikelihood {
 
         double n = this.dataSet.getNumColumns();
         double gamma = -this.structurePrior;
-        return gamma * FastMath.log(n);
+        return gamma * TMath.log(n);
 
     }
 
@@ -347,19 +344,15 @@ public class MvpLikelihood {
         if (sigma2 < 0) {
             Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i, 1);
-            r = ones.scalarMult(ones.dotProduct(Y) / (double) FastMath.max(n, 2)).minus(Y);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) TMath.max(n, 2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
-            lik = -(n / 2.) * (FastMath.log(2 * FastMath.PI) + FastMath.log(sigma2) + 1);
+            lik = -(n / 2.) * (TMath.log(2 * TMath.PI) + TMath.log(sigma2) + 1);
         } else if (sigma2 == 0) {
             lik = 0;
         } else {
-            lik = -(n / 2.) * (FastMath.log(2 * FastMath.PI) + FastMath.log(sigma2) + 1);
+            lik = -(n / 2.) * (TMath.log(2 * TMath.PI) + TMath.log(sigma2) + 1);
         }
 
-
-        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
-            System.out.println(lik);
-        }
 
         return lik;
     }
@@ -435,7 +428,7 @@ public class MvpLikelihood {
                 double center = 1 / (double) d;
                 double bound = 1 / (double) n;
                 for (int j = 0; j < d; j++) {
-                    min = FastMath.min(min, P.get(i, j));
+                    min = TMath.min(min, P.get(i, j));
                 }
                 if (X.getNumColumns() > 1 && min < bound) {
                     min = (bound - center) / (min - center);
@@ -447,11 +440,7 @@ public class MvpLikelihood {
         }
 
         for (int i = 0; i < n; i++) {
-            lik += FastMath.log(P.row(i).dotProduct(Y.row(i)));
-        }
-
-        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
-            System.out.println(lik);
+            lik += TMath.log(P.row(i).dotProduct(Y.row(i)));
         }
 
         return lik;

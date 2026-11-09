@@ -33,11 +33,13 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 
-import static java.lang.Math.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 public class TestFisherZShrinkageCyclicDemo {
 
@@ -84,7 +86,12 @@ public class TestFisherZShrinkageCyclicDemo {
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.SEED, RandomUtil.getInstance().nextLong());
 
-        SemIm.Result result = SemIm.simulatePossibleShrinkage(params, g);
+        SemIm.Result result = null;
+        try {
+            result = SemIm.simulatePossibleShrinkage(params, g);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // ---- independence test with shrinkage + (optional) pinv ----
         IndTestFisherZ base = new IndTestFisherZ(result.dataSet(), 0.01);
@@ -193,7 +200,7 @@ public class TestFisherZShrinkageCyclicDemo {
     private static boolean acceptIndependence(double p, Double rhoAbs) {
         // p > alpha AND (optional) |rho| <= TAU_R
         if (p <= ALPHA) return false;
-        if (TAU_R != null && rhoAbs != null && Math.abs(rhoAbs) > TAU_R) return false;
+        if (TAU_R != null && rhoAbs != null && TMath.abs(rhoAbs) > TAU_R) return false;
         return true;
     }
 
@@ -208,7 +215,7 @@ public class TestFisherZShrinkageCyclicDemo {
             }
             var ci = (CI) o;
             String cond = ci.cond.isEmpty() ? "â" : prettySet(ci.cond);
-            String rho = (ci.r == null) ? "" : String.format(Locale.US, "  |Ï|=%7.4f", Math.abs(ci.r));
+            String rho = (ci.r == null) ? "" : String.format(Locale.US, "  |Ï|=%7.4f", TMath.abs(ci.r));
             System.out.printf(Locale.US, "  %s â %s | %s : p=%8.5f%s%n",
                     ci.a.getName(), ci.b.getName(), cond, ci.p, rho);
         }
@@ -228,7 +235,7 @@ public class TestFisherZShrinkageCyclicDemo {
 
     private static String fmtR(Double r) {
         if (r == null) return "";
-        return String.format(Locale.US, "   |Ï| = %7.4f", Math.abs(r));
+        return String.format(Locale.US, "   |Ï| = %7.4f", TMath.abs(r));
     }
 
     // âFDR on large pâsâ: apply BH to p' = 1 - p, i.e., prefer *larger* p-values.
@@ -326,7 +333,7 @@ public class TestFisherZShrinkageCyclicDemo {
         double sumAbsR_xw_yz = 0.0, sumP_xw_yz = 0.0;
 
         // Keep some example rows to show Peter
-        final int K = Math.min(5, N_TRIALS);
+        final int K = TMath.min(5, N_TRIALS);
         List<String> sampleRows = new ArrayList<>();
 
         for (int t = 0; t < N_TRIALS; t++) {

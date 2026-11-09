@@ -115,7 +115,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
-        this(wrapper.getGraph(), null);
+        this(new EdgeListGraph(wrapper.getGraph(), true), null);
     }
 
     /**
@@ -125,7 +125,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
-        this(wrapper.getGraph(), null);
+        this(new EdgeListGraph(wrapper.getGraph(), true), null);
     }
 
     /**
@@ -135,7 +135,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
-        this(wrapper.getGraph(), null);
+        this(new EdgeListGraph(wrapper.getGraph(), true), null);
     }
 
     /**
@@ -145,7 +145,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
-        this(wrapper.getGraph(), null);
+        this(new EdgeListGraph(wrapper.getGraph(), true), null);
     }
 
     /**

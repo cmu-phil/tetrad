@@ -24,9 +24,11 @@ import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocksTs;
+import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -86,7 +88,14 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
-        IndTestBlocksTs test = new IndTestBlocksTs(blockSpec);
+        BlockSpec blockSpec = MissingDataUtils.gate(this.blockSpec, parameters, "Blocks-Test-TS (Trek separation)");
+        for (int i = 0; i < dataModel.getVariables().size(); i++) {
+            if (dataModel.getVariables().get(i) instanceof DiscreteVariable) {
+                throw new IllegalArgumentException("Blocks-Test-TS is not supported for discrete variables.");
+            }
+        }
+
+        TrekSeparationBlocksIndependence test = new TrekSeparationBlocksIndependence(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
@@ -123,6 +132,7 @@ public class BlocksIndTestTs implements BlockIndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 }

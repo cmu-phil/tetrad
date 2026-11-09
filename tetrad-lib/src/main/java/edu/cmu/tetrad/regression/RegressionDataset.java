@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -109,7 +109,17 @@ public class RegressionDataset implements Regression {
         }
 
         Matrix y = new Matrix(new double[][]{target}).transpose();
-        Matrix x = new Matrix(regressors).transpose();
+
+        // Build x with intercept column prepended
+        Matrix x = new Matrix(n, k);
+        for (int i = 0; i < n; i++) {
+            x.set(i, 0, 1.0);
+            for (int j = 0; j < regressors.length; j++) {
+                x.set(i, j + 1, regressors[j][i]);
+            }
+        }
+
+//        Matrix x = new Matrix(regressors).transpose();
 
         Matrix xT = x.transpose();
         Matrix xTx = xT.times(x);
@@ -125,7 +135,7 @@ public class RegressionDataset implements Regression {
         Vector _res = res.getColumn(0);
 
         double rss = RegressionDataset.rss(x, y, b);
-        double se = FastMath.sqrt(rss / (n - k));
+        double se = TMath.sqrt(rss / (n - k));
         double tss = RegressionDataset.tss(y);
         double r2 = 1.0 - (rss / tss);
 
@@ -135,9 +145,9 @@ public class RegressionDataset implements Regression {
 
         for (int i = 0; i < x.getNumColumns(); i++) {
             double _s = se * se * xTxInv.get(i, i);
-            double _se = FastMath.sqrt(_s);
+            double _se = TMath.sqrt(_s);
             double _t = b.get(i, 0) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
+            double _p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(_t), n - k));
 
             sqErr.set(i, _se);
             t.set(i, _t);
@@ -244,7 +254,14 @@ public class RegressionDataset implements Regression {
         }
 
         Matrix y = this.data.view(getRows(), new int[]{_target}).mat().copy();
-        Matrix xSub = this.data.view(getRows(), _regressors).mat();
+//        Matrix xSub = this.data.view(getRows(), _regressors).mat();
+
+        Matrix xSub;
+        if (regressors.isEmpty()) {
+            xSub = new Matrix(getRows().length, 0);
+        } else {
+            xSub = this.data.view(getRows(), _regressors).mat();
+        }
 
         Matrix x;
 
@@ -261,12 +278,9 @@ public class RegressionDataset implements Regression {
                 }
             }
         } else {
-            x = new Matrix(xSub.getNumRows(), xSub.getNumColumns());
-
+            x = new Matrix(xSub.getNumRows(), 1);
             for (int i = 0; i < x.getNumRows(); i++) {
-                for (int j = 0; j < x.getNumColumns(); j++) {
-                    x.set(i, j, xSub.get(i, j));
-                }
+                x.set(i, 0, 1.0);
             }
         }
 
@@ -283,15 +297,10 @@ public class RegressionDataset implements Regression {
 
         Vector _res = res.getColumn(0);
 
-        Matrix b2 = b.copy();
-        Matrix yHat2 = x.times(b2);
-        if (yHat.getNumColumns() == 0) yHat2 = y.like();
-
-        Matrix res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-        this.res2 = res2.getColumn(0);
+        this.res2 = _res;
 
         double rss = RegressionDataset.rss(x, y, b);
-        double se = FastMath.sqrt(rss / (n - k));
+        double se = TMath.sqrt(rss / (n - k));
         double tss = RegressionDataset.tss(y);
         double r2 = 1.0 - (rss / tss);
 
@@ -301,9 +310,9 @@ public class RegressionDataset implements Regression {
 
         for (int i = 0; i < x.getNumColumns(); i++) {
             double _s = se * se * xTxInv.get(i, i);
-            double _se = FastMath.sqrt(_s);
+            double _se = TMath.sqrt(_s);
             double _t = b.get(i, 0) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
+            double _p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(_t), n - k));
 
             sqErr.set(i, _se);
             t.set(i, _t);
@@ -335,7 +344,8 @@ public class RegressionDataset implements Regression {
             }
         }
 
-        return -1;
+//        return -1;
+        throw new IllegalArgumentException("Variable " + name + " not found.");
     }
 
     /**

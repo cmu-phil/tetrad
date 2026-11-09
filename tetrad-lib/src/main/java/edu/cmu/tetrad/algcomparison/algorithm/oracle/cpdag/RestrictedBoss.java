@@ -20,24 +20,19 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -45,7 +40,24 @@ import java.io.Serial;
 import java.util.*;
 
 /**
- * Restricted BOSS.
+ * Implements a restricted version of the BOSS (Best Order Score Search) algorithm
+ * that focuses search on a set of target variables and their immediate causes.
+ *
+ * <p>The algorithm proceeds in two stages. In the first stage, BOSS is run on the
+ * full dataset with the target variables placed in a later tier than all other
+ * variables, with edges forbidden within the first tier. This uses the Grow-Shrink
+ * Tree (GST) structure from the resulting search to identify the "first layer" of
+ * each target — that is, the variables that are direct or proximal causes of the
+ * targets.
+ *
+ * <p>In the second stage, the data is restricted to just the target variables and
+ * their first-layer variables, and BOSS is run again on this reduced dataset, once
+ * more with the target variables in a later tier. The resulting graph is then
+ * trimmed according to the specified trimming style to yield the final output.
+ *
+ * <p>This two-stage approach is more computationally efficient than running BOSS on
+ * the full variable set when only the relationships among a small set of target
+ * variables and their causes are of interest.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -58,7 +70,8 @@ import java.util.*;
 )
 @Bootstrapping
 public class RestrictedBoss extends AbstractBootstrapAlgorithm
-        implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs, LatentStructureAlgorithm {
+        implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs, LatentStructureAlgorithm,
+        TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -84,9 +97,9 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet)) {
-            throw new IllegalArgumentException("Expecting a dataset.");
-        }
+//        if (!(dataModel instanceof DataSet dataSet)) {
+//            throw new IllegalArgumentException("Expecting a dataset.");
+//        }
 
         String string = parameters.getString(Params.TARGETS);
         String[] _targets;
@@ -100,7 +113,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         List<Node> targets = new ArrayList<>();
 
         for (String _target : _targets) {
-            Node variable = dataSet.getVariable(_target);
+            Node variable = dataModel.getVariable(_target);
 
             if (variable == null) {
                 continue;
@@ -127,7 +140,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         for (Node node : targets) {
             knowledge.addToTier(2, node.getName());
         }
-        for (Node node : dataSet.getVariables()) {
+        for (Node node : dataModel.getVariables()) {
             if (!targets.contains(node)) {
                 knowledge.addToTier(1, node.getName());
             }
@@ -135,7 +148,7 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         knowledge.setTierForbiddenWithin(1, true);
 //            knowledge.setTierForbiddenWithin(2, true);
 
-        Score myScore = this.score.getScore(dataSet, parameters);
+        Score myScore = this.score.getScore(dataModel, parameters);
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(myScore);
         boss.setUseBes(parameters.getBoolean(Params.USE_BES));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -155,9 +168,23 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
         }
 
         List<Node> restrictedList = new ArrayList<>(restrictedSet);
-        Collections.sort(restrictedList);
+        restrictedList.sort(NaturalSort.    naturalComparator());
 
-        DataSet restrictedData = dataSet.subsetColumns(restrictedList);
+        DataModel restrictedData;
+
+        if (dataModel instanceof DataSet dataSet) {
+            restrictedData = dataSet.subsetColumns(restrictedList);
+        } else if (dataModel instanceof CovarianceMatrix covarianceMatrix) {
+            List<String> _restrictedList = new ArrayList<>();
+
+            for (Node node : restrictedList) {
+                _restrictedList.add(node.getName());
+            }
+
+            restrictedData = covarianceMatrix.getSubmatrix(_restrictedList);
+        } else {
+            throw new IllegalArgumentException("Unsupported data model type: " + dataModel.getClass().getName());
+        }
 
         System.out.println("Restricted data # vars: " + restrictedData.getVariables().size());
 

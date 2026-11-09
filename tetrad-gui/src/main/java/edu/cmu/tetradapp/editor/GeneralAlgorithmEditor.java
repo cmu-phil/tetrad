@@ -26,6 +26,8 @@ import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.editor.search.AlgorithmCard;
+import edu.cmu.tetradapp.editor.search.AlgorithmChooser;
+import edu.cmu.tetradapp.editor.search.GuidedAlgorithmCard;
 import edu.cmu.tetradapp.editor.search.GraphCard;
 import edu.cmu.tetradapp.editor.search.ParameterCard;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -33,6 +35,7 @@ import edu.cmu.tetradapp.model.LatentStructureRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ErrorDialogs;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
@@ -81,7 +84,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     /**
      * The algorithm card.
      */
-    private final AlgorithmCard algorithmCard;
+    /**
+     * The algorithm-selection card. Changed 2026-8-24: this is the guided chooser by default; the classic card is
+     * used instead when the user preference {@code useClassicAlgorithmCard} is true.
+     */
+    private final AlgorithmChooser algorithmCard;
 
     /**
      * The parameter card.
@@ -107,7 +114,19 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
      * The JSON result.
      */
     private String jsonResult;
+    /** The block specification for latent-structure searches, or null if none. */
     private BlockSpec blockSpec = null;
+
+    // Adding these fields and using them below to fix an issue where the search is sometimes run a
+    // seconds time for some reason. This is particularly bothersome with slow searches. jdramsey 2026-2-16
+    /**
+     * True once the editor is closing; prevents a search from starting or showing results afterward.
+     */
+    private final java.util.concurrent.atomic.AtomicBoolean closing = new java.util.concurrent.atomic.AtomicBoolean(false);
+    /**
+     * True while a search is running; prevents the search from being run twice concurrently.
+     */
+    private final java.util.concurrent.atomic.AtomicBoolean running = new java.util.concurrent.atomic.AtomicBoolean(false);
 
     /**
      * <p>Constructor for GeneralAlgorithmEditor.</p>
@@ -117,7 +136,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+        this.algorithmCard = createAlgorithmCard(algorithmRunner);
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
 
@@ -134,10 +153,15 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * Constructs an algorithm editor for a latent structure runner, using its block specification.
+     *
+     * @param algorithmRunner the latent structure runner
+     */
     public GeneralAlgorithmEditor(LatentStructureRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+        this.algorithmCard = createAlgorithmCard(algorithmRunner);
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
         this.blockSpec = algorithmRunner.getBlockSpec();
@@ -155,15 +179,22 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * Picks the algorithm-selection card. The guided chooser is the default; the classic card can be restored with
+     * {@code Preferences.userRoot().putBoolean("useClassicAlgorithmCard", true)}.
+     */
+    private static AlgorithmChooser createAlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
+        boolean classic = java.util.prefs.Preferences.userRoot().getBoolean("useClassicAlgorithmCard", false);
+        return classic
+                ? new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec())
+                : new GuidedAlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+    }
+
     private void initComponents() {
-        if (this.algorithmRunner.hasMissingValues()) {
-            setPreferredSize(new Dimension(827, 670));
-        } else {
-            setPreferredSize(new Dimension(827, 620));
-        }
+        setPreferredSize(new Dimension(880, 640));
 
         setLayout(new CardLayout());
-        add(new SingleButtonCard(this.algorithmCard, this.algoFwdBtn));
+        add(new SingleButtonCard(this.algorithmCard.asComponent(), this.algoFwdBtn));
         add(new DualButtonCard(this.parameterCard, this.paramBkBtn, this.paramFwdBtn));
         add(new SingleButtonCard(this.graphCard, this.graphBkBtn));
     }
@@ -186,6 +217,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent evt) {
         if ("algoFwdBtn".equals(evt.getPropertyName())) {
             this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
+        } else if ("modelChanged".equals(evt.getPropertyName()) && evt.getSource() == this.graphCard) {
+            // A different result was selected for downstream boxes; pass it on to the session.
+            firePropertyChange("modelChanged", null, null);
         }
     }
 
@@ -211,7 +245,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     /**
      * <p>setAlgorithmResult.</p>
-     *
+     *  an
      * @param jsonResult a {@link java.lang.String} object
      */
     public void setAlgorithmResult(String jsonResult) {
@@ -255,33 +289,70 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         cardLayout.last(this);
     }
 
-    private void doSearch() {
-        class MyWatchedProcess extends WatchedProcess {
+//    private void doSearch() {
+//        class MyWatchedProcess extends WatchedProcess {
+//
+//            @Override
+//            public void watch() {
+//                AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
+//                if (algoModel != null) {
+//                    try {
+//                        GeneralAlgorithmEditor.this.algorithmCard.saveStates();
+//                        GeneralAlgorithmEditor.this.algorithmRunner.execute();
+//
+//                        firePropertyChange("modelChanged", null, null);
+//                        GeneralAlgorithmEditor.this.graphCard.refresh();
+//
+//                        if (!isInterrupted()) {
+//                            showGraphCard();
+//                        }
+//                    } catch (Exception exception) {
+//                        exception.printStackTrace(System.err);
+//
+//                        disposeStopDialog();
+//
+//                        JOptionPane.showMessageDialog(
+//                                getTopLevelAncestor(),
+//                                "Stopped with error:\n"
+//                                + exception.getMessage());
+//                    }
+//                }
+//            }
+//        }
+//
+//        new MyWatchedProcess();
+//    }
 
+    private void doSearch() {
+        if (closing.get()) return;
+        if (!running.compareAndSet(false, true)) return; // don't allow re-entry / double-run
+
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
-                AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
-                if (algoModel != null) {
-                    try {
-                        GeneralAlgorithmEditor.this.algorithmCard.saveStates();
-                        GeneralAlgorithmEditor.this.algorithmRunner.execute();
+                try {
+                    AlgorithmModel algoModel = algorithmCard.getSelectedAlgorithm();
+                    if (algoModel == null) return;
 
-                        firePropertyChange("modelChanged", null, null);
-                        GeneralAlgorithmEditor.this.graphCard.refresh();
+                    algorithmCard.saveStates();
+                    algorithmRunner.execute();
 
-                        if (!isInterrupted()) {
-                            showGraphCard();
-                        }
-                    } catch (Exception exception) {
-                        exception.printStackTrace(System.err);
+                    firePropertyChange("modelChanged", null, null);
+                    graphCard.refresh();
 
-                        disposeStopDialog();
-
-                        JOptionPane.showMessageDialog(
-                                getTopLevelAncestor(),
-                                "Stopped with error:\n"
-                                + exception.getMessage());
+                    if (!isInterrupted() && !closing.get()) showGraphCard();
+                } catch (Exception exception) {
+                    // Changed 2026-8-24: show the exception type, message, and (on request) the stack trace on the
+                    // EDT, instead of a "Stopped with error: null" message from the worker thread with the trace on
+                    // stderr. A user-initiated stop is not reported as an error.
+                    exception.printStackTrace(System.err);
+                    disposeStopDialog();
+                    if (!isInterrupted() && !ErrorDialogs.isInterruption(exception)) {
+                        ErrorDialogs.showError(GeneralAlgorithmEditor.this, "Search Failed",
+                                "The search did not complete.", exception);
                     }
+                } finally {
+                    running.set(false);
                 }
             }
         }
@@ -292,18 +363,39 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     /**
      * {@inheritDoc}
      */
-    @Override
+//    @Override
+//    public boolean finalizeEditor() {
+//        List<Graph> graphs = this.algorithmRunner.getGraphs();
+//        if (graphs == null || graphs.isEmpty()) {
+//            int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
+//                    JOptionPane.YES_NO_OPTION);
+//            return option == JOptionPane.YES_OPTION;
+//        }
+//
+//        return true;
+//    }
+
+     @Override
     public boolean finalizeEditor() {
+        closing.set(true);
+
+        // (optional) also stop a running WatchedProcess / runner if you have a hook
+
         List<Graph> graphs = this.algorithmRunner.getGraphs();
         if (graphs == null || graphs.isEmpty()) {
-            int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
+            int option = JOptionPane.showConfirmDialog(this,
+                    "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;
         }
-
         return true;
     }
 
+    /**
+     * Sets the block specification for latent-structure searches.
+     *
+     * @param blockSpec the block specification
+     */
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = blockSpec;
     }
@@ -330,7 +422,15 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             this.button.setPreferredSize(buttonSize);
 
             setLayout(new BorderLayout());
-            add(new JScrollPane(new PaddingPanel(this.component)), BorderLayout.CENTER);
+            // Changed 2026-8-24: a Scrollable card manages its own scrolling and fills the viewport; wrapping it in
+            // PaddingPanel would defeat the viewport tracking and nest two scroll regions.
+            if (this.component instanceof Scrollable) {
+                JScrollPane scroll = new JScrollPane(this.component);
+                scroll.setBorder(BorderFactory.createEmptyBorder());
+                add(scroll, BorderLayout.CENTER);
+            } else {
+                add(new JScrollPane(new PaddingPanel(this.component)), BorderLayout.CENTER);
+            }
             add(new SouthPanel(), BorderLayout.SOUTH);
         }
 

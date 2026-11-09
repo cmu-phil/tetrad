@@ -69,30 +69,24 @@ public final class PagCache {
         return local;
     }
 
-    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias) {
-//        if (graph.paths().isLegalDag()) {
-//            Graph mag = GraphTransforms.dagToMag(graph);
-//            return new MagToPag(mag).convert(false);
-//
-//            // This does the selection bias conversion. Also, we need to check the DAG case first, because
-//            // if you have a selection node, the legal MAG check will choke because it's expecting all
-//            // measured variables. jdramsey 2025-11-6
-////            return PagCache.getInstance().getPag(GraphTransforms.dagToMag(graph));
-//        } else if (graph.paths().isLegalMag()) {
-//            return new MagToPag(graph).convert(false);
-//        } else {
-//            Graph mag = GraphTransforms.zhangMagFromPag(graph);
-//            return new MagToPag(mag).convert(true);
-//        }
-
+    private static Graph computePag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int maxBlockingPathLength) {
         if (graph.paths().isLegalDag()) {
+            if (graph.paths().existsDirectedCycle()) {
+                throw new IllegalArgumentException("Graph contains directed cycle");
+            }
+
             Graph mag = GraphTransforms.dagToMag(graph);
-            return computePagFromMag(mag, knowledge, excludeSelectionBias);   // no getPag() here, avoiding infinite recursion.
-        } else if (graph.paths().isLegalMag()) {
-            return computePagFromMag(graph, knowledge, excludeSelectionBias);
+
+            return computePagFromMag(mag, knowledge, excludeSelectionBias, maxBlockingPathLength);   // no getPag() here, avoiding infinite recursion.
+//        } else if (graph.paths().isLegalMag()) {
+//            return computePagFromMag(graph, knowledge, excludeSelectionBias, maxBlockingPathLength);
         } else {
             Graph mag = GraphTransforms.zhangMagFromPag(graph);
-            return new MagToPag(mag).convert(true, excludeSelectionBias);
+            MagToPag magToPag = new MagToPag(mag);
+            magToPag.setKnowledge(knowledge);
+            magToPag.setRecursiveDepth(maxBlockingPathLength);
+            magToPag.setMaxDiscriminatingPathLength(-1);
+            return magToPag.convert(true, excludeSelectionBias);
         }
     }
 
@@ -103,7 +97,8 @@ public final class PagCache {
         long h = 0xcbf29ce484222325L; // FNV-1a
         List<String> names = new ArrayList<>();
         for (Node n : g.getNodes()) names.add(n.getName());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
+        ;
         for (String s : names) h = fnv1a(h, s);
 
         List<String> es = new ArrayList<>();
@@ -116,8 +111,8 @@ public final class PagCache {
             Endpoint xy = g.getEndpoint(x, y);
             Endpoint yx = g.getEndpoint(y, x);
             es.add(x.getName() + "|" + y.getName() + "|" +
-                   (xy == null ? "N" : xy.name().charAt(0)) + "|" +
-                   (yx == null ? "N" : yx.name().charAt(0)));
+                    (xy == null ? "N" : xy.name().charAt(0)) + "|" +
+                    (yx == null ? "N" : yx.name().charAt(0)));
         }
         Collections.sort(es);
         for (String s : es) h = fnv1a(h, s);
@@ -140,8 +135,8 @@ public final class PagCache {
             Endpoint xy = pag.getEndpoint(x, y);
             Endpoint yx = pag.getEndpoint(y, x);
             es.add(x.getName() + "|" + y.getName() + "|" +
-                   (xy == null ? "N" : xy.name().charAt(0)) + "|" +
-                   (yx == null ? "N" : yx.name().charAt(0)));
+                    (xy == null ? "N" : xy.name().charAt(0)) + "|" +
+                    (yx == null ? "N" : yx.name().charAt(0)));
         }
         Collections.sort(es);
         for (String s : es) h = fnv1a(h, s);
@@ -203,9 +198,11 @@ public final class PagCache {
         return h;
     }
 
-    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias) {
+    private static Graph computePagFromMag(Graph mag, Knowledge knowledge, boolean excludeSelectionBias, int recursiveDepth) {
         MagToPag magToPag = new MagToPag(mag);
         magToPag.setKnowledge(knowledge);
+        magToPag.setRecursiveDepth(recursiveDepth);
+        magToPag.setMaxDiscriminatingPathLength(-1);
         return magToPag.convert(false, excludeSelectionBias);
     }
 
@@ -227,9 +224,10 @@ public final class PagCache {
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
+     * @throws IllegalStateException    if a discriminating path cannot be found.
      */
     public @NotNull Graph getPag(Graph g, boolean excludeSelectionBias) {
-        return getPag(g, new Knowledge(), excludeSelectionBias);
+        return getPag(g, new Knowledge(), excludeSelectionBias, -1);
     }
 
     /**
@@ -237,17 +235,27 @@ public final class PagCache {
      * cache and hasn't been externally modified, the cached version is returned. Otherwise, a new PAG is computed,
      * stored in the cache, and returned. The input graph must be either a DAG (Directed Acyclic Graph) or a MAG
      * (Maximal Ancestral Graph).
+     * <p>
+     * Note that the input graph must either be a legal DAG, possibly with latents, or a legal MAG. (Legal
+     * MAGs cannot have latents; we treat DAGs, therefore, as a special case. A legal DAG without latents
+     * would be a legal MAG.)
      *
      * @param g                    the input graph, which must be either a DAG or a MAG
      * @param knowledge            the knowledge object containing additional information for PAG computation
      * @param excludeSelectionBias whether to exclude selection bias during PAG computation
+     * @param recursiveDepth       the depth of recursion to consider during PAG computation
      * @return the corresponding PAG for the provided graph
      * @throws IllegalArgumentException if the input graph is neither a DAG nor a MAG
+     * @throws IllegalStateException    if a discriminating path cannot be found.
      */
-    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias) {
-        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
-        }
+    public @NotNull Graph getPag(Graph g, Knowledge knowledge, boolean excludeSelectionBias, int recursiveDepth) {
+
+        // This checking broke the Markov checker... jdramsey 2026-5-25
+//        // We need to check legal DAG separately here because it may be a DAG with latents, which
+//        // would not be a legal MAG.
+//        if (!(g.paths().isLegalDag() || g.paths().isLegalMag())) {
+//            throw new IllegalArgumentException("Graph must be a DAG (possibly with latents) or a MAG.");
+//        }
         final long srcSig = signatureOfSource(g);
 
         synchronized (cache) {
@@ -256,7 +264,7 @@ public final class PagCache {
                 // Guard against external mutation of the cached PAG
                 long currentPagSig = signatureOfPag(e.pag);
                 if (currentPagSig != e.pagSig) {
-                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias);
+                    Graph rebuilt = computePag(g, knowledge, excludeSelectionBias, recursiveDepth);
                     syncInPlace(e.pag, rebuilt);               // preserve identity
                     e.pagSig = signatureOfPag(e.pag);          // update sig after sync
                 }
@@ -265,7 +273,7 @@ public final class PagCache {
         }
 
         // Miss or source changed: build fresh
-        final Graph pag = computePag(g, knowledge, excludeSelectionBias);
+        final Graph pag = computePag(g, knowledge, excludeSelectionBias, recursiveDepth);
         synchronized (cache) {
             cache.put(g, new Entry(pag, srcSig, signatureOfPag(pag)));
             return pag;

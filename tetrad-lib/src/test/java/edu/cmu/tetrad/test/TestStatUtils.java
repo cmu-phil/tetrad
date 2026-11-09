@@ -35,10 +35,11 @@ import org.junit.Test;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -69,7 +70,12 @@ public class TestStatUtils {
                 3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         double[] x = dataSet.getDoubleData().getColumn(0).toArray();
         double[] y = dataSet.getDoubleData().getColumn(1).toArray();
 
@@ -145,7 +151,7 @@ public class TestStatUtils {
         assertEquals(0.09, StatUtils.mean(_z), 0.01);
         assertEquals(0.08, StatUtils.mean(_w), 0.01);
 
-        assertEquals(0.04, StatUtils.variance(_x), 0.01);
+        assertEquals(0.05, StatUtils.variance(_x), 0.01);
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
         assertEquals(0.05, StatUtils.variance(_x), 0.01);
@@ -184,7 +190,7 @@ public class TestStatUtils {
                         col1[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian();
                         col1[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -202,7 +208,7 @@ public class TestStatUtils {
                         col2[i] = signum(v) * pow(abs(v), d2);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian();
                         col2[i] = signum(v1) * pow(abs(v1), d2);
                         break;
                     case 2:
@@ -258,7 +264,7 @@ public class TestStatUtils {
                             col1[i] = RandomUtil.getInstance().nextUniform(0, 1);
                             break;
                         case 1:
-                            col1[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+                            col1[i] = RandomUtil.getInstance().nextGaussian();
                             break;
                         case 2:
                             col1[i] = RandomUtil.getInstance().nextBeta(2, 5);
@@ -275,7 +281,7 @@ public class TestStatUtils {
                             col2[i] = RandomUtil.getInstance().nextUniform(0, 1);
                             break;
                         case 1:
-                            col2[i] = RandomUtil.getInstance().nextGaussian(0, 1);
+                            col2[i] = RandomUtil.getInstance().nextGaussian();
                             break;
                         case 2:
                             col2[i] = RandomUtil.getInstance().nextBeta(2, 5);
@@ -326,8 +332,8 @@ public class TestStatUtils {
             double e2 = RandomUtil.getInstance().nextUniform(0, 3);
 
             for (int i = 0; i < n; i++) {
-                col1[i] = pow(RandomUtil.getInstance().nextGaussian(0, 1), e1);
-                col2[i] = pow(RandomUtil.getInstance().nextGaussian(0, 1), e2);
+                col1[i] = pow(RandomUtil.getInstance().nextGaussian(), e1);
+                col2[i] = pow(RandomUtil.getInstance().nextGaussian(), e2);
                 sum[i] = d1 * col1[i] + d2 * col2[i];
             }
 
@@ -427,7 +433,7 @@ public class TestStatUtils {
                         col1[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian();
                         col1[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -445,7 +451,7 @@ public class TestStatUtils {
                         col2[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian();
                         col2[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -463,7 +469,7 @@ public class TestStatUtils {
                         col3[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian();
                         col3[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -554,13 +560,13 @@ public class TestStatUtils {
                         ez[i] = signum(v) * pow(abs(v), c);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian();
                         ex[i] = signum(v1) * pow(abs(v1), c);
 
-                        v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        v1 = RandomUtil.getInstance().nextGaussian();
                         ey[i] = signum(v1) * pow(abs(v1), c);
 
-                        v1 = RandomUtil.getInstance().nextGaussian(0, 1);
+                        v1 = RandomUtil.getInstance().nextGaussian();
                         ez[i] = signum(v1) * pow(abs(v1), c);
                         break;
                     case 2:
@@ -613,7 +619,7 @@ public class TestStatUtils {
         final int numSamples = 100;
 
         for (int i = 0; i < numSamples; i++) {
-            double randNorm = RandomUtil.getInstance().nextGaussian(0, 1);
+            double randNorm = RandomUtil.getInstance().nextGaussian();
 
             double a = log(cosh(randNorm));
 

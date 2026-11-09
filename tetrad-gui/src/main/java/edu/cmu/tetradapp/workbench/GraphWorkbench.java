@@ -81,6 +81,35 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     private int edgeMode = GraphWorkbench.DIRECTED_EDGE;
 
+    private static Color uiColor(String key, Color fallback) {
+        Color c = javax.swing.UIManager.getColor(key);
+        return c != null ? c : fallback;
+    }
+
+//    private static Color getWorkbenchBackground() {
+//        return uiColor("Panel.background", Color.WHITE);
+//    }
+
+    private static Color getEdgeColor() {
+        Color c = javax.swing.UIManager.getColor("Component.borderColor");
+        if (c != null) return c;
+
+        c = javax.swing.UIManager.getColor("Label.foreground");
+        if (c != null) return c;
+
+        return Color.DARK_GRAY;
+    }
+
+    private static Color getTrackingEdgeColor() {
+        Color c = javax.swing.UIManager.getColor("Component.focusColor");
+        if (c != null) return c;
+
+        c = javax.swing.UIManager.getColor("Table.selectionBackground");
+        if (c != null) return c;
+
+        return getEdgeColor();
+    }
+
     //========================CONSTRUCTORS===============================//
 
     /**
@@ -98,6 +127,15 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public GraphWorkbench(Graph graph) {
         super(graph);
         setRightClickPopupAllowed(true);
+//        setBackground(getWorkbenchBackground());
+//        setOpaque(true);
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+//        setBackground(getWorkbenchBackground());
+        repaint();
     }
 
     //========================PUBLIC METHODS==============================//
@@ -275,7 +313,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * other end. Used for drawing new edges.
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
-        Color color = null;
+//        Color color = null;
+        Color color = getTrackingEdgeColor();
 
         switch (this.edgeMode) {
             case GraphWorkbench.DIRECTED_EDGE:

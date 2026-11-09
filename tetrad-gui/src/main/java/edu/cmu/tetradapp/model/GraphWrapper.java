@@ -89,6 +89,12 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     private Parameters parameters = new Parameters();
 
+    /** Undo/redo history of graph states, persisted with the session so it survives editor close/reopen. */
+    private List<Graph> undoHistory = new ArrayList<>();
+
+    /** Index into undoHistory of the currently displayed state; -1 when empty. */
+    private int undoCursor = -1;
+
     //=============================CONSTRUCTORS==========================//
 
     private GraphWrapper() {
@@ -103,17 +109,32 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = parameters;
 
+        // The graph comes from another box; this box gets its own copy of the nodes, so that laying it out
+        // here does not lay out the other box too. See ownCopies.
         if (graphSource instanceof Simulation simulation) {
-            this.graphs = simulation.getGraphs();
+            this.graphs = ownCopies(simulation.getGraphs());
             this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(graphSource.getGraph()));
+            setGraph(new EdgeListGraph(graphSource.getGraph(), true));
         }
 
         //       log();
     }
+
+    /**
+     * Copies of the given graphs with their own node objects (see {@link EdgeListGraph#EdgeListGraph(Graph, boolean)}),
+     * so that this box starts with their layout but a layout set here afterwards stays here. Node positions live on
+     * node objects, so a box that kept the graphs of another box, or graphs built on a data set's variables, would
+     * share its layout with everything else holding those objects.
+     */
+    private static List<Graph> ownCopies(List<Graph> graphs) {
+        List<Graph> copies = new ArrayList<>();
+        for (Graph graph : graphs) copies.add(new EdgeListGraph(graph, true));
+        return copies;
+    }
+
 
     /**
      * <p>Constructor for GraphWrapper.</p>
@@ -132,6 +153,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * <p>Constructor for GraphWrapper.</p>
      *
      * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @param message a {@link java.lang.String} object
      */
     public GraphWrapper(Graph graph, Parameters parameters, String message) {
@@ -141,7 +163,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             throw new NullPointerException("Graph must not be null.");
         }
 
-        setGraph(graph);
+        // Used by the graph-transforming boxes (make all edges undirected, choose a DAG in the CPDAG, ...), whose
+        // transformed graph shares its nodes with the source box's graph.
+        setGraph(new EdgeListGraph(graph, true));
         this.parameters = parameters;
     }
 
@@ -164,7 +188,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     public GraphWrapper(Simulation simulation, Parameters parameters) {
         this.parameters = parameters;
-        this.graphs = simulation.getGraphs();
+        this.graphs = ownCopies(simulation.getGraphs());
         this.numModels = this.graphs.size();
         this.modelIndex = 0;
         this.modelSourceName = simulation.getName();
@@ -179,12 +203,14 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     public GraphWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation simulation) {
-            this.graphs = simulation.getGraphs();
+            this.graphs = ownCopies(simulation.getGraphs());
             this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(wrapper.getVariables()));
+            // Fresh node objects, not the data set's variables, which every graph built from that data set shares:
+            // positions set on them here would otherwise be seen by every other box on the data.
+            setGraph(new EdgeListGraph(new EdgeListGraph(wrapper.getVariables()), true));
         }
 
         LayoutUtil.defaultLayout(getGraph());
@@ -319,6 +345,81 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         this.graphs = new ArrayList<>();
         this.graphs.add(graph);
         //       log();
+    }
+
+    /**
+     * Returns whether any graph states have been recorded for undo/redo.
+     *
+     * @return true if the undo history is non-empty
+     */
+    public boolean hasUndoHistory() {
+        return undoHistory != null && !undoHistory.isEmpty();
+    }
+
+    /**
+     * Returns whether there is an earlier recorded state to step back to.
+     *
+     * @return true if undo is possible
+     */
+    public boolean canUndo() {
+        return undoHistory != null && undoCursor > 0;
+    }
+
+    /**
+     * Returns whether there is a later recorded state to step forward to.
+     *
+     * @return true if redo is possible
+     */
+    public boolean canRedo() {
+        return undoHistory != null && undoCursor >= 0 && undoCursor < undoHistory.size() - 1;
+    }
+
+    /**
+     * Pushes a snapshot of the given graph as the new current undo state, discarding any
+     * redo tail. No-op if structurally equal to the current state (which also makes
+     * undo/redo refreshes that re-fire the change listener harmless).
+     *
+     * @param graph the graph to record; if null, nothing is recorded
+     */
+    public void recordGraphState(Graph graph) {
+        if (graph == null) return;
+        if (undoHistory == null) { undoHistory = new ArrayList<>(); undoCursor = -1; }
+        Graph snapshot = new EdgeListGraph(graph);
+        if (undoCursor >= 0 && undoCursor < undoHistory.size()
+                && undoHistory.get(undoCursor).equals(snapshot)) {
+            return;
+        }
+        while (undoHistory.size() > undoCursor + 1) {
+            undoHistory.remove(undoHistory.size() - 1);   // truncate redo tail
+        }
+        undoHistory.add(snapshot);
+        undoCursor = undoHistory.size() - 1;
+    }
+
+    /**
+     * Step back one state, make it current, return a copy. null if cannot.
+     *
+     * @return a copy of the previous graph state, or null if undo is not possible
+     */
+    public Graph undo() {
+        if (!canUndo()) return null;
+        undoCursor--;
+        Graph g = new EdgeListGraph(undoHistory.get(undoCursor));
+        setGraph(g);
+        return g;
+    }
+
+    /**
+     * Step forward one state, make it current, return a copy. null if cannot.
+     *
+     * @return a copy of the next graph state, or null if redo is not possible
+     */
+    public Graph redo() {
+        if (!canRedo()) return null;
+        undoCursor++;
+        Graph g = new EdgeListGraph(undoHistory.get(undoCursor));
+        setGraph(g);
+        return g;
     }
 
     /**
@@ -467,6 +568,11 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());
             throw e;
+        }
+
+        if (this.undoHistory == null) {
+            this.undoHistory = new ArrayList<>();
+            this.undoCursor = -1;
         }
     }
 

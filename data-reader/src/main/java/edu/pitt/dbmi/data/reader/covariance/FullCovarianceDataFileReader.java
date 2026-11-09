@@ -1,7 +1,7 @@
  ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software: you can redistribute it and/or modify      //
@@ -20,21 +20,23 @@
 
 package edu.pitt.dbmi.data.reader.covariance;
 
-import edu.pitt.dbmi.data.reader.DataFileReader;
-import edu.pitt.dbmi.data.reader.DataReaderException;
 import edu.pitt.dbmi.data.reader.Delimiter;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 /**
- *
- * Nov 17, 2025 10:53:31 PM
+ * Reads a full (square) covariance matrix file. The accepted formats, including the classical Tetrad format
+ * (sample size line, variable-name line, then the square matrix) and its tolerated relaxations (missing sample-size
+ * line, row names, corner cell), are documented on {@link FullCovarianceFormat}, which does the parsing; this class
+ * is a thin wrapper that packages the result as {@link CovarianceData}. When the file does not state a sample size,
+ * {@link FullCovarianceFormat#DEFAULT_SAMPLE_SIZE} is assumed and a warning is recorded, retrievable from
+ * {@link CovarianceData#getWarnings()}.
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @author josephramsey
+ * @see FullCovarianceFormat
  */
 public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileReader implements CovarianceDataReader {
 
@@ -49,242 +51,19 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
     }
 
     /**
-     * Reads and processes the covariance data file, constructing a {@link CovarianceData} object
-     * containing the number of cases, variables, and the covariance matrix data from the file.
+     * Reads and processes the covariance data file, constructing a {@link CovarianceData} object containing the
+     * number of cases (stated in the file, or assumed with a warning), the variables, and the covariance matrix.
      *
-     * @return a {@link CovarianceData} object that encapsulates the number of cases, list of variables,
-     *         and covariance data matrix.
+     * @return a {@link CovarianceData} object that encapsulates the number of cases, list of variables, covariance
+     * data matrix, and any warnings.
      * @throws IOException if an error occurs while reading the data file.
      */
     @Override
     public CovarianceData readInData() throws IOException {
-        int numOfCases = getNumberOfCases();
-        List<String> variables = getVariables();
-        double[][] data = getCovarianceData(variables.size());
+        FullCovarianceFormat.ParseResult result = FullCovarianceFormat.parse(this.dataFile, this.delimiter,
+                this.quoteCharacter, this.commentMarker);
 
-        return new FullCovarianceData(numOfCases, variables, data);
-    }
-
-    private double[][] getCovarianceData(int matrixSize) throws IOException {
-        double[][] data = new double[matrixSize][matrixSize];
-
-        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
-            boolean skip = false;
-            boolean hasSeenNonblankChar = false;
-            boolean hasQuoteChar = false;
-
-            byte delimChar = this.delimiter.getByteValue();
-
-            // comment marker check
-            byte[] comment = this.commentMarker.getBytes();
-            int cmntIndex = 0;
-            boolean checkForComment = comment.length > 0;
-
-            int lineDataNum = 1;
-            int lineNum = 1;
-            int colNum = 0;
-            int col = 0;
-            int row = 0;
-            final int dataLimit = matrixSize - 1;
-
-            StringBuilder dataBuilder = new StringBuilder();
-            byte prevChar = -1;
-            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
-            int len;
-            while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
-                for (int i = 0; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
-
-                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
-                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = DataFileReader.LINE_FEED;
-                            continue;
-                        }
-
-                        if (hasSeenNonblankChar && !skip) {
-                            if (lineDataNum >= 3) {
-                                if (row >= matrixSize) {
-                                    String errMsg = String.format("Excess data on line %d.  Extracted %d rows but expected %d.", lineNum, row + 1, matrixSize);
-                                    throw new DataReaderException(errMsg);
-                                }
-                                if (col > dataLimit) {
-                                    String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
-                                    throw new DataReaderException(errMsg);
-                                } else if (col < dataLimit) {
-                                    String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
-                                    throw new DataReaderException(errMsg);
-                                } else {
-                                    String value = dataBuilder.toString().trim();
-                                    dataBuilder.delete(0, dataBuilder.length());
-
-                                    colNum++;
-                                    if (value.isEmpty()) {
-                                        String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                                        throw new DataReaderException(errMsg);
-                                    } else {
-                                        try {
-                                            double covariance = Double.parseDouble(value);
-                                            data[row][col] = covariance;
-                                        } catch (NumberFormatException exception) {
-                                            String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                            throw new DataReaderException(errMsg);
-                                        }
-                                    }
-                                }
-
-                                row++;
-                            }
-
-                            lineDataNum++;
-                        }
-
-                        lineNum++;
-
-                        // clear data
-                        dataBuilder.delete(0, dataBuilder.length());
-
-                        // reset states
-                        skip = false;
-                        hasSeenNonblankChar = false;
-                        cmntIndex = 0;
-                        col = 0;
-                        colNum = 0;
-                        checkForComment = comment.length > 0;
-                    } else if (!skip) {
-                        if (currChar > DataFileReader.SPACE_CHAR) {
-                            hasSeenNonblankChar = true;
-                        }
-
-                        // skip blank chars at the begining of the line
-                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
-                            continue;
-                        }
-
-                        // check for comment marker to skip line
-                        if (checkForComment) {
-                            if (currChar == comment[cmntIndex]) {
-                                cmntIndex++;
-                                if (cmntIndex == comment.length) {
-                                    skip = true;
-                                    prevChar = currChar;
-                                    continue;
-                                }
-                            } else {
-                                checkForComment = false;
-                            }
-                        }
-
-                        if (lineDataNum >= 3) {
-                            if (currChar == this.quoteCharacter) {
-                                hasQuoteChar = !hasQuoteChar;
-                            } else {
-                                if (hasQuoteChar) {
-                                    dataBuilder.append((char) currChar);
-                                } else {
-                                    boolean isDelimiter;
-                                    if (this.delimiter == Delimiter.WHITESPACE) {
-                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
-                                    } else {
-                                        isDelimiter = (currChar == delimChar);
-                                    }
-
-                                    if (isDelimiter) {
-                                        if (row >= matrixSize) {
-                                            String errMsg = String.format("Excess data on line %d.  Extracted %d rows but expected %d.", lineNum, row + 1, matrixSize);
-                                            throw new DataReaderException(errMsg);
-                                        }
-                                        if (col > dataLimit) {
-                                            String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
-                                            throw new DataReaderException(errMsg);
-                                        }
-
-                                        String value = dataBuilder.toString().trim();
-                                        dataBuilder.delete(0, dataBuilder.length());
-
-                                        colNum++;
-                                        if (value.isEmpty()) {
-                                            String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                                            throw new DataReaderException(errMsg);
-                                        } else {
-                                            try {
-                                                double covariance = Double.parseDouble(value);
-                                                data[row][col] = covariance;
-                                            } catch (NumberFormatException exception) {
-                                                String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                                throw new DataReaderException(errMsg);
-                                            }
-                                        }
-
-                                        col++;
-                                    } else {
-                                        dataBuilder.append((char) currChar);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    prevChar = currChar;
-                }
-            }
-
-            if (hasSeenNonblankChar && !skip) {
-                if (lineDataNum >= 3) {
-                    if (row >= matrixSize) {
-                        String errMsg = String.format("Excess data on line %d.  Extracted %d rows but expected %d.", lineNum, row + 1, matrixSize);
-                        throw new DataReaderException(errMsg);
-                    }
-                    if (col > dataLimit) {
-                        String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
-                        throw new DataReaderException(errMsg);
-                    } else if (col < dataLimit) {
-                        String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, matrixSize);
-                        throw new DataReaderException(errMsg);
-                    } else {
-                        String value = dataBuilder.toString().trim();
-                        dataBuilder.delete(0, dataBuilder.length());
-
-                        colNum++;
-                        if (value.isEmpty()) {
-                            String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                            throw new DataReaderException(errMsg);
-                        } else {
-                            try {
-                                double covariance = Double.parseDouble(value);
-                                data[row][col] = covariance;
-                            } catch (NumberFormatException exception) {
-                                String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                throw new DataReaderException(errMsg);
-                            }
-                        }
-
-                        row++;
-                    }
-                }
-            }
-
-            if (row < matrixSize) {
-                String errMsg = String.format("Insufficient data.  Expect %d rows but only read in %d.", matrixSize, row);
-                throw new DataReaderException(errMsg);
-            }
-        }
-
-        checkSymmetry(data);
-
-        return data;
-    }
-
-    private void checkSymmetry(double[][] data) throws DataReaderException {
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[i].length; j++) {
-                if (i != j) {
-                    if (Double.compare(data[i][j], data[j][i]) != 0) {
-                        String errMsg = String.format("Non-symmetric matrix.  COV(%d,%d)=%f is not equal to COV(%d,%d)=%f.", i, j, data[i][j], j, i, data[j][i]);
-                        throw new DataReaderException(errMsg);
-                    }
-                }
-            }
-        }
+        return new FullCovarianceData(result.numberOfCases(), result.variables(), result.data(), result.warnings());
     }
 
     private static final class FullCovarianceData implements CovarianceData {
@@ -292,11 +71,14 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
         private final int numberOfCases;
         private final List<String> variables;
         private final double[][] data;
+        private final List<String> warnings;
 
-        private FullCovarianceData(int numberOfCases, List<String> variables, double[][] data) {
+        private FullCovarianceData(int numberOfCases, List<String> variables, double[][] data,
+                                   List<String> warnings) {
             this.numberOfCases = numberOfCases;
             this.variables = variables;
             this.data = data;
+            this.warnings = warnings;
         }
 
         /**
@@ -321,6 +103,14 @@ public class FullCovarianceDataFileReader extends AbstractCovarianceDataFileRead
         @Override
         public double[][] getData() {
             return this.data;
+        }
+
+        /**
+         * @return the warnings recorded while reading, empty if none.
+         */
+        @Override
+        public List<String> getWarnings() {
+            return this.warnings;
         }
     }
 

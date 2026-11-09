@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -117,8 +117,8 @@ public final class VcPc implements IGraphSearch {
     //    Constraints to guarantee future path conditions met. After traversing the entire path,
 //    returns last node on path when satisfied, stops otherwise.
     private static Node traverseFuturePath(Node node, Edge edge1, Edge edge2) {
-        Endpoint E1 = edge1.getEndpoint(node);
-        Endpoint E2 = edge2.getEndpoint(node);
+        Endpoint E1 = edge1.getProximalEndpoint(node);
+        Endpoint E2 = edge2.getProximalEndpoint(node);
         Endpoint E3 = edge2.getDistalEndpoint(node);
         Endpoint E4 = edge1.getDistalEndpoint(node);
         if (E1 == Endpoint.ARROW && E2 == Endpoint.ARROW && E3 == Endpoint.TAIL) {
@@ -672,7 +672,7 @@ public final class VcPc implements IGraphSearch {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         while (true) {
             for (int d = 0; d <= _depth; d++) {
@@ -712,7 +712,7 @@ public final class VcPc implements IGraphSearch {
             if (_depth == -1) {
                 _depth = 1000;
             }
-            _depth = FastMath.min(_depth, _nodes.size());
+            _depth = TMath.min(_depth, _nodes.size());
 
             for (int d = 0; d <= _depth; d++) {
                 ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);

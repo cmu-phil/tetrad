@@ -64,9 +64,9 @@ public class RevertToPag extends AbstractAction implements ClipboardOwner {
      * @param e the action event
      */
     public void actionPerformed(ActionEvent e) {
-        this.workbench.deselectAll();
+//        this.workbench.deselectAll();
         Graph graph = this.workbench.getGraph();
-        workbench.setGraph(PagCache.getInstance().getPag(graph, true));
+        workbench.setGraph(PagCache.getInstance().getPag(graph, false));
     }
 
     /**

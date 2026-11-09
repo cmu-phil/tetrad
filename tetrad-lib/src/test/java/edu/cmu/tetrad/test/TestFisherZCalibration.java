@@ -41,6 +41,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +70,12 @@ public class TestFisherZCalibration {
                 100, 100, false);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(sampleSize, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(sampleSize, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
 
         IndependenceTest test1 = new FisherZ().getTest(data, parameters);
@@ -170,7 +176,12 @@ public class TestFisherZCalibration {
             semIm.setEdgeCoef(x3, x4, d3);
             semIm.setEdgeCoef(x1, x4, d4);
 
-            StandardizedSemIm sem = new StandardizedSemIm(semIm, parameters);
+            StandardizedSemIm sem = null;
+            try {
+                sem = new StandardizedSemIm(semIm, parameters);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
 
             DataSet dataSet = sem.simulateDataReducedForm(sampleSize,

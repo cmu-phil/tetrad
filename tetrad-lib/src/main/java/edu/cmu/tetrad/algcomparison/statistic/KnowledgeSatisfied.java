@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -32,7 +32,7 @@ import java.io.Serial;
  * Implementation of the KnowledgeSatisfied class. This class represents a statistic that measures whether the provided
  * knowledge is satisfied for the estimated graph.
  */
-public class KnowledgeSatisfied implements Statistic, HasKnowledge {
+public class KnowledgeSatisfied implements Statistic, AcceptsKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
      *
      * @see KnowledgeSatisfied
      * @see Statistic
-     * @see HasKnowledge
+     * @see AcceptsKnowledge
      */
     private Knowledge knowledge = null;
 

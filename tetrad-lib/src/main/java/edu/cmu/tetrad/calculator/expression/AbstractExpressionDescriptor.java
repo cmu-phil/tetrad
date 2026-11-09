@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.calculator.expression;
 
 import java.io.Serial;
+import java.util.Arrays;
 
 /**
  * Contains some common methods for Expression Descriptors (see).
@@ -76,7 +77,63 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
             throw new NullPointerException("position was null.");
         }
 
-        this.signature = new Signature(token, unlimited, false, token, "expr");
+        this.signature = new Signature(token, unlimited, false, "expr");
+        this.name = name;
+        this.token = token;
+        this.position = position;
+        this.display = true;
+    }
+
+    /**
+     * Constructs a descriptor whose signature is just the bare token, with no parenthesized argument list. This is
+     * appropriate for infix operator symbols such as "+" or "^", where inserting "token(expr, expr)" into the
+     * expression field would not be valid syntax.
+     *
+     * @param name     The name of the descriptor.
+     * @param token    The token of the descriptor, also used for the signature.
+     * @param position The position that the expression can occur in.
+     */
+    public AbstractExpressionDescriptor(String name, String token, Position position) {
+        if (name == null) {
+            throw new NullPointerException("name was null.");
+        }
+        if (token == null) {
+            throw new NullPointerException("token was null.");
+        }
+        if (position == null) {
+            throw new NullPointerException("position was null.");
+        }
+
+        this.signature = new Signature(token, false, true);
+        this.name = name;
+        this.token = token;
+        this.position = position;
+        this.display = true;
+    }
+
+    /**
+     * Constructs an abstract expression descriptor with a declared number of arguments, so that the signature shows
+     * the correct arity, e.g., "mod(expr, expr)".
+     *
+     * @param name     The name of the descriptor.
+     * @param token    The token of the descriptor, also used for the signature.
+     * @param position The position that the expression can occur in.
+     * @param numArgs  The number of arguments the expression takes.
+     */
+    public AbstractExpressionDescriptor(String name, String token, Position position, int numArgs) {
+        if (name == null) {
+            throw new NullPointerException("name was null.");
+        }
+        if (token == null) {
+            throw new NullPointerException("token was null.");
+        }
+        if (position == null) {
+            throw new NullPointerException("position was null.");
+        }
+
+        String[] args = new String[numArgs];
+        Arrays.fill(args, "expr");
+        this.signature = new Signature(token, false, false, args);
         this.name = name;
         this.token = token;
         this.position = position;

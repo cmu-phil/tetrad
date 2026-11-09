@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -35,6 +35,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -58,7 +59,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -110,7 +111,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -119,13 +120,13 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         }
 
         IndependenceTest test = this.test.getTest(dataModel, parameters);
+        test = new CachedIndependenceQueries(test);
         Score score = this.score.getScore(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.GraspFci search = new edu.cmu.tetrad.search.GraspFci(test, score);
 
         // GRaSP
-        search.setSeed(parameters.getLong(Params.SEED));
         search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
         search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
@@ -137,14 +138,16 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS), score,
+                parameters.getDouble(Params.IMAP_ALPHA));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -204,16 +207,17 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         // FCI
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.DO_POSSIBLE_DSEP);
+        params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.IMAP_ALPHA);
 
         // General
         params.add(Params.TIME_LAG);
-        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
-        params.add(Params.SEED);
-        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
+        params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         return params;
     }

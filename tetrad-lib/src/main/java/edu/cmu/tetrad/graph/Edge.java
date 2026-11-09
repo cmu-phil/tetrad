@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -70,6 +70,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * Usual coloring--set to something else for a special line color.
      */
     private transient Color lineColor;
+    /**
+     * Optional free-text note shown in the workbench tooltip for this edge (e.g. an estimated coefficient). Transient;
+     * intended for display graphs.
+     */
+    private transient String annotation;
     /**
      * Whether the edge is bold.
      */
@@ -149,6 +154,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
+        this.annotation = edge.annotation;
         this.bold = edge.bold;
         this.highlighted = edge.highlighted;
         this.properties = new ArrayList<>(edge.properties);
@@ -229,7 +235,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return the endpoint nearest to the given node.
      * @throws java.lang.IllegalArgumentException if the given node is not along the edge.
      */
-    public final Endpoint getEndpoint(Node node) {
+    public final Endpoint getProximalEndpoint(Node node) {
         if (this.node1 == node) {
             return getEndpoint1();
         } else if (this.node2 == node) {
@@ -291,7 +297,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
-        Endpoint proximal = getEndpoint(node);
+        Endpoint proximal = getProximalEndpoint(node);
         Endpoint distal = getDistalEndpoint(node);
         return (proximal == Endpoint.ARROW && (distal == Endpoint.TAIL || distal == Endpoint.CIRCLE));
     }
@@ -313,6 +319,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public Edge sameEdgeFlippedDirection() {
         Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1(), false);
         _edge.lineColor = lineColor;
+        _edge.annotation = annotation;
         _edge.bold = bold;
         _edge.highlighted = highlighted;
         _edge.properties = new ArrayList<>(properties);
@@ -508,7 +515,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -527,7 +534,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -548,6 +555,34 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      */
     public Color getLineColor() {
         return this.lineColor;
+    }
+
+    /**
+     * Sets a special line color for this edge, or null to restore the workbench default. Honored by the workbench when
+     * the edge is displayed.
+     *
+     * @param lineColor a {@link java.awt.Color} object, or null
+     */
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
+    }
+
+    /**
+     * Returns the annotation shown in the workbench tooltip for this edge, or null if none.
+     *
+     * @return a {@link java.lang.String} object, or null
+     */
+    public String getAnnotation() {
+        return this.annotation;
+    }
+
+    /**
+     * Sets an annotation to be shown in the workbench tooltip for this edge, or null for none.
+     *
+     * @param annotation a {@link java.lang.String} object, or null
+     */
+    public void setAnnotation(String annotation) {
+        this.annotation = annotation;
     }
 
     /**
@@ -624,6 +659,20 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      */
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
+    }
+
+    /**
+     * Sets the endpoint nearest the given nodes to the given endpoint.
+     *
+     * @param node The node.
+     * @param proximalEndpoint The endpoint.
+     */
+    public void setProximalEndpoint(Node node, Endpoint proximalEndpoint) {
+        if (this.node1 == node) {
+            endpoint1 = proximalEndpoint;
+        } else if (this.node2 == node) {
+            endpoint2 = proximalEndpoint;
+        }
     }
 
     /**

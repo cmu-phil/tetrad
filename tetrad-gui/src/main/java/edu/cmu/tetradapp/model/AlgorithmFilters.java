@@ -24,12 +24,19 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 
+/**
+ * Static utility filters for selecting algorithms in the GUI.
+ */
 public final class AlgorithmFilters {
     private AlgorithmFilters() {
     }
 
     /**
      * Block-capable if it can accept a wrapper for a block-based test and/or a block-based score.
+     *
+     * @param model the algorithm model to check.
+     * @return true if the algorithm's class takes an independence wrapper or a score wrapper; false otherwise
+     * (including if the class cannot be determined).
      */
     public static boolean supportsBlocks(AlgorithmModel model) {
         var algo = model.getAlgorithm();

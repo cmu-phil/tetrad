@@ -29,6 +29,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * An example script to load in data sets and graphs from files and analyze them. The files loaded must be in the same
  * format as
@@ -93,7 +95,11 @@ public class ExampleCompareFromFiles {
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
 
-        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        try {
+            comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

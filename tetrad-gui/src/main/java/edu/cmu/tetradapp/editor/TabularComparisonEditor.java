@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -106,7 +108,7 @@ public class TabularComparisonEditor extends JPanel {
                 b0.toString()
         );
 
-        area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
+        area.setFont(ThemeUtils.monospaced(12, Font.BOLD));
 //        area.setPreferredSize(area.getMaximumSize());
 
         JScrollPane pane = new JScrollPane(area);

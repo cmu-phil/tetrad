@@ -219,7 +219,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
             DiscreteVariable.STORED_CATEGORY_LISTS = new ArrayList<>();
         }
 
-        for (LinkedList<String> list : DiscreteVariable.STORED_CATEGORY_LISTS) {
+        for (LinkedList<String> list : new ArrayList<>(DiscreteVariable.STORED_CATEGORY_LISTS)) {
             if (categorySet.equals(new HashSet<>(list))) {
                 return list;
             }

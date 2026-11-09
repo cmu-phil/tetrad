@@ -20,47 +20,45 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
-import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * Detect-Mimic-PC (DM-PC) algorithm. This is intended to detect intermediate latent variables for Multiple Input
- * Multiple IndiCator (MIMIC) models. models.
+ * DM-PC, removed in Tetrad 8.0.0.
+ * <p>
+ * <b>Backward compatibility only, and not runnable.</b> This class is retained under its original name so that
+ * sessions saved by Tetrad 7.6.10 and earlier, which refer to it by this class name, continue to load: without it
+ * the whole session fails to open, not merely this box. Its registration annotations are commented out, so it does
+ * not appear in the algorithm chooser.
+ * <p>
+ * Unlike the other compatibility classes, this one cannot reproduce the original behavior, because edu.cmu.tetrad.search.DmPc no
+ * longer exists. Running it therefore throws {@link UnsupportedOperationException} with an explanation rather than
+ * returning a graph that was computed some other way. A restored session opens, shows whatever graph it had stored,
+ * and reports the removal if the search is re-run.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-PC",
-        command = "dm-pc",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "DM-PC",
+//        command = "dm-pc",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -76,69 +74,27 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for DM-PC.</p>
+     * No-arg constructor. Used for reflection; do not delete.
      */
     public DmPc() {
-        // Used for reflection; do not delete.
     }
 
     /**
-     * <p>Constructor for DM-PC.</p>
+     * Always throws, because the implementation this class wrapped was removed in Tetrad 8.0.0.
      *
-     * @param test a {@link IndependenceWrapper} object
-     */
-    public DmPc(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    /**
-     * Runs a search algorithm to find a graph structure based on a given data set and parameters.
-     *
-     * @param dataModel  the data set to be used for the search algorithm
-     * @param parameters the parameters for the search algorithm
-     * @return the graph structure found by the search algorithm
+     * @param dataModel  ignored
+     * @param parameters ignored
+     * @return never returns
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        if (parameters.getInt(Params.TIME_LAG) > 0) {
-            if (!(dataModel instanceof DataSet dataSet)) {
-                throw new IllegalArgumentException("Expecting a dataset for time lagging.");
-            }
-
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-            if (dataSet.getName() != null) {
-                timeSeries.setName(dataSet.getName());
-            }
-            dataModel = timeSeries;
-            knowledge = timeSeries.getKnowledge();
-        }
-
-        IndependenceTest test = this.test.getTest(dataModel, parameters);
-
-        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
-        search.setKnowledge(knowledge);
-
-        Graph graph;
-        double fdrQ = parameters.getDouble(Params.FDR_Q);
-
-        if (fdrQ == 0.0) {
-            graph = search.search();
-        } else {
-            boolean negativelyCorrelated = true;
-            boolean verbose = parameters.getBoolean(Params.VERBOSE);
-            double alpha = parameters.getDouble(Params.ALPHA);
-            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
-        }
-
-        return graph;
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        throw new UnsupportedOperationException("DM-PC was removed in Tetrad 8.0.0 and cannot be re-run. This "
+                                                + "class exists only so that sessions saved by earlier versions "
+                                                + "still open; the graph stored in the session is unaffected.");
     }
 
     /**
-     * Retrieves a comparison graph by transforming a true directed graph into a partially directed graph (PAG).
-     *
-     * @param graph The true directed graph, if there is one.
-     * @return The comparison graph.
+     * {@inheritDoc}
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -146,46 +102,31 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * Returns a short, one-line description of this algorithm. The description is generated by concatenating the
-     * descriptions of the test and score objects associated with this algorithm.
-     *
-     * @return The description of this algorithm.
+     * {@inheritDoc}
      */
     @Override
     public String getDescription() {
-        return "DM-PC using " + this.test.getDescription();
+        return "DM-PC (removed in Tetrad 8.0.0; retained so that older sessions load, not runnable)";
     }
 
     /**
-     * Retrieves the data type required by the search algorithm.
-     *
-     * @return The data type required by the search algorithm.
+     * {@inheritDoc}
      */
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return DataType.Mixed;
     }
 
     /**
-     * Retrieves the list of parameters used by the algorithm.
-     *
-     * @return The list of parameters used by the algorithm.
+     * {@inheritDoc}
      */
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
-
-        params.add(Params.FDR_Q);
-        params.add(Params.VERBOSE);
-
-        return params;
+        return new ArrayList<>();
     }
 
-
     /**
-     * Retrieves the knowledge object associated with this method.
-     *
-     * @return The knowledge object.
+     * {@inheritDoc}
      */
     @Override
     public Knowledge getKnowledge() {
@@ -193,9 +134,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * Sets the knowledge object associated with this method.
-     *
-     * @param knowledge the knowledge object to be set
+     * {@inheritDoc}
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -203,11 +142,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * Retrieves the IndependenceWrapper object associated with this method. The IndependenceWrapper object contains an
-     * IndependenceTest that checks the independence of two variables conditional on a set of variables using a given
-     * dataset and parameters .
-     *
-     * @return The IndependenceWrapper object associated with this method.
+     * {@inheritDoc}
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -215,13 +150,10 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     }
 
     /**
-     * Sets the independence wrapper.
-     *
-     * @param test the independence wrapper.
+     * {@inheritDoc}
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 }
-

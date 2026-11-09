@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class PostnonlinearSem implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }

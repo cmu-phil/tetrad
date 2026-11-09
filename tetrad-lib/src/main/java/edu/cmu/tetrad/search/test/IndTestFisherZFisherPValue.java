@@ -27,16 +27,13 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.ProbUtils;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Calculates independence from multiple datasets from using the Fisher method of pooling independence results. See this
@@ -137,8 +134,13 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         try {
-            List<Node> z = new ArrayList<>();
-            Collections.sort(z);
+            // Bug fix: the conditioning set was previously dropped here (an empty list was
+            // sorted instead of _z being copied into it), so every call tested MARGINAL
+            // independence of x and y regardless of the conditioning set. FAS with the
+            // broken test could only remove marginally uncorrelated pairs, producing
+            // extremely dense graphs on connected (especially cyclic) data.
+            List<Node> z = new ArrayList<>(_z);
+            z.sort(NaturalSort.naturalComparator());
 
             int[] all = new int[z.size() + 2];
             all[0] = this.nodesMap.get(x);
@@ -153,7 +155,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
                 Matrix _ncov = iCovarianceMatrix.getSelection(all, all);
                 Matrix inv = _ncov.inverse();
                 double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
-                double __z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+                // Bug fix: use each dataset's own sample size, not the first dataset's.
+                double __z = sqrt(iCovarianceMatrix.getSampleSize() - z.size() - 3.0)
+                             * 0.5 * (log(1.0 + r) - log(1.0 - r));
                 double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(__z)));
                 pValues.add(pvalue);
             }
@@ -173,7 +177,13 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
                 n++;
             }
 
-            if (numZeros >= pValues.size() / 2)
+            // Bug fix: for a single dataset, pValues.size() / 2 is 0 by integer division,
+            // so numZeros >= 0 held for EVERY test and every pair was judged dependent
+            // whatever its p-value -- FAS could then remove nothing and returned the
+            // complete graph. Requiring numZeros > 0 makes the guard fire only when
+            // zero p-values are actually present; behavior for two or more datasets is
+            // unchanged.
+            if (numZeros > 0 && numZeros >= pValues.size() / 2)
                 return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
             if (tf == 0) throw new IllegalArgumentException(

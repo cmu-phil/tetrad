@@ -92,6 +92,12 @@ public class FciOrient {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * The maximum blocking path length variable.
+     * <p>
+     * This variable represents the maximum length of a blocking path, or -1 if no maximum length is set.
+     */
+    private int recursiveDepth = -1;
+    /**
      * The maximum path length variable.
      * <p>
      * This variable represents the maximum length of a discriminating path, or -1 if no maximum length is set.
@@ -118,6 +124,10 @@ public class FciOrient {
      * Indicates whether to run R4 or not.
      */
     private boolean useR4 = true;
+    /**
+     * The number of R4 abstentions that have occurred during the FCI orientation process.
+     */
+    private int r4AbstentionCount = 0;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -138,6 +148,17 @@ public class FciOrient {
     /**
      * Determines if an arrowhead can be placed at node Y in the given graph, based on the adjacency relationships,
      * endpoint types, and any provided prior knowledge constraints.
+     * <p>
+     * Knowledge semantics. An arrowhead at Y on the edge X *-* Y asserts that Y is not an ancestor of X (nor of any
+     * selection variable). This assertion is contradicted by knowledge REQUIRING Y --&gt; X, so that case is vetoed. It
+     * is NOT contradicted by knowledge FORBIDDING X --&gt; Y: whether X causes Y says nothing about an arrowhead at Y.
+     * An earlier version of this method vetoed the arrowhead at Y whenever X --&gt; Y was forbidden; under tier
+     * knowledge (which forbids every later--&gt;earlier edge) that veto deleted correct collider arrowheads at earlier
+     * variables and thereby erased the record of possible latent confounding. For example, with the true MAG a --&gt; b,
+     * b &lt;-&gt; c and the (true) tiers b &lt; c, the forbidden edge c --&gt; b blocked the collider arrowhead at b, and
+     * the output entailed a _||_ c | b, which the data reject. The forbidden-edge veto has therefore been removed;
+     * forbidden edges are instead enforced as endpoint marks in
+     * {@link #fciOrientbk(Knowledge, Graph, List, boolean)}.
      *
      * @param x     The first node under consideration in the graph.
      * @param y     The second node under consideration in the graph, where the arrowhead placement is evaluated.
@@ -157,12 +178,10 @@ public class FciOrient {
         // Tail fixed at Y => cannot put an arrowhead at Y.
         if (eXY == Endpoint.TAIL) return false;
 
-        // If knowledge REQUIRES y->x, disallow arrowhead at Y (bidirected would violate the requirement).
+        // If knowledge REQUIRES y->x, disallow arrowhead at Y (the arrowhead would deny that y is an ancestor of x).
         if (K != null && K.isRequired(y.getName(), x.getName())) return false;
 
-        // If knowledge FORBIDS x->y, only allow an arrowhead at Y when we ALREADY have an arrowhead at X
-        // (so we'd make x <-> y). Otherwise, block to avoid x->y.
-        if (K != null && K.isForbidden(x.getName(), y.getName()) && eYX != Endpoint.ARROW) return false;
+        // NOTE: knowledge FORBIDDING x->y does NOT veto an arrowhead at Y; see the Javadoc above.
 
         // Otherwise, circle at Y is orientable.
         return eXY == Endpoint.CIRCLE;
@@ -181,7 +200,7 @@ public class FciOrient {
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, int maxLen, boolean checkXyNonadjacency) {
 
-        Set<DiscriminatingPath> out = new HashSet<>();
+        Set<DiscriminatingPath> out = new LinkedHashSet<>();
         for (Node w : graph.getNodes()) {
             for (Node y : graph.getAdjacentNodes(w)) {
                 out.addAll(listDiscriminatingPaths(graph, w, y, maxLen, checkXyNonadjacency));
@@ -191,123 +210,174 @@ public class FciOrient {
     }
 
     /**
-     * Identifies and returns a set of discriminating paths in a given graph that satisfy specified criteria based on
-     * relationships and adjacency between nodes.
+     * Finds and returns the set of discriminating paths in the given graph, based on the specified parameters.
+     * A discriminating path is a specific type of path in a causal graph, used in graph-based causal inference to
+     * identify the causal structure that satisfies certain conditions.
      *
-     * @param graph               the graph to be analyzed
-     * @param w                   the starting node for path evaluation
-     * @param y                   the target node for path evaluation
-     * @param maxLen              the maximum length of the discriminating paths
-     * @param checkEcNonadjacency a flag indicating whether strict edge constraints are applied between nodes w and y
-     *                            (true for strict, false for relaxed constraints)
-     * @return a set of discriminating paths that meet the criteria; returns an empty set if no such paths exist
+     * @param graph               The graph in which to search for discriminating paths.
+     * @param w                   The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
+     * @param y                   The target node for which discriminating paths are being identified.
+     * @param maxLen              The maximum allowable length for the paths being considered.
+     * @param checkXyNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
+     *                            (true for strict adjacency checks, false for relaxed checks).
+     * @return A set of discriminating paths that satisfy the required conditions, or an empty set if no such paths are found.
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
-            Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
+            Graph graph, Node w, Node y, int maxLen, boolean checkXyNonadjacency) {
 
-        Set<DiscriminatingPath> out = new HashSet<>();
+        Set<DiscriminatingPath> out = new LinkedHashSet<>();
 
-        // Required local relationship between w and y:
-        if (checkEcNonadjacency) {
-            // strict: only when w is a parent of y
-            if (!graph.isParentOf(w, y)) return out;
+        // In the strict/original setting, W must be a parent of Y,
+        // since W is one of the vertices between X and V.
+        if (checkXyNonadjacency) {
+            if (!graph.isParentOf(w, y)) {
+                return out;
+            }
         } else {
-            // relaxed: allow covering edge but not y -> w
-            Endpoint e_yw = graph.getEndpoint(y, w);
-            if (e_yw == Endpoint.ARROW) return out;
+            // Relaxed variant: allow W -* Y, but not Y -> W.
+            if (!graph.isAdjacentTo(w, y)) {
+                return out;
+            }
+            if (graph.getEndpoint(y, w) == Endpoint.ARROW) {
+                return out;
+            }
         }
 
-        // v must be adjacent to both w and y
-        Set<Node> vset = new HashSet<>(graph.getAdjacentNodes(w));
+        // Candidate V must be adjacent to both W and Y.
+        Set<Node> vset = new LinkedHashSet<>(graph.getAdjacentNodes(w));
         vset.retainAll(graph.getAdjacentNodes(y));
 
         for (Node v : vset) {
-            if (v == w || v == y) continue;
+            if (v == w || v == y) {
+                continue;
+            }
 
-            // Need v o-> y to be a candidate
-            Endpoint e_yv = graph.getEndpoint(y, v); // endpoint at v on edge y—v
-            Endpoint e_vy = graph.getEndpoint(v, y); // endpoint at y on edge v—y
-            if (e_yv != Endpoint.CIRCLE) continue;   // circle at v
-            if (e_vy != Endpoint.ARROW) continue;   // arrowhead into y
-
-            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkEcNonadjacency);
+            // Zhang's definition of a discriminating path places no endpoint condition
+            // at V. The R4 trigger (V o-* Y) is a property of the rule, not the path,
+            // and is applied at the R4 call site (getDiscriminatingPathTasks), so that
+            // this method enumerates the definitional set.
+            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkXyNonadjacency);
         }
 
         return out;
     }
 
     /**
-     * A method to search "back from w" to find w discriminating path. It is called with w reachability list (first
-     * consisting only of w). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
-     * The body of w discriminating path consists of colliders that are parents of y.
-     *
-     * @param w                   w {@link Node} object
-     * @param v                   w {@link Node} object
-     * @param y                   w {@link Node} object
-     * @param graph               w {@link Graph} object
-     * @param checkEcNonadjacency Whether to check for EC nonadjacency
+     * Search backward from W to find discriminating paths of the form
+     * <X, ..., W, V, Y> for V.
+     * <p>
+     * The interior vertices between X and V must be colliders on the path
+     * and parents of Y (or satisfy the relaxed analogue).
+     * <p>
+     * The colliderPath stored in DiscriminatingPath is [W, ..., first-after-X].
      */
-    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+    private static void discriminatingPathBfs(Node w,
+                                              Node v,
+                                              Node y,
+                                              Graph graph,
+                                              Set<DiscriminatingPath> discriminatingPaths,
+                                              int maxDiscriminatingPathLength,
+                                              boolean checkXyNonadjacency) {
 
-        // State carries current node t, previous node p (next in path toward v), and the colliderPath so far (between v and current upstream).
         class State {
-            final Node t, p;                   // at node t, previous is p (null at the start)
-            final LinkedList<Node> path;       // nodes between v and current upstream endpoint (excludes that upstream x)
+            final Node current;           // current upstream node t
+            final Node nextTowardV;       // next node toward v on the partial path
+            final LinkedList<Node> body;   // stored as [W, ..., first-after-X]
+            final Set<Node> used;         // enforce simple paths
 
-            State(Node t, Node p, LinkedList<Node> path) {
-                this.t = t;
-                this.p = p;
-                this.path = path;
+            State(Node current, Node nextTowardV, LinkedList<Node> body, Set<Node> used) {
+                this.current = current;
+                this.nextTowardV = nextTowardV;
+                this.body = body;
+                this.used = used;
             }
         }
 
-        ArrayDeque<State> Q = new ArrayDeque<>();
-        // Start at w with no previous; colliderPath initially empty.
-        Q.offer(new State(w, null, new LinkedList<>()));
+        ArrayDeque<State> queue = new ArrayDeque<>();
 
-        while (!Q.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) break;
+        // Start at W. The body will become [W] once we step to a candidate X or farther upstream.
+        Set<Node> startUsed = new HashSet<>();
+        startUsed.add(w);
+        startUsed.add(v);
+        startUsed.add(y);
 
-            State s = Q.poll();
-            Node t = s.t;
-            Node p = s.p;                 // "next in path" toward v
-            LinkedList<Node> pathToT = s.path;
+        queue.offer(new State(w, null, new LinkedList<>(), startUsed));
 
-            // If t is an interior node (i.e., not the very first step), insist that p *-> t (collider at t),
-            // and (optional) that t is a parent of y.
-            if (p != null) {
-                if (graph.getEndpoint(p, t) != Endpoint.ARROW) continue;      // NOT a collider at t
-                if (!graph.isParentOf(t, y)) continue;                         // prune: interior must be parent of y
+        while (!queue.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
 
-            // Explore predecessors x with an arrowhead into t : x *-> t
-            for (Node x : graph.getNodesInTo(t, Endpoint.ARROW)) {
-                if (Thread.currentThread().isInterrupted()) break;
+            State s = queue.poll();
+            Node t = s.current;
+            Node p = s.nextTowardV;
 
-                // avoid immediate 2-cycle and prevent cycles along the current branch
-                if (x == p) continue;
-                if (pathToT.contains(x)) continue;
-
-                // Build colliderPath for candidate x: it’s pathToT plus the current t
-                LinkedList<Node> colliderPath = new LinkedList<>(pathToT);
-                colliderPath.add(t); // interior nodes between v and x (t becomes interior once we step to x)
-
-                if (maxDiscriminatingPathLength != -1 && colliderPath.size() + 1 > maxDiscriminatingPathLength) {
+            // If t is not the initial W, then t is interior between X and V.
+            // It must be a collider on the partial path and satisfy the Y-condition.
+            if (p != null) {
+                if (graph.getEndpoint(p, t) != Endpoint.ARROW) {
                     continue;
                 }
 
-                // Let DiscriminatingPath judge validity; we’re just enumerating paths with enforced collider-at-interior.
-                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
+                if (checkXyNonadjacency) {
+                    if (!graph.isParentOf(t, y)) {
+                        continue;
+                    }
+                } else {
+                    if (!graph.isAdjacentTo(t, y) || graph.getEndpoint(y, t) == Endpoint.ARROW) {
+                        continue;
+                    }
+                }
+            }
+
+            // Explore X such that X *-> t.
+            for (Node x : graph.getNodesInTo(t, Endpoint.ARROW)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (x == p || x == v || x == y) {
+                    continue;
+                }
+
+                if (s.used.contains(x)) {
+                    continue;
+                }
+
+                // New colliderPath storage appends the current node at the end:
+                // [W, ..., first-after-X].
+                LinkedList<Node> newBody = new LinkedList<>(s.body);
+                newBody.addLast(t);
+
+                // Full path is <x> + reverse(newBody) + <v, y>.
+                int edgeCount = 1 + newBody.size(); // edges from x to v through newBody
+                edgeCount += 1;                     // edge v-y
+
+                if (maxDiscriminatingPathLength >= 0 && edgeCount > maxDiscriminatingPathLength) {
+                    continue;
+                }
+
+                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, newBody, checkXyNonadjacency);
 
                 if (dp.existsIn(graph)) {
                     discriminatingPaths.add(dp);
                 }
 
-                // Optional prune: also insist the new upstream node x is a parent of y to keep only promising chains.
-                if (!graph.isParentOf(x, y)) continue;
+                // Extend farther upstream only if x could itself be an interior vertex.
+                if (checkXyNonadjacency) {
+                    if (!graph.isParentOf(x, y)) {
+                        continue;
+                    }
+                } else {
+                    if (!graph.isAdjacentTo(x, y) || graph.getEndpoint(y, x) == Endpoint.ARROW) {
+                        continue;
+                    }
+                }
 
-                // Push next state upstream: new current is x, previous is t, carry this branch’s path
-                Q.offer(new State(x, t, colliderPath));
+                Set<Node> newUsed = new HashSet<>(s.used);
+                newUsed.add(x);
+
+                queue.offer(new State(x, t, newBody, newUsed));
             }
         }
     }
@@ -458,7 +528,8 @@ public class FciOrient {
      * If selection bias is excluded, rules R5-R7 are not applied; applies only to Zhang final orientation.
      *
      * @param graph                a {@link Graph} object
-     * @param excludeSelectionBias whether to exclude selection bias
+     * @param excludeSelectionBias whether to exclude selection bias.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void finalOrientation(Graph graph, boolean excludeSelectionBias) {
         if (this.completeRuleSetUsed) {
@@ -472,11 +543,14 @@ public class FciOrient {
      * Iteratively applies rules (in place) to orient the Spirtes final orientation rules in the graph. These are arrow
      * complete.
      *
-     * @param graph The graph containing the sprites.
+     * @param graph             The graph containing the sprites.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
+
+        r4AbstentionCount = 0;
 
         while (this.changeFlag) {
             if (Thread.currentThread().isInterrupted()) {
@@ -489,8 +563,12 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph);
-                firstTime = false;
+                try {
+                    ruleR4(graph);
+                    firstTime = false;
+                } catch (IllegalStateException e) {
+                    r4AbstentionCount++;
+                }
             }
 
             if (this.verbose) {
@@ -505,10 +583,12 @@ public class FciOrient {
      *
      * @param graph                the graph to apply the final orientation algorithm to
      * @param excludeSelectionBias whether to exclude selection bias
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
         boolean firstTime = true;
+        r4AbstentionCount = 0;
 
         while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
             this.changeFlag = false;
@@ -517,8 +597,12 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph);
-                firstTime = false;
+                try {
+                    ruleR4(graph);
+                    firstTime = false;
+                } catch (IllegalStateException e) {
+                    r4AbstentionCount++;
+                }
             }
 
             if (this.verbose) {
@@ -529,19 +613,7 @@ public class FciOrient {
         if (isCompleteRuleSetUsed()) {
 
             if (!excludeSelectionBias) {
-                // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-                // R5 once.
-                ruleR5(graph);
-
-                // Now, by a further remark on page 102, we apply R6,R7 as many times
-                // as possible.
-                this.changeFlag = true;
-
-                while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
-                    this.changeFlag = false;
-                    ruleR6(graph);
-                    ruleR7(graph);
-                }
+                rulesR5R6R7(graph);
             }
 
             // Finally, we apply R8-R10 as many times as possible.
@@ -551,6 +623,30 @@ public class FciOrient {
                 this.changeFlag = false;
                 rulesR8R9R10(graph);
             }
+        }
+    }
+
+    /**
+     * Applies transformation rules R5, R6, and R7 to the provided graph.
+     * Rule R5 is applied once, followed by iterative applications of
+     * rules R6 and R7 until no further changes are detected or the thread
+     * is interrupted.
+     *
+     * @param graph the graph to which the transformation rules are applied
+     */
+    public void rulesR5R6R7(Graph graph) {
+        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+        // R5 once.
+        ruleR5(graph);
+
+        // Now, by a further remark on page 102, we apply R6,R7 as many times
+        // as possible.
+        this.changeFlag = true;
+
+        while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
+            this.changeFlag = false;
+            ruleR6(graph);
+            ruleR7(graph);
         }
     }
 
@@ -724,7 +820,8 @@ public class FciOrient {
      * or non-collider on the triple ⟨α, β, γ⟩, refining orientations in the presence of
      * potential latent confounding.</p>
      *
-     * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
+     * @param graph The {@link Graph} being oriented.
+     * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void ruleR4(Graph graph) {
 
@@ -743,7 +840,7 @@ public class FciOrient {
         // Not parallel is the default.
         if (parallel) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
 
@@ -765,7 +862,7 @@ public class FciOrient {
 
         } else {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
                 if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
@@ -773,6 +870,7 @@ public class FciOrient {
                         return task.call();
 //                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
+//                        e.printStackTrace();
                         return null;
                     }
                 }).toList();
@@ -820,14 +918,24 @@ public class FciOrient {
     /**
      * Makes a list of tasks for the discriminating path orientation step based on the current graph.
      *
-     * @param graph            the graph
-     * @param allowedColliders the allowed colliders
+     * @param graph the graph
      * @return the list of tasks
+     * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
      */
-    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedColliders) {
-        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {Set<DiscriminatingPath> allPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
 
-        Set<Node> vNodes = new HashSet<>();
+        // R4 trigger: the rule fires only when V o-* Y (circle at V on the V--Y edge).
+        // This is a property of R4, not of the discriminating path definition, so it
+        // is applied here rather than in the enumerator.
+        Set<DiscriminatingPath> discriminatingPaths = new LinkedHashSet<>();
+
+        for (DiscriminatingPath discriminatingPath : allPaths) {
+            if (graph.getEndpoint(discriminatingPath.getY(), discriminatingPath.getV()) == Endpoint.CIRCLE) {
+                discriminatingPaths.add(discriminatingPath);
+            }
+        }
+
+        Set<Node> vNodes = new LinkedHashSet<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
             vNodes.add(discriminatingPath.getV());
@@ -836,7 +944,14 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph, vNodes));
+            tasks.add(() -> {
+                // Re-check the R4 trigger at execution time: an earlier task in this
+                // batch may have oriented the V endpoint after enumeration.
+                if (graph.getEndpoint(discriminatingPath.getY(), discriminatingPath.getV()) != Endpoint.CIRCLE) {
+                    return Pair.of(discriminatingPath, false);
+                }
+                return strategy.doDiscriminatingPathOrientation(discriminatingPath, recursiveDepth, maxDiscriminatingPathLength, graph, vNodes);
+            });
         }
 
         return tasks;
@@ -913,44 +1028,24 @@ public class FciOrient {
      * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
      */
     public void ruleR6(Graph graph) {
-
-        // We first look for undirected edges x â- y and the look for Î³ adjacent to either the x or the
-        // y endpoint.
-
         for (Edge edge : graph.getEdges()) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
-            {
-                Node a = edge.getNode1();
-                Node b = edge.getNode2();
+            orientR6(graph, edge.getNode1(), edge.getNode2());
+            orientR6(graph, edge.getNode2(), edge.getNode1());
+        }
+    }
 
-                for (Node c : graph.getAdjacentNodes(b)) {
-                    if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                        setEndpoint(graph, c, b, Endpoint.TAIL);
-                        changeFlag = true;
+    private void orientR6(Graph graph, Node a, Node b) {
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                setEndpoint(graph, c, b, Endpoint.TAIL);
+                changeFlag = true;
 
-                        if (verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
-                        }
-                    }
-                }
-            }
-
-            {
-                Node a = edge.getNode2();
-                Node b = edge.getNode1();
-
-                for (Node c : graph.getAdjacentNodes(b)) {
-                    if (c != a && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                        setEndpoint(graph, c, b, Endpoint.TAIL);
-                        changeFlag = true;
-
-                        if (verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
-                        }
-                    }
+                if (verbose) {
+                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R6: Single tails (tail)", graph.getEdge(c, b)));
                 }
             }
         }
@@ -966,40 +1061,20 @@ public class FciOrient {
      */
     public void ruleR7(Graph graph) {
         for (Edge edge : graph.getEdges()) {
-            {
-                Node a = edge.getNode1();
-                Node b = edge.getNode2();
+            orientR7(graph, edge.getNode1(), edge.getNode2());
+            orientR7(graph, edge.getNode2(), edge.getNode1());
+        }
+    }
 
-                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
-                    for (Node c : graph.getAdjacentNodes(b)) {
-                        if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                            setEndpoint(graph, c, b, Endpoint.TAIL);
-                            changeFlag = true;
+    private void orientR7(Graph graph, Node a, Node b) {
+        if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+                    setEndpoint(graph, c, b, Endpoint.TAIL);
+                    changeFlag = true;
 
-                            if (verbose) {
-                                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
-                            }
-                        }
-                    }
-                }
-            }
-
-            {
-                Node a = edge.getNode2();
-                Node b = edge.getNode1();
-
-                if (graph.getEndpoint(a, b) == Endpoint.CIRCLE && graph.getEndpoint(b, a) == Endpoint.TAIL) {
-                    for (Node c : graph.getAdjacentNodes(b)) {
-                        if (c != a && !graph.isAdjacentTo(a, c) && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-                            Endpoint tail = Endpoint.TAIL;
-
-                            setEndpoint(graph, c, b, tail);
-                            changeFlag = true;
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
-                            }
-                        }
+                    if (verbose) {
+                        TetradLogger.getInstance().log(LogUtilsSearch.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
                     }
                 }
             }
@@ -1158,11 +1233,11 @@ public class FciOrient {
 
             for (int i = 2; i < path.size(); i++) {
                 if (graph.isAdjacentTo(path.get(i), path.get(i - 2))) {
-                    System.out.println("adjacent " + path.get(i) + " to " + path.get(i - 2));
+                    this.logger.log("adjacent " + path.get(i) + " to " + path.get(i - 2));
                 }
 
                 if (graph.isAdjacentTo(path.getLast(), path.get(1))) {
-                    System.out.println("adjacent gamma = " + path.getLast() + " to beta = " + path.get(1));
+                    this.logger.log("adjacent gamma = " + path.getLast() + " to beta = " + path.get(1));
                 }
             }
         }
@@ -1174,143 +1249,93 @@ public class FciOrient {
     /**
      * R10 (Zhang 2008 FCI orientation rule).
      * <p>
-     * ASCII version: Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta. Let p1 be an uncovered potentially
-     * directed (potentially directed) path from alpha to beta, and p2 be an uncovered potentially directed path from
-     * alpha to theta. Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and omega be the vertex adjacent
-     * to alpha on p2 (omega could be theta). If mu and omega are distinct and nonadjacent, then orient alpha o-&gt;
-     * gamma as alpha -&gt; gamma.
-     * <p>
-     * Unicode version (same content): Suppose α o→ γ, β → γ ← θ. Let p1 be an uncovered potentially directed
-     * (potentially directed) path from α to β, and p2 be an uncovered potentially directed path from α to θ. Let μ be
-     * the vertex adjacent to α on p1 (μ could be β), and ω be the vertex adjacent to α on p2 (ω could be θ). If μ and ω
-     * are distinct and nonadjacent, then orient α o→ γ as α → γ.
-     * <p>
-     * Notes: - "Uncovered" means every consecutive triple on the path is unshielded. - "Potentially directed /
-     * potentially directed" means no arrowhead points toward alpha along the path.
+     * Suppose alpha o-&gt; gamma, beta -&gt; gamma &lt;- theta.
+     * Let p1 be an uncovered potentially directed path from alpha to beta,
+     * and p2 be an uncovered potentially directed path from alpha to theta.
+     * Let mu be the vertex adjacent to alpha on p1 (mu could be beta), and
+     * omega be the vertex adjacent to alpha on p2 (omega could be theta).
+     * If mu and omega are distinct and nonadjacent, then orient
+     * alpha o-> gamma as alpha -> gamma.
      *
      * @param alpha the node α
      * @param gamma the node γ
-     * @param graph the working {@link edu.cmu.tetrad.graph.Graph}
+     * @param graph the working graph
      */
-//    public void ruleR10(Node alpha, Node gamma, Graph graph) {
-//
-//        // We are aiming to orient the tails on certain partially oriented edges alpha o-> gamma, so we first
-//        // need to make sure we have such an edge.
-//        Edge edge = graph.getEdge(alpha, gamma);
-//
-//        if (edge == null) {
-//            return;
-//        }
-//
-//        if (!edge.equals(Edges.partiallyOrientedEdge(alpha, gamma))) {
-//            return;
-//        }
-//
-//        // Now we are sure we have an alpha o-> gamma edge. Next, we need to find directed edges beta -> gamma <- theta.
-//
-//        List<Node> into = graph.getNodesInTo(gamma, Endpoint.ARROW);
-//        into.remove(alpha);
-//
-//        for (int i = 0; i < into.size(); i++) {
-//            for (int j = i + 1; j < into.size(); j++) {
-//                Node beta = into.get(i);
-//                Node theta = into.get(j);
-//
-//                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL || graph.getEndpoint(gamma, theta) != Endpoint.TAIL) {
-//                    continue;
-//                }
-//
-//                // At this point we have beta -> gamma <- theta, with alpha o-> gamma. Next we need to find the
-//                // a novel adjacent nu to alpha and a novel adjacent omega to alpha such that nu and omega are not
-//                // adjacent.
-//
-//                List<Node> adj1 = graph.getAdjacentNodes(alpha);
-//                adj1.remove(beta);
-//                adj1.remove(theta);
-//                adj1.remove(beta);
-//
-//                for (int k = 0; k < adj1.size(); k++) {
-//                    for (int l = k + 1; l < adj1.size(); l++) {
-//                        Node nu = adj1.get(k);
-//                        Node omega = adj1.get(l);
-//
-//                        if (graph.isAdjacentTo(nu, omega)) {
-//                            continue;
-//                        }
-//
-//                        // Now we have our beta, theta, nu, and omega for R10. Next we need to try to find
-//                        // alpha potentially directed path p1 starting with <alpha, nu>, and ending with beta, and alpha path
-//                        // p2 starting with <alpha, omega> and ending with theta.
-//
-//                        if (graph.paths().existsPotentiallyDirectedPath(nu, beta) && graph.paths().existsPotentiallyDirectedPath(omega, theta)) {
-//
-//                            // Now we know we have the paths p1 and p2 as required, so R10 applies! We now need to
-//                            // orient the circle of the alpha o-> gamma edge as a tail.
-//                            setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
-//
-//                            if (verbose) {
-//                                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
-//                            }
-//
-//                            this.changeFlag = true;
-//                            return;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
     public void ruleR10(Node alpha, Node gamma, Graph graph) {
-        // Require alpha o-> gamma
+        // Require alpha o-> gamma.
         Edge e = graph.getEdge(alpha, gamma);
-        if (e == null || !e.equals(Edges.partiallyOrientedEdge(alpha, gamma))) return;
+        if (e == null || !e.equals(Edges.partiallyOrientedEdge(alpha, gamma))) {
+            return;
+        }
 
-        // Need beta -> gamma <- theta (exclude alpha)
-        final List<Node> into = new ArrayList<>(graph.getNodesInTo(gamma, Endpoint.ARROW));
-        into.remove(alpha);
-        if (into.size() < 2) return;
+        // Need beta -> gamma <- theta, with beta and theta distinct and not alpha.
+        List<Node> intoGamma = new ArrayList<>(graph.getNodesInTo(gamma, Endpoint.ARROW));
+        intoGamma.remove(alpha);
 
-        // Neighbors of alpha (include beta/theta if adjacent; μ/ω may be them!)
-        final Set<Node> adjAlpha = new HashSet<>(graph.getAdjacentNodes(alpha));
-        if (adjAlpha.isEmpty()) return;
+        if (intoGamma.size() < 2) {
+            return;
+        }
 
-        // Cache for uncovered PD subproblems: (prev, curr, target) -> boolean
-        final Map<Key3, Boolean> cache = new HashMap<>();
+        // First-hop candidates from alpha. These are possible μ or ω.
+        List<Node> adjAlpha = new ArrayList<>(graph.getAdjacentNodes(alpha));
+        if (adjAlpha.isEmpty()) {
+            return;
+        }
 
-        for (int i = 0; i < into.size(); i++) {
-            for (int j = i + 1; j < into.size(); j++) {
-                Node beta = into.get(i);
-                Node theta = into.get(j);
+        for (int i = 0; i < intoGamma.size(); i++) {
+            Node beta = intoGamma.get(i);
 
-                // Ensure beta -> gamma <- theta (tails at gamma side)
-                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL) continue;
-                if (graph.getEndpoint(gamma, theta) != Endpoint.TAIL) continue;
+            // Require beta -> gamma.
+            if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL) {
+                continue;
+            }
 
-                // μ candidates for beta and ω candidates for theta are any neighbors of alpha
-                // whose first hop satisfies uncovered + potentially-directed, and from which
-                // an uncovered PD path reaches the respective target.
-                List<Node> muCand = new ArrayList<>();
-                List<Node> omegaCand = new ArrayList<>();
+            for (int j = i + 1; j < intoGamma.size(); j++) {
+                Node theta = intoGamma.get(j);
 
-                for (Node hop : adjAlpha) {
-                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, beta, graph, cache)) muCand.add(hop);
-                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, theta, graph, cache)) omegaCand.add(hop);
+                // Require theta -> gamma.
+                if (graph.getEndpoint(gamma, theta) != Endpoint.TAIL) {
+                    continue;
                 }
 
-                if (muCand.isEmpty() || omegaCand.isEmpty()) continue;
+                List<Node> muCandidates = new ArrayList<>();
+                List<Node> omegaCandidates = new ArrayList<>();
 
-                // Need μ and ω distinct and nonadjacent
-                final Set<Node> omegaSet = new HashSet<>(omegaCand);
-                for (Node mu : muCand) {
-                    for (Node omega : omegaSet) {
-                        if (mu == omega) continue;
-                        if (graph.isAdjacentTo(mu, omega)) continue;
+                for (Node hop : adjAlpha) {
+                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, beta, graph)) {
+                        muCandidates.add(hop);
+                    }
+                    if (existsUncoveredPdPathFromAlphaVia(alpha, hop, theta, graph)) {
+                        omegaCandidates.add(hop);
+                    }
+                }
 
-                        // Orient α o-> γ as α -> γ
-                        setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
-                        if (verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
+                if (muCandidates.isEmpty() || omegaCandidates.isEmpty()) {
+                    continue;
+                }
+
+                for (Node mu : muCandidates) {
+                    for (Node omega : omegaCandidates) {
+                        if (mu == omega) {
+                            continue;
                         }
+                        if (graph.isAdjacentTo(mu, omega)) {
+                            continue;
+                        }
+
+                        // Orient alpha o-> gamma as alpha -> gamma.
+                        setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
+
+                        if (verbose) {
+                            this.logger.log(
+                                    LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha))
+                                            + " beta = " + beta
+                                            + ", theta = " + theta
+                                            + ", mu = " + mu
+                                            + ", omega = " + omega
+                            );
+                        }
+
                         this.changeFlag = true;
                         return;
                     }
@@ -1320,75 +1345,89 @@ public class FciOrient {
     }
 
     /**
-     * Exact check for an uncovered, potentially-directed path that starts with the pair (alpha, hop) and ends at
-     * 'target'.
+     * Checks whether there exists an uncovered potentially directed path
+     * from alpha to target whose first step is alpha--hop.
      * <p>
-     * Potentially-directed constraint (from alpha to target): for each step (prev -> curr -> next) along the path, the
-     * edge (curr, next) must NOT have an arrowhead pointing into 'curr': graph.getEndpoint(next, curr) !=
-     * Endpoint.ARROW
+     * This method enforces Zhang's notion of path as a sequence of distinct
+     * vertices by using a visited-node set.
      * <p>
-     * Uncovered constraint: for each triple (prev, curr, next), prev and next must be nonadjacent.
+     * Potentially directed from alpha means:
+     * along every step curr--next on the path, the edge must not have an
+     * arrowhead into curr.
+     * <p>
+     * Uncovered means:
+     * for every triple prev, curr, next on the path, prev and next are not adjacent.
      */
     private boolean existsUncoveredPdPathFromAlphaVia(Node alpha,
                                                       Node hop,
                                                       Node target,
-                                                      Graph graph,
-                                                      Map<Key3, Boolean> cache) {
-        // First hop must be PD wrt alpha: no arrowhead into alpha on (alpha, hop)
-        if (graph.getEndpoint(hop, alpha) == Endpoint.ARROW) return false;
+                                                      Graph graph) {
+        // First hop must be potentially directed out of alpha:
+        // no arrowhead into alpha on alpha--hop.
+        if (graph.getEndpoint(hop, alpha) == Endpoint.ARROW) {
+            return false;
+        }
 
-        // Trivial success: hop == target gives path alpha—hop == alpha—target
-        if (hop == target) return true;
+        // Trivial case: alpha, hop is already a path to target.
+        if (hop == target) {
+            return true;
+        }
 
-        // DFS with memo and visited set (simple paths)
-        return dfsUncoveredPd(alpha, hop, target, graph, cache, new HashSet<>());
+        Set<Node> visited = new HashSet<>();
+        visited.add(alpha);
+        visited.add(hop);
+
+        return dfsUncoveredPd(alpha, hop, target, graph, visited);
     }
 
+    /**
+     * DFS for existence of an uncovered potentially directed SIMPLE path
+     * from prev-curr onward to target.
+     * <p>
+     * The visited set contains vertices already on the current path, so all
+     * candidate paths are simple (no repeated vertices).
+     */
     private boolean dfsUncoveredPd(Node prev,
                                    Node curr,
                                    Node target,
                                    Graph graph,
-                                   Map<Key3, Boolean> cache,
-                                   Set<NodePair> visitedEdge) {
-        Key3 key = Key3.of(prev, curr, target);
-        Boolean memo = cache.get(key);
-        if (memo != null) return memo;
-
-        // Prevent immediate back-and-forth and general cycles via edge memory
-        NodePair edgeKey = NodePair.of(prev, curr);
-        if (!visitedEdge.add(edgeKey)) {
-            cache.put(key, Boolean.FALSE);
-            return false;
-        }
-
-        try {
-            for (Node next : graph.getAdjacentNodes(curr)) {
-                if (next == prev) continue;
-
-                // Potentially-directed step: no arrowhead into 'curr' on (curr,next)
-                if (graph.getEndpoint(next, curr) == Endpoint.ARROW) continue;
-
-                // Uncovered triple (prev, curr, next)
-                if (graph.isAdjacentTo(prev, next)) continue;
-
-                if (next == target) {
-                    cache.put(key, Boolean.TRUE);
-                    return true;
-                }
-
-                // Recurse
-                if (dfsUncoveredPd(curr, next, target, graph, cache, visitedEdge)) {
-                    cache.put(key, Boolean.TRUE);
-                    return true;
-                }
+                                   Set<Node> visited) {
+        for (Node next : graph.getAdjacentNodes(curr)) {
+            if (next == prev) {
+                continue;
             }
 
-            cache.put(key, Boolean.FALSE);
-            return false;
-        } finally {
-            // Backtrack edge marker
-            visitedEdge.remove(edgeKey);
+            // Enforce simple path: no repeated vertices.
+            if (visited.contains(next)) {
+                continue;
+            }
+
+            // Potentially directed step from curr to next:
+            // the edge curr--next must not be into curr.
+            if (graph.getEndpoint(next, curr) == Endpoint.ARROW) {
+                continue;
+            }
+
+            // Uncovered triple prev, curr, next.
+            if (graph.isAdjacentTo(prev, next)) {
+                continue;
+            }
+
+            if (next == target) {
+                return true;
+            }
+
+            visited.add(next);
+            try {
+                if (dfsUncoveredPd(curr, next, target, graph, visited)) {
+                    return true;
+                }
+            } finally {
+                visited.remove(next);
+            }
         }
+
+        return false;
     }
 
     /**
@@ -1407,7 +1446,8 @@ public class FciOrient {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (!(maxDiscriminatingPathLength == -1 || maxDiscriminatingPathLength >= 4)) {
-            throw new IllegalArgumentException("maxDiscriminatingPathLength must be -1 (unlimited) or >= 4: " + maxDiscriminatingPathLength);
+            TetradLogger.getInstance().warn("path length must be -1 (unlimited) or >= 4" +
+                    "in order to find discriminating paths: " + maxDiscriminatingPathLength);
         }
 
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
@@ -1452,13 +1492,26 @@ public class FciOrient {
 
     /**
      * Orient the edges of a graph based on the given knowledge.
+     * <p>
+     * Forbidden edges. A forbidden edge from --&gt; to is enforced by orienting to *-&gt; from (an arrowhead at
+     * 'from'), the standard FCI treatment of background knowledge. This enforcement is applied whether or not
+     * selection bias is excluded. When selection is allowed, an arrowhead at 'from' asserts that 'from' is an ancestor
+     * neither of 'to' nor of any selection variable; Tetrad interprets user-supplied background knowledge forbidding
+     * from --&gt; to in this stronger ancestral sense (in particular, tier knowledge is read as a statement of causal
+     * order that also excludes later-tier variables causing selection into the sample through earlier-tier variables).
+     * Users who believe a forbidden cause may nonetheless be an ancestor of a selection variable should not supply
+     * that forbidding. An earlier version of this method skipped forbidden-edge enforcement entirely whenever
+     * selection bias was allowed, which silently discarded tier knowledge (tiers compile to forbidden edges only) and
+     * coupled the use of background knowledge to an unrelated modeling flag.
+     * <p>
+     * Required edges. A required edge from --&gt; to is enforced by orienting from --&gt; to; this is unaffected by the
+     * selection bias policy.
      *
      * @param bk                   The knowledge containing forbidden and required edges.
      * @param graph                The graph to be oriented.
      * @param variables            The list of nodes in the graph.
-     * @param excludeSelectionBias If true, selection bias is excluded and forbidden edges are enforced in the standard
-     *                             way. If false (default), selection bias is allowed and we do NOT enforce forbidden
-     *                             edges by forcing an arrowhead.
+     * @param excludeSelectionBias Retained for signature compatibility; no longer gates whether background knowledge
+     *                             is enforced (see above).
      */
     public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables, boolean excludeSelectionBias) {
         if (verbose) {
@@ -1467,12 +1520,8 @@ public class FciOrient {
 
         // -------------------------------------------------------------------------
         // Forbidden edges: "from -> to" is forbidden.
-        //
-        // If selection bias is EXCLUDED (excludeSelectionBias == true):
-        //     enforce by orienting  to  *-> from  (standard FCI behavior)
-        //
-        // If selection bias is ALLOWED (excludeSelectionBias == false):
-        //     do NOT enforce via orientation; leave endpoints unchanged.
+        // Enforce by orienting  to *-> from  (arrowhead at 'from'), regardless of
+        // the selection bias policy; see the Javadoc for the interpretation.
         // -------------------------------------------------------------------------
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
@@ -1491,14 +1540,9 @@ public class FciOrient {
                 continue;
             }
 
-            // If we ALLOW selection bias, we skip enforcement entirely.
-            if (!excludeSelectionBias) {
-                continue;
-            }
-
-            // Enforce forbidden edge when selection bias is excluded.
+            // Enforce forbidden edge.
             if (!FciOrient.isArrowheadAllowed(to, from, graph, knowledge)) {
-                return;
+                continue;
             }
 
             // Orient: to *-> from   (arrowhead at 'from')
@@ -1533,7 +1577,7 @@ public class FciOrient {
             }
 
             if (!FciOrient.isArrowheadAllowed(from, to, graph, knowledge)) {
-                return;
+                continue;
             }
 
             // Orient: from ---*> to  (tail at from, arrow at to)
@@ -1563,6 +1607,24 @@ public class FciOrient {
      */
     public void setUseR4(boolean useR4) {
         this.useR4 = useR4;
+    }
+
+    /**
+     * Sets the maximum allowed blocking path length.
+     *
+     * @param recursiveDepth the maximum length of the blocking path, specified as an integer
+     */
+    public void setRecursiveDepth(int recursiveDepth) {
+        this.recursiveDepth = recursiveDepth;
+    }
+
+    /**
+     * Retrieves the count of R4 abstentions.
+     *
+     * @return the number of R4 abstentions.
+     */
+    public int getR4AbstentionCount() {
+        return r4AbstentionCount;
     }
 
     /**

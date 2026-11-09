@@ -22,7 +22,7 @@ package edu.cmu.tetrad.study.examples.conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GfciOld;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -32,6 +32,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
+import java.text.ParseException;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -76,7 +78,7 @@ public class BryanSensitivityStudy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+        algorithms.add(new GfciOld(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fci(new FisherZ()));
 
         Comparison comparison = new Comparison();
@@ -90,7 +92,11 @@ public class BryanSensitivityStudy {
             Graph graph = BryanSensitivityStudy.getGraph1();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
-            comparison.compareFromSimulations("bryan.simulation", simulations, "graph1.txt", algorithms, statistics, parameters);
+            try {
+                comparison.compareFromSimulations("bryan.simulation", simulations, "graph1.txt", algorithms, statistics, parameters);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         {
@@ -98,7 +104,11 @@ public class BryanSensitivityStudy {
             Graph graph = BryanSensitivityStudy.getGraph2();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
-            comparison.compareFromSimulations("bryan.simulation", simulations, "graph2.txt", algorithms, statistics, parameters);
+            try {
+                comparison.compareFromSimulations("bryan.simulation", simulations, "graph2.txt", algorithms, statistics, parameters);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         {
@@ -106,7 +116,11 @@ public class BryanSensitivityStudy {
             Graph graph = BryanSensitivityStudy.getGraph3();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
-            comparison.compareFromSimulations("bryan.simulation", simulations, "graph3.txt", algorithms, statistics, parameters);
+            try {
+                comparison.compareFromSimulations("bryan.simulation", simulations, "graph3.txt", algorithms, statistics, parameters);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         {
@@ -114,7 +128,11 @@ public class BryanSensitivityStudy {
             Graph graph = BryanSensitivityStudy.getGraph4();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
-            comparison.compareFromSimulations("bryan.simulation", simulations, "graph4.txt", algorithms, statistics, parameters);
+            try {
+                comparison.compareFromSimulations("bryan.simulation", simulations, "graph4.txt", algorithms, statistics, parameters);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

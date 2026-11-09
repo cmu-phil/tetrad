@@ -88,7 +88,14 @@ class LoadGraphTxt extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphSaveLoadUtils.loadGraphTxt(file);
+        Graph graph = null;
+        try {
+            graph = GraphSaveLoadUtils.loadGraphTxt(file);
+        } catch (RuntimeException ex) {
+            JOptionPane.showMessageDialog((Component) this.graphEditable,
+                    "Error loading graph: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         LayoutUtil.defaultLayout(graph);
         this.graphEditable.setGraph(graph);
     }

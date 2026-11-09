@@ -862,7 +862,7 @@ public class PerformanceTests {
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
-        FgesFci fci = new FgesFci(independenceTest, score);
+        Gfci fci = new Gfci(independenceTest, score);
 
         fci.setVerbose(false);
         fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -1527,7 +1527,7 @@ public class PerformanceTests {
             long ta1 = MillisecondTimes.timeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            FgesFci fci = new FgesFci(independenceTest, score);
+            Gfci fci = new Gfci(independenceTest, score);
             fci.setMaxDegree(depth);
             fci.setMaxDiscriminatingPathLength(maxPathLength);
 //            fci.setPossibleNsepSearchDone(doPossibleDsep);
@@ -2014,7 +2014,7 @@ public class PerformanceTests {
                     correctNonAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getEndpoint(x) == Endpoint.ARROW) {
+                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.ARROW) {
                     correctArrows++;
                 }
 
@@ -2026,7 +2026,7 @@ public class PerformanceTests {
                     correctNonAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getEndpoint(y) == Endpoint.ARROW) {
+                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.ARROW) {
                     correctArrows++;
                 }
 
@@ -2095,7 +2095,7 @@ public class PerformanceTests {
                     correctAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getEndpoint(x) == Endpoint.TAIL) {
+                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.TAIL) {
                     correctTails++;
                 }
 
@@ -2107,7 +2107,7 @@ public class PerformanceTests {
                     correctAncestorRelationships++;
                 }
 
-                if (edge1 != null && edge1.getEndpoint(y) == Endpoint.TAIL) {
+                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.TAIL) {
                     correctTails++;
                 }
 

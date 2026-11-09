@@ -32,6 +32,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -68,7 +69,12 @@ public class TestSemVarMeans {
             semIm1.setMean(node, means[i]);
         }
 
-        DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = semIm1.simulateDataRecursive(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         SemEstimator semEst = new SemEstimator(dataSet, semPm1);
         semEst.estimate();
@@ -103,7 +109,12 @@ public class TestSemVarMeans {
             semIm1.setMean(node, means[i]);
         }
 
-        DataSet dataSet = semIm1.simulateDataReducedForm(1000, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = semIm1.simulateDataReducedForm(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         SemEstimator semEst = new SemEstimator(dataSet, semPm1);
         semEst.estimate();

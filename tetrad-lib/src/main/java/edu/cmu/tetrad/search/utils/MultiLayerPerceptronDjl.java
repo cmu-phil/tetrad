@@ -37,6 +37,7 @@ import ai.djl.training.initializer.NormalInitializer;
 import ai.djl.translate.NoopTranslator;
 import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class MultiLayerPerceptronDjl {
             }
 
 //            net.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
-            net.setInitializer(new NormalInitializer((float) Math.sqrt(2.0)), Parameter.Type.WEIGHT);
+            net.setInitializer(new NormalInitializer((float) TMath.sqrt(2.0)), Parameter.Type.WEIGHT);
 
             net.initialize(manager, DataType.FLOAT32, x.getShape());
 

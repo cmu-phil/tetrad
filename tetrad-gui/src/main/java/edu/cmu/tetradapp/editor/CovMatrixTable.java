@@ -99,7 +99,7 @@ class CovMatrixTable extends AbstractTableModel {
         int lastDataCol = firstDataCol + getNumVariables();
 
         if (row == 1 && col == 0) {
-            return "Sample Size";
+            return "N =";
         }
 
         if (row == 1 && col == 1) {
@@ -117,7 +117,7 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-            (matrixCol <= matrixRow)) {
+            (col >= firstDataCol) && (col < lastDataCol)) {
             return getValue(matrixRow, matrixCol);
         }
 
@@ -150,13 +150,15 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-            (col >= firstDataCol) && (matrixCol < matrixRow)) {
+            (col >= firstDataCol) && (col < lastDataCol) &&
+            (matrixCol != matrixRow)) {
             return true;
         }
 
         return !(this.covMatrix instanceof CorrelationMatrix) &&
                (row >= firstDataRow) && (row < lastDataRow) &&
-               (col >= firstDataCol) && (matrixCol == matrixRow);
+               (col >= firstDataCol) && (col < lastDataCol) &&
+               (matrixCol == matrixRow);
 
     }
 
@@ -181,17 +183,19 @@ class CovMatrixTable extends AbstractTableModel {
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
             (row < lastDataRow)) {
             setVariableName(matrixRow, (String) aValue);
+            this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
             (col < lastDataCol)) {
             setVariableName(matrixCol, (String) aValue);
+            this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-            (col >= firstDataCol) && (matrixCol <= matrixRow)) {
+            (col >= firstDataCol) && (col < lastDataCol)) {
             String value = (String) aValue;
             double v = Double.parseDouble(value);
             setEditingValue(matrixRow, matrixCol, v);

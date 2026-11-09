@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.6.10</version>
+        <version>8.0.0</version>
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
@@ -34,8 +34,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <release>21</release>
+<!--                    <source>21</source>-->
+<!--                    <target>21</target>-->
                 </configuration>
             </plugin>
             <plugin>

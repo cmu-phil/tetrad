@@ -69,14 +69,10 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
      * <p>Constructor for SemEstimatorGibbsParams.</p>
      */
     private SemEstimatorGibbsParams(SemIm startIm) {
-
-        // note that seed is never used... just as well to get rid of it?
-
         this.startIm = startIm;
         this.flatPrior = false;
         this.stretch = 0.0;
         this.numIterations = 1;
-
         this.tolerance = 0.0001;
     }
 

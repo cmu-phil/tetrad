@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
         List<Node> z = new ArrayList<Node>(__z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         Node[] _z = new Node[__z.size()];
 

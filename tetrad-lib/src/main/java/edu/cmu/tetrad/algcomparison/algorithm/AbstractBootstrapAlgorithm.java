@@ -20,19 +20,33 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.annotation.Bootstrapping;
+
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.PooledIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.PooledScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -47,6 +61,7 @@ import static edu.cmu.tetrad.data.DataSampling.createDataSample;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
+@Bootstrapping
 public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
     // 2025-6-10 Refactored this code so that bootstrap datasets are not all calculated up front but are calculated
@@ -55,9 +70,10 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     // to garbage collect rather than calling System.gc() every run, which speeds things up. jdramsey
 
     /**
-     * The bootstrap graphs.
+     * The bootstrap graphs. Protected so that subclasses that override the resampling loop (e.g., the multi-dataset
+     * bootstrap base class) can populate the same list that {@link #getBootstrapGraphs()} returns.
      */
-    private transient List<Graph> bootstrapGraphs = new LinkedList<>();
+    protected transient List<Graph> bootstrapGraphs = new LinkedList<>();
     /**
      * Bootstrap count, printed out to track bootstraps.
      */
@@ -76,6 +92,15 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         return runSearch(createDataSample((DataSet) dataModel, randomGenerator, selectedColumns, parameters, r), parameters);
     }
 
+    /**
+     * Runs one search on the given data with the given parameters and returns the resulting graph. Called once on
+     * the full data when bootstrapping is off, and once per resample when it is on.
+     *
+     * @param dataSet    the data to search over.
+     * @param parameters the parameters of the search.
+     * @return the graph the search returns.
+     * @throws InterruptedException if the search is interrupted.
+     */
     protected abstract Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException;
 
     /**
@@ -83,6 +108,18 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
+        // Single choke point for every algcomparison search: if the user asked for verbose output, make sure the
+        // logger is on, so that a verbose run cannot be silently swallowed by a logger some other part of the
+        // process (a py-tetrad script, causal-cmd, an earlier GUI action) had switched off. One-way by design; see
+        // TetradLogger.ensureLoggingForVerbose.
+        TetradLogger.getInstance().ensureLoggingForVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        // A DataModelList is the request to POOL its data sets (IMaGES-style) into one search; see searchPooled.
+        if (dataModel instanceof DataModelList list) {
+            if (list.size() == 1) return search(list.getFirst(), parameters);
+            return searchPooled(new ArrayList<>(list), parameters);
+        }
+
         if (dataModel instanceof CovarianceMatrix) {
             if (this instanceof TakesCovarianceMatrix) {
                 return runSearch(dataModel, parameters);
@@ -90,30 +127,68 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 throw new IllegalArgumentException("This search cannot take a covariance matrix as input.");
             }
         } else if (parameters.getInt(Params.NUMBER_RESAMPLING) == 0) {
-            return runSearch(dataModel, parameters);
+            Graph graph = runSearch(dataModel, parameters);
+
+            if (parameters.getInt(Params.TIME_LAG) > 0 || LayoutUtil.isLaggedGraph(graph)) {
+                LayoutUtil.layoutByKnowledgeIndices(graph);
+            }
+
+            return graph;
         }
 
+        // Time-lag data sets must be lagged ONCE from the original row order, before any resampling; see
+        // BootstrapTimeLag. The wrapper's core then runs with timeLag = 0 on lagged rows, and the wrapper's
+        // knowledge is temporarily the lagged knowledge, restored in the finally block below.
+        BootstrapTimeLag.Prepared prepared = BootstrapTimeLag.prepare(this, Collections.singletonList(dataModel), parameters);
+        final boolean lagged = prepared.dataSets().get(0) != dataModel;
+        final DataModel bootData = prepared.dataSets().get(0);
+        final Parameters bootParams = prepared.parameters();
+
+        try {
+            return bootstrapSearch(bootData, bootParams, lagged);
+        } finally {
+            prepared.restore().run();
+        }
+    }
+
+    private Graph bootstrapSearch(DataModel dataModel, Parameters parameters, boolean lagged) throws InterruptedException {
+        // select all data columns
+        int[] selectedColumns = IntStream.range(0, ((DataSet) dataModel).getNumColumns()).toArray();
+        return bootstrapSearch(rg -> runSingleBootstrapSearch(rg, selectedColumns, dataModel, parameters),
+                () -> runSearch(dataModel, parameters), parameters, lagged);
+    }
+
+    /**
+     * One bootstrap replicate, given the random generator shared by all replicates.
+     */
+    private interface Replicate {
+        Graph run(RandomGenerator randomGenerator) throws InterruptedException;
+    }
+
+    /**
+     * The bootstrap loop and aggregation, shared by the single-data-set and pooled paths.
+     */
+    private Graph bootstrapSearch(Replicate replicate, Callable<Graph> original, Parameters parameters, boolean lagged)
+            throws InterruptedException {
         // create a new random generator if a seed is given
         long seed = parameters.getLong(Params.SEED);
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
 
         Graph graph;
+        Graph medianMemberGraph = null;
         if (Thread.currentThread().isInterrupted()) {
             graph = new EdgeListGraph();
         } else {
             List<Callable<Graph>> tasks = new LinkedList<>();
 
-            // select all data columns
-            int[] selectedColumns = IntStream.range(0, ((DataSet) dataModel).getNumColumns()).toArray();
-
             this.count = 0;
 
             for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {
-                tasks.add(() -> runSingleBootstrapSearch(randomGenerator, selectedColumns, dataModel, parameters));
+                tasks.add(() -> replicate.run(randomGenerator));
             }
 
             if (parameters.getBoolean(Params.ADD_ORIGINAL_DATASET) || parameters.getInt(Params.NUMBER_RESAMPLING) == 0) {
-                tasks.add(() -> runSearch(dataModel, parameters));
+                tasks.add(original);
             }
 
             TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THREADS));
@@ -130,6 +205,15 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                         this.bootstrapGraphs.addAll(graphs);
                     }
                     graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
+
+                    // Median member graph, added 2026-8-13: the single member graph closest to the ensemble
+                    // edge frequencies. Unlike the composite - whose edges are drawn from different member
+                    // graphs and taken together are generally NOT a legal member of the algorithm's output
+                    // class - this graph is one the algorithm actually produced, so it inherits the algorithm's
+                    // legality guarantee. It is computed unconditionally (it cannot be recomputed later from the
+                    // composite alone) and stored as the ancillary "medianGraph" on the sampling graph, so the
+                    // Ensemble Display menu can switch to it regardless of the ensemble used at search time.
+                    medianMemberGraph = GraphSampling.selectMedianEnsembleGraph(graphs);
                 } else {
                     graph = graphs.getFirst();
                 }
@@ -146,14 +230,181 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         // graph that is displayed in the interface. jdramsey 2025-6-22
         ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
 
+        if (medianMemberGraph != null) {
+            ((EdgeListGraph) graph).setAncillaryGraph("medianGraph", medianMemberGraph);
+            ((EdgeListGraph) medianMemberGraph).setAncillaryGraph("samplingGraph", graph);
+
+            // As of 2026-8-13 the median member graph is the default initial display for every bootstrap
+            // search: unlike the composite it is a graph the algorithm actually produced, hence a legal
+            // member of its output class. The composite views (Preserved / Highest / Majority / Threshold)
+            // remain available from the Ensemble Display menu via the ancillary sampling graph.
+            Graph median = GraphUtils.fixDirections(medianMemberGraph);
+            if (lagged || LayoutUtil.isLaggedGraph(median)) LayoutUtil.layoutByKnowledgeIndices(median);
+            return median;
+        }
+
         Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
         ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", graph);
 
         // Make double sure that all directable edges point to the right before returning this graph.
         // jdramsey 2025-6-21
         graph = GraphUtils.fixDirections(displayGraph);
+        if (lagged || LayoutUtil.isLaggedGraph(graph)) LayoutUtil.layoutByKnowledgeIndices(graph);
 
         return graph;
+    }
+
+    /**
+     * @return the given data model with its variables in the given order of names, for pooling with a first data
+     * set that has them in that order.
+     * @throws IllegalArgumentException if it does not have exactly those variables, or is of a kind that cannot be
+     *                                  reordered.
+     */
+    private static DataModel inVariableOrder(DataModel dataModel, List<String> names, String firstName) {
+        List<String> own = dataModel.getVariableNames();
+
+        if (own.size() != names.size() || !new HashSet<>(own).equals(new HashSet<>(names))) {
+            List<String> missing = new ArrayList<>(names);
+            missing.removeAll(own);
+            List<String> extra = new ArrayList<>(own);
+            extra.removeAll(names);
+
+            throw new IllegalArgumentException("All pooled data sets must have the same variables; "
+                                               + dataModel.getName() + " differs from " + firstName
+                                               + (missing.isEmpty() ? "" : "; it lacks " + missing)
+                                               + (extra.isEmpty() ? "" : "; it adds " + extra) + ".");
+        }
+
+        DataModel reordered;
+
+        if (dataModel instanceof DataSet dataSet) {
+            List<Node> variables = new ArrayList<>();
+            for (String name : names) variables.add(dataSet.getVariable(name));
+            reordered = dataSet.subsetColumns(variables);
+        } else if (dataModel instanceof ICovarianceMatrix cov) {
+            reordered = cov.getSubmatrix(names);
+        } else {
+            throw new IllegalArgumentException("All pooled data sets must have the same variables in the same "
+                                               + "order; " + dataModel.getName() + " differs from " + firstName
+                                               + " and cannot be reordered.");
+        }
+
+        reordered.setName(dataModel.getName());
+        return reordered;
+    }
+
+    /**
+     * Pools several data sets into one search, IMaGES-style. This is the general form of IMaGES: rather than a
+     * separate algorithm, pooling is done by temporarily replacing the algorithm's score wrapper with a
+     * {@link PooledScoreWrapper} (an IMaGES sum of the inner score over the data sets) and/or its independence
+     * wrapper with a {@link PooledIndependenceWrapper} (Fisher-combined p-values), then running the algorithm's
+     * ordinary core once. So BOSS + any score on a list of data sets IS IMaGES with that score, and PC + any test
+     * is a pooled PC, with no per-combination wrapper classes.
+     * <p>
+     * Requirements: all data sets have the same variables (by name); one that has them in a different order is
+     * reordered to match the first. Time lag, if requested, is applied to each data
+     * set separately from its own row order before pooling (so region or subject seams never become fake
+     * transitions). Bootstrapping resamples rows WITHIN each data set for every replicate, so each data set
+     * contributes its own rows to every replicate and rows never cross data sets; the pooled wrappers pick up each
+     * replicate's data sets through a thread-local registration.
+     * <p>
+     * Caveat: the algorithm's core still receives the first data set as its nominal data model. Algorithms whose core
+     * consults the data beyond the score and test (e.g. for residuals or skewness) see only that first data set;
+     * pooling is meaningful for score- and test-based algorithms.
+     *
+     * @param dataSets   the data sets to pool (two or more).
+     * @param parameters the parameters.
+     * @return the graph.
+     * @throws InterruptedException if interrupted.
+     */
+    private Graph searchPooled(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
+        if (!(this instanceof TakesScoreWrapper) && !(this instanceof TakesIndependenceWrapper)) {
+            throw new IllegalArgumentException("Pooling data sets requires a score- or test-based algorithm.");
+        }
+
+        // The data sets must have the same variables by name. One whose variables are in a different order is
+        // put in the order of the first, in this method's own list; the caller's data sets are not changed.
+        List<String> names = dataSets.getFirst().getVariableNames();
+        for (int i = 1; i < dataSets.size(); i++) {
+            if (!dataSets.get(i).getVariableNames().equals(names)) {
+                dataSets.set(i, inVariableOrder(dataSets.get(i), names, dataSets.getFirst().getName()));
+            }
+        }
+
+        boolean bootstrap = parameters.getInt(Params.NUMBER_RESAMPLING) > 0;
+
+        if (bootstrap) {
+            for (DataModel dataModel : dataSets) {
+                if (!(dataModel instanceof DataSet)) {
+                    throw new IllegalArgumentException("Sorry, you need tabular datasets in order to do bootstrapping.");
+                }
+            }
+        }
+
+        // Lag each data set separately (no-op unless timeLag > 0); restores the wrapper's knowledge afterwards.
+        BootstrapTimeLag.Prepared prepared = BootstrapTimeLag.prepare(this, dataSets, parameters);
+        final List<DataModel> pooled = prepared.dataSets();
+        final Parameters params = prepared.parameters();
+        final boolean lagged = pooled.get(0) != dataSets.get(0);
+
+        ScoreWrapper originalScore = null;
+        PooledScoreWrapper pooledScore = null;
+        IndependenceWrapper originalTest = null;
+        PooledIndependenceWrapper pooledTest = null;
+
+        try {
+            if (this instanceof TakesScoreWrapper takesScore && takesScore.getScoreWrapper() != null
+                && !(takesScore.getScoreWrapper() instanceof PooledScoreWrapper)) {
+                originalScore = takesScore.getScoreWrapper();
+                pooledScore = new PooledScoreWrapper(originalScore, pooled);
+                takesScore.setScoreWrapper(pooledScore);
+            }
+
+            if (this instanceof TakesIndependenceWrapper takesTest && takesTest.getIndependenceWrapper() != null
+                && !(takesTest.getIndependenceWrapper() instanceof PooledIndependenceWrapper)) {
+                originalTest = takesTest.getIndependenceWrapper();
+                pooledTest = new PooledIndependenceWrapper(originalTest, pooled);
+                takesTest.setIndependenceWrapper(pooledTest);
+            }
+
+            final DataModel nominal = pooled.get(0);
+
+            if (!bootstrap) {
+                Graph graph = runSearch(nominal, params);
+                if (lagged || LayoutUtil.isLaggedGraph(graph)) LayoutUtil.layoutByKnowledgeIndices(graph);
+                return graph;
+            }
+
+            final PooledScoreWrapper fScore = pooledScore;
+            final PooledIndependenceWrapper fTest = pooledTest;
+            final double r = params.getDouble(Params.PERCENT_RESAMPLE_SIZE);
+
+            Replicate replicate = rg -> {
+                TetradLogger.getInstance().log("Bootstrap count = " + ++this.count);
+                List<DataModel> sample = new ArrayList<>(pooled.size());
+                for (DataModel dataModel : pooled) {
+                    DataSet dataSet = (DataSet) dataModel;
+                    int[] cols = IntStream.range(0, dataSet.getNumColumns()).toArray();
+                    DataSet resampled = createDataSample(dataSet, rg, cols, params, r);
+                    if (dataSet.getName() != null) resampled.setName(dataSet.getName());
+                    sample.add(resampled);
+                }
+                try {
+                    if (fScore != null) fScore.setThreadDataSets(sample);
+                    if (fTest != null) fTest.setThreadDataSets(sample);
+                    return runSearch(sample.get(0), params);
+                } finally {
+                    if (fScore != null) fScore.setThreadDataSets(null);
+                    if (fTest != null) fTest.setThreadDataSets(null);
+                }
+            };
+
+            return bootstrapSearch(replicate, () -> runSearch(nominal, params), params, lagged);
+        } finally {
+            if (originalScore != null) ((TakesScoreWrapper) this).setScoreWrapper(originalScore);
+            if (originalTest != null) ((TakesIndependenceWrapper) this).setIndependenceWrapper(originalTest);
+            prepared.restore().run();
+        }
     }
 
     /**

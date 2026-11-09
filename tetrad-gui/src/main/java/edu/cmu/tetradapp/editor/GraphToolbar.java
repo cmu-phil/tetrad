@@ -20,8 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+import edu.cmu.tetradapp.workbench.WorkbenchIcons;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -111,6 +111,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         }
 
         this.workbench = workbench;
+
         this.group = new ButtonGroup();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -126,28 +127,6 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         this.addUndirectedEdge = new JToggleButton();
         this.addPartiallyOrientedEdge = new JToggleButton();
         this.addBidirectedEdge = new JToggleButton();
-
-        // Apparently it's not acting like this anymore, and recently the
-        // focus listeners have caused some weird behavior, so commenting
-        // them out. jdramsey 2014.02.28
-//        // Adding this listener fixes a previous bug where if you
-//        // select a button and then move the mouse away from the
-//        // button without releasing the mouse it would deselect. J
-//        // Ramsey 11/02/01
-//        FocusListener focusListener = new FocusAdapter() {
-//            public void focusGained(FocusEvent e) {
-//                JToggleButton component = (JToggleButton) e.getComponent();
-//                component.doClick();
-//            }
-//        };
-
-//        move.addFocusListener(focusListener);
-//        addObserved.addFocusListener(focusListener);
-//        addLatent.addFocusListener(focusListener);
-//        addNondirectedEdge.addFocusListener(focusListener);
-//        addDirectedEdge.addFocusListener(focusListener);
-//        addPartiallyOrientedEdge.addFocusListener(focusListener);
-//        addBidirectedEdge.addFocusListener(focusListener);
 
         // add listeners
         this.move.addActionListener(e -> {
@@ -207,12 +186,28 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addButton(this.addPartiallyOrientedEdge, "partiallyoriented");
         addButton(this.addBidirectedEdge, "bidirected");
         workbench.addPropertyChangeListener(this);
-        selectArrowTools();
+        enableArrowTools();
 
         this.buttonsPanel.add(Box.createGlue());
 
         this.move.setSelected(true);
 
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        // Reload icons when the L&F changes
+        if (this.move != null) {
+            this.move.setIcon(WorkbenchIcons.forTool("move"));
+            this.addObserved.setIcon(WorkbenchIcons.forTool("variable"));
+            this.addLatent.setIcon(WorkbenchIcons.forTool("latent"));
+            this.addDirectedEdge.setIcon(WorkbenchIcons.forTool("directed"));
+            this.addNondirectedEdge.setIcon(WorkbenchIcons.forTool("nondirected"));
+            this.addUndirectedEdge.setIcon(WorkbenchIcons.forTool("undirected"));
+            this.addPartiallyOrientedEdge.setIcon(WorkbenchIcons.forTool("partiallyoriented"));
+            this.addBidirectedEdge.setIcon(WorkbenchIcons.forTool("bidirected"));
+        }
     }
 
     /**
@@ -221,7 +216,6 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private void setWorkbenchMode(int mode) {
         this.workbench.setWorkbenchMode(mode);
-
         setCursor(this.workbench.getCursor());
     }
 
@@ -245,7 +239,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Adds the various buttons to the toolbar, setting their properties appropriately.
      */
     private void addButton(JToggleButton button, String name) {
-        button.setIcon(new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
+        button.setIcon(WorkbenchIcons.forTool(name));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
         this.buttonsPanel.add(button);
@@ -260,21 +254,20 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ("graph".equals(e.getPropertyName())) {
-            selectArrowTools();
+            enableArrowTools();
         }
     }
 
     /**
      * For each workbench type, enables the arrow tools which that workbench can use and disables all others.
      */
-    private void selectArrowTools() {
+    private void enableArrowTools() {
         this.addDirectedEdge.setEnabled(true);
         this.addNondirectedEdge.setEnabled(true);
         this.addPartiallyOrientedEdge.setEnabled(true);
         this.addBidirectedEdge.setEnabled(true);
         this.addUndirectedEdge.setEnabled(true);
     }
-
 }
 
 

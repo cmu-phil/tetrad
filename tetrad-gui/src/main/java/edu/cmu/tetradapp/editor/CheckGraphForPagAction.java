@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -30,9 +30,10 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * CheckGraphForPdagAction is an action class that checks if a given graph is a legal PAG (Mixed Ancesgral Graph) and
+ * CheckGraphForPdagAction is an action class that checks if a given graph is a legal PAG (Mixed Ancestral Graph) and
  * displays a message to indicate the result.
  */
 public class CheckGraphForPagAction extends AbstractAction {
@@ -41,10 +42,6 @@ public class CheckGraphForPagAction extends AbstractAction {
      * The desktop containing the target session editor.
      */
     private final GraphWorkbench workbench;
-    /**
-     * The legal PAG result.
-     */
-    private volatile PagLegalityCheck.LegalPagRet legalPag = null;
 
     /**
      * Highlights all latent variables in the given display graph.
@@ -71,41 +68,51 @@ public class CheckGraphForPagAction extends AbstractAction {
         Graph graph = workbench.getGraph();
 
         if (graph == null) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), "No graph to check for PAGness.");
+            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
+                    "No graph to check for PAGness.");
             return;
         }
+
+        Graph _graph = new EdgeListGraph(graph);
 
         class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
-                Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalPag = PagLegalityCheck.isLegalPag(_graph, new HashSet<>());
+                CompletableFuture<PagLegalityCheck.LegalPagRet> future = CompletableFuture
+                        .supplyAsync(() -> PagLegalityCheck.isLegalPag(_graph, new HashSet<>(), 15));
+
+                PagLegalityCheck.LegalPagRet result;
+                try {
+                    result = future.get(); // blocks watch() until done or exception
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(
+                                    GraphUtils.getContainingScrollPane(workbench),
+                                    "Error or timeout checking PAG legality",
+                                    "Legal PAG check",
+                                    JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
+
+                PagLegalityCheck.LegalPagRet _result = result;
+                SwingUtilities.invokeLater(() -> {
+                    String reason = GraphUtils.breakDown(_result.getReason(), 60);
+                    if (!_result.isLegalPag()) {
+                        JOptionPane.showMessageDialog(
+                                GraphUtils.getContainingScrollPane(workbench),
+                                "This is not a legal PAG--one reason is as follows:\n\n" + reason + ".",
+                                "Legal PAG check",
+                                JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(
+                                GraphUtils.getContainingScrollPane(workbench), reason);
+                    }
+                });
             }
         }
 
         new MyWatchedProcess();
-
-        while (legalPag == null) {
-            try {
-                Thread.sleep(100); // Sleep a bit to prevent tight loop
-            } catch (InterruptedException e2) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        String reason = GraphUtils.breakDown(legalPag.getReason(), 60);
-
-        if (!legalPag.isLegalPag()) {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench),
-                    "This is not a legal PAG--one reason is as follows:" +
-                    "\n\n" + reason + ".",
-                    "Legal PAG check",
-                    JOptionPane.WARNING_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(GraphUtils.getContainingScrollPane(workbench), reason);
-        }
     }
-
 }
 
 

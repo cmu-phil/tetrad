@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -332,11 +332,11 @@ public class LinearSineSimulation implements Simulation {
             for (int j = 1; j <= continuousParents.size(); j++) {
                 String key = continuousParents.get(j - 1).toString();
                 if (!bounds.containsKey(key)) {
-                    double m0 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
-                    double m1 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
+                    double m0 = mixedData.getDouble(0, mixedData.getColumnIndex(continuousParents.get(j - 1)));
+                    double m1 = mixedData.getDouble(0, mixedData.getColumnIndex(continuousParents.get(j - 1)));
                     for (int i = 1; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
-                        m0 = FastMath.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
-                        m1 = FastMath.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
+                        m0 = TMath.min(m0, mixedData.getDouble(i, mixedData.getColumnIndex(continuousParents.get(j - 1))));
+                        m1 = TMath.max(m1, mixedData.getDouble(i, mixedData.getColumnIndex(continuousParents.get(j - 1))));
                     }
                     double[] temp = new double[3];
                     temp[0] = m0;
@@ -356,7 +356,7 @@ public class LinearSineSimulation implements Simulation {
                 final String key = "";
 
                 for (int j = 1; j <= continuousParents.size(); j++)
-                    parents[j - 1] = mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1)));
+                    parents[j - 1] = mixedData.getDouble(i, mixedData.getColumnIndex(continuousParents.get(j - 1)));
 
                 if (!intercept.containsKey(key)) {
                     double[] interceptCoefficients = new double[1];
@@ -382,7 +382,7 @@ public class LinearSineSimulation implements Simulation {
                     double[] gammaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++) {
                         String key2 = continuousParents.get(j).toString();
-                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * FastMath.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
+                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * TMath.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
                     }
                     gamma.put(key, gammaCoefficients);
                 }
@@ -390,22 +390,22 @@ public class LinearSineSimulation implements Simulation {
                 value += intercept.get(key)[0];
                 if (!continuousParents.isEmpty()) {
                     for (int x = 0; x < parents.length; x++) {
-                        value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * FastMath.sin(parents[x] / (gamma.get(key)[x]));
+                        value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * TMath.sin(parents[x] / (gamma.get(key)[x]));
                     }
                 }
 
                 mixedData.setDouble(i, mixedIndex, value);
 
                 mean += value;
-                var += FastMath.pow(value, 2);
+                var += TMath.pow(value, 2);
             }
             if (continuousParents.size() == 0) {
                 var = 1;
             } else {
                 mean /= mixedData.getNumRows();
                 var /= mixedData.getNumRows();
-                var -= FastMath.pow(mean, 2);
-                var = FastMath.sqrt(var);
+                var -= TMath.pow(mean, 2);
+                var = TMath.sqrt(var);
             }
 
             double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);

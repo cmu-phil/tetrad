@@ -20,7 +20,7 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -151,7 +151,7 @@ public final class MatrixUtils {
         }
 
         for (int i = 0; i < va.length; i++) {
-            if (FastMath.abs(va[i] - vb[i]) > tolerance) {
+            if (TMath.abs(va[i] - vb[i]) > tolerance) {
                 return false;
             }
         }
@@ -181,7 +181,7 @@ public final class MatrixUtils {
     public static boolean isSymmetric(double[][] m, double tolerance) {
         for (int i = 0; i < m.length; i++) {
             for (int j = i; j < m[0].length; j++) {
-                if (FastMath.abs(m[i][j] - m[j][i]) > tolerance) {
+                if (TMath.abs(m[i][j] - m[j][i]) > tolerance) {
                     return false;
                 }
             }
@@ -752,7 +752,7 @@ public final class MatrixUtils {
         // Compute standard deviations (sqrt of diagonal elements)
         double[] stdDevs = new double[n];
         for (int i = 0; i < n; i++) {
-            stdDevs[i] = Math.sqrt(covarianceMatrix.get(i, i));
+            stdDevs[i] = TMath.sqrt(covarianceMatrix.get(i, i));
         }
 
         // Compute correlation matrix

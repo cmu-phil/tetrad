@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,8 +20,12 @@
 
 package edu.cmu.tetradapp.editor.simulation;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.utils.ParameterSettingsText;
+import edu.cmu.tetradapp.editor.AlgorithmParameterPanel;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.model.BooleanGlassSimulation;
 import edu.cmu.tetradapp.model.Simulation;
@@ -32,10 +36,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 /**
  * May 23, 2019 3:59:42 PM
@@ -53,7 +60,8 @@ public class ParameterTab extends JPanel {
             GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
             GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS,
-            GraphTypes.RANDOM_MIM
+            GraphTypes.RANDOM_MIM,
+            GraphTypes.RANDOM_MIMIC
 //            GraphTypes.RANDOM_ONE_FACTOR_MIM,
 //            GraphTypes.RANDOM_TWO_FACTOR_MIM
     };
@@ -62,18 +70,26 @@ public class ParameterTab extends JPanel {
      */
     public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
-            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.LINEAR_FISHER_MODEL,
+            SimulationTypes.LINEAR_GAUSSIAN_SEM,
+            SimulationTypes.LINEAR_NON_GAUSSIAN_SEM,
+            SimulationTypes.DAO_SIMULATION,
+//            SimulationTypes.LINEAR_FISHER_MODEL,
 //            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.NONLINEAR_ADDITIVE_SEM,
+            SimulationTypes.GENERAL_ADDITIVE_MODEL,
             SimulationTypes.GENERAL_NOISE_SEM,
             SimulationTypes.ADDITIVE_NOISE_SEM,
+            SimulationTypes.DESIGNED_EXPERIMENT,
+            SimulationTypes.OBSERVATIONAL_STUDY,
 //            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
-            SimulationTypes.TIME_SERIES
+            SimulationTypes.TIME_SERIES,
+            SimulationTypes.TRAINED_DAG_SIMULATION
     };
 
+    /**
+     * The label shown when there are no parameters to edit.
+     */
     public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
@@ -102,6 +118,12 @@ public class ParameterTab extends JPanel {
      */
     private boolean initial = true;
 
+    private static final String GRAPH_PREF_PARAM = "graphsDropdownPreference";
+    private static final String SIM_PREF_PARAM   = "simulationsDropdownPreference";
+
+    private static final String PREF_GRAPH_TYPE = "simulation.lastGraphType";
+    private static final String PREF_SIM_TYPE   = "simulation.lastSimulationType";
+
     /**
      * <p>Constructor for ParameterTab.</p>
      *
@@ -121,6 +143,16 @@ public class ParameterTab extends JPanel {
         }
 
         initComponents();
+
+        Object graphSel = this.graphsDropdown.getSelectedItem();
+        if (graphSel instanceof String s) {
+            persistGraphSelection(s);
+        }
+
+        Object simSel = this.simulationsDropdown.getSelectedItem();
+        if (simSel instanceof String s) {
+            persistSimulationSelection(s);
+        }
 
         if (simulation.getDataModelList().isEmpty()) {
             refreshParameters();
@@ -144,9 +176,38 @@ public class ParameterTab extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        add(createSimulationOptionBox(), BorderLayout.NORTH);
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(createSettingsTextRow(), BorderLayout.NORTH);
+        north.add(createSimulationOptionBox(), BorderLayout.CENTER);
+
+        add(north, BorderLayout.NORTH);
         add(createParameterPanel(), BorderLayout.CENTER);
         add(createSimulationButtonBox(), BorderLayout.SOUTH);
+    }
+
+    /**
+     * Creates the top-left row with the "Settings as Text..." and "Paste Settings..." buttons,
+     * mirroring the search editor's parameter panel.
+     *
+     * @return the row.
+     */
+    private JPanel createSettingsTextRow() {
+        JButton settingsButton = new JButton("Settings as Text...");
+        settingsButton.setToolTipText("Show the settings on this panel as plain text that can "
+                + "be selected and copied.");
+        settingsButton.addActionListener(e -> showSettingsTextDialog());
+
+        JButton pasteButton = new JButton("Paste Settings...");
+        pasteButton.setToolTipText("Paste settings text (as produced by \"Settings as Text...\") "
+                + "to restore the simulation and graph selections and parameter values.");
+        pasteButton.addActionListener(e -> showPasteSettingsDialog());
+
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        row.add(settingsButton);
+        row.add(Box.createHorizontalStrut(5));
+        row.add(pasteButton);
+        return row;
     }
 
     private void refreshParameters() {
@@ -166,7 +227,7 @@ public class ParameterTab extends JPanel {
 
         if (!this.simulation.isFixedGraph()) {
             String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
-            this.simulation.getParams().set("graphsDropdownPreference", graphItem);
+            persistGraphSelection(graphItem);
 
             randomGraph = switch (graphItem) {
                 case GraphTypes.RANDOM_FOWARD_DAG -> new RandomForward();
@@ -174,18 +235,20 @@ public class ParameterTab extends JPanel {
                 case GraphTypes.SCALE_FREE_DAG -> new ScaleFree();
                 case GraphTypes.CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS -> new Cyclic();
                 case GraphTypes.RANDOM_MIM -> new RandomMim();
+                case GraphTypes.RANDOM_MIMIC -> new RandomMimic();
                 case GraphTypes.RANDOM_ONE_FACTOR_MIM -> new RandomSingleFactorMim();
                 case GraphTypes.RANDOM_TWO_FACTOR_MIM -> new RandomTwoFactorMim();
                 default -> throw new IllegalArgumentException("Unrecognized simulation type: " + graphItem);
             };
         }
+
         return randomGraph;
     }
 
     private void newSimulation(RandomGraph randomGraph) {
         if (!this.simulation.isFixedSimulation()) {
             String simulationItem = this.simulationsDropdown.getItemAt(this.simulationsDropdown.getSelectedIndex());
-            this.simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+            persistSimulationSelection(simulationItem);
             this.simulation.setFixedGraph(randomGraph instanceof SingleGraph);
 
             if (this.simulation.getSourceGraph() == null) {
@@ -193,8 +256,12 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.BAYS_NET:
                         this.simulation.setSimulation(new BayesNetSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.LINEAR_GAUSSIAN_SEM:
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM:
+                        this.simulation.setSimulation(new NonGaussianSemSimulation(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
@@ -208,15 +275,21 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.ADDITIVE_NOISE_SEM:
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_SEM:
-                        this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.DESIGNED_EXPERIMENT:
+                        this.simulation.setSimulation(new DesignedExperimentSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.OBSERVATIONAL_STUDY:
+                        this.simulation.setSimulation(new ObservationalStudySimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.GENERAL_ADDITIVE_MODEL:
+                        this.simulation.setSimulation(new GeneralAdditiveModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.LINEAR_FISHER_MODEL:
-                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.LINEAR_FISHER_MODEL:
+//                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), this.simulation.getParams());
                         break;
@@ -232,6 +305,18 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.BOOLEAN_GLASS_SIMULATION:
                         this.simulation.setSimulation(new BooleanGlassSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.TRAINED_DAG_SIMULATION:
+                        try {
+                            this.simulation.setSimulation(new TrainedDagModel(new SingleGraph(simulation.getInputGraph()),
+                                    simulation.getInputData()), this.simulation.getParams());
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(getPanel(), "The trained DAG model simulation " +
+                                    "requires a dataset and a graph whose variables all exist in the dataset.");
+                        }
+                        break;
+                    case SimulationTypes.DAO_SIMULATION:
+                        this.simulation.setSimulation(new DaoSimulation(randomGraph), this.simulation.getParams());
+                        break;
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
@@ -240,14 +325,18 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.BAYS_NET:
                         this.simulation.setSimulation(new BayesNetSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.LINEAR_GAUSSIAN_SEM:
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM:
+                        this.simulation.setSimulation(new NonGaussianSemSimulation(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
 //                        break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_SEM:
-                        this.simulation.setSimulation(new AdditiveAnmSimulator(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.GENERAL_ADDITIVE_MODEL:
+                        this.simulation.setSimulation(new GeneralAdditiveModel(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.POST_NONLINEAR_MODEL:
 //                        this.simulation.setSimulation(new PostnonlinearSem(randomGraph), this.simulation.getParams());
@@ -258,12 +347,18 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.ADDITIVE_NOISE_SEM:
                         this.simulation.setSimulation(new AdditiveNoiseSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.DESIGNED_EXPERIMENT:
+                        this.simulation.setSimulation(new DesignedExperimentSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.OBSERVATIONAL_STUDY:
+                        this.simulation.setSimulation(new ObservationalStudySimulation(randomGraph), this.simulation.getParams());
+                        break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.LINEAR_FISHER_MODEL:
-                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
-                        break;
+//                    case SimulationTypes.LINEAR_FISHER_MODEL:
+//                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
+//                        break;
                     case SimulationTypes.LEE_AND_HASTIE:
                         this.simulation.setSimulation(new LeeHastieSimulation(randomGraph), this.simulation.getParams());
                         break;
@@ -271,8 +366,12 @@ public class ParameterTab extends JPanel {
                         this.simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.TIME_SERIES:
-                        this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), this.simulation.getParams());
+                        this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph, simulation.getKnowledge()), this.simulation.getParams());
                         break;
+                    case SimulationTypes.TRAINED_DAG_SIMULATION:
+                        this.simulation.setSimulation(new TrainedDagModel(new SingleGraph(simulation.getInputGraph()),
+                                simulation.getInputData()), this.simulation.getParams());
+
                 }
             }
         }
@@ -327,6 +426,112 @@ public class ParameterTab extends JPanel {
         return box;
     }
 
+    /**
+     * Pops up a dialog into which settings text (as produced by "Settings as Text...") can be
+     * pasted. If the first title line matches a simulation type (and, in parentheses, a graph
+     * type) in the dropdowns, those selections are restored first; the parameter values are
+     * then applied and the panel refreshed. Unknown or unparseable lines are reported.
+     */
+    private void showPasteSettingsDialog() {
+        JTextArea area = new JTextArea(20, 60);
+        area.setFont(ThemeUtils.monospaced(12));
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Apply", "Cancel"};
+        int choice = JOptionPane.showOptionDialog(getPanel(), scroll, "Paste Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[0]);
+
+        if (choice != 0) {
+            return;
+        }
+
+        String text = area.getText();
+
+        // First pass: read the titles only, to restore the dropdown selections before applying
+        // values (selection changes rebuild the simulation but retain the Parameters object).
+        ParameterSettingsText.ApplyResult peek =
+                ParameterSettingsText.applySettingsText(text, new edu.cmu.tetrad.util.Parameters());
+
+        if (!peek.titles.isEmpty()) {
+            String title = peek.titles.get(0);
+            String simName = title;
+            String graphName = null;
+
+            int at = title.lastIndexOf(" (graph: ");
+            if (at >= 0 && title.endsWith(")")) {
+                simName = title.substring(0, at);
+                graphName = title.substring(at + " (graph: ".length(), title.length() - 1);
+            }
+
+            if (this.simulationsDropdown.isEnabled()) {
+                selectIfPresent(this.simulationsDropdown, mapLegacySimulationName(simName));
+            }
+            if (graphName != null && this.graphsDropdown.isEnabled()) {
+                selectIfPresent(this.graphsDropdown, graphName);
+            }
+        }
+
+        ParameterSettingsText.ApplyResult result =
+                ParameterSettingsText.applySettingsText(text, this.simulation.getParams());
+
+        showParameters();
+        firePropertyChange("refreshParameters", null, null);
+
+        AlgorithmParameterPanel.showApplyResultMessage(getPanel(), result);
+    }
+
+    /**
+     * Selects the given item in the dropdown if it is present (exact string match).
+     *
+     * @param dropdown the dropdown.
+     * @param item     the item to select.
+     */
+    private void selectIfPresent(JComboBox<String> dropdown, String item) {
+        for (int i = 0; i < dropdown.getItemCount(); i++) {
+            if (dropdown.getItemAt(i).equals(item)) {
+                if (!item.equals(dropdown.getSelectedItem())) {
+                    dropdown.setSelectedItem(item);
+                }
+                return;
+            }
+        }
+    }
+
+    /**
+     * Pops up a dialog containing the effective simulation settings as selectable text, with a
+     * copy-to-clipboard option, mirroring the search editor's "Settings as Text..." button.
+     */
+    private void showSettingsTextDialog() {
+        if (this.simulation.getSimulation() == null) {
+            return;
+        }
+
+        String simulationItem = String.valueOf(this.simulationsDropdown.getSelectedItem());
+        String title = this.graphsDropdown.isEnabled()
+                ? simulationItem + " (graph: " + this.graphsDropdown.getSelectedItem() + ")"
+                : simulationItem;
+
+        Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
+        String text = ParameterSettingsText.render(title, params, this.simulation.getParams());
+
+        JTextArea area = new JTextArea(text, 25, 60);
+        area.setEditable(false);
+        area.setFont(ThemeUtils.monospaced(12));
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Copy to Clipboard", "Close"};
+        int choice = JOptionPane.showOptionDialog(getPanel(), scroll, "Parameter Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[1]);
+
+        if (choice == 0) {
+            Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new StringSelection(text), null);
+        }
+    }
+
     private JPanel createParameterPanel() {
         JPanel paramPanel = new JPanel(new BorderLayout(0, 5));
         paramPanel.add(new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values."), BorderLayout.NORTH);
@@ -342,19 +547,36 @@ public class ParameterTab extends JPanel {
         if (!this.simulation.isFixedGraph()) {
             Arrays.stream(ParameterTab.GRAPH_TYPE_ITEMS).forEach(this.graphsDropdown::addItem);
             this.graphsDropdown.setMaximumSize(this.graphsDropdown.getPreferredSize());
-            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_TYPE_ITEMS[0]));
-            this.graphsDropdown.addActionListener(e -> refreshParameters());
+            this.graphsDropdown.setSelectedItem(resolveInitialGraphSelection());
+            this.graphsDropdown.addActionListener(e -> {
+                Object selected = this.graphsDropdown.getSelectedItem();
+                if (selected instanceof String s) {
+                    persistGraphSelection(s);
+                }
+                refreshParameters();
+            });
 
             simOptBox.add(createLabeledComponent("Type of Graph: ", this.graphsDropdown));
             simOptBox.add(Box.createVerticalStrut(10));
         }
 
-        String[] simulationItems = getSimulationItems();
-        Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
+        if (simulation.getSimulation() instanceof TrainedDagModel) {
+            this.simulationsDropdown.addItem(SimulationTypes.TRAINED_DAG_SIMULATION);
+            this.simulationsDropdown.setSelectedItem(SimulationTypes.TRAINED_DAG_SIMULATION);
+        } else {
+            String[] simulationItems = getSimulationItems();
+            Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
+            this.simulationsDropdown.setSelectedItem(resolveInitialSimulationSelection());
+        }
+
         this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
-        this.simulationsDropdown.setSelectedItem(
-                this.simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
-        this.simulationsDropdown.addActionListener(e -> refreshParameters());
+        this.simulationsDropdown.addActionListener(e -> {
+            Object selected = this.simulationsDropdown.getSelectedItem();
+            if (selected instanceof String s) {
+                persistSimulationSelection(s);
+            }
+            refreshParameters();
+        });
 
         simOptBox.add(createLabeledComponent("Type of Simulation: ", this.simulationsDropdown));
         simOptBox.add(Box.createVerticalStrut(20));
@@ -372,28 +594,42 @@ public class ParameterTab extends JPanel {
         }
 
         class MyWatchedProcess extends WatchedProcess {
+            private volatile Throwable error;
+
             @Override
             public void watch() {
                 try {
                     RandomGraph randomGraph = newRandomGraph();
                     newSimulation(randomGraph);
-                    ParameterTab.this.simulation.getSimulation().createData(ParameterTab.this.simulation.getParams(), false);
+                    ParameterTab.this.simulation.getSimulation()
+                            .createData(ParameterTab.this.simulation.getParams(), false);
 
                     initial = false;
                     firePropertyChange("modelChanged", null, null);
-                } catch (Exception exception) {
-                    exception.printStackTrace(System.err);
-                    Throwable cause = exception;
-                    if (exception.getCause() != null) {
-                        cause = exception.getCause();
-                    }
 
-                    if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
-                        exception.printStackTrace();
-                        throw new IllegalArgumentException(
-                                "Exception in creating data. Check model setup or parameter settings.");
-                    } else {
-                        throw new IllegalArgumentException(cause.getMessage());
+                } catch (Throwable t) {
+                    t.printStackTrace(System.err);
+                    error = (t.getCause() != null) ? t.getCause() : t;
+                } finally {
+                    if (error != null) {
+                        final String msg =
+                                (error.getMessage() == null || error.getMessage().trim().isEmpty())
+                                        ? "Exception in creating data. Check model setup or parameter settings."
+                                        : error.getMessage();
+
+                        String _msg = msg;
+
+                        if (error instanceof ParseException) {
+                            _msg += " (Parse error)";
+                        }
+
+                        String finalMsg = _msg;
+
+                        // Let WatchedProcess finish & close its dialog, then show the error.
+                        SwingUtilities.invokeLater(() ->
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(
+                                                getPanel(), finalMsg, "Error", JOptionPane.ERROR_MESSAGE)));
                     }
                 }
             }
@@ -421,6 +657,91 @@ public class ParameterTab extends JPanel {
      */
     public boolean isInitial() {
         return initial;
+    }
+
+    private Preferences prefs() {
+        return Preferences.userRoot().node("edu.cmu.tetradapp.editor.simulation");
+    }
+
+    private String resolveInitialGraphSelection() {
+        String[] allowed = ParameterTab.GRAPH_TYPE_ITEMS;
+
+        String fromParams = this.simulation.getParams().getString(GRAPH_PREF_PARAM, null);
+        if (isAllowed(fromParams, allowed)) {
+            return fromParams;
+        }
+
+        String fromPrefs = prefs().get(PREF_GRAPH_TYPE, null);
+        if (isAllowed(fromPrefs, allowed)) {
+            return fromPrefs;
+        }
+
+        return allowed[0];
+    }
+
+    private String resolveInitialSimulationSelection() {
+        String[] allowed = getSimulationItems();
+
+        String fromParams = mapLegacySimulationName(this.simulation.getParams().getString(SIM_PREF_PARAM, null));
+        if (isAllowed(fromParams, allowed)) {
+            return fromParams;
+        }
+
+        String fromPrefs = mapLegacySimulationName(prefs().get(PREF_SIM_TYPE, null));
+        if (isAllowed(fromPrefs, allowed)) {
+            return fromPrefs;
+        }
+
+        return allowed[0];
+    }
+
+    /**
+     * Maps simulation type names that are no longer in the dropdown to their current replacements, so that
+     * selections saved by earlier versions still resolve. "Linear Structural Equation Model" was split into
+     * the Linear Gaussian SEM and the Linear Non-Gaussian SEM; the old name meant the Gaussian one by
+     * default.
+     *
+     * @param name the saved simulation type name, possibly null.
+     * @return the current name for it.
+     */
+    private static String mapLegacySimulationName(String name) {
+        if (SimulationTypes.STRUCTURAL_EQUATION_MODEL.equals(name)) {
+            return SimulationTypes.LINEAR_GAUSSIAN_SEM;
+        }
+
+        return name;
+    }
+
+    private boolean isAllowed(String value, String[] allowed) {
+        if (value == null) {
+            return false;
+        }
+
+        for (String s : allowed) {
+            if (s.equals(value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void persistGraphSelection(String graphItem) {
+        if (graphItem == null) {
+            return;
+        }
+
+        this.simulation.getParams().set(GRAPH_PREF_PARAM, graphItem);
+        prefs().put(PREF_GRAPH_TYPE, graphItem);
+    }
+
+    private void persistSimulationSelection(String simulationItem) {
+        if (simulationItem == null) {
+            return;
+        }
+
+        this.simulation.getParams().set(SIM_PREF_PARAM, simulationItem);
+        prefs().put(PREF_SIM_TYPE, simulationItem);
     }
 }
 

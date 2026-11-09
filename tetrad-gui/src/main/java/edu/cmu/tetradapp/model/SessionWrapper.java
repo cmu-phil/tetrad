@@ -34,6 +34,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -81,6 +82,15 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * Handles incoming session events, basically by redirecting to any listeners of this session.
      */
     private transient SessionHandler sessionHandler;
+
+    /**
+     * The file this session was loaded from or last saved to, or null if it has not touched disk in this run.
+     * Deliberately transient and never written into the .tet stream: a session file's location is a fact about
+     * where the file currently sits, re-established on each load, so a .tet file behaves correctly when moved or
+     * copied. Each open session keeping its own file is what lets Save and save-on-quit write every session back
+     * to its proper directory instead of to the single global save-location preference.
+     */
+    private transient File sessionFile;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -585,7 +595,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * {@inheritDoc}
      */
     public Endpoint getEndpoint(Node node1, Node node2) {
-        return getEdge(node1, node2).getEndpoint(node2);
+        return getEdge(node1, node2).getProximalEndpoint(node2);
     }
 
     /**
@@ -706,7 +716,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return a boolean
      */
     public boolean isSessionChanged() {
-        return this.session.isSessionChanged();
+        return this.session.isSessionUnsaved();
     }
 
     /**
@@ -715,7 +725,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param sessionChanged a boolean
      */
     public void setSessionChanged(boolean sessionChanged) {
-        this.session.setSessionChanged(sessionChanged);
+        this.session.setSessionUnsaved(sessionChanged);
     }
 
     /**
@@ -734,6 +744,25 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      */
     public void setNewSession(boolean newSession) {
         this.session.setNewSession(newSession);
+    }
+
+    /**
+     * Returns the file this session was loaded from or last saved to.
+     *
+     * @return the file this session was loaded from or last saved to, or null if it has not touched disk in this
+     * run.
+     */
+    public File getSessionFile() {
+        return this.sessionFile;
+    }
+
+    /**
+     * Records the file this session was loaded from or saved to.
+     *
+     * @param sessionFile the session's file; may be null.
+     */
+    public void setSessionFile(File sessionFile) {
+        this.sessionFile = sessionFile;
     }
 
     /**

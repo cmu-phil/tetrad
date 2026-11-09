@@ -21,10 +21,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.util.GraphUtils;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -73,6 +75,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         boolean cyclicAllowed = this.params.getBoolean("cyclicAllowed", false);
         RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
         RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(this.params);
+        RandomMimicParamsEditor randomMimicEditor = new RandomMimicParamsEditor(this.params);
         RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
 
         // construct the workbench.
@@ -87,10 +90,11 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("DAG", randomDagEditor);
-        tabs.add("MIM", randomMimEditor);
-        tabs.add("Scale Free", randomScaleFreeEditor);
+        tabs.addTab("MIM", randomMimEditor);
+        tabs.addTab("MIMIC", randomMimicEditor);
+        tabs.addTab("Scale Free", randomScaleFreeEditor);
 
-        String type = this.params.getString("randomGraphType", "Dag");
+        String type = Preferences.userNodeForPackage (GraphUtils.class).get("randomGraphType", "Dag");
 
         switch (type) {
             case "Dag":
@@ -99,8 +103,11 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             case "Mim":
                 tabs.setSelectedIndex(1);
                 break;
-            case "ScaleFree":
+            case "Mimic":
                 tabs.setSelectedIndex(2);
+                break;
+            case "ScaleFree":
+                tabs.setSelectedIndex(3);
                 break;
             default:
                 throw new IllegalStateException("Unrecognized graph type: " + type);
@@ -110,11 +117,13 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
             if (pane.getSelectedIndex() == 0) {
-                GraphParamsEditor.this.params.set("randomGraphType", "Dag");
+                Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "Dag");
             } else if (pane.getSelectedIndex() == 1) {
-                GraphParamsEditor.this.params.set("randomGraphType", "Mim");
+                Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "Mim");
             } else if (pane.getSelectedIndex() == 2) {
-                GraphParamsEditor.this.params.set("randomGraphType", "ScaleFree");
+                Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "Mimic");
+            } else if (pane.getSelectedIndex() == 3) {
+                Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "ScaleFree");
             }
         });
 

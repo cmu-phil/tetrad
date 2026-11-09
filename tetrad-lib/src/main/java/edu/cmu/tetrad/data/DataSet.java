@@ -101,7 +101,7 @@ public interface DataSet extends DataModel {
      * @param variable The variable to check.
      * @return the column index of the given variable.
      */
-    int getColumn(Node variable);
+    int getColumnIndex(Node variable);
 
     /**
      * If this is a continuous data set, returns the correlation matrix.
@@ -432,9 +432,9 @@ public interface DataSet extends DataModel {
      * @param name The name of the variable.
      * @return The column index of the variable, or -1 if the variable is not found.
      */
-    default int getColumn(String name) {
+    default int getColumnIndex(String name) {
         Node v = getVariable(name);
-        return v == null ? -1 : getColumn(v);
+        return v == null ? -1 : getColumnIndex(v);
     }
 }
 

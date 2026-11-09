@@ -261,8 +261,8 @@ public class TestMeasurementSimulator extends TestCase {
 //        double gene3time1mean =
 //                Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
 //
-//        TestCase.assertEquals(FastMath.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
-//        TestCase.assertEquals(FastMath.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
+//        TestCase.assertEquals(TMath.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
+//        TestCase.assertEquals(TMath.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
 //    }
 
 //    /**

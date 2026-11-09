@@ -130,7 +130,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
      * By default, hide the error terms.
      */
     private boolean semGraphInitializer(GeneralizedSemPmWrapper wrapper) {
-        SemGraph graph = (SemGraph) this.graphicalEditor.getWorkbench().getGraph();
+        SemGraph graph = new SemGraph(this.graphicalEditor.getWorkbench().getGraph());
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
         return shown;
@@ -370,6 +370,12 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
      */
     private void parameterEditorInitializer() {
         this.parameterEditor = new GeneralizedSemPmParamsEditor(getSemPm(), this.launchedEditors);
+
+        this.parameterEditor.addPropertyChangeListener(event -> {
+            if ("modelChanged".equals(event.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
     }
 
     /**
@@ -459,7 +465,8 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
      * @return the editing delegate component
      */
     public JComponent getEditDelegate() {
-        return graphicalEditor();
+        // This editor collects "modelChanged" from all three of its tabs, so it is the component to watch.
+        return this;
     }
 
     /**

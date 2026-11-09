@@ -9,31 +9,98 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * The {@code Cdnod} class implements the causal discovery algorithm for detecting changing dependencies with respect to
- * context variables (Tier-0 in {@link Knowledge}).
+ * Implements the CD-NOD (Causal Discovery from Non-stationary/heterogeneous Data)
+ * algorithm, which learns a causal graph from data in the presence of context
+ * variables that index changing causal mechanisms across data segments or
+ * environments.
  *
- * <p><b>Important behavioral change:</b> This implementation no longer requires a single context variable to be the last
- * column. Instead, <b>ALL Tier-0 variables</b> in the supplied {@link Knowledge} are treated as context variables
- * (consistent with CD-NOD-PAG).</p>
+ * <p>Context variables are identified as all Tier-0 variables in the supplied
+ * {@link Knowledge} object. Any variable in Tier-0 that is also present in the
+ * dataset is treated as a context variable and is forced to be a cause of every
+ * adjacent non-context variable. This matches the CD-NOD-PAG semantics, where
+ * changing mechanisms are indicated by directed edges from context nodes.
  *
- * <p>Optionally, contexts can be excluded from conditioning sets (enabled by default) to match the PAG runner behavior
- * ({@code withExcludeContextsFromS(true)} in {@code CdnodPag}).</p>
+ * <p>The algorithm proceeds in four stages:
+ * <ol>
+ *   <li><b>Skeleton search.</b> FAS (Fast Adjacency Search) is run using the
+ *       supplied independence test to find the undirected skeleton of the
+ *       causal graph and the corresponding sepsets.</li>
+ *   <li><b>Context forcing.</b> For each context variable C and each adjacent
+ *       non-context variable X, the undirected edge C --- X is replaced by the
+ *       directed edge C → X, subject to any background knowledge constraints.</li>
+ *   <li><b>Collider orientation.</b> Unshielded triples are oriented as colliders
+ *       or non-colliders using one of three strategies, selectable via
+ *       {@link ColliderOrientationStyle}:
+ *       <ul>
+ *         <li><b>SEPSETS</b>: orients x → z ← y if z is not in the sepset of
+ *             x and y (standard PC rule).</li>
+ *         <li><b>CONSERVATIVE</b>: orients a collider only if every sepset
+ *             excludes z and no sepset includes z (Conservative PC rule).</li>
+ *         <li><b>MAX_P</b>: selects the sepset with the highest p-value and
+ *             uses it to decide orientation, with an optional tie-guard margin.</li>
+ *       </ul>
+ *       By default, context variables are admissible members of conditioning
+ *       sets in this step, consistent with Huang et al. (2020), where
+ *       conditioning on the context/surrogate removes pseudo-confounding
+ *       between variables whose mechanisms both change. Setting
+ *       {@link Builder#excludeContextsFromS(boolean)} to {@code true} excludes
+ *       contexts from conditioning sets uniformly across all three styles
+ *       (mirroring the CD-NOD-PAG runner); in that mode, FAS sepsets that
+ *       contain a context are not used directly, and a context-free sepset is
+ *       re-derived by enumeration instead.</li>
+ *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
+ *       implied orientations and complete the partially directed graph.</li>
+ * </ol>
+ *
+ * <p>Instances are constructed via the nested {@link Builder}:
+ * <pre>
+ *   Cdnod cdnod = new Cdnod.Builder()
+ *       .test(independenceTest)
+ *       .data(dataSet)
+ *       .knowledge(knowledge)        // Tier-0 variables treated as contexts
+ *       .colliderStyle(ColliderOrientationStyle.CONSERVATIVE)
+ *       .alpha(0.05)
+ *       .depth(3)
+ *       .verbose(true)
+ *       .build();
+ *
+ *   Graph result = cdnod.search();
+ * </pre>
+ *
+ * <p>For backwards compatibility, a change-index column can be appended to the
+ * dataset via {@link Builder#dataAndIndex}, though contexts are now determined
+ * from Knowledge tier 0 rather than column position.
+ *
+ * @see Fas
+ * @see MeekRules
+ * @see Knowledge
  */
 public final class Cdnod implements IGraphSearch {
 
-    private final double alpha;              // left for parity; not directly used unless Fas exposes setAlpha
     private final boolean stable;
     private final ColliderOrientationStyle colliderStyle;
     private final Knowledge knowledge;
     private final boolean verbose;
     private final double maxPMargin;         // tie-guard for MAX_P (0.0 = classic)
-    private final int depth;                 // S-size cap; also applied to FAS for consistency
+    private final int depth;                 // S-size cap; -1 = unbounded; also applied to FAS for consistency
+    private final double alpha;              // significance level; note the operative alpha for CI decisions
+    // is the one configured on the supplied IndependenceTest
+
+    // --- behavior flags ---
+    /**
+     * If true, context variables are excluded from conditioning sets in the collider-orientation
+     * step, uniformly across all collider styles (including FAS-derived sepsets, which are then
+     * re-derived context-free by enumeration when they contain a context). If false (the default),
+     * contexts are admissible in conditioning sets, per Huang et al. (2020).
+     */
+    private final boolean excludeContextsFromS;
 
     // --- core config ---
     private IndependenceTest test;
@@ -46,28 +113,26 @@ public final class Cdnod implements IGraphSearch {
     // --- derived per run() ---
     private Set<Node> contextNodes = Collections.emptySet();
 
-    // --- behavior flags ---
-    // Match CD-NOD-PAG: exclude contexts from conditioning sets by default.
-    private final boolean excludeContextsFromS = true;
-
     private Cdnod(IndependenceTest test,
                   DataSet data,
-                  double alpha,
                   boolean stable,
                   ColliderOrientationStyle colliderStyle,
                   Knowledge knowledge,
                   boolean verbose,
                   double maxPMargin,
-                  int depth) {
+                  int depth,
+                  double alpha,
+                  boolean excludeContextsFromS) {
         this.test = test;
         this.data = data; // may be null; user can set later
-        this.alpha = alpha;
         this.stable = stable;
         this.colliderStyle = colliderStyle;
         this.knowledge = knowledge == null ? new Knowledge() : knowledge;
         this.verbose = verbose;
         this.maxPMargin = maxPMargin;
         this.depth = depth;
+        this.alpha = alpha;
+        this.excludeContextsFromS = excludeContextsFromS;
     }
 
     /**
@@ -90,9 +155,15 @@ public final class Cdnod implements IGraphSearch {
 
         DoubleDataBox box = new DoubleDataBox(n, p + 1);
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < p; j++) box.set(i, j, dataX.getDouble(i, j));
+            for (int j = 0; j < p; j++) {
+                box.set(i, j, dataX.getDouble(i, j));
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
             box.set(i, p, cIndex[i]);
         }
+
         return new BoxDataSet(box, vars);
     }
 
@@ -102,7 +173,7 @@ public final class Cdnod implements IGraphSearch {
     public Graph search() throws InterruptedException {
         if (data == null) {
             throw new IllegalStateException("Cdnod: data is null. Provide a DataSet via Builder.data(...), " +
-                                            "or use Builder.dataAndIndex(...) to append a column before search().");
+                    "or use Builder.dataAndIndex(...) to append a column before search().");
         }
 
         // Ensure test variables match dataset variables
@@ -179,8 +250,6 @@ public final class Cdnod implements IGraphSearch {
         fas.setVerbose(verbose);
         if (knowledge != null && !knowledge.isEmpty()) fas.setKnowledge(knowledge);
         if (depth >= 0) fas.setDepth(depth);
-        // If Fas exposes alpha, you can uncomment:
-        // fas.setAlpha(alpha);
 
         if (verbose) TetradLogger.getInstance().log("CD-NOD: FAS skeleton...");
         Graph g = fas.search();
@@ -228,16 +297,14 @@ public final class Cdnod implements IGraphSearch {
      * Any Tier-0 names not present in the DataSet are silently ignored (matches the PAG runner style).
      */
     private Set<Node> resolveContextNodesTier0(DataSet dataAll) {
-        if (knowledge == null) return Collections.emptySet();
+        if (knowledge == null || knowledge.getTier(0).isEmpty()) return Collections.emptySet();
         Set<Node> out = new LinkedHashSet<>();
-        try {
-            List<String> tier0 = knowledge.getTier(0);
-            for (String name : tier0) {
-                Node v = dataAll.getVariable(name);
-                if (v != null) out.add(v);
+        List<String> tier0 = knowledge.getTier(0);
+        for (String name : tier0) {
+            Node v = dataAll.getVariable(name);
+            if (v != null) {
+                out.add(v);
             }
-        } catch (Throwable ignored) {
-            // If tier APIs aren't available in this Knowledge version, fall back to empty.
         }
         return out;
     }
@@ -249,6 +316,12 @@ public final class Cdnod implements IGraphSearch {
         nodes.sort(Comparator.comparing(Node::getName));
 
         for (Node z : nodes) {
+            // Contexts are exogenous by assumption and were forced C -> X above, so a context can
+            // never be the collider of an unshielded triple. Skipping here avoids enumerating
+            // sepsets for every pair of a context's (typically many) neighbors only to have
+            // canOrientCollider reject the result.
+            if (contextNodes.contains(z)) continue;
+
             List<Node> adj = new ArrayList<>(g.getAdjacentNodes(z));
             adj.sort(Comparator.comparing(Node::getName));
 
@@ -258,19 +331,18 @@ public final class Cdnod implements IGraphSearch {
                     Node y = adj.get(j);
                     if (g.isAdjacentTo(x, y)) continue; // only unshielded
 
+                    // The judges below do not mutate g, so the (cheap) orientability check can be
+                    // made before the (expensive) sepset enumeration with identical outcome.
+                    if (!canOrientCollider(g, x, z, y)) continue;
+
                     checkTimeout();
 
-                    // Canonicalize endpoints (x <= y by name)
-                    if (x.getName().compareTo(y.getName()) > 0) {
-                        Node tmp = x;
-                        x = y;
-                        y = tmp;
-                    }
+                    // adj is name-sorted and i < j, so x < y by name already; no swap needed.
 
                     switch (colliderStyle) {
                         case SEPSETS -> {
-                            Set<Node> s = sepsets.get(x, y);
-                            if (s != null && !s.contains(z) && canOrientCollider(g, x, z, y)) {
+                            Set<Node> s = admissibleSepset(g, x, y, sepsets);
+                            if (s != null && !s.contains(z)) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose)
                                     TetradLogger.getInstance().log("[SEPSETS] " + x + "->" + z + "<-" + y + " (S=" + labelSet(s) + ")");
@@ -278,14 +350,14 @@ public final class Cdnod implements IGraphSearch {
                         }
                         case CONSERVATIVE -> {
                             ColliderOutcome out = judgeConservative(g, x, z, y);
-                            if (out == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
+                            if (out == ColliderOutcome.INDEPENDENT) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose) TetradLogger.getInstance().log("[CPC] " + x + "->" + z + "<-" + y);
                             }
                         }
                         case MAX_P -> {
                             MaxPDecision d = decideMaxP(g, x, z, y);
-                            if (d.outcome == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
+                            if (d.outcome == ColliderOutcome.INDEPENDENT) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose)
                                     TetradLogger.getInstance().log("[MAX-P] " + x + "->" + z + "<-" + y + " (p=" + d.bestP + ", S=" + labelSet(d.bestS) + ")");
@@ -295,6 +367,41 @@ public final class Cdnod implements IGraphSearch {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the sepset to use for the SEPSETS style, enforcing the same conditioning universe as the
+     * enumeration-based styles.
+     * <p>
+     * If contexts are admissible in S (the default), the FAS sepset is returned as-is. If contexts are
+     * excluded from S and the FAS sepset contains a context, the FAS sepset is not used; instead a
+     * context-free sepset is re-derived by enumeration over context-free candidate sets (smallest first,
+     * ties broken by p-value). Returns null if no admissible sepset is found.
+     */
+    private Set<Node> admissibleSepset(Graph g, Node x, Node y, SepsetMap sepsets) throws InterruptedException {
+        Set<Node> s = sepsets.get(x, y);
+        if (s == null) return null;
+        if (!excludeContextsFromS || Collections.disjoint(s, contextNodes)) return s;
+
+        // FAS sepset contains a context; re-derive a context-free sepset by enumeration.
+        Set<Node> best = null;
+        int bestSize = Integer.MAX_VALUE;
+        double bestP = Double.NEGATIVE_INFINITY;
+        for (SepCand c : enumerateSepsetsWithP(g, x, y)) {
+            if (!c.indep) continue;
+            int sz = c.S.size();
+            if (sz < bestSize || (sz == bestSize && c.p > bestP)) {
+                best = c.S;
+                bestSize = sz;
+                bestP = c.p;
+                if (sz == 0) break;
+            }
+        }
+        if (verbose && best == null) {
+            TetradLogger.getInstance().log("[SEPSETS] No context-free sepset for " + x + " -- " + y +
+                    "; FAS sepset " + labelSet(s) + " contains a context. Skipping triple decisions for this pair.");
+        }
+        return best;
     }
 
     // CPC: if any separating set S excludes z AND no separating set includes z -> collider.
@@ -340,12 +447,14 @@ public final class Cdnod implements IGraphSearch {
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
 
         if (hasIncl && hasExcl) {
-            if (bestExcl >= bestIncl + maxPMargin)
+            if (bestExcl >= bestIncl + maxPMargin) {
                 return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
-            if (bestIncl >= bestExcl + maxPMargin)
+            } else if (bestIncl >= bestExcl + maxPMargin) {
                 return new MaxPDecision(ColliderOutcome.DEPENDENT, bestIncl, bestS_incl);
-            return new MaxPDecision(ColliderOutcome.AMBIGUOUS, Math.max(bestIncl, bestExcl),
-                    (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
+            } else {
+                return new MaxPDecision(ColliderOutcome.AMBIGUOUS, TMath.max(bestIncl, bestExcl),
+                        (bestIncl >= bestExcl ? bestS_incl : bestS_excl));
+            }
         } else if (hasExcl) {
             return new MaxPDecision(ColliderOutcome.INDEPENDENT, bestExcl, bestS_excl);
         } else if (hasIncl) {
@@ -356,6 +465,8 @@ public final class Cdnod implements IGraphSearch {
     }
 
     // enumerate candidate sepsets (unique by content), across both adjacency sides, up to depth cap.
+    // Contexts are excluded from the candidate pools iff excludeContextsFromS is set, so that all
+    // collider styles share a single conditioning universe.
     private Iterable<SepCand> enumerateSepsetsWithP(Graph g, Node x, Node y) throws InterruptedException {
         Map<String, SepCand> uniq = new LinkedHashMap<>();
 
@@ -364,7 +475,6 @@ public final class Cdnod implements IGraphSearch {
         adjx.remove(y);
         adjy.remove(x);
 
-        // Match CD-NOD-PAG: exclude contexts from S (conditioning candidates).
         if (excludeContextsFromS && contextNodes != null && !contextNodes.isEmpty()) {
             adjx.removeAll(contextNodes);
             adjy.removeAll(contextNodes);
@@ -373,12 +483,15 @@ public final class Cdnod implements IGraphSearch {
         adjx.sort(Comparator.comparing(Node::getName));
         adjy.sort(Comparator.comparing(Node::getName));
 
-        int maxAdj = Math.max(adjx.size(), adjy.size());
-        int cap = (depth < 0 ? maxAdj : Math.min(depth, maxAdj));
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
+        int cap = (depth < 0 ? maxAdj : TMath.min(depth, maxAdj));
 
         for (int d = 0; d <= cap; d++) {
-            for (List<Node> adj : new List[]{adjx, adjy}) {
-                if (d > adj.size()) continue;
+            List<List<Node>> both = new ArrayList<>();
+            if (d <= adjx.size()) both.add(adjx);
+            if (d <= adjy.size()) both.add(adjy);
+
+            for (List<Node> adj : both) {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
                 while ((choice = gen.next()) != null) {
@@ -412,50 +525,24 @@ public final class Cdnod implements IGraphSearch {
 
     private boolean knowledgeForbids(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
-        try {
-            if (knowledge.isForbidden(from, to)) return true;
-        } catch (Throwable ignored) {
-        }
-        // If tiers are defined and tier(from) > tier(to), treat as forbidden
-        try {
-            Method mNum = Knowledge.class.getMethod("getNumTiers");
-            int T = (Integer) mNum.invoke(knowledge);
-            if (T > 0) {
-                Method mTier = Knowledge.class.getMethod("getTier", String.class);
-                int tf = (Integer) mTier.invoke(knowledge, from);
-                int tt = (Integer) mTier.invoke(knowledge, to);
-                if (tf >= 0 && tt >= 0 && tf > tt) return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        // If Knowledge exposes isForbiddenByTiers(String,String)
-        try {
-            Method m = Knowledge.class.getMethod("isForbiddenByTiers", String.class, String.class);
-            Object v = m.invoke(knowledge, from, to);
-            if (v instanceof Boolean && (Boolean) v) return true;
-        } catch (Throwable ignored) {
-        }
-        return false;
+        if (knowledge.isForbidden(from, to)) return true;
+        return knowledge.isForbiddenByTiers(from, to);
     }
 
     private boolean knowledgeRequires(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
-        try {
-            return knowledge.isRequired(from, to);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return knowledge.isRequired(from, to);
     }
 
     private String labelSet(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return String.join("\u0001", names);
     }
 
@@ -480,17 +567,16 @@ public final class Cdnod implements IGraphSearch {
          */
         SEPSETS,
         /**
-         * Represents a collider orientation strategy in causal discovery that employs
-         * a conservative approach. This strategy prioritizes reducing false positives
-         * when orienting colliders in a causal graph, potentially at the cost of leaving
-         * some causal relationships unresolved. It is particularly useful in scenarios
-         * where high confidence in collider orientations is desired.
+         * Represents a collider orientation strategy in causal discovery that employs a conservative
+         * approach. This strategy prioritizes reducing false positives when orienting colliders in a
+         * causal graph, potentially at the cost of leaving some causal relationships unresolved. It is
+         * particularly useful in scenarios where high confidence in collider orientations is desired.
          */
         CONSERVATIVE,
         /**
-         * Represents a collider orientation strategy in causal discovery that employs
-         * a strategy aimed at maximizing the probability of correctly orienting colliders
-         * in a causal graph, potentially at the cost of increased computational complexity.
+         * Represents a collider orientation strategy in causal discovery that employs a strategy aimed
+         * at maximizing the probability of correctly orienting colliders in a causal graph, potentially
+         * at the cost of increased computational complexity.
          */
         MAX_P
     }
@@ -522,6 +608,7 @@ public final class Cdnod implements IGraphSearch {
         private boolean verbose = false;
         private double maxPMargin = 0.0;
         private int depth = -1;
+        private boolean excludeContextsFromS = false;
 
         /**
          * Constructs a new builder instance.
@@ -573,13 +660,29 @@ public final class Cdnod implements IGraphSearch {
         }
 
         /**
-         * Sets the significance level for statistical tests.
-         * @param a The significance level (alpha) for statistical tests.
+         * Sets the significance level recorded for this search.
+         *
+         * <p><b>Note:</b> the CI decisions in FAS and in collider orientation are made by the supplied
+         * {@link IndependenceTest}, which carries its own alpha. Configure the test's alpha directly;
+         * this value is retained for reporting/parity only.</p>
+         *
+         * @param a The significance level (alpha).
          * @return The builder instance for method chaining.
          */
         public Builder alpha(double a) {
             this.alpha = a;
             return this;
+        }
+
+        /**
+         * Sets the significance level for statistical tests.
+         * @param a The significance level (alpha) for statistical tests.
+         * @return The builder instance for method chaining.
+         * @deprecated Use {@link #alpha(double)} instead.
+         */
+        @Deprecated
+        public Builder setAlpha(double a) {
+            return alpha(a);
         }
 
         /**
@@ -635,19 +738,37 @@ public final class Cdnod implements IGraphSearch {
          * @return The builder instance for method chaining.
          */
         public Builder maxPMargin(double m) {
-            this.maxPMargin = Math.max(0.0, m);
+            this.maxPMargin = TMath.max(0.0, m);
             return this;
         }
 
         /**
-         * Sets the depth of the algorithm. The depth determines the maximum depth
-         * of the search tree. Values less than 0 are automatically clamped to 0.
+         * Sets the maximum size of conditioning sets considered during the search.
+         * A value of -1 (the default) means unbounded: conditioning sets are limited
+         * only by the sizes of the relevant adjacency sets. Nonnegative values cap
+         * both the FAS depth and the enumeration depth in collider orientation.
          *
-         * @param d The depth value to be set. Values less than 0 will be clamped to 0.
+         * @param d The depth value to be set; -1 for unbounded.
          * @return The builder instance for method chaining.
          */
         public Builder depth(int d) {
             this.depth = d;
+            return this;
+        }
+
+        /**
+         * Configures whether context variables are excluded from conditioning sets during collider
+         * orientation. The default is {@code false} (contexts admissible), consistent with Huang et
+         * al. (2020), where conditioning on the context removes pseudo-confounding between variables
+         * whose mechanisms both change. Set to {@code true} to mirror the CD-NOD-PAG runner; the
+         * exclusion is then applied uniformly across all collider styles, including FAS-derived
+         * sepsets used by the SEPSETS style.
+         *
+         * @param on true to exclude contexts from conditioning sets; false to admit them.
+         * @return The builder instance for method chaining.
+         */
+        public Builder excludeContextsFromS(boolean on) {
+            this.excludeContextsFromS = on;
             return this;
         }
 
@@ -662,7 +783,8 @@ public final class Cdnod implements IGraphSearch {
             if (working == null && dataX != null && cIndex != null) {
                 working = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
             }
-            return new Cdnod(test, working, alpha, stable, colliderStyle, knowledge, verbose, maxPMargin, depth);
+            return new Cdnod(test, working, stable, colliderStyle, knowledge, verbose, maxPMargin, depth, alpha,
+                    excludeContextsFromS);
         }
     }
 

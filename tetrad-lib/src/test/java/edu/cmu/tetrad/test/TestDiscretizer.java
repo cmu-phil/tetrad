@@ -29,6 +29,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -111,7 +112,12 @@ public final class TestDiscretizer {
                 3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(100, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Node> nodes = data.getVariables();
 
@@ -144,7 +150,12 @@ public final class TestDiscretizer {
                 3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(100, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Node> nodes = data.getVariables();
 

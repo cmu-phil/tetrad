@@ -36,9 +36,19 @@ import java.util.prefs.Preferences;
 public class GraphEditorUtils {
 
     /**
-     * <p>editkamadaKawaiLayoutParams.</p>
+     * Constructs a new GraphEditorUtils. All methods are static.
      */
-    public static void editkamadaKawaiLayoutParams() {
+    public GraphEditorUtils() {
+    }
+
+    /**
+     * <p>editkamadaKawaiLayoutParams.</p>
+     *
+     * @return true if the user clicked OK, false if the dialog was
+     * cancelled or closed, in which case the previous parameter values are
+     * restored and the caller should skip the layout.
+     */
+    public static boolean editkamadaKawaiLayoutParams() {
         boolean initializeRandomly = Preferences.userRoot().getBoolean(
                 "kamadaKawaiLayoutInitializeRandomly", false);
         double naturalEdgeLength = Preferences.userRoot().getDouble(
@@ -131,8 +141,207 @@ public class GraphEditorUtils {
         panel.setLayout(new BorderLayout());
         panel.add(b, BorderLayout.CENTER);
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), panel,
-                "Spring Layout Parameters", JOptionPane.PLAIN_MESSAGE);
+        int choice = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                panel, "Spring Layout Parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) {
+
+            // The fields write through to the preferences as they are
+            // edited, so cancelling restores the values from dialog entry.
+            Preferences.userRoot().putBoolean(
+                    "kamadaKawaiLayoutInitializeRandomly", initializeRandomly);
+            Preferences.userRoot().putDouble(
+                    "kamadaKawaiLayoutNaturalEdgeLength", naturalEdgeLength);
+            Preferences.userRoot().putDouble(
+                    "kamadaKawaiLayoutSpringConstant", springConstant);
+            Preferences.userRoot().putDouble(
+                    "kamadaKawaiLayoutStopEnergy", stopEnergy);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Pops up a modal editor for the one parameter of the Fruchterman-Reingold layout, the natural edge length: the
+     * distance at which an edge's pull and its endpoints' mutual push balance, so about the length edges settle to.
+     * Edges settle to about twice it in practice. Zero means automatic, 20 + 20 times the graph's average degree,
+     * which spreads a dense graph such as a latent measurement model very widely; 40 to 60 keeps such a graph
+     * compact. The value persists in the user's preferences, keyed "fruchtermanReingoldNaturalEdgeLength".
+     *
+     * @return true if the user clicked OK, false if the dialog was cancelled or closed, in which case the previous
+     * value is restored and the caller should skip the layout.
+     */
+    public static boolean editFruchtermanReingoldLayoutParams() {
+        double naturalEdgeLength = Preferences.userRoot().getDouble(
+                "fruchtermanReingoldNaturalEdgeLength", 0.0);
+
+        DoubleTextField naturalEdgeLengthField = new DoubleTextField(
+                naturalEdgeLength, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        naturalEdgeLengthField.setFilter(
+                (value, oldValue) -> {
+                    if (value < 0.0) {
+                        return oldValue;
+                    }
+
+                    Preferences.userRoot().putDouble(
+                            "fruchtermanReingoldNaturalEdgeLength", value);
+                    return value;
+                });
+
+        Box b = Box.createVerticalBox();
+
+        Box b1 = Box.createHorizontalBox();
+        b1.add(new JLabel("Natural edge length (0 = automatic): "));
+        b1.add(Box.createHorizontalGlue());
+        b1.add(naturalEdgeLengthField);
+        b.add(b1);
+
+        Box b2 = Box.createHorizontalBox();
+        JLabel note = new JLabel("<html>Edges settle to about twice this value.<br>Automatic is 20 + 20 &times; "
+                                 + "average degree, which spreads dense graphs widely;<br>40 to 60 keeps a latent "
+                                 + "measurement model compact.</html>");
+        note.setFont(note.getFont().deriveFont(Font.PLAIN, note.getFont().getSize() - 1f));
+        b2.add(note);
+        b2.add(Box.createHorizontalGlue());
+        b.add(Box.createVerticalStrut(6));
+        b.add(b2);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(b, BorderLayout.CENTER);
+
+        int choice = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                panel, "Fruchterman-Reingold Layout Parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) {
+            Preferences.userRoot().putDouble(
+                    "fruchtermanReingoldNaturalEdgeLength", naturalEdgeLength);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Pops up a modal editor for the parameters of Richard's layout. The
+     * values persist in the user's preferences, keyed "richardsLayoutXGap",
+     * "richardsLayoutYGap", and "richardsLayoutShearPerLayer".
+     *
+     * @return true if the user clicked OK, false if the dialog was
+     * cancelled or closed, in which case the previous parameter values are
+     * restored and the caller should skip the layout.
+     */
+    public static boolean editRichardsLayoutParams() {
+        double xGap = Preferences.userRoot().getDouble(
+                "richardsLayoutXGap", 30.0);
+        double yGap = Preferences.userRoot().getDouble(
+                "richardsLayoutYGap", 90.0);
+        double shearPerLayer = Preferences.userRoot().getDouble(
+                "richardsLayoutShearPerLayer", 50.0);
+        boolean nudge = Preferences.userRoot().getBoolean(
+                "richardsLayoutNudge", true);
+
+        JComboBox nudgeCombo = new JComboBox(new String[]{"Yes", "No"});
+        nudgeCombo.setMaximumSize(nudgeCombo.getPreferredSize());
+
+        if (!nudge) {
+            nudgeCombo.setSelectedItem("No");
+        }
+
+        nudgeCombo.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            String selection = (String) combo.getSelectedItem();
+            Preferences.userRoot().putBoolean(
+                    "richardsLayoutNudge", "Yes".equals(selection));
+        });
+
+        DoubleTextField xGapField = new DoubleTextField(
+                xGap, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        xGapField.setFilter(
+                (value, oldValue) -> {
+                    if (value < 0.0) {
+                        return oldValue;
+                    }
+
+                    Preferences.userRoot().putDouble(
+                            "richardsLayoutXGap", value);
+                    return value;
+                });
+
+        DoubleTextField yGapField = new DoubleTextField(
+                yGap, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        yGapField.setFilter(
+                (value, oldValue) -> {
+                    if (value <= 0.0) {
+                        return oldValue;
+                    }
+
+                    Preferences.userRoot().putDouble(
+                            "richardsLayoutYGap", value);
+                    return value;
+                });
+
+        DoubleTextField shearField = new DoubleTextField(
+                shearPerLayer, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        shearField.setFilter(
+                (value, oldValue) -> {
+
+                    // Negative shear (a leftward flow) is allowed.
+                    Preferences.userRoot().putDouble(
+                            "richardsLayoutShearPerLayer", value);
+                    return value;
+                });
+
+        Box b = Box.createVerticalBox();
+
+        Box b1 = Box.createHorizontalBox();
+        b1.add(new JLabel("Horizontal gap between nodes: "));
+        b1.add(Box.createHorizontalGlue());
+        b1.add(xGapField);
+        b.add(b1);
+
+        Box b2 = Box.createHorizontalBox();
+        b2.add(new JLabel("Vertical gap between layers: "));
+        b2.add(Box.createHorizontalGlue());
+        b2.add(yGapField);
+        b.add(b2);
+
+        Box b3 = Box.createHorizontalBox();
+        b3.add(new JLabel("Rightward shift per layer: "));
+        b3.add(Box.createHorizontalGlue());
+        b3.add(shearField);
+        b.add(b3);
+
+        Box b4 = Box.createHorizontalBox();
+        b4.add(new JLabel("Nudge nodes off long edge lines? "));
+        b4.add(Box.createHorizontalGlue());
+        b4.add(nudgeCombo);
+        b.add(b4);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(b, BorderLayout.CENTER);
+
+        int choice = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                panel, "Richard's Layout Parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) {
+
+            // The fields write through to the preferences as they are
+            // edited, so cancelling restores the values from dialog entry.
+            Preferences.userRoot().putDouble("richardsLayoutXGap", xGap);
+            Preferences.userRoot().putDouble("richardsLayoutYGap", yGap);
+            Preferences.userRoot().putDouble(
+                    "richardsLayoutShearPerLayer", shearPerLayer);
+            Preferences.userRoot().putBoolean("richardsLayoutNudge", nudge);
+            return false;
+        }
+
+        return true;
     }
 
 }

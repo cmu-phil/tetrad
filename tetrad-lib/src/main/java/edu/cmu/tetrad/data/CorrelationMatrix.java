@@ -23,7 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.Collections;
@@ -95,7 +95,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
         }
 
         for (int i = 0; i < matrix.getNumRows(); i++) {
-            if (FastMath.abs(matrix.get(i, i) - 1.0) > 1.e-5) {
+            if (TMath.abs(matrix.get(i, i) - 1.0) > 1.e-5) {
                 throw new IllegalArgumentException(
                         "For a correlation matrix, " +
                         "variances (diagonal elements) must be 1.0");

@@ -30,6 +30,8 @@ import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.random.RandomGenerator;
+import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.rmi.MarshalledObject;
@@ -62,6 +64,38 @@ public class DataTransforms {
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
+        Map<String, LogTransformSpec> specs = new HashMap<>();
+        LogTransformSpec spec = new LogTransformSpec(a, base, isUnlog);
+
+        // Discrete columns are passed through unchanged, as before; omitting them from the spec map has
+        // exactly that effect.
+        for (Node variable : dataSet.getVariables()) {
+            if (!(variable instanceof DiscreteVariable)) {
+                specs.put(variable.getName(), spec);
+            }
+        }
+
+        return logData(dataSet, specs);
+    }
+
+    /**
+     * Applies a logarithmic transform to selected variables of the given dataset, each with its own offset, base,
+     * and direction.
+     * <p>
+     * Variables absent from the map are copied through unchanged, as are discrete variables (which are never
+     * transformed even if named in the map). Passing a map that assigns the same spec to every continuous variable
+     * reproduces {@link #logData(DataSet, double, boolean, int)} exactly.
+     * <p>
+     * No check is made that the offsets keep values in the domain of the logarithm; a variable whose values are not
+     * strictly positive under its offset will yield NaN or negative infinity, exactly as the dataset-wide transform
+     * does. {@link LogTransformSpec#safeOffsetFor(double[])} is available to callers that want to propose a safe
+     * offset to the user first.
+     *
+     * @param dataSet The dataset to transform.
+     * @param specs   A map from variable name to the transform to apply to that variable.
+     * @return The transformed dataset.
+     */
+    public static DataSet logData(DataSet dataSet, Map<String, LogTransformSpec> specs) {
         Matrix data = dataSet.getDoubleData();
         Matrix X = data.like();
 
@@ -69,32 +103,65 @@ public class DataTransforms {
             double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
             double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
 
-            if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+            Node variable = dataSet.getVariable(j);
+            LogTransformSpec spec = specs == null ? null : specs.get(variable.getName());
+
+            if (variable instanceof DiscreteVariable || spec == null) {
                 X.assignColumn(j, new Vector(x1));
                 continue;
             }
 
             for (int i = 0; i < x1.length; i++) {
-                if (isUnlog) {
-                    if (base == 0) {
-                        x1[i] = FastMath.exp(x1Orig[i]) - a;
-                    } else {
-                        x1[i] = FastMath.pow(base, (x1Orig[i])) - a;
-                    }
-                } else {
-                    double log = FastMath.log(a + x1Orig[i]);
-                    if (base == 0) {
-                        x1[i] = log;
-                    } else {
-                        x1[i] = log / FastMath.log(base);
-                    }
-                }
+                x1[i] = spec.apply(x1Orig[i]);
             }
 
             X.assignColumn(j, new Vector(x1));
         }
 
-        return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+        DataSet transformed = new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()),
+                dataSet.getVariables());
+
+        // Carry the name over, as the standardizing and centering transforms do; without it the output data set
+        // shows up unnamed in the data editor and in downstream boxes.
+        transformed.setName(dataSet.getName());
+        return transformed;
+    }
+
+    /**
+     * Puts the variables of each of the given data sets in the given order of names. A data set that already has
+     * them in that order is returned as it is; one that has exactly those variables in another order is replaced by
+     * a reordered copy with the same name; one that does not have exactly those variables is returned as it is, for
+     * the caller to refuse. The given list and its data sets are not changed.
+     *
+     * @param dataSets the data sets.
+     * @param names    the variable names, in the order wanted.
+     * @return the data sets, in a new list.
+     */
+    public static List<DataSet> alignVariableOrder(List<DataSet> dataSets, List<String> names) {
+        List<DataSet> aligned = new ArrayList<>();
+
+        for (DataSet dataSet : dataSets) {
+            if (dataSet == null) {
+                aligned.add(null);
+                continue;
+            }
+
+            List<String> own = dataSet.getVariableNames();
+
+            if (own.equals(names) || own.size() != names.size()
+                || !new HashSet<>(own).equals(new HashSet<>(names))) {
+                aligned.add(dataSet);
+                continue;
+            }
+
+            List<Node> variables = new ArrayList<>();
+            for (String name : names) variables.add(dataSet.getVariable(name));
+            DataSet reordered = dataSet.subsetColumns(variables);
+            reordered.setName(dataSet.getName());
+            aligned.add(reordered);
+        }
+
+        return aligned;
     }
 
     /**
@@ -327,6 +394,219 @@ public class DataTransforms {
         }
 
         return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.getFirst().getVariables());
+    }
+
+    /**
+     * Appends a discrete block-ID column to the data set, in place, by run-length encoding over the given key
+     * columns: a new block starts at each row where any key column's value changes from the previous row. This
+     * recovers repeated-measures block structure from files sorted by configuration (as in the Airfoil self-noise
+     * data, where the geometry columns are constant within each swept configuration), giving the analogue of the
+     * TOWN column in the corrected Boston Housing data. The appended column is bookkeeping, not a variable of the
+     * system: it should be excluded from causal searches, and its intended use is to name the block structure in
+     * grouped analyses - in particular as the data audit's serial grouping variable, which recomputes the serial
+     * dependence check with per-block centering, separating block structure from genuine time-series structure.
+     * <p>
+     * Encoding is by run in file order, not by unique key tuple: if the same configuration recurs later in the
+     * file, it starts a new block, which is the correct semantics for file-order diagnostics. Category labels are
+     * "c0", "c1", ... in order of appearance; string labels also keep the column discrete under the tabular reader
+     * regardless of the maximum-categories setting, if the data set is saved and reloaded. Missing continuous
+     * values (NaN) compare equal to each other for the purpose of detecting changes.
+     *
+     * @param dataSet    the data set to modify in place.
+     * @param keyColumns the names of the columns whose joint value defines a configuration.
+     * @param columnName the name for the appended column (must not already exist).
+     * @return the number of blocks.
+     * @throws IllegalArgumentException if no key columns are given, a key column is missing, the column name is
+     *                                  blank or already exists, or the data set has no rows.
+     */
+    /**
+     * Appends within-block centered ("fixed effects" / within-transformed) copies of the data set's continuous
+     * columns, in place: for each continuous column that varies within blocks, a new column named
+     * name + suffix is appended holding the values minus their within-block observed means. Centering on the block
+     * removes ALL block-level variation, including unobserved block-level confounding - it conditions on the block
+     * without introducing a many-level discrete variable - so searches run on the centered columns estimate
+     * within-block structure only; between-block relationships are removed by construction. This is the standard
+     * treatment for multilevel data where the blocks are nuisance (subjects, towns, batches). It is NOT a remedy
+     * for designed sweep data such as Airfoil, where the scientifically meaningful variables are block-constant:
+     * centering maps those columns to zero, which is why block-constant columns (within-block variance negligible
+     * relative to total variance) are skipped rather than appended.
+     * <p>
+     * Discrete columns and the block column itself are skipped. Missing values (NaN) are left missing and are
+     * excluded from the block means. Rows in blocks with fewer than 2 observed values for a column get NaN in the
+     * centered column, since a within-block deviation from a single observation is identically zero by
+     * construction and carries no information.
+     *
+     * @param dataSet     the data set to modify in place.
+     * @param blockColumn the name of the discrete column identifying blocks.
+     * @param suffix      the suffix for appended column names (must be nonempty).
+     * @return the names of the appended columns, in order.
+     * @throws IllegalArgumentException if the block column is missing or not discrete, the suffix is blank, an
+     *                                  appended name would collide with an existing column, or no continuous column
+     *                                  varies within blocks.
+     */
+    public static List<String> appendWithinBlockCenteredColumns(DataSet dataSet, String blockColumn,
+                                                                String suffix) {
+        if (suffix == null || suffix.isBlank()) {
+            throw new IllegalArgumentException("A nonempty suffix is required.");
+        }
+
+        int blockCol = dataSet.getVariableNames().indexOf(blockColumn);
+        if (blockCol < 0) {
+            throw new IllegalArgumentException("No column named '" + blockColumn + "'.");
+        }
+        if (!(dataSet.getVariable(blockCol) instanceof DiscreteVariable blockVar)) {
+            throw new IllegalArgumentException("Block column '" + blockColumn + "' must be discrete.");
+        }
+
+        int n = dataSet.getNumRows();
+        int numGroups = blockVar.getNumCategories();
+
+        List<Integer> sourceCols = new ArrayList<>();
+        List<String> newNames = new ArrayList<>();
+
+        int numColumns = dataSet.getNumColumns();
+        for (int j = 0; j < numColumns; j++) {
+            if (j == blockCol || !(dataSet.getVariable(j) instanceof ContinuousVariable)) continue;
+
+            // Within-block vs. total variance, over observed values.
+            double[] sum = new double[numGroups];
+            double[] sumSq = new double[numGroups];
+            int[] count = new int[numGroups];
+            double totalSum = 0, totalSumSq = 0;
+            int totalCount = 0;
+
+            for (int r = 0; r < n; r++) {
+                double v = dataSet.getDouble(r, j);
+                if (Double.isNaN(v)) continue;
+                int g = dataSet.getInt(r, blockCol);
+                sum[g] += v;
+                sumSq[g] += v * v;
+                count[g]++;
+                totalSum += v;
+                totalSumSq += v * v;
+                totalCount++;
+            }
+
+            if (totalCount < 2) continue;
+
+            double withinSS = 0;
+            for (int g = 0; g < numGroups; g++) {
+                if (count[g] > 0) withinSS += sumSq[g] - sum[g] * sum[g] / count[g];
+            }
+            double totalSS = totalSumSq - totalSum * totalSum / totalCount;
+
+            if (totalSS <= 0 || withinSS <= 1e-12 * totalSS) continue; // block-constant: skip
+
+            String newName = dataSet.getVariable(j).getName() + suffix;
+            if (dataSet.getVariableNames().contains(newName) || newNames.contains(newName)) {
+                throw new IllegalArgumentException("A column named '" + newName + "' already exists.");
+            }
+
+            sourceCols.add(j);
+            newNames.add(newName);
+        }
+
+        if (sourceCols.isEmpty()) {
+            throw new IllegalArgumentException("No continuous column varies within blocks of '"
+                    + blockColumn + "'.");
+        }
+
+        for (int k = 0; k < sourceCols.size(); k++) {
+            int j = sourceCols.get(k);
+
+            double[] sum = new double[numGroups];
+            int[] count = new int[numGroups];
+            for (int r = 0; r < n; r++) {
+                double v = dataSet.getDouble(r, j);
+                if (Double.isNaN(v)) continue;
+                int g = dataSet.getInt(r, blockCol);
+                sum[g] += v;
+                count[g]++;
+            }
+
+            dataSet.addVariable(new ContinuousVariable(newNames.get(k)));
+            int col = dataSet.getNumColumns() - 1;
+
+            for (int r = 0; r < n; r++) {
+                double v = dataSet.getDouble(r, j);
+                int g = dataSet.getInt(r, blockCol);
+                double out = (Double.isNaN(v) || count[g] < 2) ? Double.NaN : v - sum[g] / count[g];
+                dataSet.setDouble(r, col, out);
+            }
+        }
+
+        return newNames;
+    }
+
+    /**
+     * Appends a new block ID column to the given dataset. The block ID column partitions the dataset's rows
+     * into blocks based on changes in the values of the specified key columns. Each block is represented by
+     * a unique categorical value.
+     *
+     * @param dataSet     The dataset to which the block ID column will be appended.
+     * @param keyColumns  A list of column names that determine the block boundaries in the dataset.
+     * @param columnName  The name for the new block ID column to be added. Must not already exist in the dataset.
+     * @return The number of unique blocks created in the dataset.
+     * @throws IllegalArgumentException If no key columns are provided, the column name is empty, the dataset
+     *                                  has no rows, or any of the specified key columns do not exist in the dataset.
+     */
+    public static int appendBlockIdColumn(DataSet dataSet, List<String> keyColumns, String columnName) {
+        if (keyColumns == null || keyColumns.isEmpty()) {
+            throw new IllegalArgumentException("At least one key column is required.");
+        }
+        if (columnName == null || columnName.isBlank()) {
+            throw new IllegalArgumentException("A nonempty column name is required.");
+        }
+        if (dataSet.getVariableNames().contains(columnName)) {
+            throw new IllegalArgumentException("A column named '" + columnName + "' already exists.");
+        }
+        int n = dataSet.getNumRows();
+        if (n == 0) {
+            throw new IllegalArgumentException("The data set has no rows.");
+        }
+
+        int[] cols = new int[keyColumns.size()];
+        boolean[] disc = new boolean[keyColumns.size()];
+        for (int k = 0; k < cols.length; k++) {
+            int idx = dataSet.getVariableNames().indexOf(keyColumns.get(k));
+            if (idx < 0) {
+                throw new IllegalArgumentException("No column named '" + keyColumns.get(k) + "'.");
+            }
+            cols[k] = idx;
+            disc[k] = dataSet.getVariable(idx) instanceof DiscreteVariable;
+        }
+
+        int[] block = new int[n];
+        int b = 0;
+        for (int r = 1; r < n; r++) {
+            boolean change = false;
+            for (int k = 0; k < cols.length; k++) {
+                if (disc[k]) {
+                    if (dataSet.getInt(r, cols[k]) != dataSet.getInt(r - 1, cols[k])) {
+                        change = true;
+                        break;
+                    }
+                } else {
+                    double a = dataSet.getDouble(r, cols[k]);
+                    double c = dataSet.getDouble(r - 1, cols[k]);
+                    if (!((Double.isNaN(a) && Double.isNaN(c)) || a == c)) {
+                        change = true;
+                        break;
+                    }
+                }
+            }
+            if (change) b++;
+            block[r] = b;
+        }
+
+        int numBlocks = b + 1;
+        List<String> categories = new ArrayList<>();
+        for (int i = 0; i < numBlocks; i++) categories.add("c" + i);
+        DiscreteVariable var = new DiscreteVariable(columnName, categories);
+        dataSet.addVariable(var);
+        int col = dataSet.getNumColumns() - 1;
+        for (int r = 0; r < n; r++) dataSet.setInt(r, col, block[r]);
+        return numBlocks;
     }
 
     /**
@@ -640,11 +920,351 @@ public class DataTransforms {
     }
 
     /**
-     * <p>covarianceNonparanormalDrton.</p>
+     * Returns the Gaussian copula ("nonparanormal") correlation matrix of a continuous data set: for each pair of
+     * variables the sample Kendall's tau-b is computed and mapped to the latent Gaussian correlation by
+     * <pre>    rho = sin(pi * tau / 2),</pre>
+     * the standard inversion for a Gaussian copula (Liu, Han, Yuan, Lafferty and Wasserman 2012). Diagonal entries
+     * are set to exactly 1, so the result is a correlation matrix carrying the source data set's sample size.
+     * <p>
+     * WHAT THIS BUYS. Under the nonparanormal model each variable is an unknown strictly monotone transformation
+     * of a latent Gaussian. Pearson correlation is not invariant to those transformations and is biased toward
+     * zero by them; rank correlation is invariant, so this estimator recovers the latent correlation structure
+     * that a linear-Gaussian score or likelihood is written against. As a worked case: for a latent pair with
+     * rho = 0.7, exponentiating one variable drops the Pearson correlation to about 0.51 while this estimator
+     * returns about 0.70.
+     * <p>
+     * WHAT IT DOES NOT BUY. The invariance is to monotone MARGINAL transformation only. Genuine nonlinearity in a
+     * conditional mean -- an interaction, a non-monotone dependence, X = f(Y, Z) for non-additive f -- is outside
+     * the model and this transform does nothing about it. It is a fix for distorted margins, not a nonlinear
+     * method.
+     * <p>
+     * CAVEATS, all reported as warnings to the log rather than by throwing:
+     * <ul>
+     *   <li>The elementwise map sin(pi * tau / 2) does not guarantee positive semidefiniteness. The smallest
+     *       eigenvalue is checked and a warning logged if it is negative. Run a Covariance Audit on the result
+     *       for the full diagnosis; likelihoods and partial correlations can behave incoherently on a
+     *       non-PSD matrix.</li>
+     *   <li>Discrete columns are included in the computation but the copula inversion is not correct for them
+     *       (a polychoric estimator is the right tool there); a warning is logged if any are present.</li>
+     *   <li>Missing values are handled by pairwise-complete deletion, which is itself a route to a non-PSD
+     *       matrix and makes the single stated sample size approximate; a warning is logged if any are
+     *       present.</li>
+     * </ul>
+     * Kendall's tau-b is computed in O(n log n) per pair by merge-sort inversion counting, not the O(n^2)
+     * pair enumeration.
+     *
+     * @param dataSet a continuous {@link edu.cmu.tetrad.data.DataSet} object
+     * @return the Gaussian copula correlation matrix, as an {@link edu.cmu.tetrad.data.ICovarianceMatrix}
+     * @throws IllegalArgumentException if the data set has fewer than two rows or no variables
+     */
+    public static ICovarianceMatrix covarianceGaussianCopula(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException("Data set is null.");
+        }
+
+        int p = dataSet.getNumColumns();
+        int n = dataSet.getNumRows();
+
+        if (p == 0) {
+            throw new IllegalArgumentException("Data set has no variables.");
+        }
+
+        if (n < 2) {
+            throw new IllegalArgumentException("Kendall's tau needs at least two rows; this data set has " + n + ".");
+        }
+
+        int numDiscrete = 0;
+
+        for (Node node : dataSet.getVariables()) {
+            if (!(node instanceof ContinuousVariable)) {
+                numDiscrete++;
+            }
+        }
+
+        if (numDiscrete > 0) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: " + numDiscrete + " of " + p
+                                           + " variable(s) are not continuous. Kendall's tau-b is computed for "
+                                           + "them, but the inversion sin(pi * tau / 2) assumes a continuous "
+                                           + "latent Gaussian, so those entries are not the polychoric "
+                                           + "correlations an ordinal model would call for.");
+        }
+
+        double[][] columns = new double[p][];
+        boolean anyMissing = false;
+
+        for (int j = 0; j < p; j++) {
+            columns[j] = new double[n];
+
+            for (int i = 0; i < n; i++) {
+                double v = dataSet.getDouble(i, j);
+                columns[j][i] = v;
+
+                if (Double.isNaN(v)) {
+                    anyMissing = true;
+                }
+            }
+        }
+
+        if (anyMissing) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: the data set has missing values. Each "
+                                           + "pair is computed on the rows complete for that pair, so different "
+                                           + "entries rest on different row sets, the stated sample size of " + n
+                                           + " is an upper bound, and the assembled matrix need not be positive "
+                                           + "semidefinite.");
+        }
+
+        Matrix sigma = new Matrix(p, p);
+
+        for (int i = 0; i < p; i++) {
+            sigma.set(i, i, 1.0);
+        }
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                double tau = kendallsTauB(columns[i], columns[j]);
+                double rho = Double.isNaN(tau) ? Double.NaN : FastMath.sin(FastMath.PI * tau / 2.0);
+
+                sigma.set(i, j, rho);
+                sigma.set(j, i, rho);
+            }
+        }
+
+        int numNaN = 0;
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                if (Double.isNaN(sigma.get(i, j))) {
+                    numNaN++;
+                    sigma.set(i, j, 0.0);
+                    sigma.set(j, i, 0.0);
+                }
+            }
+        }
+
+        if (numNaN > 0) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: " + numNaN + " pair(s) had no defined "
+                                           + "tau-b (a constant column, or too few rows complete for the pair) "
+                                           + "and were set to zero. A zero here is an absence of information, "
+                                           + "not evidence of independence.");
+        }
+
+        warnIfNotPsd(sigma);
+
+        List<Node> variables = new ArrayList<>(dataSet.getVariables());
+
+        return new CovarianceMatrix(variables, sigma, n);
+    }
+
+    /**
+     * Logs a warning if the given symmetric matrix has a negative eigenvalue. Warn-only by design: the matrix is
+     * returned as computed rather than projected onto the nearest correlation matrix, so the numbers a user sees
+     * are the numbers the estimator produced.
+     */
+    private static void warnIfNotPsd(Matrix sigma) {
+        try {
+            org.ejml.simple.SimpleEVD<org.ejml.simple.SimpleMatrix> evd
+                    = new org.ejml.simple.SimpleMatrix(sigma.toArray()).eig();
+
+            double minEig = Double.POSITIVE_INFINITY;
+            int numNegative = 0;
+
+            for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
+                double ev = evd.getEigenvalue(i).getReal();
+
+                if (ev < minEig) {
+                    minEig = ev;
+                }
+
+                if (ev < 0) {
+                    numNegative++;
+                }
+            }
+
+            if (numNegative > 0) {
+                TetradLogger.getInstance().log("Gaussian copula correlation: the result has " + numNegative
+                                               + " negative eigenvalue(s) (minimum " + minEig + "), so it is not "
+                                               + "the correlation matrix of any data set. The elementwise map "
+                                               + "sin(pi * tau / 2) does not preserve positive semidefiniteness. "
+                                               + "Likelihoods, partial correlations and regression coefficients "
+                                               + "computed from it can fail or behave incoherently; run a "
+                                               + "Covariance Audit on the result for the full diagnosis.");
+            }
+        } catch (Exception e) {
+            TetradLogger.getInstance().warn("Gaussian copula correlation: the eigenvalues could not be computed, "
+                                           + "so positive semidefiniteness was not checked.");
+        }
+    }
+
+    /**
+     * Kendall's tau-b for two columns, computed in O(n log n) by merge-sort inversion counting, with
+     * pairwise-complete deletion of rows where either value is NaN.
+     * <p>
+     * With <code>tot</code> the number of usable row pairs, <code>xTies</code> and <code>yTies</code> the pairs
+     * tied in x and in y respectively, <code>bothTies</code> the pairs tied in both, and <code>dis</code> the
+     * number of discordant pairs obtained as inversions in y after sorting by (x, y):
+     * <pre>    tau_b = (tot - xTies - yTies + bothTies - 2 * dis) / sqrt((tot - xTies) * (tot - yTies)).</pre>
+     *
+     * @param x the first column.
+     * @param y the second column, the same length as the first.
+     * @return tau-b, or NaN if it is undefined (fewer than two complete rows, or a column constant on them).
+     */
+    public static double kendallsTauB(double[] x, double[] y) {
+        if (x.length != y.length) {
+            throw new IllegalArgumentException("Arrays not the same length.");
+        }
+
+        int m = 0;
+
+        for (int i = 0; i < x.length; i++) {
+            if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
+                m++;
+            }
+        }
+
+        if (m < 2) {
+            return Double.NaN;
+        }
+
+        double[] xs = new double[m];
+        double[] ys = new double[m];
+        int k = 0;
+
+        for (int i = 0; i < x.length; i++) {
+            if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
+                xs[k] = x[i];
+                ys[k] = y[i];
+                k++;
+            }
+        }
+
+        Integer[] order = new Integer[m];
+
+        for (int i = 0; i < m; i++) {
+            order[i] = i;
+        }
+
+        final double[] fx = xs;
+        final double[] fy = ys;
+
+        Arrays.sort(order, (aIdx, bIdx) -> {
+            int c = Double.compare(fx[aIdx], fx[bIdx]);
+            return c != 0 ? c : Double.compare(fy[aIdx], fy[bIdx]);
+        });
+
+        double[] sx = new double[m];
+        double[] sy = new double[m];
+
+        for (int i = 0; i < m; i++) {
+            sx[i] = xs[order[i]];
+            sy[i] = ys[order[i]];
+        }
+
+        long tot = (long) m * (m - 1) / 2;
+
+        long xTies = 0;
+        long bothTies = 0;
+
+        int runStart = 0;
+
+        for (int i = 1; i <= m; i++) {
+            if (i == m || sx[i] != sx[runStart]) {
+                long t = i - runStart;
+                xTies += t * (t - 1) / 2;
+
+                int innerStart = runStart;
+
+                for (int j = runStart + 1; j <= i; j++) {
+                    if (j == i || sy[j] != sy[innerStart]) {
+                        long u = j - innerStart;
+                        bothTies += u * (u - 1) / 2;
+                        innerStart = j;
+                    }
+                }
+
+                runStart = i;
+            }
+        }
+
+        double[] sortedY = sy.clone();
+        Arrays.sort(sortedY);
+
+        long yTies = 0;
+        runStart = 0;
+
+        for (int i = 1; i <= m; i++) {
+            if (i == m || sortedY[i] != sortedY[runStart]) {
+                long t = i - runStart;
+                yTies += t * (t - 1) / 2;
+                runStart = i;
+            }
+        }
+
+        if (tot - xTies <= 0 || tot - yTies <= 0) {
+            return Double.NaN;
+        }
+
+        long dis = countInversions(sy.clone(), new double[m], 0, m - 1);
+
+        double numerator = tot - xTies - yTies + bothTies - 2.0 * dis;
+        double denominator = FastMath.sqrt((double) (tot - xTies)) * FastMath.sqrt((double) (tot - yTies));
+
+        return numerator / denominator;
+    }
+
+    /**
+     * Counts inversions in {@code a[lo..hi]} by merge sort, sorting the range in place. A pair counts as an
+     * inversion only on a strict decrease, so tied values are not counted as discordant.
+     */
+    private static long countInversions(double[] a, double[] scratch, int lo, int hi) {
+        if (lo >= hi) {
+            return 0;
+        }
+
+        int mid = (lo + hi) >>> 1;
+
+        long count = countInversions(a, scratch, lo, mid) + countInversions(a, scratch, mid + 1, hi);
+
+        int i = lo;
+        int j = mid + 1;
+        int t = lo;
+
+        while (i <= mid && j <= hi) {
+            if (a[i] <= a[j]) {
+                scratch[t++] = a[i++];
+            } else {
+                count += (mid - i + 1);
+                scratch[t++] = a[j++];
+            }
+        }
+
+        while (i <= mid) {
+            scratch[t++] = a[i++];
+        }
+
+        while (j <= hi) {
+            scratch[t++] = a[j++];
+        }
+
+        System.arraycopy(scratch, lo, a, lo, hi - lo + 1);
+
+        return count;
+    }
+
+    /**
+     * Fills a matrix with raw Kendall's tau-a values.
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @deprecated This does NOT compute the nonparanormal (Gaussian copula) correlation estimator, despite the
+     * name. It stores raw Kendall's tau, omitting the inversion sin(pi * tau / 2) that maps a rank correlation
+     * back to the latent Gaussian correlation. Raw tau is severely attenuated relative to the correlation it is
+     * standing in for -- a latent rho of 0.9 returns about 0.71, and 0.5 returns about 0.34 -- so anything scored
+     * from this matrix systematically under-detects edges. It also uses tau-a rather than tau-b, so ties attenuate
+     * it further, and it is O(n^2) per variable pair. Use {@link #covarianceGaussianCopula(DataSet)} instead,
+     * which corrects all three. Retained only because removing a public method is a breaking change; nothing in
+     * Tetrad calls it.
      */
+    @Deprecated
     public static ICovarianceMatrix covarianceNonparanormalDrton(DataSet dataSet) {
         CovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
         Matrix data = dataSet.getDoubleData();
@@ -705,8 +1325,115 @@ public class DataTransforms {
         return covMatrix;
     }
 
+//    /**
+//     * <p>getNonparanormalTransformed.</p>
+//     *
+//     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+//     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+//     */
+//    public static DataSet getNonparanormalTransformed(DataSet dataSet) {
+//        try {
+//            Matrix data = dataSet.getDoubleData();
+//            Matrix X = data.like();
+//            double n = dataSet.getNumRows();
+////            delta = 1.0 / (4.0 * TMath.pow(n, 0.25) * TMath.sqrt(TMath.PI * TMath.log(n)));
+//
+//            NormalDistribution normalDistribution = new NormalDistribution();
+//
+//            double std = Double.NaN;
+//
+//            for (int j = 0; j < data.getNumColumns(); j++) {
+//                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+//                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+//
+//                double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
+//
+//                if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+//                    X.assignColumn(j, new Vector(x1));
+//                    continue;
+//                }
+//
+//                double std1 = StatUtils.sd(x1);
+//                double mu1 = StatUtils.mean(x1);
+//                double[] xTransformed = DataUtils.ranks(x1);
+//
+//                for (int i = 0; i < xTransformed.length; i++) {
+//                    xTransformed[i] /= n;
+//                    xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
+//                }
+//
+//                if (Double.isNaN(std)) {
+//                    std = StatUtils.sd(x1Orig);
+//                }
+//
+//                for (int i = 0; i < xTransformed.length; i++) {
+//                    xTransformed[i] *= std1;
+//                    xTransformed[i] += mu1;
+//                }
+//
+//                double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
+//
+//                double min = Double.POSITIVE_INFINITY;
+//                double max = Double.NEGATIVE_INFINITY;
+//
+//                for (double v : xTransformed) {
+//                    if (v > max && !Double.isInfinite(v)) {
+//                        max = v;
+//                    }
+//
+//                    if (v < min && !Double.isInfinite(v)) {
+//                        min = v;
+//                    }
+//                }
+//
+//                for (int i = 0; i < xTransformed.length; i++) {
+//                    if (xTransformed[i] == Double.POSITIVE_INFINITY) {
+//                        xTransformed[i] = max;
+//                    }
+//
+//                    if (xTransformed[i] < Double.NEGATIVE_INFINITY) {
+//                        xTransformed[i] = min;
+//                    }
+//                }
+//
+//                System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
+//
+////                if (a2Transformed < a2Orig) {
+//                X.assignColumn(j, new Vector(xTransformed));
+////                } else {
+////                    X.assignColumn(j, new Vector(x1Orig));
+////                }
+//            }
+//
+//            return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+//        } catch (OutOfRangeException e) {
+//            e.printStackTrace();
+//            return dataSet;
+//        }
+//    }
+
+
     /**
-     * <p>getNonparanormalTransformed.</p>
+     * Returns a linearized ("un-warped") version of the dataset: each variable is
+     * passed through a monotone Yeo-Johnson transform chosen to make its relations to
+     * the other variables as linear as possible (post-nonlinear model un-warping).
+     * Unlike the nonparanormal transform, this preserves the marginal skewness that
+     * skew-based orientation methods rely on, to the extent the post-nonlinear model
+     * holds. Columns are standardized. Fitted lambdas and before/after nonlinearity
+     * per variable are written to the log; see {@link Linearizer}.
+     *
+     * @param dataSet a continuous {@link edu.cmu.tetrad.data.DataSet}
+     * @return the linearized dataset
+     */
+    public static DataSet getLinearizedTransformed(DataSet dataSet) {
+        return new Linearizer(dataSet).linearize();
+    }
+
+    /**
+     * Returns a nonparanormal-transformed version of the dataset. Each continuous
+     * column is rank-transformed and mapped through the normal quantile function,
+     * then rescaled to the original column mean and standard deviation. Discrete
+     * columns are left unchanged.
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
@@ -716,80 +1443,44 @@ public class DataTransforms {
             Matrix data = dataSet.getDoubleData();
             Matrix X = data.like();
             double n = dataSet.getNumRows();
-//            delta = 1.0 / (4.0 * FastMath.pow(n, 0.25) * FastMath.sqrt(FastMath.PI * FastMath.log(n)));
-
-            NormalDistribution normalDistribution = new NormalDistribution();
-
-            double std = Double.NaN;
+            NormalDistribution normal = new NormalDistribution();
 
             for (int j = 0; j < data.getNumColumns(); j++) {
-                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
-                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+                double[] col = data.getColumn(j).toArray();
 
-                double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
-
-                if (dataSet.getVariable(j) instanceof DiscreteVariable) {
-                    X.assignColumn(j, new Vector(x1));
+                if (isTreatedAsDiscrete(dataSet, j, col)) {
+                    X.assignColumn(j, new Vector(col));
                     continue;
                 }
 
-                double std1 = StatUtils.sd(x1);
-                double mu1 = StatUtils.mean(x1);
-                double[] xTransformed = DataUtils.ranks(x1);
+                double mu  = StatUtils.mean(col);
+                double std = StatUtils.sd(col);
 
-                for (int i = 0; i < xTransformed.length; i++) {
-                    xTransformed[i] /= n;
-                    xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
+                double[] ranks = DataUtils.ranks(col);
+                double[] transformed = new double[ranks.length];
+
+                for (int i = 0; i < ranks.length; i++) {
+                    transformed[i] = normal.inverseCumulativeProbability(ranks[i] / (n + 1));
+                    transformed[i] = transformed[i] * std + mu;
                 }
 
-                if (Double.isNaN(std)) {
-                    std = StatUtils.sd(x1Orig);
-                }
-
-                for (int i = 0; i < xTransformed.length; i++) {
-                    xTransformed[i] *= std1;
-                    xTransformed[i] += mu1;
-                }
-
-                double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
-
-                double min = Double.POSITIVE_INFINITY;
-                double max = Double.NEGATIVE_INFINITY;
-
-                for (double v : xTransformed) {
-                    if (v > max && !Double.isInfinite(v)) {
-                        max = v;
-                    }
-
-                    if (v < min && !Double.isInfinite(v)) {
-                        min = v;
-                    }
-                }
-
-                for (int i = 0; i < xTransformed.length; i++) {
-                    if (xTransformed[i] == Double.POSITIVE_INFINITY) {
-                        xTransformed[i] = max;
-                    }
-
-                    if (xTransformed[i] < Double.NEGATIVE_INFINITY) {
-                        xTransformed[i] = min;
-                    }
-                }
-
-                System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
-
-//                if (a2Transformed < a2Orig) {
-                X.assignColumn(j, new Vector(xTransformed));
-//                } else {
-//                    X.assignColumn(j, new Vector(x1Orig));
-//                }
+                X.assignColumn(j, new Vector(transformed));
             }
 
-            return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+            return new BoxDataSet(
+                    new VerticalDoubleDataBox(X.transpose().toArray()),
+                    dataSet.getVariables());
+
         } catch (OutOfRangeException e) {
             e.printStackTrace();
             return dataSet;
         }
+    }
+
+    private static boolean isTreatedAsDiscrete(DataSet dataSet, int j, double[] col) {
+        if (dataSet.getVariable(j) instanceof DiscreteVariable) return true;
+        long uniqueCount = Arrays.stream(col).distinct().count();
+        return uniqueCount <= TMath.max(10, TMath.sqrt(col.length));
     }
 
     /**
@@ -933,7 +1624,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (count - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -993,7 +1684,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (count - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -1032,7 +1723,7 @@ public class DataTransforms {
             norm += v * v;
         }
 
-        norm = FastMath.sqrt(norm / (data2.length - 1));
+        norm = TMath.sqrt(norm / (data2.length - 1));
 
         for (int i = 0; i < data2.length; i++) {
             data2[i] = data2[i] / norm;
@@ -1153,8 +1844,8 @@ public class DataTransforms {
      * @param dest   a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static void copyColumn(Node node, DataSet source, DataSet dest) {
-        int sourceColumn = source.getColumn(node);
-        int destColumn = dest.getColumn(node);
+        int sourceColumn = source.getColumnIndex(node);
+        int destColumn = dest.getColumnIndex(node);
         if (sourceColumn < 0) {
             throw new NullPointerException("The given node was not in the source dataset");
         }
@@ -1315,7 +2006,7 @@ public class DataTransforms {
      */
     public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
         if (node instanceof ContinuousVariable) {
-            int j = dataSet.getColumn(node);
+            int j = dataSet.getColumnIndex(node);
 
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -1379,7 +2070,7 @@ public class DataTransforms {
 
         for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
-                int j = dataSet.getColumn(node);
+                int j = dataSet.getColumnIndex(node);
 
                 double scale = scales[j];
 

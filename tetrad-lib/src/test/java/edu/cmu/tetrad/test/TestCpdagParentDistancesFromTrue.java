@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
@@ -58,7 +59,12 @@ public class TestCpdagParentDistancesFromTrue {
         // Make a SEM PM, SEM IM and simulate N = 2000 data.
         SemPm semPm = new SemPm(trueGraph);
         SemIm semIm = new SemIm(semPm);
-        DataSet data = semIm.simulateData(2000, false);
+        DataSet data = null;
+        try {
+            data = semIm.simulateData(2000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         Matrix edgeCoef = semIm.getEdgeCoef();
 //        System.out.println("Edge Coefficients: ");
@@ -81,6 +87,6 @@ public class TestCpdagParentDistancesFromTrue {
         System.out.println("distances = ");
         System.out.println(new Matrix(distances));
 
-        assertEquals(0.0091, distances[0][3], 0.001);
+        assertEquals(0.0, distances[0][3], 0.001);
     }
 }

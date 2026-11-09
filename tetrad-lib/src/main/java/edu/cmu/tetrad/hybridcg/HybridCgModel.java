@@ -22,11 +22,13 @@ package edu.cmu.tetrad.hybridcg;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Pm;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
@@ -407,7 +409,7 @@ public final class HybridCgModel {
             double[][] cuts = new double[cps.length][];
             for (int t = 0; t < cps.length; t++) {
                 Node p = nodes[cps[t]];
-                int col = data.getColumn(p);
+                int col = data.getColumnIndex(p);
                 if (col < 0) throw new IllegalArgumentException("Data is missing column for parent: " + p.getName());
 
                 // collect non-missing
@@ -423,7 +425,7 @@ public final class HybridCgModel {
                         cuts[t] = new double[0]; // all in one bin
                         continue;
                     }
-                    int m = Math.min(unique.length - 1, binsPerParent - 1);
+                    int m = TMath.min(unique.length - 1, binsPerParent - 1);
                     double[] cp = new double[m];
                     int step = (unique.length - 1) / m;
                     for (int k = 0; k < m; k++) {
@@ -440,12 +442,12 @@ public final class HybridCgModel {
                 double[] cp = new double[binsPerParent - 1];
                 for (int k = 1; k < binsPerParent; k++) {
                     double q = k / (double) binsPerParent;
-                    int idx = Math.min(vals.size() - 1, Math.max(0, (int) Math.round(q * (vals.size() - 1))));
+                    int idx = TMath.min(vals.size() - 1, TMath.max(0, (int) TMath.round(q * (vals.size() - 1))));
                     cp[k - 1] = vals.get(idx);
                 }
                 // ensure strictly increasing (nudge ties)
                 for (int k = 1; k < cp.length; k++) {
-                    if (!(cp[k] > cp[k - 1])) cp[k] = Math.nextUp(cp[k - 1]);
+                    if (!(cp[k] > cp[k - 1])) cp[k] = TMath.nextUp(cp[k - 1]);
                 }
                 cuts[t] = cp;
             }
@@ -552,12 +554,12 @@ public final class HybridCgModel {
             int[] discStates = new int[dps.length];
             for (int i = 0; i < dps.length; i++) {
                 Node parent = nodes[dps[i]];
-                int col = data.getColumn(parent);
+                int col = data.getColumnIndex(parent);
                 if (col < 0) {
                     Node byName = data.getVariable(parent.getName());
                     if (byName == null)
                         throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
-                    col = data.getColumn(byName);
+                    col = data.getColumnIndex(byName);
                 }
                 discStates[i] = data.getInt(row, col);
             }
@@ -567,12 +569,12 @@ public final class HybridCgModel {
                 contVals = new double[cps.length];
                 for (int t = 0; t < cps.length; t++) {
                     Node parent = nodes[cps[t]];
-                    int col = data.getColumn(parent);
+                    int col = data.getColumnIndex(parent);
                     if (col < 0) {
                         Node byName = data.getVariable(parent.getName());
                         if (byName == null)
                             throw new IllegalArgumentException("Dataset missing parent: " + parent.getName());
-                        col = data.getColumn(byName);
+                        col = data.getColumnIndex(byName);
                     }
                     contVals[t] = data.getDouble(row, col);
                 }
@@ -631,6 +633,12 @@ public final class HybridCgModel {
          * Discrete child: probs[y] is rows x card(y)
          */
         private final double[][][] discProbs;   // null for continuous children
+        /**
+         * Number of complete cases behind each local-table row, indexed [node][row]. A value of -1 means the count is
+         * unknown, which is the case for any IM that was built by hand rather than estimated from data. Estimation
+         * fills this in for every node and row, including rows with a count of zero.
+         */
+        private final int[][] rowCaseCounts;
 
         /**
          * Constructs a HybridCgIm instance from a HybridCgPm.
@@ -642,8 +650,11 @@ public final class HybridCgModel {
             int n = pm.nodes.length;
             this.contParams = new double[n][][];
             this.discProbs = new double[n][][];
+            this.rowCaseCounts = new int[n][];
             for (int y = 0; y < n; y++) {
                 int rows = pm.getNumRows(y);
+                this.rowCaseCounts[y] = new int[rows];
+                Arrays.fill(this.rowCaseCounts[y], -1); // unknown until estimated
                 if (pm.isDiscrete[y]) {
                     this.discProbs[y] = new double[rows][pm.getCardinality(y)];
                 } else {
@@ -682,8 +693,8 @@ public final class HybridCgModel {
             return order;
         }
 
-        private static int sampleCategorical(double[] probs, Random rng) {
-            double u = rng.nextDouble();
+        private static int sampleCategorical(double[] probs) {
+            double u = RandomUtil.getInstance().nextDouble();
             double c = 0.0;
             for (int k = 0; k < probs.length; k++) {
                 c += probs[k];
@@ -851,6 +862,33 @@ public final class HybridCgModel {
         }
 
         /**
+         * Returns the number of complete cases behind a local-table row, or -1 if the count is unknown. It is unknown
+         * for any IM that was built by hand rather than estimated from data. A count of zero means the row's discrete
+         * parent configuration was never observed with a complete family, so its parameters are not estimated.
+         *
+         * @param nodeIndex the index of the child node
+         * @param rowIndex  the row index in the local table
+         * @return the complete-case count, or -1 if unknown
+         */
+        public int getRowCaseCount(int nodeIndex, int rowIndex) {
+            int[] counts = (rowCaseCounts == null) ? null : rowCaseCounts[nodeIndex];
+            return (counts == null || rowIndex < 0 || rowIndex >= counts.length) ? -1 : counts[rowIndex];
+        }
+
+        /**
+         * Records the number of complete cases behind a local-table row.
+         *
+         * @param nodeIndex the index of the child node
+         * @param rowIndex  the row index in the local table
+         * @param count     the complete-case count
+         */
+        public void setRowCaseCount(int nodeIndex, int rowIndex, int count) {
+            if (rowCaseCounts != null && rowCaseCounts[nodeIndex] != null) {
+                rowCaseCounts[nodeIndex][rowIndex] = count;
+            }
+        }
+
+        /**
          * Convert a sampled matrix into a Tetrad DataSet with the provided node ordering. The node list must be a
          * permutation of the PM's nodes; types (discrete/continuous) are taken from the PM.
          *
@@ -903,11 +941,9 @@ public final class HybridCgModel {
          * </ul>
          *
          * @param n   number of rows to sample
-         * @param rng random number generator
          * @return sample
          */
-        public Sample sample(int n, Random rng) {
-            if (rng == null) rng = new Random();
+        public Sample sample(int n) {
             final int p = pm.nodes.length;
 
             // Precompute topo order
@@ -948,7 +984,7 @@ public final class HybridCgModel {
                             }
                         }
                         int rowIndex = pm.getRowIndex(y, discVals, contBins);
-                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex], rng);
+                        discCols[y][r] = sampleCategorical(discProbs[y][rowIndex]);
                     } else {
                         // Continuous child
                         int[] discVals = new int[dps[y].length];
@@ -958,8 +994,8 @@ public final class HybridCgModel {
                         for (int t = 0; t < cps[y].length; t++)
                             mean += getCoefficient(y, rowIndex, t) * contCols[cps[y][t]][r];
                         double var = getVariance(y, rowIndex);
-                        double sd = var > 0 ? Math.sqrt(var) : 0.0;
-                        contCols[y][r] = mean + sd * rng.nextGaussian();
+                        double sd = var > 0 ? TMath.sqrt(var) : 0.0;
+                        contCols[y][r] = mean + sd * RandomUtil.getInstance().nextGaussian();
                     }
                 }
             }
@@ -1003,7 +1039,7 @@ public final class HybridCgModel {
                 }
                 sb.append("  rows=").append(rows).append("\n");
 
-                int maxRowsToShow = Math.min(rows, 6);
+                int maxRowsToShow = TMath.min(rows, 6);
 
                 if (pm.isDiscrete(y)) {
                     int K = pm.getCardinality(y);
@@ -1162,6 +1198,9 @@ public final class HybridCgModel {
 
                 // For each case, compute rowIndex from (disc parents, discretized cont parents), then increment count for Y
                 for (int r = 0; r < data.getNumRows(); r++) {
+                    // Available-case: skip any case with a missing value in this child's family.
+                    if (familyHasMissing(pm, data, y, dps, cps, colIndex, r)) continue;
+
                     int yVal = data.getInt(r, colIndex[y]);
 
                     int[] discVals = new int[dps.length];
@@ -1184,7 +1223,12 @@ public final class HybridCgModel {
                 // Convert to probabilities with Dirichlet(alpha)
                 for (int row = 0; row < rows; row++) {
                     double s = 0.0;
-                    for (int k = 0; k < K; k++) s += counts[row][k] + alpha;
+                    double n = 0.0;
+                    for (int k = 0; k < K; k++) {
+                        s += counts[row][k] + alpha;
+                        n += counts[row][k];
+                    }
+                    im.setRowCaseCount(y, row, (int) TMath.round(n));
                     for (int k = 0; k < K; k++) im.setProbability(y, row, k, (counts[row][k] + alpha) / s);
                 }
             }
@@ -1195,9 +1239,22 @@ public final class HybridCgModel {
                 int rows = pm.getNumRows(y); // product over discrete-parents only
                 int m = cps.length;
 
+                // Seed every row as unestimated. Rows whose discrete-parent configuration has no
+                // complete cases are never visited below, and must not be left reading as an
+                // estimated mean/coefficient of zero.
+                for (int row = 0; row < rows; row++) {
+                    im.setMean(y, row, Double.NaN);
+                    for (int t = 0; t < m; t++) im.setCoefficient(y, row, t, Double.NaN);
+                    im.setVariance(y, row, Double.NaN);
+                    im.setRowCaseCount(y, row, 0);
+                }
+
                 // Group rows by discrete-parent configuration
                 Map<IntVector, List<Integer>> groups = new HashMap<>();
                 for (int r = 0; r < data.getNumRows(); r++) {
+                    // Available-case: skip any case with a missing value in this child's family.
+                    if (familyHasMissing(pm, data, y, dps, cps, colIndex, r)) continue;
+
                     int[] discVals = new int[dps.length];
                     for (int i = 0; i < dps.length; i++) discVals[i] = data.getInt(r, colIndex[dps[i]]);
                     groups.computeIfAbsent(new IntVector(discVals), k -> new ArrayList<>()).add(r);
@@ -1206,8 +1263,7 @@ public final class HybridCgModel {
                 // For each group, OLS Y ~ [1, continuous parents]; variance from residuals. Optionally share variance.
                 double pooledSS = 0.0;
                 int pooledDF = 0;
-                double[] sigma2Row = new double[rows];
-                Arrays.fill(sigma2Row, Double.NaN);
+                boolean[] rowFitted = new boolean[rows];
 
                 for (Map.Entry<IntVector, List<Integer>> e : groups.entrySet()) {
                     int row = pm.getRowIndex(y, e.getKey().values, null);
@@ -1235,30 +1291,67 @@ public final class HybridCgModel {
 //                    for (int t = 0; t < m; t++)
 //                        im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
 
-                    SimpleMatrix beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
+                    SimpleMatrix beta;
+                    try {
+                        beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
+                    } catch (IllegalArgumentException ex) {
+                        throw new IllegalArgumentException("OLS failed for continuous child "
+                                + pm.nodes[y].getName() + " in discrete-parent configuration "
+                                + Arrays.toString(e.getKey().values) + " (n = " + n + ", "
+                                + (m + 1) + " coefficients). Check for non-finite values.", ex);
+                    }
 
                     im.setMean(y, row, beta.get(0));
                     for (int t = 0; t < m; t++) {
                         im.setCoefficient(y, row, t, beta.get(1 + t));  // <-- deterministic
                     }
 
-                    // Residual variance
+                    rowFitted[row] = true;
+                    im.setRowCaseCount(y, row, n);
+
+                    // Residual variance. With n <= m + 1 the fit is saturated: the residuals are
+                    // zero by construction and there are no residual degrees of freedom, so there
+                    // is no variance estimate to report. Leave it NaN rather than reporting a
+                    // confident-looking zero, and keep the empty residuals out of the pool.
+                    int df = n - (m + 1);
+                    if (df <= 0) continue;
+
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));
                     double rss = resid.elementPower(2.0).elementSum();
-                    int df = Math.max(1, n - (m + 1));
                     double s2 = rss / df;
                     im.setVariance(y, row, s2);
 
                     pooledSS += rss;
                     pooledDF += df;
-                    sigma2Row[row] = s2;
                 }
 
                 if (shareVarianceAcrossRows) {
+                    // Broadcast only to rows that actually have a fitted mean and coefficients.
+                    // A discrete-parent configuration with no complete cases stays unestimated
+                    // throughout; lending it a pooled variance would pair a real number with an
+                    // undefined mean.
                     double s2 = pooledDF > 0 ? (pooledSS / pooledDF) : 1.0;
-                    for (int row = 0; row < rows; row++) im.setVariance(y, row, s2);
+                    for (int row = 0; row < rows; row++) {
+                        if (rowFitted[row]) im.setVariance(y, row, s2);
+                    }
                 }
             }
+        }
+
+        /**
+         * True if any variable in child y's family (y, its discrete parents, its continuous parents) is missing in
+         * case r. Discrete missing is DiscreteVariable.MISSING_VALUE; continuous missing is NaN (non-finite).
+         */
+        private static boolean familyHasMissing(HybridCgPm pm, DataSet data, int y, int[] dps, int[] cps,
+                                                int[] colIndex, int r) {
+            if (pm.isDiscrete[y]) {
+                if (data.getInt(r, colIndex[y]) == DiscreteVariable.MISSING_VALUE) return true;
+            } else {
+                if (!Double.isFinite(data.getDouble(r, colIndex[y]))) return true;
+            }
+            for (int dp : dps) if (data.getInt(r, colIndex[dp]) == DiscreteVariable.MISSING_VALUE) return true;
+            for (int cp : cps) if (!Double.isFinite(data.getDouble(r, colIndex[cp]))) return true;
+            return false;
         }
 
         // ======== Small helper for map keys ========

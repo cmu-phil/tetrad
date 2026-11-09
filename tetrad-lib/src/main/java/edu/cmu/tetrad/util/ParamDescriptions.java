@@ -73,7 +73,7 @@ public final class ParamDescriptions {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
         } catch (IOException ex) {
-            TetradLogger.getInstance().log("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
+            TetradLogger.getInstance().warn("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
 //            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
@@ -96,7 +96,12 @@ public final class ParamDescriptions {
                     this.paramsWithUnsupportedValueType.add(paramName);
                 } else {
                     String shortDescription = Objects.requireNonNull(doc.getElementById(paramName + "_short_desc")).text().trim();
-                    String longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
+                    String longDescription = null;
+                    try {
+                        longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
+                    } catch (Exception e) {
+                        throw new RuntimeException("Missing long description: " + paramName, e);
+                    }
                     String defaultValue = Objects.requireNonNull(doc.getElementById(paramName + "_default_value")).text().trim();
                     String lowerBound = Objects.requireNonNull(doc.getElementById(paramName + "_lower_bound")).text().trim();
                     String upperBound = Objects.requireNonNull(doc.getElementById(paramName + "_upper_bound")).text().trim();
@@ -145,6 +150,25 @@ public final class ParamDescriptions {
                     this.map.put(paramName, paramDescription);
                 }
             }
+        }
+
+        // Enumerated String parameters: register the legal values so interfaces can render selection controls
+        // instead of free-text fields.
+        ParamDescription missingDataPolicy = this.map.get(Params.MISSING_DATA_POLICY);
+        if (missingDataPolicy != null) {
+            missingDataPolicy.setAllowedValues(java.util.List.of(
+                    "default", "fail", "listwise", "testwise", "em", "pairwise", "mi"));
+        }
+
+        ParamDescription pooledTestMethod = this.map.get(Params.POOLED_TEST_METHOD);
+        if (pooledTestMethod != null) {
+            pooledTestMethod.setAllowedValues(java.util.List.of("fisher", "tippett"));
+        }
+
+        ParamDescription missingEssMode = this.map.get(Params.MISSING_ESS_MODE);
+        if (missingEssMode != null) {
+            missingEssMode.setAllowedValues(java.util.List.of(
+                    "fullN", "minPairwise", "meanPairwise"));
         }
     }
 

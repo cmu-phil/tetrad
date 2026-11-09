@@ -67,6 +67,23 @@ final class NumberFormatAction extends AbstractAction
      * render real numbers throughout Tetrad.
      */
     public void actionPerformed(ActionEvent e) {
+        JComponent panel = buildNumberFormatComponent();
+
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                panel, "Formatting for All Real Numbers", JOptionPane.INFORMATION_MESSAGE);
+
+        commitFormat();
+    }
+
+    /**
+     * Builds the component allowing the user to change the number format used to render real numbers
+     * throughout Tetrad, with a basic and an advanced tab. Extracted from actionPerformed so that the
+     * component can also be embedded in the Settings dialog. The chosen format takes effect when
+     * commitFormat is called, which the caller should do when its dialog closes.
+     *
+     * @return the number format component.
+     */
+    JComponent buildNumberFormatComponent() {
 
         // Set up basic tab.
         final double sample = 23.5;
@@ -74,7 +91,7 @@ final class NumberFormatAction extends AbstractAction
                 new DecimalFormat(constructSimpleFormatString()).format(sample));
         renderFieldBasic.setMaximumSize(new Dimension(150, 50));
         renderFieldBasic.setEditable(false);
-        renderFieldBasic.setBackground(Color.WHITE);
+//        renderFieldBasic.setBackground(Color.WHITE);
 
         JCheckBox scientific = new JCheckBox(
                 "Use scientific notation",
@@ -182,7 +199,7 @@ final class NumberFormatAction extends AbstractAction
         JTextField sampleFieldAdvanced = new JTextField("" + sample);
         JTextField renderFieldAdvanced = new JTextField(getNumberFormat().format(sample));
         renderFieldAdvanced.setEditable(false);
-        renderFieldAdvanced.setBackground(Color.WHITE);
+//        renderFieldAdvanced.setBackground(Color.WHITE);
 
         this.formatField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
@@ -269,9 +286,15 @@ final class NumberFormatAction extends AbstractAction
         panel.setLayout(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                panel, "Formatting for All Real Numbers", JOptionPane.INFORMATION_MESSAGE);
+        return panel;
+    }
 
+    /**
+     * Installs the chosen number format as the format used to render real numbers throughout Tetrad.
+     *
+     * @throws RuntimeException if the format string cannot be accepted by DecimalFormat.
+     */
+    void commitFormat() {
         NumberFormatUtil.getInstance().setNumberFormat(getNumberFormat());
     }
 
@@ -334,8 +357,8 @@ final class NumberFormatAction extends AbstractAction
         double sample = Double.parseDouble(sampleFieldAdvanced.getText());
         NumberFormat nf = new DecimalFormat(format);
         renderFieldAdvanced.setText(nf.format(sample));
-        sampleFieldAdvanced.setForeground(Color.BLACK);
-        this.formatField.setForeground(Color.BLACK);
+//        sampleFieldAdvanced.setForeground(Color.BLACK);
+//        this.formatField.setForeground(Color.BLACK);
         Preferences.userRoot().put("numberFormat", format);
     }
 

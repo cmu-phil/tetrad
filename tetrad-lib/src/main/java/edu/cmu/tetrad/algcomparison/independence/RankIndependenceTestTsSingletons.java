@@ -27,8 +27,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
-import edu.cmu.tetrad.search.test.IndTestBlocksTs;
+import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -43,13 +44,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "Rank Independence Test TS Simgletons",
-        command = "rank-test-ts-singletons",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+//@TestOfIndependence(
+//        name = "Rank Independence Test TS Singletons",
+//        command = "rank-test-ts-singletons",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 @Deprecated
-@LinearGaussian
+//@LinearGaussian
 public class RankIndependenceTestTsSingletons implements IndependenceWrapper {
 
     @Serial
@@ -71,6 +72,7 @@ public class RankIndependenceTestTsSingletons implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "Rank Independence Test TS Singletons");
         List<Node> nodes = dataModel.getVariables();
         List<Node> blockVars = new ArrayList<>();
         List<List<Integer>> blocks = new ArrayList<>();
@@ -80,7 +82,7 @@ public class RankIndependenceTestTsSingletons implements IndependenceWrapper {
             blocks.add(Collections.singletonList(i));
         }
 
-        IndTestBlocksTs ind = new IndTestBlocksTs(new BlockSpec((DataSet) dataModel, blocks, blockVars));
+        TrekSeparationBlocksIndependence ind = new TrekSeparationBlocksIndependence(new BlockSpec((DataSet) dataModel, blocks, blockVars));
         ind.setAlpha(parameters.getDouble(Params.ALPHA));
 
         return ind;
@@ -115,6 +117,7 @@ public class RankIndependenceTestTsSingletons implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

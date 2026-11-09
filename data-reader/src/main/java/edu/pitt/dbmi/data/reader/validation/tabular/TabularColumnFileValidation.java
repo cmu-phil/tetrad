@@ -28,6 +28,7 @@ import edu.pitt.dbmi.data.reader.validation.MessageType;
 import edu.pitt.dbmi.data.reader.validation.ValidationAttribute;
 import edu.pitt.dbmi.data.reader.validation.ValidationCode;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,6 +138,14 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     }
 
     private void validateColumns(int[] excludedColumns, List<ValidationResult> results) throws IOException {
+        String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+        if (encodingProblem != null) {
+            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, encodingProblem);
+            result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
+            results.add(result);
+            return;
+        }
+
         int numOfVars = 0;
 
         try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {

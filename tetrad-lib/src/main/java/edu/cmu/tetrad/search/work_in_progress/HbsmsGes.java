@@ -31,7 +31,7 @@ import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -173,7 +173,7 @@ public final class HbsmsGes implements Hbsms {
 
     private static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) FastMath.pow(2, nodes.size());
+        int total = (int) TMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);

@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
@@ -43,7 +43,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @Bootstrapping
-public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial

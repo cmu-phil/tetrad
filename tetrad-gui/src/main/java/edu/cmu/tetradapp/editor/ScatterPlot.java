@@ -26,15 +26,14 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.awt.geom.Point2D;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 
 /**
  * This is the scatterplot model class holding the necessary information to create a scatterplot. It uses Point2D to
@@ -144,13 +143,19 @@ public class ScatterPlot {
      */
     public double getCorrelationCoeff() {
         DataSet dataSet = getDataSet();
-        Matrix data = dataSet.getDoubleData();
 
-        int _x = dataSet.getColumn(dataSet.getVariable(this.x));
-        int _y = dataSet.getColumn(dataSet.getVariable(this.y));
+        int _x = dataSet.getColumnIndex(dataSet.getVariable(this.x));
+        int _y = dataSet.getColumnIndex(dataSet.getVariable(this.y));
 
-        double[] xdata = data.getColumn(_x).toArray();
-        double[] ydata = data.getColumn(_y).toArray();
+        List<Integer> rows = getConditionedRows();
+        double[] xdata = new double[rows.size()];
+        double[] ydata = new double[rows.size()];
+
+        for (int i = 0; i < rows.size(); i++) {
+            xdata[i] = dataSet.getDouble(rows.get(i), _x);
+            ydata[i] = dataSet.getDouble(rows.get(i), _y);
+        }
+
         Result result = new Result(xdata, ydata, removeZeroPointsPerPlot);
         xdata = result.xdata;
         ydata = result.ydata;
@@ -183,7 +188,7 @@ public class ScatterPlot {
     }
 
     private double fisherz(double r) {
-        return 0.5 * FastMath.sqrt(getSampleSize() - 3.0) * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+        return 0.5 * TMath.sqrt(getSampleSize() - 3.0) * (TMath.log(1.0 + r) - TMath.log(1.0 - r));
     }
 
     /**
@@ -195,7 +200,7 @@ public class ScatterPlot {
         double min = Double.POSITIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            min = FastMath.min(min, cleanedSampleValue.getX());
+            min = TMath.min(min, cleanedSampleValue.getX());
         }
         return min;
     }
@@ -209,7 +214,7 @@ public class ScatterPlot {
         double min = Double.POSITIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            min = FastMath.min(min, cleanedSampleValue.getY());
+            min = TMath.min(min, cleanedSampleValue.getY());
         }
         return min;
     }
@@ -223,7 +228,7 @@ public class ScatterPlot {
         double max = Double.NEGATIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            max = FastMath.max(max, cleanedSampleValue.getX());
+            max = TMath.max(max, cleanedSampleValue.getX());
         }
         return max;
     }
@@ -237,7 +242,7 @@ public class ScatterPlot {
         double max = Double.NEGATIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            max = FastMath.max(max, cleanedSampleValue.getY());
+            max = TMath.max(max, cleanedSampleValue.getY());
         }
         return max;
     }
@@ -344,7 +349,7 @@ public class ScatterPlot {
     }
 
     private List<Double> getUnconditionedDataContinuous(String target) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
+        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(target));
 
         List<Double> _data = new ArrayList<>();
 
@@ -360,7 +365,7 @@ public class ScatterPlot {
 
         List<Integer> rows = getConditionedRows();
 
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
+        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(target));
 
         List<Double> _data = new ArrayList<>();
 
@@ -373,15 +378,21 @@ public class ScatterPlot {
 
     //======================================PRIVATE METHODS=======================================//
 
-    // Returns the rows in the data that satisfy the conditioning constraints.
+    // Returns the rows in the data that satisfy the conditioning constraints and in which both plotted
+    // variables are present (not missing). Rows with a missing x or y cannot be plotted, regressed on,
+    // or counted in the sample size, so they are excluded here, at the single point that feeds all three.
     private List<Integer> getConditionedRows() {
         List<Integer> rows = new ArrayList<>();
 
         I:
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            if (!present(i, this._x) || !present(i, this._y)) {
+                continue;
+            }
+
             for (Node node : this.continuousIntervals.keySet()) {
                 double[] range = this.continuousIntervals.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 double value = this.dataSet.getDouble(i, index);
                 if (!(value >= range[0] && value <= range[1])) {
                     continue I;
@@ -390,7 +401,7 @@ public class ScatterPlot {
 
             for (Node node : this.discreteValues.keySet()) {
                 int value = this.discreteValues.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 int _value = this.dataSet.getInt(i, index);
                 if (!(value == _value)) {
                     continue I;
@@ -401,6 +412,20 @@ public class ScatterPlot {
         }
 
         return rows;
+    }
+
+    /**
+     * States whether the value of the given variable in the given row is present (not missing). For continuous
+     * variables a value is present if it is finite; for discrete variables, if it is not the missing-value code.
+     */
+    private boolean present(int row, Node variable) {
+        int index = this.dataSet.getColumnIndex(variable);
+
+        if (variable instanceof DiscreteVariable) {
+            return this.dataSet.getInt(row, index) != DiscreteVariable.MISSING_VALUE;
+        } else {
+            return Double.isFinite(this.dataSet.getDouble(row, index));
+        }
     }
 
     private Vector<Point2D.Double> pairs(String x, String y) {

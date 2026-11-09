@@ -23,11 +23,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.blocks.SingleClusterPolicy;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -69,12 +69,11 @@ public class Ftfc {
     private final int n;
     private final Map<List<Integer>, Boolean> vanishCache = new HashMap<>();
     private final Tsc tsc;
-    private final SingleClusterPolicy policy;
     private final int sampleSize;
     /**
      * Whether verbose output is desired.
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     /**
      * A cache of pure tetrads.
      */
@@ -89,19 +88,29 @@ public class Ftfc {
      * Constructs an instance of Ftfc.
      *
      * @param dataSet The dataset containing the variables and data from which the model will be built.
-     * @param alpha The significance level used for statistical testing.
-     * @param ess The equivalent sample size to be set.
-     * @param policy The single cluster policy defining the strategy for cluster formation and analysis.
+     * @param alpha   The significance level used for statistical testing.
+     * @param ess     The equivalent sample size to be set.
      */
-    public Ftfc(DataSet dataSet, double alpha, int ess, SingleClusterPolicy policy) {
-        this.variables = dataSet.getVariables();
+    public Ftfc(DataSet dataSet, double alpha, int ess) {
+        this(new CorrelationMatrix(dataSet), alpha, ess);
+    }
+
+    /**
+     * Constructs an instance of the Ftfc class from a correlation matrix, for use when the correlations do not come
+     * from a single raw data set--for example, the pooled correlations of several imputations of a data set with
+     * missing values. The matrix's sample size is used as the sample size.
+     *
+     * @param correlationMatrix The correlation matrix over the variables.
+     * @param alpha   The significance level used for statistical testing.
+     * @param ess     The equivalent sample size to be set.
+     */
+    public Ftfc(CorrelationMatrix correlationMatrix, double alpha, int ess) {
+        this.variables = correlationMatrix.getVariables();
         this.alpha = alpha;
-        this.policy = policy;
-        CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
         this.S = correlationMatrix.getMatrix().getSimpleMatrix();
-        this.n = dataSet.getNumRows();
-        this.tsc = new Tsc(dataSet.getVariables(), correlationMatrix);
-        this.sampleSize = dataSet.getNumRows();
+        this.n = correlationMatrix.getSampleSize();
+        this.tsc = new Tsc(correlationMatrix.getVariables(), correlationMatrix);
+        this.sampleSize = correlationMatrix.getSampleSize();
         setEss(ess);
     }
 
@@ -165,7 +174,7 @@ public class Ftfc {
         int size = rank + 1;
 
         Set<Set<Integer>> tscClusters = tsc.findClustersAtRank(variables, size, rank);
-        System.out.println("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
+//        TetradLogger.getInstance().log("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
 
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
@@ -251,7 +260,7 @@ public class Ftfc {
         List<Integer> toAdd = new ArrayList<>();
 
         // Choose subset size: if cluster is small, use the whole cluster; otherwise tadSize-1
-        final int k = Math.min(cluster.size(), tadSize - 1);
+        final int k = TMath.min(cluster.size(), tadSize - 1);
 
         // Pre-enumerate all k-subsets of the current cluster once
         List<List<Integer>> subsets = new ArrayList<>();
@@ -424,7 +433,7 @@ public class Ftfc {
                 if (!inX) y[yIndex++] = v;
             }
 
-            int r = Math.min(x.length, y.length) - 1;
+            int r = TMath.min(x.length, y.length) - 1;
             int rank = RankTests.estimateWilksRankFast(S, x, y, n, alpha);
             if (rank != r) {
                 vanishCache.put(key, false);

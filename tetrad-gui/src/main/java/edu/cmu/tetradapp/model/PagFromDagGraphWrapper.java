@@ -52,7 +52,8 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     /**
      * <p>Constructor for PagFromDagGraphWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PagFromDagGraphWrapper(Graph graph, Parameters parameters) {
         super(graph);
@@ -61,7 +62,8 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        Graph pag = GraphTransforms.dagToPag(graph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        Graph pag = GraphTransforms.dagToPag(graph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS),
+                10 /* second timeout*/);
         setGraph(pag);
 
         TetradLogger.getInstance().log("\nGenerating allow_latent_common_causes from DAG.");

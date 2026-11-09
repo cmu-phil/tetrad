@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import org.junit.Test;
 
 import java.rmi.MarshalledObject;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,7 +99,12 @@ public class TestDataWrapper {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(200, false);
+        DataSet dataSet = null;
+        try {
+            dataSet = im.simulateData(200, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DataBox box = new DoubleDataBox(dataSet.getDoubleData().toArray());
 

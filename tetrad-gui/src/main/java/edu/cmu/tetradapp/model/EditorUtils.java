@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,11 +16,12 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,9 +31,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.prefs.Preferences;
 
 /**
@@ -42,6 +41,13 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class EditorUtils {
+
+    /**
+     * Constructs a new EditorUtils. All methods of this class are static, so instances are not normally needed.
+     */
+    public EditorUtils() {
+    }
+
     /**
      * <p>getTopLeftPoint.</p>
      *
@@ -88,13 +94,12 @@ public class EditorUtils {
             return new File(directory, prefix + "." + suffix);
         }
 
-        List<String> files = Arrays.asList(Objects.requireNonNull(directory.list()));
         String name;
         int i = 0;
 
         do {
             name = prefix + (++i) + "." + suffix;
-        } while (files.contains(name));
+        } while (new File(directory, name).exists());
 
         return new File(directory, name);
     }
@@ -127,6 +132,7 @@ public class EditorUtils {
     public static File getSaveFileWithPath(String prefix, String suffix,
                                            Component parent, boolean overwrite, String dialogName, String saveLocation) {
         JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
+        renameButton(chooser, "Cancel", "Don't Save");
 
         String fileSaveLocation;
         if (saveLocation == null) {
@@ -135,6 +141,7 @@ public class EditorUtils {
         } else {
             fileSaveLocation = saveLocation;
         }
+
         File dir = new File(fileSaveLocation);
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -158,6 +165,14 @@ public class EditorUtils {
             outfile = chooser.getSelectedFile();
 
             if (outfile.exists()) {
+                // Re-saving the suggested file (e.g. a session under its own name) with
+                // overwrite requested: skip the redundant prompt.
+                boolean isSuggested = selectedFile != null
+                        && outfile.getAbsoluteFile().equals(selectedFile.getAbsoluteFile());
+                if (overwrite && isSuggested) {
+                    break;
+                }
+
                 int ret2 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "Overwrite existing file?", "", JOptionPane.YES_NO_OPTION);
                 if (ret2 == JOptionPane.YES_OPTION) {
@@ -183,6 +198,45 @@ public class EditorUtils {
         }
 
         return outfile;
+    }
+
+    /**
+     * Returns a file in the save location for a new session, of the form prefix.suffix if overwrite is true, or else
+     * the next available file of the form prefix{n}.suffix. No dialog is shown.
+     *
+     * @param prefix       the prefix of the file name
+     * @param suffix       the suffix of the file name
+     * @param parent       the parent component (not used)
+     * @param overwrite    true iff the file prefix.suffix should be used even if it exists
+     * @param dialogName   the dialog name (not used)
+     * @param saveLocation the directory to use; if null, the stored "fileSaveLocation" preference is used
+     * @return the file, or null if the directory does not exist and could not be created
+     */
+    public static File getNewSessionName(String prefix, String suffix,
+                                         Component parent, boolean overwrite, String dialogName, String saveLocation) {
+        String fileSaveLocation;
+        if (saveLocation == null) {
+            fileSaveLocation = Preferences.userRoot().get(
+                    "fileSaveLocation", Preferences.userRoot().absolutePath());
+        } else {
+            fileSaveLocation = saveLocation;
+        }
+
+        return EditorUtils.nextFile(fileSaveLocation, prefix, suffix, overwrite);
+    }
+
+    private static void renameButton(Container container, String originalText, String newText) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JButton button) {
+                String text = button.getText();
+                if (text != null && text.equals(originalText)) {
+                    button.setText(newText);
+                    return;
+                }
+            } else if (c instanceof Container child) {
+                renameButton(child, originalText, newText);
+            }
+        }
     }
 
     /**
@@ -224,6 +278,14 @@ public class EditorUtils {
         return chooser;
     }
 
+    /**
+     * Adds tab completion to the given text field. Pressing Tab completes the word before the caret to the longest
+     * common prefix of the given words that start with it. This disables the default Tab focus traversal for the
+     * field.
+     *
+     * @param textField the text field
+     * @param words     the words available for completion
+     */
     public static void addTabCompleteLogic(JTextField textField, List<String> words) {
         SwingUtilities.invokeLater(() -> {
 
@@ -276,7 +338,7 @@ public class EditorUtils {
     }
 
     private static String commonPrefix(String s1, String s2) {
-        int minLength = Math.min(s1.length(), s2.length());
+        int minLength = TMath.min(s1.length(), s2.length());
         int i = 0;
         while (i < minLength && s1.charAt(i) == s2.charAt(i)) {
             i++;
@@ -298,10 +360,21 @@ public class EditorUtils {
          */
         private final Color promptColor;
 
+        /**
+         * Constructs a text field with the given prompt text, displayed in gray.
+         *
+         * @param promptText the prompt text
+         */
         public JTextFieldWithPrompt(String promptText) {
             this(promptText, Color.GRAY);
         }
 
+        /**
+         * Constructs a text field with the given prompt text and prompt color.
+         *
+         * @param promptText  the prompt text
+         * @param promptColor the color of the prompt text
+         */
         public JTextFieldWithPrompt(String promptText, Color promptColor) {
             this.promptText = promptText;
             this.promptColor = promptColor;
@@ -342,6 +415,15 @@ public class EditorUtils {
                 g2d.drawString(promptText, getInsets().left, getHeight() - padding - 1);
                 g2d.dispose();
             }
+        }
+
+        /**
+         * The prompt text.
+         *
+         * @return the prompt text
+         */
+        public String getPromptText() {
+            return promptText;
         }
     }
 }

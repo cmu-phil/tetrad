@@ -32,7 +32,7 @@ import edu.cmu.tetradapp.util.SortingComboBox;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -535,7 +535,9 @@ public class UpdatedBayesImWizardObs extends JPanel {
     }
 
     /**
-     * @return the getModel parameter set.
+     * Returns the currently selected node.
+     *
+     * @return the selected node.
      */
     public Node getSelectedNode() {
         return this.selectedNode;
@@ -658,7 +660,7 @@ final class UpdaterEditingTableObs extends JTable {
             col = getNumParents();
         }
 
-        this.focusCol = FastMath.max(col, getNumParents());
+        this.focusCol = TMath.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
             this.focusCol < getColumnCount()) {

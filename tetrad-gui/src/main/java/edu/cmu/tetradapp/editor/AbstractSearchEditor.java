@@ -273,7 +273,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
-                getWorkbench().setBackground(Color.WHITE);
+//                getWorkbench().setBackground(Color.WHITE);
                 getWorkbench().setGraph(resultGraph);
                 getGraphHistory().clear();
                 getGraphHistory().add(resultGraph);

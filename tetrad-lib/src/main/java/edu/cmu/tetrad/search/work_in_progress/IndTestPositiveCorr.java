@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -37,7 +38,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -130,17 +131,17 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         System.out.println(LogUtilsSearch.independenceFact(x0, y0, _z0));
 
-        double[] x = this.data[this.dataSet.getColumn(x0)];
-        double[] y = this.data[this.dataSet.getColumn(y0)];
+        double[] x = this.data[this.dataSet.getColumnIndex(x0)];
+        double[] y = this.data[this.dataSet.getColumnIndex(y0)];
 
         List<Node> z0 = new ArrayList<>(_z0);
-        Collections.sort(z0);
+        z0.sort(NaturalSort.naturalComparator());
 
         double[][] _Z = new double[z0.size()][];
 
         for (int f = 0; f < z0.size(); f++) {
             Node _z = z0.get(f);
-            int column = this.dataSet.getColumn(_z);
+            int column = this.dataSet.getColumnIndex(_z);
             _Z[f] = this.data[column];
         }
 

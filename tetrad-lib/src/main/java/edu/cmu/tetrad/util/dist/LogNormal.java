@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 
@@ -112,7 +112,7 @@ public class LogNormal implements Distribution {
      */
     public double nextRandom() {
         double random = RandomUtil.getInstance().nextGaussian(0, this.sd);
-        return FastMath.exp(random);
+        return TMath.exp(random);
     }
 
     /**

@@ -20,9 +20,10 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
+
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,7 +47,20 @@ class QQPlotDisplayPanel extends JPanel {
     /**
      * The line color around the histogram.
      */
-    private static final Color LINE_COLOR = Color.GRAY.darker();
+    /** Axes and gridlines: the Look and Feel's border color, as in the histogram and scatter plots. */
+    private static Color lineColor() {
+        return WorkbenchStyle.lafBorder();
+    }
+
+    /** The data points, matching the scatter plot's marks. */
+    private static Color pointColor() {
+        return WorkbenchStyle.plotMark();
+    }
+
+    /** Axis numbers and the caption: the Look and Feel's text color. */
+    private static Color textColor() {
+        return WorkbenchStyle.labelForeground();
+    }
 
 
     /**
@@ -138,59 +152,49 @@ class QQPlotDisplayPanel extends JPanel {
         // draw background/surrounding box.
         g2d.setColor(this.getBackground());
         g2d.fillRect(0, 0, QQPlotDisplayPanel.WIDTH + 2 * QQPlotDisplayPanel.SPACE, QQPlotDisplayPanel.HEIGHT);
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(WorkbenchStyle.cardFill());
         g2d.fillRect(QQPlotDisplayPanel.PADDING, 0, (QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE) - QQPlotDisplayPanel.PADDING, height);
 
         //border
-        g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
+        g2d.setColor(lineColor());
         g2d.drawRect(QQPlotDisplayPanel.PADDING, 0, (QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE) - QQPlotDisplayPanel.PADDING, height);
         // graw the buttom line
-        g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
-        g2d.drawString(this.format.format(FastMath.floor(this.qqPlot.getMinSample())), QQPlotDisplayPanel.PADDING + 5, height + 15);
+        g2d.setColor(textColor());
+        g2d.drawString(this.format.format(TMath.floor(this.qqPlot.getMinSample())), QQPlotDisplayPanel.PADDING + 5, height + 15);
         g2d.drawLine(QQPlotDisplayPanel.PADDING, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.PADDING, height);
-        String maxStr = this.format.format((int) FastMath.ceil(this.qqPlot.getMaxSample()));
+        String maxStr = this.format.format((int) TMath.ceil(this.qqPlot.getMaxSample()));
         g2d.drawString(maxStr, QQPlotDisplayPanel.WIDTH - fontMetrics.stringWidth(maxStr), height + 15);
         g2d.drawLine(QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height);
 
-        // draw the side line
-        g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
+        // draw the side ticks and numbers
+        g2d.setColor(textColor());
         final int topY = 0;
-        String top = "" + FastMath.ceil(this.qqPlot.getMaxSample());
+        String top = "" + TMath.ceil(this.qqPlot.getMaxSample());
         g2d.drawString(top, QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(top), topY + 10);
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, topY, QQPlotDisplayPanel.PADDING, topY);
-        g2d.drawString(FastMath.floor(this.qqPlot.getMinSample()) + "", QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(FastMath.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
+        g2d.drawString(TMath.floor(this.qqPlot.getMinSample()) + "", QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(TMath.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, height, QQPlotDisplayPanel.PADDING, height);
 
-        //draw the data points
-        int dataColumn = this.qqPlot.getDataSet().getColumn(this.qqPlot.getSelectedVariable());
+        //draw the data points: the i'th sorted nonmissing sample value against the i'th comparison quantile
+        g2d.setColor(pointColor());
 
-        //set selected variable if there is none
-        if (dataColumn == -1) {
-            for (int i = 0; i < this.qqPlot.getDataSet().getNumColumns(); i++) {
-                if (this.qqPlot.getDataSet().getVariable(i) instanceof ContinuousVariable) {
-                    this.qqPlot.setSelectedVariable((ContinuousVariable) this.qqPlot.getDataSet().getVariable(i));
-                    dataColumn = i;
-                    break;
-                }
-            }
-        }
+        double[] sample = this.qqPlot.getSampleVariable();
+        double[] comparison = this.qqPlot.getComparisonVariable();
 
-        g2d.setColor(new Color(255, 0, 0));
-
-        for (int i = 0; i < this.qqPlot.getDataSet().getNumRows(); i++) {
-            double x = (this.qqPlot.getDataSet().getDouble(i, dataColumn));
-            double y = (this.qqPlot.getComparisonVariable()[i]);
+        for (int i = 0; i < sample.length; i++) {
+            double x = sample[i];
+            double y = comparison[i];
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
                 && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
-                double[] result = plotPoint(x, y, FastMath.floor(this.qqPlot.getMinSample()), FastMath.ceil(this.qqPlot.getMaxSample()));
+                double[] result = plotPoint(x, y, TMath.floor(this.qqPlot.getMinSample()), TMath.ceil(this.qqPlot.getMaxSample()));
 
                 g2d.fill(new Ellipse2D.Double(result[0], result[1], 4, 4));
             }
         }
 
         // draw the display string.
-        g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
+        g2d.setColor(textColor());
         g2d.drawString(getDisplayString(), QQPlotDisplayPanel.PADDING, QQPlotDisplayPanel.HEIGHT - 5);
     }
 

@@ -34,12 +34,25 @@ public final class SimulationTypes {
     public static final String BAYS_NET = "Bayes Net (Multinomial)";
     /**
      * Constant <code>STRUCTURAL_EQUATION_MODEL="Linear Structural Equation Model"</code>
+     *
+     * @deprecated This name covered both the Gaussian and the non-Gaussian linear SEM simulations, which was
+     * confusing. It is kept so that scripts and saved selections using the old name still resolve (to the
+     * Linear Gaussian SEM); use {@link #LINEAR_GAUSSIAN_SEM} or {@link #LINEAR_NON_GAUSSIAN_SEM} instead.
      */
+    @Deprecated
     public static final String STRUCTURAL_EQUATION_MODEL = "Linear Structural Equation Model";
     /**
-     * Constant <code>LINEAR_FISHER_MODEL="Linear Fisher Model"</code>
+     * Constant <code>LINEAR_GAUSSIAN_SEM="Linear Gaussian SEM"</code>
      */
-    public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
+    public static final String LINEAR_GAUSSIAN_SEM = "Linear Gaussian SEM";
+    /**
+     * Constant <code>LINEAR_NON_GAUSSIAN_SEM="Linear Non-Gaussian SEM"</code>
+     */
+    public static final String LINEAR_NON_GAUSSIAN_SEM = "Linear Non-Gaussian SEM";
+//    /**
+//     * Constant <code>LINEAR_FISHER_MODEL="Linear Fisher Model"</code>
+//     */
+//    public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
     /**
      * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="GP Nonlinear Structural Equation Model"</code>
      */
@@ -47,7 +60,7 @@ public final class SimulationTypes {
     /**
      * Constant <code>ADDITIVE_NOISE_MODEL="Additive Noise SEM"</code>
      */
-    public static final String NONLINEAR_ADDITIVE_SEM = "Nonlinear Additive SEM (CAM)";
+    public static final String GENERAL_ADDITIVE_MODEL = "General Additive Model (GAM)";
 //    /**
 //     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear SEM"</code>
 //     */
@@ -92,6 +105,22 @@ public final class SimulationTypes {
      * Constant <code>BOOLEAN_GLASS_SIMULATION="Boolean Glass Simulation"</code>
      */
     public static final String BOOLEAN_GLASS_SIMULATION = "Boolean Glass Simulation";
+    /**
+     * Constant <code>TRAINED_DAG_SIMULATION="Trained DAG Simulation"</code>
+     */
+    public static final String TRAINED_DAG_SIMULATION = "Trained DAG Simulation";
+    /**
+     * Constant <code>DAO_SIMULATION="DAO Simulation"</code>
+     */
+    public static final String DAO_SIMULATION = "DAO Simulation";
+    /**
+     * Constant <code>DESIGNED_EXPERIMENT="Designed Experiment"</code>
+     */
+    public static final String DESIGNED_EXPERIMENT = "Designed Experiment";
+    /**
+     * Constant <code>OBSERVATIONAL_STUDY="Observational Study"</code>
+     */
+    public static final String OBSERVATIONAL_STUDY = "Observational Study";
 
     private SimulationTypes() {
     }

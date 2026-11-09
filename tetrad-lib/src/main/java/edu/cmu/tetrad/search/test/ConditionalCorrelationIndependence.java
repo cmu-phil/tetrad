@@ -24,16 +24,17 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Daudin's method. See
@@ -128,7 +129,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
         var mad = median(g.toArray());
         var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+        return 1.06 * sigmaRobust * TMath.pow(N, -0.20);
     }
 
     /**
@@ -145,7 +146,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         Vector difference = z.row(i).minus(z.row(j));
         double squaredDistance = difference.dotProduct(difference);
 
-        return FastMath.exp(-squaredDistance / (2 * _h * _h));
+        return TMath.exp(-squaredDistance / (2 * _h * _h));
     }
 
     /**
@@ -159,7 +160,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     public double isIndependent(Node x, Node y, Set<Node> _z) {
         var z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         var allNodes = new ArrayList<>(z);
         allNodes.add(x);

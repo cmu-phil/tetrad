@@ -31,6 +31,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
@@ -80,7 +82,11 @@ public class ExampleCompareSimulation2 {
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);
 
-        comparison.compareFromSimulations("comparetest", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("comparetest", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

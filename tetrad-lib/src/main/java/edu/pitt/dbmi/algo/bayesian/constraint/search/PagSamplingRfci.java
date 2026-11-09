@@ -42,8 +42,15 @@ import java.util.concurrent.*;
  */
 public class PagSamplingRfci implements IGraphSearch {
 
-    private final int NUM_THREADS = 10;
+    /**
+     * The maximum number of attempts per required graph, used to bound the retry loop when searches
+     * consistently produce illegal PAGs. Total attempts allowed is numRandomizedSearchModels *
+     * MAX_ATTEMPTS_MULTIPLIER.
+     */
+    private static final int MAX_ATTEMPTS_MULTIPLIER = 5;
+
     private final DataSet dataSet;
+    private int numThreads = 10;
     // PagSamplingRfci
     private int numRandomizedSearchModels = 10;
     private boolean verbose = false;
@@ -82,6 +89,8 @@ public class PagSamplingRfci implements IGraphSearch {
 
     /**
      * Create tasks for parallel execution.
+     * <p>
+     * Package-private to allow unit testing of task construction without running the full search.
      *
      * @param numOfTasks the number of tasks.
      * @return a list of callable tasks.
@@ -99,11 +108,27 @@ public class PagSamplingRfci implements IGraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
+        // Use a plain fixed thread pool rather than ForkJoinPool. ForkJoinPool is designed for
+        // recursive divide-and-conquer work; these tasks are independent and flat, so a fixed
+        // thread pool is the more appropriate and predictable choice.
+        ExecutorService pool = Executors.newFixedThreadPool(numThreads);
+
+        // Guard against systematic failures (e.g. data that always produces illegal PAGs) that
+        // would otherwise cause the while-loop to run indefinitely. The multiplier is generous
+        // enough to tolerate occasional bad draws in the randomized independence test.
+        int maxAttempts = numRandomizedSearchModels * MAX_ATTEMPTS_MULTIPLIER;
+        int attempts = 0;
+
         try {
-            while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
-                List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());
+            while (graphs.size() < numRandomizedSearchModels
+                    && !Thread.currentThread().isInterrupted()
+                    && attempts < maxAttempts) {
+
+                int needed = numRandomizedSearchModels - graphs.size();
+                List<Callable<Graph>> callableTasks = createTasks(needed);
                 List<Future<Graph>> completedTasks = pool.invokeAll(callableTasks);
+                attempts += needed;
+
                 for (Future<Graph> completedTask : completedTasks) {
                     try {
                         Graph graph = completedTask.get();
@@ -114,6 +139,12 @@ public class PagSamplingRfci implements IGraphSearch {
                         exception.printStackTrace(System.err);
                     }
                 }
+            }
+
+            if (graphs.size() < numRandomizedSearchModels) {
+                System.err.printf(
+                        "PagSamplingRfci: only %d of %d requested legal PAGs were collected after %d attempts.%n",
+                        graphs.size(), numRandomizedSearchModels, attempts);
             }
         } catch (InterruptedException exception) {
             exception.printStackTrace(System.err);
@@ -128,14 +159,12 @@ public class PagSamplingRfci implements IGraphSearch {
      * Call shutdown to reject incoming tasks, and then calling shutdownNow, if necessary, to cancel any lingering
      * tasks.
      */
-    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
+    private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();
         try {
-            if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
-                Thread.currentThread().interrupt();
-                if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-//                    System.err.println("Pool did not terminate");
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
                     throw new RuntimeException("Pool did not terminate");
                 }
             }
@@ -144,6 +173,18 @@ public class PagSamplingRfci implements IGraphSearch {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted");
         }
+    }
+
+    /**
+     * Set the number of threads for parallel execution.
+     *
+     * @param numThreads the number of threads.
+     */
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be >= 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
     }
 
     /**
@@ -255,4 +296,3 @@ public class PagSamplingRfci implements IGraphSearch {
     }
 
 }
-

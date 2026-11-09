@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +68,12 @@ public class TestDeltaTetradTest {
             int[] count = new int[6];
 
             for (int k = 0; k < numTrials; k++) {
-                DataSet data = sem.simulateData(sampleSize, false);
+                DataSet data = null;
+                try {
+                    data = sem.simulateData(sampleSize, false);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
                 int x1 = 1;
                 int x2 = 2;
                 int x3 = 3;
@@ -229,7 +235,12 @@ public class TestDeltaTetradTest {
     @Test
     public void test3() {
         SemPm pm = makePm();
-        DataSet data = new SemIm(pm).simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = new SemIm(pm).simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         CovarianceMatrix cov = new CovarianceMatrix(data);
 

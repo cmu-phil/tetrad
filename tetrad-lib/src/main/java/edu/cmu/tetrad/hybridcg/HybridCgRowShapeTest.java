@@ -80,7 +80,7 @@ public class HybridCgRowShapeTest {
             }
         }
 
-        DataSet simulated = im.toDataSet(im.sample(50, new Random(123)));
+        DataSet simulated = im.toDataSet(im.sample(50));
         assertNotNull(simulated);
         assertEquals(2, simulated.getNumColumns()); // X and Y present
     }

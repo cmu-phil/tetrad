@@ -31,9 +31,11 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -159,7 +161,7 @@ public class TscHarnessTest {
         for (List<Integer> T : truth) {
             int c = 0;
             for (int v : T) if (s.contains(v)) c++;
-            maxOverlap = Math.max(maxOverlap, c);
+            maxOverlap = TMath.max(maxOverlap, c);
         }
         return maxOverlap / (double) size;
     }
@@ -174,7 +176,7 @@ public class TscHarnessTest {
         for (Set<Integer> C : pred) {
             int c = 0;
             for (int v : C) if (t.contains(v)) c++;
-            maxOverlap = Math.max(maxOverlap, c);
+            maxOverlap = TMath.max(maxOverlap, c);
         }
         return maxOverlap / (double) size;
     }
@@ -257,14 +259,13 @@ public class TscHarnessTest {
     private static double[][] impuritiesWithinBlocks(List<List<Integer>> blocks, long seed, int P, double eps) {
         double[][] R = new double[P][P];
         if (eps <= 0) return R;
-        Random rng = new Random(seed ^ 0x9E3779B97F4A7C15L);
         for (List<Integer> B : blocks) {
             List<int[]> pairs = new ArrayList<>();
             for (int i = 0; i < B.size(); i++)
                 for (int j = i + 1; j < B.size(); j++)
                     pairs.add(new int[]{B.get(i), B.get(j)});
-            Collections.shuffle(pairs, rng);
-            int keep = Math.max(1, (int) Math.round(0.10 * pairs.size()));
+            RandomUtil.shuffle(pairs);
+            int keep = TMath.max(1, (int) TMath.round(0.10 * pairs.size()));
             for (int k = 0; k < keep; k++) {
                 int i = pairs.get(k)[0], j = pairs.get(k)[1];
                 R[i][j] += eps;
@@ -276,7 +277,7 @@ public class TscHarnessTest {
 
     private static int max(int[] a) {
         int m = Integer.MIN_VALUE;
-        for (int x : a) m = Math.max(m, x);
+        for (int x : a) m = TMath.max(m, x);
         return m;
     }
 
@@ -315,7 +316,7 @@ public class TscHarnessTest {
                 counts.merge(C, 1, Integer::sum);
             }
         }
-        int thresh = (int) Math.ceil(keepFrac * B);
+        int thresh = (int) TMath.ceil(keepFrac * B);
         Set<Set<Integer>> stable = new HashSet<>();
         for (var e : counts.entrySet()) if (e.getValue() >= thresh) stable.add(e.getKey());
         return stable;
@@ -396,11 +397,9 @@ public class TscHarnessTest {
      */
     @Test
     public void tsc_onMixedRankMIMs_hasHighQuality() {
-        Random topRng = new Random(SEED);
-
         for (int[] ranks : RANK_SPECS) {
             for (int t = 0; t < TRIALS; t++) {
-                long seed = topRng.nextLong();
+                long seed = RandomUtil.getInstance().nextLong();
                 RunSpec spec = new RunSpec(ranks, seed);
 
                 // Build truth vars & blocks
@@ -474,13 +473,18 @@ public class TscHarnessTest {
         SemIm im = new SemIm(pm);
 
         final int nRows = 10000;
-        DataSet data = im.simulateData(nRows, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(nRows, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
         List<Node> vars = data.getVariables();
         int ess = data.getNumRows();
 
         // Adaptive alpha helps tamp down borderline rank calls as N grows
-        double alphaBase = Math.min(ALPHA, 1.0 / Math.log(Math.max(50, ess)));
+        double alphaBase = TMath.min(ALPHA, 1.0 / TMath.log(TMath.max(50, ess)));
         int minRedundancy = 0;
 
         // ---- Dual-alpha intersection (cheap) ----
@@ -502,7 +506,7 @@ public class TscHarnessTest {
                     counts.merge(C, 1, Integer::sum);
                 }
             }
-            int thresh = (int) Math.ceil(keepFrac * B);
+            int thresh = (int) TMath.ceil(keepFrac * B);
             for (var e : counts.entrySet()) if (e.getValue() >= thresh) boot.add(e.getKey());
         }
 

@@ -21,6 +21,10 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
@@ -64,8 +68,63 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
      * @param lambda                Singularity lambda
      */
     public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda) {
+        this(dataSet, precomputeCovariances, lambda, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. Supported policies on a
+     * dataset with missing values are LISTWISE (complete cases only), TESTWISE and EM_COVARIANCE. Under TESTWISE
+     * the embedding propagates a missing source entry to NaN in every derived column of that variable, and the
+     * underlying {@link SemBicScore} then computes each family's covariance over the rows complete on that
+     * family's embedded columns. Under EM_COVARIANCE the EM estimate is taken of the embedded matrix, not of the
+     * raw mixed data: this score's founding assumption is already that the indicator columns may be treated as
+     * jointly Gaussian for scoring, nothing downstream inspects a filled-in indicator, and the reference category
+     * is dropped, so an indicator block is full rank. The caveat is that the implied category probabilities need
+     * not be coherent, and the size of that looseness grows with the missingness rate; compare against TESTWISE
+     * on real data rather than assuming either dominates. A null spec on missing data is treated as FAIL, matching
+     * the behavior since the Phase 1 refactor (before which missing data silently produced statistically
+     * undefined scores).
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances True if covariances should be precomputed.
+     * @param lambda                Singularity lambda
+     * @param spec                  The missing-data specification, or null (equivalent to FAIL on missing data).
+     * @throws IllegalArgumentException      If the dataset has missing values and the policy is FAIL.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda,
+                                   MissingDataSpec spec) {
         if (dataSet == null) {
             throw new NullPointerException();
+        }
+
+        boolean testwise = false;
+        boolean emCovariance = false;
+
+        // Held before any deletion or embedding: the effective sample size is a fact about the raw variables.
+        // Computing it after embedding would be wrong for MEAN_PAIRWISE, which averages over pairs and so would
+        // weight each variable by the width of its embedding block -- a five-category discrete variable counting
+        // twenty-five times a continuous one. MIN_PAIRWISE is invariant under embedding, since a missing source
+        // entry becomes NaN in every derived column of that variable, so the minimum over embedded pairs equals
+        // the minimum over variable pairs; but it costs nothing to compute both on the raw data.
+        DataSet rawData = dataSet;
+
+        if (dataSet.existsMissingValue()) {
+            MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
+
+            switch (policy) {
+                case LISTWISE -> dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                case TESTWISE -> testwise = true;
+                case EM_COVARIANCE, PAIRWISE_COVARIANCE -> emCovariance = true;
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "DegenerateGaussianScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
+                                + "datasets, not by a single score.");
+                default -> throw new IllegalArgumentException(
+                        "DegenerateGaussianScore: The dataset contains missing values and the missing-data policy "
+                                + "is " + policy + ". This score supports LISTWISE, TESTWISE, EM_COVARIANCE and PAIRWISE_COVARIANCE on "
+                                + "missing data. " + MissingDataUtils.briefSummary(dataSet));
+            }
         }
 
         this.variables = dataSet.getVariables();
@@ -79,12 +138,44 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
-        this.bic = new SemBicScore(convertedData, precomputeCovariances);
+        // Under TESTWISE the embedded data carries NaN wherever the source was missing, and SemBicScore's own
+        // test-wise path takes over; the explicit spec avoids its legacy-default warning.
+        //
+        // Under EM_COVARIANCE the EM estimate is taken of the *embedded* matrix, which is the right place for it:
+        // this score's founding assumption is already that the indicator columns may be treated as jointly
+        // Gaussian for scoring, and EM under that same working model is not an additional assumption but the
+        // existing one carried through to incomplete data. Nothing downstream ever inspects a filled-in
+        // indicator -- EM yields sufficient statistics and this score consumes only a covariance -- and what EM
+        // accumulates for an indicator column is E[1{V = c} | observed], a conditional category probability. The
+        // embedding drops a reference category, so an indicator block is full rank and the estimate is not
+        // degenerate by construction.
+        //
+        // The honest caveat: under a Gaussian conditional those expectations can fall outside [0, 1], so the
+        // implied category probabilities need not be coherent. That is the same approximation the score already
+        // makes on complete data, but here it also applies to the filled-in portion, so its size grows with the
+        // missingness rate rather than staying fixed. Compare against TESTWISE on real data rather than assuming
+        // either dominates.
+        if (emCovariance) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(convertedData, spec);
+            this.bic = new SemBicScore(estimated);
+        } else if (testwise) {
+            this.bic = new SemBicScore(convertedData, precomputeCovariances, MissingDataSpec.testwise());
+        } else {
+            this.bic = new SemBicScore(convertedData, precomputeCovariances);
+        }
         this.bic.setEffectiveSampleSize(this.nEff);
         this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
 
-        setEffectiveSampleSize(-1);
+        // Under test-wise deletion the penalty already scales with each family's own row count, but the
+        // likelihood term is multiplied by nEff, which defaults to the full row count. Crediting the fit with N
+        // rows' worth of information while charging the penalty for the family's actual rows biases every score
+        // in the direction of more edges. An ESS mode other than FULL_N discounts the likelihood to match.
+        // Applied only under TESTWISE: LISTWISE has already reduced the data to complete cases, whose row count
+        // is the honest sample size for every family.
+        setEffectiveSampleSize(testwise || emCovariance
+                ? MissingDataUtils.effectiveSampleSize(rawData, spec) : -1);
     }
 
     /**
@@ -209,5 +300,15 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         }
         this.bic.setEffectiveSampleSize(this.nEff);
     }
-}
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: the embedding propagates missing source entries to every derived column, and the underlying
+     * SemBicScore then computes each family's statistics over the rows complete on that family.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+}

@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
@@ -31,8 +32,8 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,8 +41,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static java.lang.Math.signum;
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the FASK (Fast Adjacency Skewness) algorithm.
@@ -62,24 +62,72 @@ import static org.apache.commons.math3.util.FastMath.*;
  * </ul>
  * <p>
  * All existing public behavior is preserved.
+ * <p>
+ * Mixed data. The left-right rule and the two-cycle test are statistics of a pair of continuous variables and have
+ * no meaning for a discrete one, so on a data set with discrete variables they are applied to continuous pairs
+ * only. The adjacency search runs on all the variables, with whatever score was supplied (which must then be one
+ * that handles mixed data). An adjacency with a discrete endpoint is kept as an undirected edge, unless knowledge
+ * or a compelled orientation of the external graph orients it. Such an undirected edge means only that this method
+ * does not orient the pair; it does not mean the two directions are Markov equivalent, and the result is not a
+ * CPDAG. The skew-based extra adjacencies are likewise sought among continuous pairs only, and only continuous
+ * variables are conditioned on in the two-cycle test.
  *
  * @author Joseph Ramsey
  */
 public final class Fask {
-    private static double delta = -0.1;
-    // ------------ Fields ------------
+    /**
+     * The minimum number of jointly observed rows a pair needs for its edge to be oriented when values are missing.
+     */
+    private static final int MIN_PAIRWISE_ROWS = 20;
     private final Score score;
-    private final double[][] data;
     private final DataSet dataSet;
+    private double[][] data;
     private Graph externalGraph = null;
+
+    /**
+     * Whether the initial adjacency skeleton G0 should come from a BOSS CPDAG rather than FAS-stable
+     * (default: false). Ignored when an external graph has been set. This parallels the FGES-adjacency
+     * option in the original FASK: a global score-based search typically yields better finite-sample
+     * adjacencies than FAS, and FASK's pairwise skew orientation then proceeds identically.
+     */
+    private boolean useBossAdjacencies = false;
     private int depth = -1;
-    private double alpha = 1e-5;
+    private double alpha = 0.05;
     private Knowledge knowledge = new Knowledge();
     private double cutoff;
     private double extraEdgeThreshold = 0.3;
     private boolean useFasAdjacencies = true;
     private boolean useSkewAdjacencies = true;
-    private Fask.LeftRight leftRight = LeftRight.RSKEW;
+    private Fask.LeftRight leftRight = LeftRight.FASK2;
+
+    /**
+     * Whether the external graph's compelled orientations act as default orientations that the left-right statistic
+     * can overturn only under the bootstrap sign-consensus gate below (default: false, i.e., the external graph
+     * supplies adjacencies only, as before). Only consulted when an external graph has been set.
+     */
+    private boolean useExternalOrientations = false;
+
+    /**
+     * Number of bootstrap resamples used to gate an override of a compelled external orientation. Zero (the default)
+     * means no gate: the left-right statistic overturns a compelled orientation whenever it opposes it, which for
+     * compelled edges reduces to plain FASK. With a single dataset there is no cross-dataset consensus to appeal to,
+     * so a positive value here is what makes the override a genuine test rather than a relabeling.
+     */
+    private int overrideBootstraps = 0;
+
+    /**
+     * Block length for the override bootstrap. One (the default) resamples rows independently, which is correct for
+     * i.i.d. rows. A larger value resamples contiguous blocks of that length (a moving-block bootstrap), which is
+     * what autocorrelated rows -- time series such as LFP recordings -- require: with i.i.d. resampling of
+     * autocorrelated rows the resamples are far more alike than independent samples would be, the sign consensus is
+     * then much too easy to achieve, and false reversals follow.
+     */
+    private int overrideBlockLength = 1;
+
+    /**
+     * Provenance of each orientation decision from the last search, recorded when external orientations are in use.
+     */
+    private final java.util.Map<Edge, Origin> edgeOrigins = new java.util.HashMap<>();
 
     /**
      * Constructs a new Fask instance with the specified data set and score.
@@ -96,7 +144,8 @@ public final class Fask {
     // ------------ Public static utilities (unchanged signatures) ------------
 
     /**
-     * E[x y | condition > 0].
+     * E[x * y | condition > 0]. This is a helper for calculating expectations over a sub-population defined by a
+     * positive condition.
      *
      * @param x         the first array of data points
      * @param y         the second array of data points
@@ -115,7 +164,7 @@ public final class Fask {
     }
 
     /**
-     * corrExp(x,y|z) = E(xy|z>0) / sqrt(E(x^2|z>0) E(y^2|z>0)).
+     * Calculates the correlation expectation: corrExp(x,y|z) = E(xy|z>0) / sqrt(E(x^2|z>0) E(y^2|z>0)).
      *
      * @param x the first array of data points
      * @param y the second array of data points
@@ -127,7 +176,7 @@ public final class Fask {
     }
 
     /**
-     * E(xy | z>0).
+     * E(xy | z>0). This is a duplicate of the `cu` method but specifically naming the condition as `z`.
      *
      * @param x the first array of data points
      * @param y the second array of data points
@@ -135,14 +184,7 @@ public final class Fask {
      * @return the expected value of the product of x and y given z
      */
     public static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-        for (int k = 0; k < x.length; k++)
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        return exy / n;
+        return cu(x, y, z);
     }
 
     /**
@@ -164,41 +206,350 @@ public final class Fask {
         };
     }
 
+    /**
+     * Computes the left-right difference residualized on covariates for the given nodes in a graph.
+     * This method calculates the residuals for two nodes, standardizes them, and then computes the
+     * left-right difference based on a specified rule index.
+     *
+     * @param ruleIndex The index representing the rule to apply in calculating the left-right difference.
+     * @param graph     The graph structure containing the nodes and their relationships.
+     * @param xi        The first node for which the difference is computed.
+     * @param xj        The second node for which the difference is computed.
+     * @param nodes     The list of all nodes in the graph, used to find the positions of xi and xj in the data.
+     * @param data      The 2D dataset where each row corresponds to a node in the nodes list, representing the observed values.
+     * @return The computed left-right difference residualized on covariates for the provided nodes.
+     */
+    public static double leftRightDiffResidualized(int ruleIndex, Graph graph, Node xi, Node xj, List<Node> nodes,
+                                                   double[][] data) {
+        double[][] z = covariates(graph, xi, xj, nodes, data, -1);
+
+        double[] x = data[nodes.indexOf(xi)];
+        double[] y = data[nodes.indexOf(xj)];
+
+        double[] rx = residualize(x, z);
+        double[] ry = residualize(y, z);
+
+        center(rx);
+        center(ry);
+
+        return leftRightDiff(rx, ry, ruleIndex);
+    }
+
+    /**
+     * Identifies a set of covariates (nodes) that help orient causal relationships
+     * between two given nodes xi and xj within a graph. The method relies on path-blocking
+     * algorithms to determine the set of covariates.
+     *
+     * @param graph         the graph in which the nodes and edges are defined
+     * @param xi            the first node under consideration
+     * @param xj            the second node under consideration
+     * @param maxPathLength the maximum path length to consider while blocking paths
+     * @return a set of nodes that represent the orientation covariates for the given nodes xi and xj.
+     * If the computation is interrupted, an empty set is returned.
+     */
+    public static Set<Node> orientationCovariates(Graph graph,
+                                                  Node xi,
+                                                  Node xj,
+                                                  int maxPathLength) {
+        try {
+            Set<Node> z = null;
+            z = RecursiveBlocking.blockPathsRecursively(
+                    graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
+
+            if (z == null) z = new HashSet<>();
+
+            Set<Node> z2 = RecursiveBlocking.blockPathsRecursively(
+                    graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
+
+            if (z2 == null) {
+                List<Node> adj = graph.getAdjacentNodes(xi);
+                adj.addAll(graph.getAdjacentNodes(xj));
+                z2 = new HashSet<>(adj);
+            }
+
+            z.addAll(z2);
+
+            z.remove(xi);
+            z.remove(xj);
+
+            return z;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Set.of();
+        }
+    }
+
+    /**
+     * Computes the covariates for a pair of nodes in a graph based on a set of
+     * orientation covariates determined up to a given maximum path length.
+     *
+     * @param graph         The graph containing the nodes and their relationships.
+     * @param xi            The first node for which covariates are being computed.
+     * @param xj            The second node for which covariates are being computed.
+     * @param nodes         A list of all nodes in the graph, used to map nodes to data indices.
+     * @param data          A 2D array where each row corresponds to the data values for a node
+     *                      in the `nodes` list.
+     * @param maxPathLength The maximum path length for considering orientation covariates
+     *                      in the graph.
+     * @return A 2D array where each row corresponds to the data values of a covariate node
+     * determined for the given pair of nodes.
+     * @throws IllegalArgumentException If a covariate node is not found in the provided
+     *                                  `nodes` list.
+     */
+    public static double[][] covariates(Graph graph,
+                                        Node xi,
+                                        Node xj,
+                                        List<Node> nodes,
+                                        double[][] data,
+                                        int maxPathLength) {
+        Set<Node> z = orientationCovariates(graph, xi, xj, maxPathLength);
+
+        List<Node> covariateNodes = new ArrayList<>(z);
+        double[][] covariates = new double[covariateNodes.size()][];
+
+        for (int k = 0; k < covariateNodes.size(); k++) {
+            int index = nodes.indexOf(covariateNodes.get(k));
+            if (index < 0) {
+                throw new IllegalArgumentException("Node not found in nodes list: " + covariateNodes.get(k));
+            }
+            covariates[k] = data[index];
+        }
+
+        return covariates;
+    }
+
     // ------------ Rule score implementations (double-signed) ------------
 
     /**
-     * FASK1: signed lr after skew/corr sign alignment and delta flip if r<delta.
+     * FASK1 scoring method: signed left-right score after skewness and correlation sign alignment. If the correlation
+     * is below a certain threshold (delta), the direction is flipped.
      *
      * @param x standardized (recommended) series for X
      * @param y standardized (recommended) series for Y
      * @return signed left-right score
      */
     private static double fask1Score(double[] x, double[] y) {
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
         double left = cu(x, y, x) / (sqrt(cu(x, x, x) * cu(y, y, x)));
         double right = cu(x, y, y) / (sqrt(cu(x, x, y) * cu(y, y, y)));
         double lr = left - right;
 
         double r = StatUtils.correlation(x, y);
-        double sx = StatUtils.skewness(x);
-        double sy = StatUtils.skewness(y);
-
-        r *= signum(sx) * signum(sy);
-        lr *= signum(r);
 
         // Use the same default delta as instance (−0.1) for static scoring.
-        if (r < delta) lr *= -1;
+        if (r < -0.1) lr *= -1;
         return lr;
     }
 
     /**
-     * FASK2: corrExp(x,y|x) − corrExp(x,y|y).
+     * FASK2 scoring method: corrExp(x,y|x) − corrExp(x,y|y).
      *
      * @param x standardized (recommended) series for X
      * @param y standardized (recommended) series for Y
      * @return signed left-right score
      */
     private static double fask2Score(double[] x, double[] y) {
-        return corrExp(x, y, x) - corrExp(x, y, y);
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
+        double lr = corrExp(x, y, x) - corrExp(x, y, y);
+        double r = StatUtils.correlation(x, y);
+        if (r < 0.0) lr *= -1;
+        return lr;
+    }
+
+    /**
+     * Standardizes the given array of values by converting the elements to have a mean of 0
+     * and a standard deviation of 1. The operation modifies the input array in place.
+     *
+     * @param x the array of double values to be standardized
+     */
+    public static void standardize(double[] x) {
+        int n = x.length;
+
+        double mean = 0.0;
+        for (double v : x) mean += v;
+        mean /= n;
+
+        double var = 0.0;
+        for (double v : x) {
+            double d = v - mean;
+            var += d * d;
+        }
+
+        var /= (n - 1);
+        double sd = Math.sqrt(var);
+
+        if (sd == 0) sd = 1.0;
+
+        for (int i = 0; i < n; i++) {
+            x[i] = (x[i] - mean) / sd;
+        }
+    }
+
+    /**
+     * Adjusts the values in the given array by subtracting the mean of the array from each element,
+     * effectively centering the dataset around zero.
+     *
+     * @param x the array of doubles to be centered; the operation modifies the elements of this array in place
+     */
+    public static void center(double[] x) {
+        int n = x.length;
+
+        double mean = 0.0;
+        for (double v : x) mean += v;
+        mean /= n;
+
+        for (int i = 0; i < n; i++) {
+            x[i] = (x[i] - mean);
+        }
+    }
+
+    /**
+     * Computes the residuals of a dependent variable after removing the effects of specified covariates.
+     * This method performs linear regression to estimate the contribution of the covariates to the
+     * dependent variable and returns the residuals.
+     *
+     * @param x          The dependent variable array of size n, where n is the number of data points.
+     * @param covariates The 2D array of covariates of size p x n, where p is the number of covariates
+     *                   and n is the number of data points. Each row in the array represents a covariate, and
+     *                   each column represents a data point.
+     * @return An array of residuals of size n, representing the dependent variable with the effects of the covariates removed.
+     */
+    public static double[] residualize(double[] x, double[][] covariates) {
+
+        int n = x.length;
+
+        if (covariates == null || covariates.length == 0) {
+            return x.clone();
+        }
+
+        int p = covariates.length;
+
+        // Build normal equation matrices
+        double[][] xtx = new double[p][p];
+        double[] xty = new double[p];
+
+        for (int j = 0; j < p; j++) {
+            for (int k = j; k < p; k++) {
+                double sum = 0.0;
+                for (int i = 0; i < n; i++) {
+                    sum += covariates[j][i] * covariates[k][i];
+                }
+                xtx[j][k] = sum;
+                xtx[k][j] = sum;
+            }
+
+            double sum = 0.0;
+            for (int i = 0; i < n; i++) {
+                sum += covariates[j][i] * x[i];
+            }
+            xty[j] = sum;
+        }
+
+        // Solve xtx * beta = xty
+        double[] beta = solve(xtx, xty);
+
+        // Compute residuals
+        double[] r = new double[n];
+
+        for (int i = 0; i < n; i++) {
+
+            double pred = 0.0;
+
+            for (int j = 0; j < p; j++) {
+                pred += beta[j] * covariates[j][i];
+            }
+
+            r[i] = x[i] - pred;
+        }
+
+        return r;
+    }
+
+    /**
+     * Restricts the given equal-length columns to the rows in which none of them is missing (NaN). If no row is
+     * dropped, the original arrays are returned, uncopied.
+     *
+     * @param cols the columns
+     * @return the columns restricted to their jointly observed rows
+     */
+    private static double[][] completeRows(double[]... cols) {
+        int n = cols[0].length;
+        int[] keep = new int[n];
+        int m = 0;
+
+        ROW:
+        for (int r = 0; r < n; r++) {
+            for (double[] col : cols) {
+                if (Double.isNaN(col[r])) continue ROW;
+            }
+            keep[m++] = r;
+        }
+
+        if (m == n) return cols;
+
+        double[][] out = new double[cols.length][m];
+
+        for (int c = 0; c < cols.length; c++) {
+            for (int k = 0; k < m; k++) out[c][k] = cols[c][keep[k]];
+        }
+
+        return out;
+    }
+
+    private static double[] solve(double[][] A, double[] b) {
+
+        int n = b.length;
+
+        double[][] M = new double[n][n + 1];
+
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(A[i], 0, M[i], 0, n);
+            M[i][n] = b[i];
+        }
+
+        // Forward elimination
+        for (int k = 0; k < n; k++) {
+
+            int max = k;
+            for (int i = k + 1; i < n; i++) {
+                if (Math.abs(M[i][k]) > Math.abs(M[max][k])) {
+                    max = i;
+                }
+            }
+
+            double[] temp = M[k];
+            M[k] = M[max];
+            M[max] = temp;
+
+            double pivot = M[k][k];
+
+            if (Math.abs(pivot) < 1e-12) continue;
+
+            for (int j = k; j <= n; j++) {
+                M[k][j] /= pivot;
+            }
+
+            for (int i = 0; i < n; i++) {
+                if (i == k) continue;
+
+                double factor = M[i][k];
+
+                for (int j = k; j <= n; j++) {
+                    M[i][j] -= factor * M[k][j];
+                }
+            }
+        }
+
+        double[] x = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            x[i] = M[i][n];
+        }
+
+        return x;
     }
 
     /**
@@ -242,7 +593,7 @@ public final class Fask {
         x = correctSkewness(x, skewness(x));
         y = correctSkewness(y, skewness(y));
         double[] lr = new double[x.length];
-        for (int i = 0; i < x.length; i++) lr[i] = x[i] * FastMath.tanh(y[i]) - FastMath.tanh(x[i]) * y[i];
+        for (int i = 0; i < x.length; i++) lr[i] = x[i] * TMath.tanh(y[i]) - TMath.tanh(x[i]) * y[i];
         return correlation(x, y) * mean(lr);
     }
 
@@ -250,7 +601,7 @@ public final class Fask {
      * Helper for robustSkew.
      */
     private static double g(double x) {
-        return log(cosh(FastMath.max(x, 0)));
+        return log(cosh(TMath.max(x, 0)));
     }
 
     /**
@@ -264,15 +615,6 @@ public final class Fask {
     }
 
     // ------------ Main search ------------
-
-    /**
-     * Set the delta parameter for FASK search.
-     *
-     * @param _delta The new delta value to be set for the FASK algorithm.
-     */
-    public static void setDelta(double _delta) {
-        delta = _delta;
-    }
 
     /**
      * Executes the FASK (Fast Adjacency Skewness) algorithm to search for a causal graph based on the provided dataset,
@@ -294,7 +636,14 @@ public final class Fask {
         DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
+        this.data = colData;
+        this.edgeOrigins.clear();
+
+        // The pairwise statistics are for continuous pairs; see the class comment on mixed data.
+        boolean[] continuous = new boolean[variables.size()];
+        for (int i = 0; i < variables.size(); i++) continuous[i] = variables.get(i) instanceof ContinuousVariable;
         Graph G0;
+        Graph oriented = null;
 
         if (externalGraph != null) {
             Graph g1 = new EdgeListGraph(externalGraph.getNodes());
@@ -305,6 +654,20 @@ public final class Fask {
             }
             g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
             G0 = g1;
+
+            if (useExternalOrientations) {
+                // Only compelled orientations act. A supplied DAG is converted to its CPDAG
+                // first, so reversible edges do not masquerade as compelled.
+                Graph ext = GraphUtils.replaceNodes(externalGraph, dataSet.getVariables());
+                oriented = ext.paths().isLegalDag() ? GraphTransforms.dagToCpdag(ext) : ext;
+            }
+        } else if (useBossAdjacencies) {
+            Boss boss = new Boss(this.score);
+            PermutationSearch ps = new PermutationSearch(boss);
+            ps.setKnowledge(this.knowledge);
+            Graph cpdag = ps.search();
+            Graph undirected = GraphUtils.undirectedGraph(cpdag);
+            G0 = GraphUtils.replaceNodes(undirected, dataSet.getVariables());
         } else {
             IndependenceTest test = new ScoreIndTest(score, dataSet);
             Fas fas = new Fas(test);
@@ -319,38 +682,93 @@ public final class Fask {
 
         Graph graph = new EdgeListGraph(variables);
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Node X = variables.get(i);
-                Node Y = variables.get(j);
+        {
+            // A single pass. (An earlier fixed-point loop here recomputed the identical graph from
+            // unchanged inputs -- nothing in the body read the evolving graph -- and with the
+            // override bootstrap on, its termination depended on the resampler's randomness.)
 
-                final double[] x = colData[i];
-                final double[] y = colData[j];
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = i + 1; j < variables.size(); j++) {
+                    Node X = variables.get(i);
+                    Node Y = variables.get(j);
 
-                double c1 = StatUtils.cov(x, y, x, 0, +1)[1];
-                double c2 = StatUtils.cov(x, y, y, 0, +1)[1];
+                    if (!continuous[i] || !continuous[j]) {
+                        // A pair with a discrete variable: the adjacency, if the adjacency search found one,
+                        // oriented only by knowledge or by a compelled orientation of the external graph.
+                        if (useFasAdjacencies && G0.isAdjacentTo(X, Y)) {
+                            int compelled = compelledOrientation(oriented, X, Y);
 
-                if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
-                    (useSkewAdjacencies && Math.abs(c1 - c2) > extraEdgeThreshold)) {
+                            if (knowledgeOrients(X, Y)) {
+                                graph.addDirectedEdge(X, Y);
+                            } else if (knowledgeOrients(Y, X)) {
+                                graph.addDirectedEdge(Y, X);
+                            } else if (compelled != 0) {
+                                if (compelled > 0) graph.addDirectedEdge(X, Y);
+                                else graph.addDirectedEdge(Y, X);
+                                this.edgeOrigins.put(graph.getEdge(X, Y), Origin.EVIDENCE_DEFAULT);
+                            } else {
+                                graph.addUndirectedEdge(X, Y);
+                            }
+                        }
 
-                    if (knowledgeOrients(X, Y)) {
-                        graph.addDirectedEdge(X, Y);
-                    } else if (knowledgeOrients(Y, X)) {
-                        graph.addDirectedEdge(Y, X);
-                    } else if (bidirected(x, y, G0, X, Y)) {
-                        graph.addEdge(Edges.directedEdge(X, Y));
-                        graph.addEdge(Edges.directedEdge(Y, X));
-                    } else {
-                        // Use the enum-selected rule but via score>0
-                        double score = switch (leftRight) {
-                            case FASK1 -> fask1Score(x, y);
-                            case FASK2 -> fask2Score(x, y);
-                            case RSKEW -> rskewScore(x, y);
-                            case SKEW -> skewScore(x, y);
-                            case TANH -> tanhScore(x, y);
-                        };
-                        if (score > 0) graph.addDirectedEdge(X, Y);
-                        else graph.addDirectedEdge(Y, X);
+                        continue;
+                    }
+
+                    // Pairwise deletion: the pairwise statistics use just the rows where X and Y are both
+                    // observed. With no missing values these are the full columns, unchanged.
+                    final double[][] pair = completeRows(colData[i], colData[j]);
+                    final double[] x = pair[0];
+                    final double[] y = pair[1];
+
+                    // The skew-edge criterion of the original FASK (Algorithm 1): the difference of the
+                    // UNcentered conditional correlations corrExp, the same statistic the left-right rule
+                    // uses. (A previous version used the centered conditional correlation from
+                    // StatUtils.cov, for which the extraEdgeThreshold default of 0.3 is not calibrated.)
+                    double corrExpX = corrExp(x, y, x);
+                    double corrExpY = corrExp(x, y, y);
+
+                    if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
+                            (useSkewAdjacencies && TMath.abs(corrExpX - corrExpY) > extraEdgeThreshold)) {
+                        if (knowledgeOrients(X, Y)) {
+                            graph.addDirectedEdge(X, Y);
+                        } else if (knowledgeOrients(Y, X)) {
+                            graph.addDirectedEdge(Y, X);
+                        } else if (x.length < MIN_PAIRWISE_ROWS) {
+                            // Too few jointly observed rows to orient; keep the adjacency, unoriented.
+                            graph.addUndirectedEdge(X, Y);
+                        } else if (alpha > 0 && isTwoCycle(colData[i], colData[j], G0, X, Y)) {
+                            graph.addEdge(Edges.directedEdge(X, Y));
+                            graph.addEdge(Edges.directedEdge(Y, X));
+                            this.edgeOrigins.put(Edges.directedEdge(X, Y), Origin.TWO_CYCLE);
+                            this.edgeOrigins.put(Edges.directedEdge(Y, X), Origin.TWO_CYCLE);
+                        } else {
+                            int ruleIndex = leftRight.ordinal() + 1;
+                            double score = leftRightDiff(x, y, ruleIndex);
+
+                            // Compelled orientation of this pair in the external graph, if any:
+                            // +1 for X->Y, -1 for Y->X, 0 for none (reversible, or not in use).
+                            int compelled = compelledOrientation(oriented, X, Y);
+
+                            if (compelled != 0) {
+                                boolean opposes = compelled > 0 ? score < 0 : score > 0;
+                                boolean consensus = opposes
+                                                    && bootstrapSignConsensus(x, y, ruleIndex, compelled);
+
+                                if (consensus) {
+                                    if (compelled > 0) graph.addDirectedEdge(Y, X);
+                                    else graph.addDirectedEdge(X, Y);
+                                    this.edgeOrigins.put(graph.getEdge(X, Y), Origin.OVERRIDE);
+                                } else {
+                                    if (compelled > 0) graph.addDirectedEdge(X, Y);
+                                    else graph.addDirectedEdge(Y, X);
+                                    this.edgeOrigins.put(graph.getEdge(X, Y), Origin.EVIDENCE_DEFAULT);
+                                }
+                            } else {
+                                if (score > 0) graph.addDirectedEdge(X, Y);
+                                else graph.addDirectedEdge(Y, X);
+                                this.edgeOrigins.put(graph.getEdge(X, Y), Origin.LEFT_RIGHT);
+                            }
+                        }
                     }
                 }
             }
@@ -373,7 +791,7 @@ public final class Fask {
      *
      * @param alpha the significance level, must be between 0.0 and 1.0
      */
-    public void setCutoff(double alpha) {
+    private void setCutoff(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) throw new IllegalArgumentException("Significance out of range: " + alpha);
         this.cutoff = StatUtils.getZForAlpha(alpha);
     }
@@ -394,7 +812,7 @@ public final class Fask {
      *
      * @param alpha the significance level, must be between 0.0 and 1.0
      */
-    public void setAlpha(double alpha) {
+    public void setTwoCycleAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -417,6 +835,68 @@ public final class Fask {
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
+    }
+
+    /**
+     * Sets whether the initial adjacency skeleton should come from a BOSS CPDAG rather than FAS-stable.
+     * Ignored when an external graph has been set. Default: false.
+     *
+     * @param useBossAdjacencies true to use BOSS for the initial skeleton.
+     */
+    public void setUseBossAdjacencies(boolean useBossAdjacencies) {
+        this.useBossAdjacencies = useBossAdjacencies;
+    }
+
+    /**
+     * Sets whether the external graph's compelled orientations act as default orientations, overturnable by the
+     * left-right statistic only under the bootstrap sign-consensus gate (see
+     * {@link #setOverrideBootstraps(int)}). When false (the default), the external graph supplies adjacencies only,
+     * which is FASK's historical behavior. Only consulted when an external graph has been set.
+     *
+     * @param useExternalOrientations true to use the external graph's compelled orientations as defaults
+     */
+    public void setUseExternalOrientations(boolean useExternalOrientations) {
+        this.useExternalOrientations = useExternalOrientations;
+    }
+
+    /**
+     * Sets the number of bootstrap resamples gating an override of a compelled external orientation. Zero (the
+     * default) means no gate, in which case the left-right statistic overturns a compelled orientation whenever it
+     * opposes it -- for compelled edges, plain FASK. A positive value requires every resample's statistic to oppose
+     * the compelled direction before the override is taken.
+     *
+     * @param overrideBootstraps the number of resamples, nonnegative
+     */
+    public void setOverrideBootstraps(int overrideBootstraps) {
+        if (overrideBootstraps < 0) {
+            throw new IllegalArgumentException("Number of bootstraps must be nonnegative: " + overrideBootstraps);
+        }
+        this.overrideBootstraps = overrideBootstraps;
+    }
+
+    /**
+     * Sets the block length for the override bootstrap. One (the default) resamples rows independently. A larger
+     * value resamples contiguous blocks, which is what autocorrelated rows require; a common choice is about the
+     * square root of the number of rows.
+     *
+     * @param overrideBlockLength the block length, at least one
+     */
+    public void setOverrideBlockLength(int overrideBlockLength) {
+        if (overrideBlockLength < 1) {
+            throw new IllegalArgumentException("Block length must be at least 1: " + overrideBlockLength);
+        }
+        this.overrideBlockLength = overrideBlockLength;
+    }
+
+    /**
+     * Returns the provenance of each orientation from the last search: whether it came from the left-right statistic
+     * alone, from a compelled external orientation kept as the default, from an override of such an orientation, or
+     * from the two-cycle test.
+     *
+     * @return an unmodifiable view of the per-edge origins
+     */
+    public java.util.Map<Edge, Origin> getEdgeOrigins() {
+        return java.util.Collections.unmodifiableMap(this.edgeOrigins);
     }
 
     /**
@@ -457,111 +937,306 @@ public final class Fask {
 
     // ------------ Internals ------------
 
-    private boolean bidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        // -------------------- Candidate Z pool: neighbors of X or Y (excluding X,Y) --------------------
+//    private boolean _isBidirected(double[] x, double[] y, Graph G0, Node X, Node Y) {
+//        double score = leftRightDiffResidualized(leftRight.ordinal() + 1, G0, X, Y,
+//                dataSet.getVariables(), data);  // was: data
+//        return TMath.abs(score) < alpha;
+//    }
+
+    /**
+     * Gate on overturning a compelled external orientation: resample the pair jointly and require EVERY resample's
+     * left-right statistic to oppose the compelled direction (strict sign consensus). With
+     * {@code overrideBootstraps == 0} there is no gate and the method returns true, so the left-right statistic
+     * decides alone. Rows are resampled in contiguous blocks of {@code overrideBlockLength}, which for length one is
+     * the ordinary i.i.d. pairwise bootstrap.
+     *
+     * @param x         standardized series for X
+     * @param y         standardized series for Y
+     * @param ruleIndex the left-right rule index
+     * @param compelled +1 when the external graph compels X-&gt;Y, -1 when it compels Y-&gt;X
+     * @return true just in case the override is allowed
+     */
+    private boolean bootstrapSignConsensus(double[] x, double[] y, int ruleIndex, int compelled) {
+        if (this.overrideBootstraps <= 0) return true;
+
+        int n = x.length;
+        int block = TMath.max(1, TMath.min(this.overrideBlockLength, n));
+        int numBlocks = (int) TMath.ceil(n / (double) block);
+
+        double[] bx = new double[n];
+        double[] by = new double[n];
+
+        for (int b = 0; b < this.overrideBootstraps; b++) {
+            int filled = 0;
+
+            for (int k = 0; k < numBlocks && filled < n; k++) {
+                int start = edu.cmu.tetrad.util.RandomUtil.getInstance().nextInt(n);
+
+                for (int t = 0; t < block && filled < n; t++) {
+                    int r = (start + t) % n;
+                    bx[filled] = x[r];
+                    by[filled] = y[r];
+                    filled++;
+                }
+            }
+
+            double[] sx = bx.clone();
+            double[] sy = by.clone();
+            standardize(sx);
+            standardize(sy);
+
+            double s = leftRightDiff(sx, sy, ruleIndex);
+
+            // Any resample failing to oppose the compelled direction defeats the consensus.
+            if (compelled > 0 ? s >= 0 : s <= 0) return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * The compelled orientation of the pair in the given graph: +1 for X->Y, -1 for Y->X, 0 for none (not adjacent
+     * there, not directed, or the graph is null because external orientations are not in use).
+     */
+    private static int compelledOrientation(Graph oriented, Node X, Node Y) {
+        if (oriented == null) return 0;
+
+        Node ox = oriented.getNode(X.getName());
+        Node oy = oriented.getNode(Y.getName());
+        Edge oe = (ox == null || oy == null) ? null : oriented.getEdge(ox, oy);
+
+        if (oe != null && Edges.isDirectedEdge(oe)) {
+            return oe.pointsTowards(oy) ? +1 : -1;
+        }
+
+        return 0;
+    }
+
+    private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
         Set<Node> pool = new HashSet<>(G0.getAdjacentNodes(X));
         pool.addAll(G0.getAdjacentNodes(Y));
         List<Node> cand = new ArrayList<>(pool);
         cand.remove(X);
         cand.remove(Y);
 
-        // -------------------- Housekeeping / guards --------------------
-        final int n = x.length;
-        final int minPart = (int) Math.ceil(0.15 * n); // require at least 15% of samples in X>0 and Y>0
-        final double ridge = 1e-6;                      // small ridge in partial-corr inversion
-        final double clampEps = 1e-6;                   // Fisher z clamp
-        final int maxSize = (depth < 0) ? cand.size() : Math.min(depth, cand.size());
+        // Partial correlations are for continuous variables; a discrete neighbor is not conditioned on.
+        cand.removeIf(node -> !(node instanceof ContinuousVariable));
 
-        // -------------------- 1) Baseline: does the unconditioned pattern look cyclic? --------------------
-        if (!showsCyclePattern(x, y, /*Z=*/null, minPart, ridge, clampEps)) {
-            // If even without Z we don't see the cycle opposition pattern, it's not a 2-cycle.
+        double[][] candCols = new double[cand.size()][];
+        for (int i = 0; i < cand.size(); i++) {
+            candCols[i] = this.data[this.dataSet.getColumnIndex(cand.get(i))];
+        }
+
+        return twoCycleTest(x, y, candCols, this.cutoff);
+    }
+
+    /**
+     * The FASK two-cycle test, in static form so that multi-dataset algorithms (e.g.,
+     * {@link FaskPool}) can run it per dataset. The pair is judged a two-cycle when the
+     * two-cycle pattern of the original FASK (Sanchez-Romero et al. 2019, Algorithm 3)
+     * holds unconditionally and persists under every conditioning subset of the candidate
+     * columns up to size 2: for each conditioning set, either one of the two conditional
+     * correlations shifts significantly from the unconditional one while the two shifts
+     * have opposite signs, or both shifts are significant. With no candidates the
+     * unconditional pattern alone decides, matching the original implementation, whose
+     * subset enumeration includes the empty set -- so an isolated two-cycle, whose pair
+     * has no other adjacents, is still detectable. A conditioning set under which the
+     * partial correlations cannot be computed (a singularity) is skipped, not treated as
+     * disconfirming, again matching the original. Skew-sign correction is applied
+     * internally, so pass uncorrected (standardized) columns.
+     *
+     * @param x        standardized series for X
+     * @param y        standardized series for Y
+     * @param candCols columns for the conditioning candidates (typically the adjacents
+     *                 of X and Y other than X and Y themselves)
+     * @param cutoff   the z cutoff corresponding to the two-cycle alpha
+     * @return true just in case the pair passes the two-cycle test
+     */
+    public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff) {
+        return twoCycleTest(x, y, candCols, cutoff, TwoCycleRule.SLOPE_SHIFT);
+    }
+
+    /**
+     * The two-cycle test with the choice of discrepancy statistic made explicit; see
+     * {@link TwoCycleRule}. {@link TwoCycleRule#CORRELATION_SHIFT} reproduces
+     * {@link #twoCycleTest(double[], double[], double[][], double)} exactly.
+     *
+     * @param x        standardized series for X
+     * @param y        standardized series for Y
+     * @param candCols columns for the conditioning candidates (typically the adjacents
+     *                 of X and Y other than X and Y themselves)
+     * @param cutoff   the z cutoff corresponding to the two-cycle alpha
+     * @param rule     which discrepancy statistic to compare the half-samples with
+     * @return true just in case the pair passes the two-cycle test
+     */
+    public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff,
+                                       TwoCycleRule rule) {
+        if (candCols == null) candCols = new double[0][];
+
+        x = correctSkewness(x, skewness(completeRows(x)[0]));
+        y = correctSkewness(y, skewness(completeRows(y)[0]));
+
+        final int n = x.length;
+        final int minPart = (int) TMath.ceil(0.15 * n);
+        final double ridge = 1e-6;
+        final double clampEps = 1e-6;
+        final int maxSize = 2;// (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
+
+        // Baseline: must show the two-cycle pattern unconditionally. An unassessable
+        // baseline (singular, or positive parts too small) is not a two-cycle.
+        Boolean base = showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff, rule);
+        if (base == null || !base) {
             return false;
         }
 
-        // -------------------- 2) Try to BREAK the cycle by conditioning --------------------
-        // Evaluate Z = ∅ explicitly first (already done; it didn't break it), then scan subsets up to depth.
-        SublistGenerator gen = new SublistGenerator(cand.size(), maxSize);
+        // Must persist under every assessable conditioning set.
+        SublistGenerator gen = new SublistGenerator(candCols.length, maxSize);
         int[] choice;
         while ((choice = gen.next()) != null) {
-            List<Node> zNodes = GraphUtils.asList(choice, cand);
-            if (breaksCyclePattern(x, y, zNodes, minPart, ridge, clampEps)) {
-                // FOUND at least one Z that breaks the cycle opposition/ significance -> NOT a 2-cycle.
+            if (choice.length == 0) continue; // the baseline above
+            double[][] Z = new double[choice.length][];
+            for (int i = 0; i < choice.length; i++) Z[i] = candCols[choice[i]];
+            Boolean shows = showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff, rule);
+            if (shows != null && !shows) {
                 return false;
             }
         }
 
-        // If NO subset breaks the cycle pattern -> robustly unbreakable -> two-cycle.
         return true;
     }
 
-    // === Returns true if the (X,Y) pair exhibits the "cycle opposition pattern" under conditioning Z ===
-    private boolean showsCyclePattern(double[] x, double[] y, List<Node> zNodes,
-                                      int minPart, double ridge, double clampEps) {
+    /**
+     * Whether the pair shows the two-cycle pattern under the given conditioning columns: true or false when the
+     * pattern can be assessed, null when it cannot (the partial correlations are singular, or a positive part is
+     * smaller than minPart) -- the caller skips an unassessable conditioning set rather than treating it as
+     * disconfirming.
+     */
+    private static Boolean showsTwoCyclePattern(double[] x, double[] y, double[][] zCols,
+                                                int minPart, double ridge, double clampEps,
+                                                double cutoff, TwoCycleRule rule) {
 
-        double[][] Z = (zNodes == null) ? new double[0][] : buildZ(zNodes);
+        double[][] Z = (zCols == null) ? new double[0][] : zCols;
 
-        // Partial correlations under three “slices”: all, X>0, Y>0
-        final double pc, pc1, pc2;
-        try {
-            pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
-            pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
-            pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
-        } catch (Exception e) {
-            // Singular/unstable Z; treat as "cannot establish opposition pattern"
-            return false;
+        // Testwise deletion: use just the rows complete for x, y and this conditioning set.
+        double[][] all = new double[Z.length + 2][];
+        all[0] = x;
+        all[1] = y;
+        System.arraycopy(Z, 0, all, 2, Z.length);
+        double[][] complete = completeRows(all);
+
+        if (complete[0].length != x.length) {
+            x = complete[0];
+            y = complete[1];
+            Z = java.util.Arrays.copyOfRange(complete, 2, complete.length);
+            minPart = (int) TMath.ceil(0.15 * x.length);
         }
 
-        // Partition sizes (guard tiny strata)
         int nxPos = StatUtils.getRows(x, x, 0, +1).size();
         int nyPos = StatUtils.getRows(y, y, 0, +1).size();
-        if (nxPos < minPart || nyPos < minPart) return false;
+        if (nxPos < minPart || nyPos < minPart) return null;
 
-        // Clamp correlations for Fisher z
-        double _pc = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc));
-        double _pc1 = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc1));
-        double _pc2 = Math.max(-1.0 + clampEps, Math.min(1.0 - clampEps, pc2));
-
-        // Fisher z
-        double z = 0.5 * (Math.log(1.0 + _pc) - Math.log(1.0 - _pc));
-        double z1 = 0.5 * (Math.log(1.0 + _pc1) - Math.log(1.0 - _pc1));
-        double z2 = 0.5 * (Math.log(1.0 + _pc2) - Math.log(1.0 - _pc2));
-
-        // Standardized directional shifts
         int nAll = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-        double zv1 = (z - z1) / Math.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
-        double zv2 = (z - z2) / Math.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
 
-        boolean rejected1 = Math.abs(zv1) > cutoff;
-        boolean rejected2 = Math.abs(zv2) > cutoff;
+        final double zv1, zv2;
 
-        // "Cycle opposition pattern": opposite signs with at least one significant;
-        // or both significant (even if not cleanly opposite)
-        if (zv1 < 0 && zv2 > 0 && rejected1) return true;
-        if (zv1 > 0 && zv2 < 0 && rejected2) return true;
-        if (rejected1 && rejected2) return true;
+        if (rule == TwoCycleRule.SLOPE_SHIFT) {
+            final double[] bAll, bxPos, aAll, ayPos;
+            try {
+                // x side: regress Y on X, full sample vs the X > 0 half.
+                bAll = partialSlope(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
+                bxPos = partialSlope(x, y, Z, x, 0, +1, ridge);
+                // y side: regress X on Y, full sample vs the Y > 0 half.
+                aAll = partialSlope(y, x, Z, y, Double.NEGATIVE_INFINITY, +1, ridge);
+                ayPos = partialSlope(y, x, Z, y, 0, +1, ridge);
+            } catch (Exception e) {
+                return null;
+            }
 
-        return false;
+            double se1 = TMath.sqrt(bAll[1] * bAll[1] + bxPos[1] * bxPos[1]);
+            double se2 = TMath.sqrt(aAll[1] * aAll[1] + ayPos[1] * ayPos[1]);
+            if (!(se1 > 0) || !(se2 > 0)) return null;
+
+            zv1 = (bAll[0] - bxPos[0]) / se1;
+            zv2 = (aAll[0] - ayPos[0]) / se2;
+        } else {
+            final double pc, pc1, pc2;
+            try {
+                pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
+                pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
+                pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
+            } catch (Exception e) {
+                return null;
+            }
+
+            double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
+            double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
+            double _pc2 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc2));
+
+            double z = 0.5 * (TMath.log(1.0 + _pc) - TMath.log(1.0 - _pc));
+            double z1 = 0.5 * (TMath.log(1.0 + _pc1) - TMath.log(1.0 - _pc1));
+            double z2 = 0.5 * (TMath.log(1.0 + _pc2) - TMath.log(1.0 - _pc2));
+
+            zv1 = (z - z1) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
+            zv2 = (z - z2) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
+        }
+
+        // The original FASK acceptance (Sanchez-Romero et al. 2019, Algorithm 3): a significant
+        // shift on one side with the two shifts opposing, or significant shifts on both sides.
+        // (A previous version here required both shifts significant AND in the same direction,
+        // which is strictly stronger; it could never accept a mixed-sign two-cycle, whose shifts
+        // oppose.)
+        boolean sig1 = TMath.abs(zv1) > cutoff;
+        boolean sig2 = TMath.abs(zv2) > cutoff;
+
+        if (zv1 < 0 && zv2 > 0 && sig1) return true;
+        if (zv1 > 0 && zv2 < 0 && sig2) return true;
+        return sig1 && sig2;
     }
 
     // === Returns true if conditioning on Z BREAKS the cycle opposition pattern (i.e., destroys it) ===
-    private boolean breaksCyclePattern(double[] x, double[] y, List<Node> zNodes,
-                                       int minPart, double ridge, double clampEps) {
-        // We “break” if the cycle pattern is NOT present under Z.
-        return !showsCyclePattern(x, y, zNodes, minPart, ridge, clampEps);
+
+    /**
+     * The partial regression slope of y on x controlling Z, with its standard error, over the rows
+     * selected by the condition. Both come from the precision matrix P of the covariance matrix of
+     * (x, y, Z) on those rows: the slope is -P(1,0)/P(1,1), the residual variance of y given x and
+     * Z is 1/P(1,1), and the residual variance of x given Z is (1/P(0,0))/(1 - r^2), from which
+     * se = sqrt((P(0,0)/P(1,1)) * (1 - r^2) / (n - k - 1)) for k = |Z| + 1 predictors.
+     *
+     * <p>Unlike a correlation, this slope is invariant to selecting on x: under an acyclic
+     * X -&gt; Y with Y = bX + e and e independent of X, E[Y | X] = bX holds on every
+     * X-measurable subset, so the slope estimates b on the whole sample and on the X &gt; 0 half
+     * alike. A correlation does not have that property, because selecting on x also changes
+     * var(x). This is what gives {@link TwoCycleRule#SLOPE_SHIFT} a null hypothesis that
+     * acyclicity actually implies.
+     *
+     * @return {slope, standard error of the slope}
+     */
+    private static double[] partialSlope(double[] x, double[] y, double[][] z, double[] condition,
+                                         double threshold, double direction, double lambda)
+            throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        Matrix precision = new Matrix(cv).chooseInverse(lambda);
+
+        double pxx = precision.get(0, 0);
+        double pyy = precision.get(1, 1);
+        double pxy = precision.get(0, 1);
+
+        if (!(pxx > 0) || !(pyy > 0)) throw new SingularMatrixException();
+
+        double slope = -pxy / pyy;
+        double r = -pxy / TMath.sqrt(pxx * pyy);
+        r = TMath.max(-1.0, TMath.min(1.0, r));
+
+        int n = StatUtils.getRows(condition, threshold, direction).size();
+        double df = n - (z.length + 1) - 1;
+        if (df <= 0) throw new SingularMatrixException();
+
+        double se = TMath.sqrt((pxx / pyy) * TMath.max(0.0, 1.0 - r * r) / df);
+        return new double[]{slope, se};
     }
 
-    // === Utility to build Z matrix ===
-    private double[][] buildZ(List<Node> zNodes) {
-        double[][] Z = new double[zNodes.size()][];
-        for (int i = 0; i < zNodes.size(); i++) {
-            int col = dataSet.getColumn(zNodes.get(i));
-            Z[i] = data[col];
-        }
-        return Z;
-    }
-
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
-                                      double threshold, double direction, double lambda)
+    private static double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
+                                             double threshold, double direction, double lambda)
             throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
         Matrix m = new Matrix(cv).transpose();
@@ -570,7 +1245,87 @@ public final class Fask {
 
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName())
-               || knowledge.isRequired(left.getName(), right.getName());
+                || knowledge.isRequired(left.getName(), right.getName());
+    }
+
+    /**
+     * The discrepancy statistic the two-cycle test compares the full sample against its
+     * sign-truncated half-samples with.
+     *
+     * <p>Both rules share the same acceptance logic; they differ only in what is compared, and
+     * that difference decides whether the test has an error rate at all.
+     */
+    public enum TwoCycleRule {
+
+        /**
+         * Compare CORRELATIONS, as in the original FASK (Sanchez-Romero et al. 2019,
+         * Algorithm 3). This is the published behaviour and the default.
+         *
+         * <p>Be aware of its scope. Selecting on a variable changes that variable's variance, so
+         * the correlation of X and Y on the X &gt; 0 half differs from the correlation on the
+         * whole sample even when X -&gt; Y is a plain one-directional linear edge. The shift the
+         * test looks for is therefore a nonzero population quantity under acyclicity, while the
+         * standard errors shrink like 1/sqrt(n), so the false-positive rate rises toward 1 with
+         * sample size instead of sitting at alpha. Measured on a single acyclic edge at
+         * alpha = 0.01 (see {@code FaskTwoCycleFprHarness}), the rate reaches 1.000 by n = 20000
+         * for Gumbel, Beta, uniform, Laplace and Gaussian noise. Exponential noise is the
+         * exception, holding at about 0.01 at every n, because there the correlation happens to
+         * be invariant to the truncation; that strongly right-skewed regime is the one the rule
+         * was developed on.
+         */
+        CORRELATION_SHIFT,
+
+        /**
+         * Compare partial regression SLOPES rather than correlations.
+         *
+         * <p>Under an acyclic X -&gt; Y the slope of Y on X is invariant to selecting on X, for
+         * every noise distribution, so an acyclic edge shifts on one side only and the test
+         * rejects; a two-cycle shifts on both sides and the test accepts. This gives the null a
+         * basis in acyclicity that the correlation comparison lacks, and it extends the test to
+         * symmetric non-Gaussian noise, where the correlation rule has no validity. On Gaussian
+         * data neither side shifts, so no two-cycle is reported - which is correct, a two-cycle
+         * in a Gaussian linear model being unidentifiable from observational data.
+         *
+         * <p>The standard error treats the truncated half and the full sample as independent,
+         * which they are not; because the two estimates are positively correlated the combined
+         * standard error is too large, so the test errs toward conservatism rather than toward
+         * false positives. Two limitations follow, both measured by
+         * {@code FaskTwoCycleRuleHarness} at alpha = 0.01 and worth knowing before relying on
+         * this rule. First, the conservatism costs power at moderate sample sizes: a same-sign
+         * two-cycle under exponential noise is detected at 0.358 at n = 1000, against the
+         * correlation rule's 1.000, and needs n = 5000 to reach 0.998; a mixed-sign two-cycle is
+         * detected much earlier, 0.995 at n = 1000. Second, size is not uniformly controlled:
+         * it is 0.000 for exponential, Gumbel, Beta and Gaussian noise at every sample size
+         * tested, but runs to roughly 0.2 for uniform and Laplace noise, where the
+         * normal-theory standard error does not describe the sampling distribution of the slope
+         * contrast. That is a plateau rather than the correlation rule's climb to 1, but it is
+         * still an order of magnitude above nominal, so a bootstrap or robust standard error is
+         * the natural next improvement here.
+         */
+        SLOPE_SHIFT
+    }
+
+    /**
+     * The provenance of an orientation decision, recorded per edge in {@link #getEdgeOrigins()}.
+     */
+    public enum Origin {
+        /**
+         * Oriented by the left-right statistic alone.
+         */
+        LEFT_RIGHT,
+        /**
+         * The external graph's compelled orientation was kept as the default.
+         */
+        EVIDENCE_DEFAULT,
+        /**
+         * The external graph's compelled orientation was overturned by the left-right statistic under the bootstrap
+         * sign-consensus gate.
+         */
+        OVERRIDE,
+        /**
+         * Output as a two-cycle by the two-cycle test.
+         */
+        TWO_CYCLE
     }
 
     /**

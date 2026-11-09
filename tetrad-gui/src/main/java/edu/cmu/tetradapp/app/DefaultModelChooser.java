@@ -180,7 +180,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         });
 
         JLabel l1 = new JLabel("Node name: " + this.nodeName);
-        l1.setForeground(Color.black);
+//        l1.setForeground(Color.black);
 
         setLayout(new BorderLayout());
 

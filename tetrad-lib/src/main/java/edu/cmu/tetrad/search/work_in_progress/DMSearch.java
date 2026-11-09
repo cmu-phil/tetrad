@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.NaturalSort;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;
@@ -379,23 +380,7 @@ public class DMSearch {
 
         List<Set<Node>> outputParentsList = new ArrayList<Set<Node>>();
         final List<Node> patternNodes = pattern.getNodes();
-
-//        TODO: add testcase to see how sort compares 10, 11, 1, etc.
-        java.util.Collections.sort(patternNodes, new Comparator<Node>() {
-            public int compare(Node node1, Node node2) {
-//TODO: string length error here. Fix.
-
-                if (node1.getName().length() > node2.getName().length()) {
-                    return (1);
-                } else if (node1.getName().length() < node2.getName().length()) {
-                    return (-1);
-                } else {
-                    int n1 = Integer.parseInt(node1.getName().substring(1));
-                    int n2 = Integer.parseInt(node2.getName().substring(1));
-                    return (n1 - n2);
-                }
-            }
-        });
+        patternNodes.sort(NaturalSort.naturalComparator());
 
         System.out.println("Sorted patternNodes");
         //constructing treeSet of output nodes.

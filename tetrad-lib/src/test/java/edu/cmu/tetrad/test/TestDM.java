@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -68,7 +69,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -132,7 +138,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -234,7 +245,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -322,7 +338,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -393,7 +414,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -463,7 +489,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(1000000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -690,7 +721,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
 
         DMSearch search = new DMSearch();
@@ -842,7 +878,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 
@@ -939,7 +980,12 @@ public class TestDM {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 
-        DataSet data = im.simulateData(100000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(100000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         DMSearch search = new DMSearch();
 

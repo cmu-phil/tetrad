@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -36,6 +36,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -57,7 +58,7 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -96,6 +97,7 @@ public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         IndependenceTest myTest = this.test.getTest(dataModel, parameters);
+        myTest = new CachedIndependenceQueries(myTest);
         edu.cmu.tetrad.search.PcMb search = new edu.cmu.tetrad.search.PcMb(myTest, parameters.getInt(Params.DEPTH));
         List<Node> myTargets = targets(myTest, parameters.getString(Params.TARGETS));
         this.targets = myTargets;

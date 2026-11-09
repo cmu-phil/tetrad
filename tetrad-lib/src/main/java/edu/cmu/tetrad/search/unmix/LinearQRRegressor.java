@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.unmix;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
@@ -91,8 +92,8 @@ public class LinearQRRegressor implements ResidualRegressor {
             for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
                 double re = evd.getEigenvalue(i).getReal();
                 if (re <= 0) continue;
-                min = Math.min(min, re);
-                max = Math.max(max, re);
+                min = TMath.min(min, re);
+                max = TMath.max(max, re);
             }
             if (min == Double.POSITIVE_INFINITY || max == 0.0) return Double.POSITIVE_INFINITY;
             return max / min;
@@ -110,8 +111,8 @@ public class LinearQRRegressor implements ResidualRegressor {
      */
     @Override
     public void fit(DataSet data, Node target, List<Node> parents) {
-        this.yCol = data.getColumn(target);
-        this.parentCols = parents.stream().mapToInt(data::getColumn).toArray();
+        this.yCol = data.getColumnIndex(target);
+        this.parentCols = parents.stream().mapToInt(data::getColumnIndex).toArray();
 
         int n = data.getNumRows();
         int p = parentCols.length;
@@ -120,7 +121,7 @@ public class LinearQRRegressor implements ResidualRegressor {
         if (p == 0) {
             double mean = 0.0;
             for (int i = 0; i < n; i++) mean += data.getDouble(i, yCol);
-            mean /= Math.max(n, 1);
+            mean /= TMath.max(n, 1);
             this.B = new SimpleMatrix(p + 1, 1);
             this.B.set(0, 0, mean);
             return;
@@ -185,7 +186,7 @@ public class LinearQRRegressor implements ResidualRegressor {
 
         // If schema differs, recompute column indices defensively
         if (parents != null && (parentCols == null || parentCols.length != parents.size())) {
-            this.parentCols = parents.stream().mapToInt(data::getColumn).toArray();
+            this.parentCols = parents.stream().mapToInt(data::getColumnIndex).toArray();
         }
 
         double[] out = new double[n];
@@ -207,7 +208,7 @@ public class LinearQRRegressor implements ResidualRegressor {
      * @return this
      */
     public LinearQRRegressor setRidgeLambda(double v) {
-        this.ridgeEps = Math.max(0.0, v);
+        this.ridgeEps = TMath.max(0.0, v);
         return this;
     }
 }

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -59,7 +59,7 @@ import java.util.List;
 )
 @Bootstrapping
 public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -103,7 +103,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -117,7 +117,6 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         myTest.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(myTest, myScore);
 
-        grasp.setSeed(parameters.getLong(Params.SEED));
         grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
         grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
@@ -127,12 +126,12 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         grasp.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         grasp.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
         grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        grasp.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         grasp.setKnowledge(this.knowledge);
         grasp.bestOrder(myScore.getVariables());
-        Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG),
-                parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH))   ;
+        Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
 
@@ -154,7 +153,7 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
     @Override
     public String getDescription() {
         return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
-               + " or " + this.score.getDescription();
+                + " or " + this.score.getDescription();
     }
 
     /**
@@ -182,7 +181,6 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         params.add(Params.OUTPUT_CPDAG);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
-        params.add(Params.SEED);
         params.add(Params.VERBOSE);
         params.add(Params.NUM_STARTS);
 

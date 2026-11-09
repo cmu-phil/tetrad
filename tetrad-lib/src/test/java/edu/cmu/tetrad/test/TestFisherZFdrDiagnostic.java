@@ -38,7 +38,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static edu.cmu.tetrad.search.test.IndTestFisherZ.ShrinkageMode.LEDOIT_WOLF;
-import static java.lang.Math.abs;
+import static edu.cmu.tetrad.util.TMath.abs;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -166,8 +166,7 @@ public class TestFisherZFdrDiagnostic {
         pars.set(Params.COEF_HIGH, 0.60);
 
         return CyclicStableUtils.simulateStableFixedRadius(
-                g, N, radius, CYCLIC_COEF_LOW, CYCLIC_COEF_HIGH,
-                RandomUtil.getInstance().nextLong(), pars
+                g, N, radius, CYCLIC_COEF_LOW, CYCLIC_COEF_HIGH, pars
         );
     }
 

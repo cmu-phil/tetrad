@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
@@ -55,7 +57,7 @@ class TetradLogArea extends JPanel {
 
         // build the text area.
         JTextArea textArea = new JTextArea();
-        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        textArea.setFont(ThemeUtils.monospaced(12));
         if (TetradLogger.getInstance().isDisplayLogEnabled()) {
             this.stream = new TextAreaOutputStream(textArea);
             TetradLogger.getInstance().addOutputStream(this.stream);

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -61,7 +61,7 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
-        HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+        AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -125,7 +125,7 @@ public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -139,11 +139,11 @@ public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
 
         // DAG to PAG
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         // General
@@ -200,13 +200,13 @@ public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
 
         // General
         params.add(Params.EXCLUDE_SELECTION_BIAS);

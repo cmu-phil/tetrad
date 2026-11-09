@@ -70,6 +70,7 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int fn = 0;
 
@@ -80,8 +81,8 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                if (existsCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))
-                    && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
+                if (existsCommonAncestor(dag, Edges.nondirectedEdge(x, y))
+                    && !existsLatentCommonAncestor(dag, Edges.nondirectedEdge(x, y))) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

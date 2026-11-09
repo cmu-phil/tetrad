@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 
@@ -191,6 +192,25 @@ public interface IndependenceTest {
     }
 
     /**
+     * Returns true just in case {@link IndependenceResult#getPValue()} for this test is a probability, so that
+     * larger values mean stronger evidence of independence. This is the case for genuine hypothesis tests. It is
+     * NOT the case for a score wrapped as a test (see
+     * {@link edu.cmu.tetrad.search.test.ScoreIndTest}), whose reported "p-value" is a score difference that may be
+     * any real number and for which SMALLER (more negative) values mean stronger evidence of independence.
+     * <p>
+     * Callers that rank candidate separating sets by strength of independence -- the max-p heuristic, or a
+     * tie-break between two competing sepsets -- must consult this flag and reverse their comparison when it is
+     * false; otherwise they will systematically select the WEAKEST separating set found rather than the
+     * strongest. Callers that only ask whether a fact holds should use {@link IndependenceResult#isIndependent()},
+     * which is correct for every test.
+     *
+     * @return True if the reported p-value is a probability (the default), false if it is a score difference.
+     */
+    default boolean isPValueAProbability() {
+        return true;
+    }
+
+    /**
      * Returns the covariance matrix.
      *
      * @return This matrix.
@@ -208,6 +228,27 @@ public interface IndependenceTest {
      */
     default List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("The getDataSets() method is not implemented for this test.");
+    }
+
+    /**
+     * Indicates whether the test supports subsampling.
+     *
+     * @return {@code true} if the test can be subsampled; {@code false} otherwise.
+     */
+    default boolean canBeSubsampled() {
+        return this instanceof RowsSettable;
+    }
+
+    /**
+     * Declares what this test can do, natively, with data containing missing values. The default is
+     * {@link MissingValueSupport#NONE}, meaning that missingness must be handled upstream (e.g., by imputation, or
+     * by supplying an EM-estimated covariance matrix if the test consumes one); tests that handle missing values
+     * themselves should override this.
+     *
+     * @return This support level.
+     */
+    default MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.NONE;
     }
 }
 

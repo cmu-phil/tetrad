@@ -9,13 +9,33 @@ import java.util.prefs.Preferences;
  */
 public class SemLavaanOptionsDialog extends JDialog {
 
+    /**
+     * Check box for including intercepts.
+     */
     private final JCheckBox includeInterceptsBox;
+    /**
+     * Check box for including residual variances.
+     */
     private final JCheckBox includeVariancesBox;
+    /**
+     * Check box for including residual covariances.
+     */
     private final JCheckBox includeCovariancesBox;
+    /**
+     * Check box for fixing parameters instead of using start() values.
+     */
     private final JCheckBox fixParametersBox;
 
+    /**
+     * True if the user pressed OK.
+     */
     private boolean approved = false;
 
+    /**
+     * Constructs the dialog, initializing the check boxes from saved preferences.
+     *
+     * @param parent the parent window
+     */
     public SemLavaanOptionsDialog(Window parent) {
         super(parent, "Export SEM to lavaan", ModalityType.APPLICATION_MODAL);
 
@@ -100,24 +120,46 @@ public class SemLavaanOptionsDialog extends JDialog {
     }
 
     /**
+     * Returns whether the user approved the dialog.
+     *
      * @return true if the user pressed OK, false if Cancel/close.
      */
     public boolean isApproved() {
         return approved;
     }
 
+    /**
+     * Returns whether intercepts should be included.
+     *
+     * @return true if intercepts should be included
+     */
     public boolean isIncludeIntercepts() {
         return includeInterceptsBox.isSelected();
     }
 
+    /**
+     * Returns whether residual variances should be included.
+     *
+     * @return true if residual variances should be included
+     */
     public boolean isIncludeVariances() {
         return includeVariancesBox.isSelected();
     }
 
+    /**
+     * Returns whether residual covariances should be included.
+     *
+     * @return true if residual covariances should be included
+     */
     public boolean isIncludeCovariances() {
         return includeCovariancesBox.isSelected();
     }
 
+    /**
+     * Returns whether parameters should be fixed rather than given as start() values.
+     *
+     * @return true if parameters should be fixed
+     */
     public boolean isFixParameters() {
         return fixParametersBox.isSelected();
     }

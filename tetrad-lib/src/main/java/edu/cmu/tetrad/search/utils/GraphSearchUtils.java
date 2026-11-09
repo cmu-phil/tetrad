@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static java.util.Collections.sort;
-import static org.apache.commons.math3.util.FastMath.max;
+import static edu.cmu.tetrad.util.TMath.max;
 
 /**
  * Provides some graph utilities for search algorithm.
@@ -192,7 +192,6 @@ public final class GraphSearchUtils {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                System.out.println(LogUtilsSearch.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
                 String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
                 TetradLogger.getInstance().log(message);
             }
@@ -207,7 +206,7 @@ public final class GraphSearchUtils {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= FastMath.min(1000, adj.size()); d++) {
+        for (int d = 0; d <= TMath.min(1000, adj.size()); d++) {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 
@@ -390,292 +389,6 @@ public final class GraphSearchUtils {
         }
     }
 
-
-//    /**
-//     * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
-//     *
-//     * @param pag       The Directed Acyclic Graph (PAG) to be checked
-//     * @param selection The set of nodes to be conditioned on
-//     * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
-//     */
-//    public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection) {
-//
-//        for (Node n : pag.getNodes()) {
-//            if (n.getNodeType() != NodeType.MEASURED) {
-//                return new LegalPagRet(false,
-//                        "Node " + n + " is not measured");
-//            }
-//        }
-//
-//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//
-//        LegalMagRet legalMag = isLegalMag(mag, selection);
-//
-//        if (!legalMag.isLegalMag()) {
-//            return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
-//        }
-//
-//        Graph pag2 = GraphTransforms.dagToPag(mag);
-//
-//        if (!pag.equals(pag2)) {
-//            String edgeMismatch = "";
-//
-//            for (Edge e : pag.getEdges()) {
-//                Edge e2 = pag2.getEdge(e.getNode1(), e.getNode2());
-//
-//                if (!e.equals(e2)) {
-//                    edgeMismatch = "For example, the original PAG has edge " + e
-//                                   + " whereas the reconstituted graph has edge " + e2;
-//                }
-//            }
-//
-//            String reason;
-//
-//            if (legalMag.isLegalMag()) {
-//                reason = "The MAG implied by this graph was a legal MAG, but still one cannot recover the original graph " +
-//                         "by finding the PAG of an implied MAG, so this is between a MAG and PAG";
-//
-//            } else {
-//                reason = "The MAG implied by this graph was not legal MAG, but in any case one cannot recover " +
-//                         "the original graph by finding the PAG of an implied MAG, so this is could be between " +
-//                         "a MAG and PAG";
-//            }
-//
-//            if (!edgeMismatch.isEmpty()) {
-//                reason = reason + ". " + edgeMismatch;
-//            }
-//
-//            return new LegalPagRet(false, reason);
-//        }
-//
-//        return new LegalPagRet(true, "This is a legal PAG");
-//    }
-
-//    /**
-//     * Determines whether the given graph is a legal Mixed Ancestral Graph (MAG).
-//     *
-//     * @param mag       the graph to be checked
-//     * @param selection the set of nodes to be conditioned on
-//     * @return a LegalMagRet object indicating whether the graph is legal and providing an error message if it is not
-//     */
-//    public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection) {
-//        for (Node n : mag.getNodes()) {
-//            if (n.getNodeType() == NodeType.LATENT)
-//                return new LegalMagRet(false,
-//                        "Node " + n + " is not measured");
-//        }
-//
-//        List<Node> nodes = mag.getNodes();
-//
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i + 1; j < nodes.size(); j++) {
-//                Node x = nodes.get(i);
-//                Node y = nodes.get(j);
-//
-//                if (!mag.isAdjacentTo(x, y)) continue;
-//
-//                if (mag.getEdges(x, y).size() > 1) {
-//                    return new LegalMagRet(false,
-//                            "There is more than one edge between " + x + " and " + y);
-//                }
-//
-//                Edge e = mag.getEdge(x, y);
-//
-//                if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
-//                    return new LegalMagRet(false,
-//                            "Edge " + e + " should be dir" +
-//                            "ected, bidirected, or undirected.");
-//                }
-//            }
-//        }
-//
-//        for (Node n : mag.getNodes()) {
-//            if (mag.paths().existsDirectedPath(n, n))
-//                return new LegalMagRet(false,
-//                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
-//        }
-//
-//        for (Edge e : mag.getEdges()) {
-//            Node x = e.getNode1();
-//            Node y = e.getNode2();
-//
-//            if (Edges.isBidirectedEdge(e)) {
-//                if (mag.paths().existsDirectedPath(x, y)) {
-//                    List<Node> path = mag.paths().directedPaths(x, y, 100).get(0);
-//                    return new LegalMagRet(false,
-//                            "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
-//                            + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-//                            + "An example path is " + GraphUtils.pathString(mag, path, false));
-//                } else if (mag.paths().existsDirectedPath(y, x)) {
-//                    List<Node> path = mag.paths().directedPaths(y, x, 100).get(0);
-//                    return new LegalMagRet(false,
-//                            "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
-//                            ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-//                            + "An example path is " + GraphUtils.pathString(mag, path, false));
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i + 1; j < nodes.size(); j++) {
-//                Node x = nodes.get(i);
-//                Node y = nodes.get(j);
-//
-//                if (!mag.isAdjacentTo(x, y)) {
-//                    if (mag.paths().existsInducingPath(x, y, new HashSet<>(selection)))
-//                        return new LegalMagRet(false,
-//                                "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i + 1; j < nodes.size(); j++) {
-//                Node x = nodes.get(i);
-//                Node y = nodes.get(j);
-//
-//                if (!mag.isAdjacentTo(x, y)) continue;
-//
-//                Edge e = mag.getEdge(x, y);
-//
-//                if (Edges.isUndirectedEdge(e)) {
-//                    for (Node z : mag.getAdjacentNodes(x)) {
-//                        if (mag.isParentOf(z, x) || Edges.isBidirectedEdge(mag.getEdge(z, x))) {
-//                            return new LegalMagRet(false,
-//                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + x);
-//                        }
-//                    }
-//
-//                    for (Node z : mag.getAdjacentNodes(y)) {
-//                        if (mag.isParentOf(z, y) || Edges.isBidirectedEdge(mag.getEdge(z, y))) {
-//                            return new LegalMagRet(false,
-//                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + y);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return new LegalMagRet(true, "This is a legal MAG");
-//    }
-
-    /**
-     * <p>arrangeByKnowledgeTiers.</p>
-     *
-     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     */
-    public static void arrangeByKnowledgeTiers(Graph graph, Knowledge knowledge) {
-        if (knowledge.getNumTiers() == 0) {
-            throw new IllegalArgumentException("There are no Tiers to arrange.");
-        }
-
-        int ySpace = 500 / knowledge.getNumTiers();
-        ySpace = max(ySpace, 50);
-
-        List<String> notInTier = knowledge.getVariablesNotInTiers();
-        sort(notInTier);
-
-        int x = 0;
-        int y = 50 - ySpace;
-
-        if (!notInTier.isEmpty()) {
-            y += ySpace;
-
-            for (String name : notInTier) {
-                x += 90;
-                Node node = graph.getNode(name);
-
-                if (node != null) {
-                    node.setCenterX(x);
-                    node.setCenterY(y);
-                }
-            }
-        }
-
-        for (int i = 0; i < knowledge.getNumTiers(); i++) {
-            List<String> tier = knowledge.getTier(i);
-            sort(tier);
-            y += ySpace;
-            x = -25;
-
-            for (String name : tier) {
-                x += 90;
-                Node node = graph.getNode(name);
-
-                if (node != null) {
-                    node.setCenterX(x);
-                    node.setCenterY(y);
-                }
-            }
-        }
-
-        LayoutUtil.repositionLatents(graph);
-    }
-
-    /**
-     * <p>arrangeByKnowledgeTiers.</p>
-     *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public static void arrangeByKnowledgeTiers(Graph graph) {
-        int maxLag = 0;
-
-        for (Node node : graph.getNodes()) {
-            String name = node.getName();
-
-            String[] tokens1 = name.split(":");
-
-            int index = tokens1.length > 1 ? Integer.parseInt(tokens1[tokens1.length - 1]) : 0;
-
-            if (index >= maxLag) {
-                maxLag = index;
-            }
-        }
-
-        List<List<Node>> tiers = new ArrayList<>();
-
-        for (int i = 0; i <= maxLag; i++) {
-            tiers.add(new ArrayList<>());
-        }
-
-        for (Node node : graph.getNodes()) {
-            String name = node.getName();
-
-            String[] tokens = name.split(":");
-
-            int index = tokens.length > 1 ? Integer.parseInt(tokens[tokens.length - 1]) : 0;
-
-            if (!tiers.get(index).contains(node)) {
-                tiers.get(index).add(node);
-            }
-        }
-
-        for (int i = 0; i <= maxLag; i++) {
-            sort(tiers.get(i));
-        }
-
-        int ySpace = maxLag == 0 ? 150 : 150 / maxLag;
-        int y = 60;
-
-        for (int i = maxLag; i >= 0; i--) {
-            List<Node> tier = tiers.get(i);
-            int x = 60;
-
-            for (Node node : tier) {
-                System.out.println(node + " " + x + " " + y);
-                node.setCenterX(x);
-                node.setCenterY(y);
-                x += 90;
-            }
-
-            y += ySpace;
-
-        }
-
-        LayoutUtil.repositionLatents(graph);
-    }
-
     /**
      * <p>getReachableNodes.</p>
      *
@@ -771,7 +484,7 @@ public final class GraphSearchUtils {
      */
     public static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) FastMath.pow(2, nodes.size());
+        int total = (int) TMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);
@@ -811,7 +524,7 @@ public final class GraphSearchUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -838,7 +551,7 @@ public final class GraphSearchUtils {
         _nodes.remove(x);
         TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -891,20 +604,19 @@ public final class GraphSearchUtils {
 
         for (Edge e : trueGraph.getEdges()) {
             if (!(Edges.isUndirectedEdge(e) || Edges.isDirectedEdge(e))) {
-                TetradLogger.getInstance().log("True graph is not a legal PDAG.");
                 return -99;
             }
         }
 
         for (Edge e : estGraph.getEdges()) {
             if (!(Edges.isUndirectedEdge(e) || Edges.isDirectedEdge(e))) {
-                TetradLogger.getInstance().log("Est graph is not a legal PDAG.");
+//                TetradLogger.getInstance().log("Est graph is not a legal PDAG.");
                 return -99;
             }
         }
 
         if (trueGraph.paths().existsDirectedCycle()) {
-            TetradLogger.getInstance().log("True graph is not a legal PDAG.");
+//            TetradLogger.getInstance().log("True graph is cyclic.");
             return -99;
         }
 
@@ -1006,8 +718,8 @@ public final class GraphSearchUtils {
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = targetGraph.getEdge(x, y);
 
-                boolean existsArrow = edge != null && edge.getEndpoint(y) == Endpoint.ARROW;
-                boolean _existsArrow = _edge != null && _edge.getEndpoint(y) == Endpoint.ARROW;
+                boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
+                boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
 
                 if (existsArrow && !_existsArrow) {
                     arrowptFn++;
@@ -1064,10 +776,10 @@ public final class GraphSearchUtils {
             Node node2 = edge.getNode2();
 
             for (Edge _edge : targetGraph.getEdges(node1, node2)) {
-                Endpoint e1a = edge.getEndpoint(node1);
-                Endpoint e1b = edge.getEndpoint(node2);
-                Endpoint e2a = _edge.getEndpoint(node1);
-                Endpoint e2b = _edge.getEndpoint(node2);
+                Endpoint e1a = edge.getProximalEndpoint(node1);
+                Endpoint e1b = edge.getProximalEndpoint(node2);
+                Endpoint e2a = _edge.getProximalEndpoint(node1);
+                Endpoint e2b = _edge.getProximalEndpoint(node2);
 
                 if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a) || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
@@ -1191,6 +903,10 @@ public final class GraphSearchUtils {
             Method method = annotation.annotationType().getDeclaredMethod("algoType");
             AlgType ret = (AlgType) method.invoke(annotation);
 
+//            if (algorithm instanceof CyclicPairwise) {
+//                return false;
+//            }
+
             if (ret == AlgType.allow_latent_common_causes) {
                 return true;
             }
@@ -1298,6 +1014,49 @@ public final class GraphSearchUtils {
         public Node getTo() {
             return this.to;
         }
+    }
+
+    /**
+     * Repositions each latent node to the average (x, y) location of its
+     * adjacent measured nodes (parents and children combined). Latents that
+     * have no measured neighbors are left where they are.
+     *
+     * <p>A single pass is sufficient for tree-shaped latent structures; for
+     * graphs where latents are adjacent to other latents, iterating until
+     * convergence gives a better result.
+     *
+     * @param graph the graph whose latent nodes are to be repositioned; mutated in place
+     */
+    public static void repositionLatents(Graph graph) {
+        boolean changed;
+        do {
+            changed = false;
+
+            for (Node node : graph.getNodes()) {
+                if (node.getNodeType() != NodeType.LATENT) continue;
+
+                List<Node> neighbors = graph.getAdjacentNodes(node);
+
+                if (neighbors.isEmpty()) continue;
+
+                double avgX = 0, avgY = 0;
+                for (Node nb : neighbors) {
+                    avgX += nb.getCenterX();
+                    avgY += nb.getCenterY();
+                }
+                avgX /= neighbors.size();
+                avgY /= neighbors.size();
+
+                int newX = (int) Math.round(avgX);
+                int newY = (int) Math.round(avgY);
+
+                if (newX != node.getCenterX() || newY != node.getCenterY()) {
+                    node.setCenterX(newX);
+                    node.setCenterY(newY);
+                    changed = true;
+                }
+            }
+        } while (changed);
     }
 }
 

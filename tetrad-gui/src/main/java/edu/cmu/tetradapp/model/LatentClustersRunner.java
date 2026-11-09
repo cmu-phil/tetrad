@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
@@ -28,6 +29,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.blocks.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Unmarshallable;
 import edu.cmu.tetradapp.session.Executable;
@@ -56,8 +58,18 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * The data model.
      */
     private final DataWrapper dataWrapper;
+    /**
+     * The selected data set from the data wrapper.
+     */
     private final DataSet dataSet;
+    /**
+     * In simulation mode, the true clusters, mapping each latent variable name to the names of its measured
+     * children; used to give good names to the estimated clusters. Empty otherwise.
+     */
     private final Map<String, List<String>> trueNamedClusters;
+    /**
+     * The effective sample size; equal to the sample size if the parameter is -1.
+     */
     private final int ess;
     /**
      * The name of the model.
@@ -67,7 +79,13 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * The params object, so the GUI can remember stuff for logging.
      */
     private Parameters parameters;
+    /**
+     * The block specification of the discovered clusters.
+     */
     private BlockSpec blockSpec = null;
+    /**
+     * The text representation of the block specification.
+     */
     private String blockText = "";
 
     //===========================CONSTRUCTORS===========================//
@@ -109,8 +127,6 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
                 }
             }
         }
-
-        System.out.println("true named clusters: " + trueNamedClusters);
     }
 
     //============================PUBLIC METHODS==========================//
@@ -320,28 +336,91 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
 
     private BlockDiscoverer buildDiscoverer(String alg) {
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+        SingletonClusterPolicy policy = SingletonClusterPolicy.values()[_singletonPolicy - 1];
+
+        // With poolImputations on and several data sets present (imputations of one data set), the algorithm runs
+        // on their averaged covariance matrix; otherwise on the selected data set, as before. The BlockSpec is
+        // anchored to the selected data set either way. In the pooled run, if the effective-sample-size parameter
+        // is left at -1 (automatic), the effective sample size is estimated from the imputations' disagreement
+        // rather than taken to be the full row count, which would treat the pooled covariance as if the data had
+        // been complete.
+        List<DataSet> imputations = imputationsForPooling();
+        CovarianceMatrix pooled = imputations == null ? null : BlocksUtil.pooledCovariance(imputations);
+
+        int rawEss = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
+        int essForUse = this.ess;
+        int tscEss = rawEss;
+
+        if (pooled != null) {
+            TetradLogger.getInstance().log("Pooling the covariance matrices of " + imputations.size()
+                    + " data sets (imputations) for latent clustering.");
+
+            if (rawEss == -1) {
+                int autoEss = BlocksUtil.pooledEffectiveSampleSize(imputations);
+                essForUse = autoEss;
+                tscEss = autoEss;
+                TetradLogger.getInstance().log("Effective sample size for the pooled run, estimated from the "
+                        + "disagreement among the imputations: " + autoEss + " of " + dataSet.getNumRows()
+                        + " rows. Set the effectiveSampleSize parameter to override.");
+            }
+        }
+
+        final int essArg = essForUse;
+        final int tscEssArg = tscEss;
 
         return switch (alg) {
-            case "TSC" -> BlockDiscoverers.tsc(dataSet, parameters.getDouble(Params.ALPHA),
-                    parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE),
+            case "TSC" -> BlockDiscoverers.tsc(dataSet, pooled, parameters.getDouble(Params.ALPHA),
+                    tscEssArg,
                     parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                     parameters.getInt(Params.MAX_RANK),
                     policy,
                     parameters.getInt(Params.TSC_MIN_REDUNDANCY),
                     parameters.getBoolean(Params.VERBOSE)
             );
-            case "FOFC" -> BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+            case "FOFC" -> BlockDiscoverers.fofc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,
+                    parameters.getBoolean(Params.VERBOSE),
+                    parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)
+                            ? StratifiedRankTests.resolveDomainColumn(dataSet,
+                            parameters.getString(Params.DOMAIN_COLUMN, "domain"))
+                            : null);
+            case "BPC" -> BlockDiscoverers.bpc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,
                     parameters.getBoolean(Params.VERBOSE));
-            case "BPC" -> BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+            case "FTFC" -> BlockDiscoverers.ftfc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,
                     parameters.getBoolean(Params.VERBOSE));
-            case "FTFC" -> BlockDiscoverers.ftfc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
-                    parameters.getBoolean(Params.VERBOSE));
-            case "GFFC" -> BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess,
+            case "GFFC" -> BlockDiscoverers.gffc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg,
                     parameters.getInt(Params.MAX_RANK), policy,
                     parameters.getBoolean(Params.VERBOSE));
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
+    }
+
+    /**
+     * The data box's data sets, when pooling over imputations is requested and there are several; null otherwise
+     * (the discoverers then compute covariance from the selected data set, as before).
+     */
+    private List<DataSet> imputationsForPooling() {
+        if (!parameters.getBoolean(Params.POOL_IMPUTATIONS, false)) {
+            return null;
+        }
+
+        DataModelList dataModelList = getDataModelList();
+
+        if (dataModelList.size() <= 1) {
+            return null;
+        }
+
+        List<DataSet> imputations = new ArrayList<>();
+
+        for (Object model : dataModelList) {
+            if (!(model instanceof DataSet _dataSet)) {
+                throw new IllegalArgumentException("Pooling imputations requires tabular data sets; the data box "
+                        + "contains a model of another kind.");
+            }
+
+            imputations.add(_dataSet);
+        }
+
+        return imputations;
     }
 
     /**

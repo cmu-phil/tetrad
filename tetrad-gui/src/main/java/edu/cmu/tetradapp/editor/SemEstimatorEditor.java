@@ -16,12 +16,15 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.missing.RubinsRules;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
@@ -35,7 +38,6 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
-import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -44,6 +46,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -52,6 +55,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +65,21 @@ import java.util.Map;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class SemEstimatorEditor extends JPanel {
+public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
+
+    /**
+     * This editor is not wrapped in an outer scroll pane by the editor window (see {@link DoNotScroll}), since that
+     * would scroll the menu bar out of view along with the contents; the panes inside it scroll instead. So that the
+     * window still fits on the screen for a large model, the preferred size is capped to the screen here.
+     *
+     * @return the preferred size, no larger than the screen less a margin.
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension size = super.getPreferredSize();
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Math.min(size.width, screen.width - 50), Math.min(size.height, screen.height - 200));
+    }
     @Serial
     private static final long serialVersionUID = 960988184083427499L;
 
@@ -78,12 +96,18 @@ public final class SemEstimatorEditor extends JPanel {
     /**
      * The data set for the SEM estimator.
      */
-    private final DataSet dataSet;
+    private DataSet dataSet;
 
     /**
      * The SEM estimator wrapper.
      */
     private final SemEstimatorWrapper wrapper;
+
+    /**
+     * The robust (Satorra-Bentler) statistics for the current estimate, or null when robust statistics are switched
+     * off, no tabular data set is available, or the computation failed.
+     */
+    private transient SemSandwichEstimator sandwich;
 
     /**
      * The title for the graphical editor tab.
@@ -139,31 +163,26 @@ public final class SemEstimatorEditor extends JPanel {
         this.wrapper = wrapper;
         this.dataSet = wrapper.getSemEstimator().getDataSet();
 
-        this.oneEditorPanel = new OneEditor(wrapper, this.graphicalEditorTitle, this.tabularEditorTitle, TabbedPaneDefault.GRAPHICAL);
-        this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
-
-
-        JComboBox<Object> optimizerCombo = new JComboBox<>();
+        JComboBox<String> optimizerCombo = new JComboBox<>();
         optimizerCombo.addItem("Regression");
         optimizerCombo.addItem("EM");
         optimizerCombo.addItem("Powell");
         optimizerCombo.addItem("Random Search");
         optimizerCombo.addItem("RICF");
 
-        optimizerCombo.addActionListener((e) -> {
-            JComboBox box = (JComboBox) e.getSource();
-            wrapper.setSemOptimizerType((String) box.getSelectedItem());
-        });
-
-        JComboBox<Object> scoreBox = new JComboBox();
-        IntTextField restarts = new IntTextField(1, 2);
+        JComboBox<String> scoreBox = new JComboBox<>();
+        IntTextField restarts = new IntTextField(1, 4);
 
         scoreBox.addItem("Fgls");
         scoreBox.addItem("Fml");
 
+        optimizerCombo.addActionListener((e) -> {
+            wrapper.setSemOptimizerType((String) optimizerCombo.getSelectedItem());
+            updateSettingEnabling(optimizerCombo, scoreBox, restarts);
+        });
+
         scoreBox.addActionListener((e) -> {
-            JComboBox box = (JComboBox) e.getSource();
-            String type = (String) box.getSelectedItem();
+            String type = (String) scoreBox.getSelectedItem();
             if ("Fgls".equals(type)) {
                 wrapper.setScoreType(ScoreType.Fgls);
             } else if ("Fml".equals(type)) {
@@ -190,6 +209,38 @@ public final class SemEstimatorEditor extends JPanel {
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
+        JCheckBox robustCheck = new JCheckBox("Robust stats");
+        robustCheck.setToolTipText("<html>Satorra-Bentler robust (sandwich) standard errors and scaled chi-square,"
+                                   + "<br>for data with non-normal (e.g., heavy-tailed) variables. Requires a tabular"
+                                   + "<br>data set, since fourth moments are estimated from the data. Coefficient"
+                                   + "<br>standard errors change little; standard errors of variance parameters and"
+                                   + "<br>the model chi-square are corrected for kurtosis.</html>");
+        robustCheck.setSelected(wrapper.getParams().getBoolean("semRobustStatistics", false));
+        robustCheck.setEnabled(this.dataSet != null);
+
+        robustCheck.addActionListener((e) -> {
+            wrapper.getParams().set("semRobustStatistics", robustCheck.isSelected());
+
+            class RobustProcess extends WatchedProcess {
+                @Override
+                public void watch() {
+                    try {
+                        applyRobustStatistics();
+                        resetSemImEditor();
+                    } catch (Exception ex) {
+                        wrapper.getParams().set("semRobustStatistics", false);
+                        robustCheck.setSelected(false);
+                        SemEstimatorEditor.this.sandwich = null;
+                        resetSemImEditor();
+                        JOptionPane.showMessageDialog(robustCheck,
+                                "Could not compute robust statistics for these data:\n" + ex.getMessage());
+                    }
+                }
+            }
+
+            new RobustProcess();
+        });
+
         JButton estimateButton = new JButton("Estimate Again");
 
         estimateButton.addActionListener((e) -> {
@@ -211,80 +262,311 @@ public final class SemEstimatorEditor extends JPanel {
         JButton report = new JButton("Report");
 
         report.addActionListener((e) -> {
-            JTextArea textArea = new JTextArea();
-            JScrollPane scroll = new JScrollPane(textArea);
-
-            textArea.append(compileReport());
-
-            Box b = Box.createVerticalBox();
-            Box b2 = Box.createHorizontalBox();
-            b2.add(scroll);
+            JTextArea textArea = new JTextArea(compileReport());
+            textArea.setEditable(false);
+            textArea.setFont(ThemeUtils.monospaced(12));
             textArea.setCaretPosition(0);
-            b.add(b2);
+
+            JScrollPane scroll = new JScrollPane(textArea);
+            scroll.setPreferredSize(new Dimension(650, 400));
 
             JPanel editorPanel = new JPanel(new BorderLayout());
-            editorPanel.add(b);
+            editorPanel.add(scroll, BorderLayout.CENTER);
 
             EditorWindow window = new EditorWindow(editorPanel,
-                    "All Paths", "Close", false, this);
+                    "Parameter Estimates", "Close", false, this);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.setVisible(true);
         });
 
-        Box lowerBarA = Box.createHorizontalBox();
-        lowerBarA.add(new JLabel("Score"));
-        lowerBarA.add(scoreBox);
-        lowerBarA.add(Box.createHorizontalGlue());
-        lowerBarA.add(new JLabel("Random Restarts"));
-        lowerBarA.add(restarts);
+        Box lowerBar = Box.createHorizontalBox();
+        lowerBar.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
-        Box lowerBarB = Box.createHorizontalBox();
-        lowerBarB.add(new JLabel("Choose Optimizer:  "));
-        lowerBarB.add(optimizerCombo);
-        lowerBarB.add(Box.createHorizontalGlue());
-        lowerBarB.add(estimateButton);
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it with the settings showing.
+        Box dataChooser = DataSetChooser.create(wrapper.getDataModels(), wrapper.getDataIndex(), index -> {
+            class ChooseDataProcess extends WatchedProcess {
+                @Override
+                public void watch() {
+                    try {
+                        wrapper.setDataIndex(index);
+                        SemEstimatorEditor.this.dataSet = wrapper.getSemEstimator().getDataSet();
+                        robustCheck.setEnabled(SemEstimatorEditor.this.dataSet != null);
 
-        Box lowerBar = Box.createVerticalBox();
-        lowerBar.add(lowerBarA);
-        lowerBar.add(lowerBarB);
+                        try {
+                            applyRobustStatistics();
+                        } catch (Exception ex) {
+                            SemEstimatorEditor.this.sandwich = null;
+                            TetradLogger.getInstance().log("Robust statistics not computed: " + ex.getMessage());
+                        }
+
+                        resetSemImEditor();
+                        firePropertyChange("modelChanged", null, null);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(estimateButton,
+                                "Could not estimate on that data set; the estimate shown is still from data set "
+                                + (wrapper.getDataIndex() + 1) + ".\n" + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            new ChooseDataProcess();
+        });
+
+        if (dataChooser != null) {
+            lowerBar.add(dataChooser);
+            lowerBar.add(Box.createHorizontalStrut(12));
+        }
+
+        lowerBar.add(new JLabel("Optimizer:"));
+        lowerBar.add(Box.createHorizontalStrut(4));
+        lowerBar.add(fixSize(optimizerCombo));
+        lowerBar.add(Box.createHorizontalStrut(12));
+        lowerBar.add(new JLabel("Score:"));
+        lowerBar.add(Box.createHorizontalStrut(4));
+        lowerBar.add(fixSize(scoreBox));
+        lowerBar.add(Box.createHorizontalStrut(12));
+        lowerBar.add(new JLabel("Random restarts:"));
+        lowerBar.add(Box.createHorizontalStrut(4));
+        lowerBar.add(fixSize(restarts));
+        lowerBar.add(Box.createHorizontalStrut(12));
+        lowerBar.add(robustCheck);
+        lowerBar.add(Box.createHorizontalGlue());
+        if (this.dataSet != null) {
+            lowerBar.add(PlotMatrixForSelected.button(
+                    () -> this.oneEditorPanel == null ? null : this.oneEditorPanel.getWorkbench(),
+                    () -> this.dataSet, wrapper::getDataModels));
+            lowerBar.add(Box.createHorizontalStrut(8));
+        }
+
+        lowerBar.add(report);
+
+        // Several data sets: offer the estimates pooled over all of them.
+        if (wrapper.getDataModels() != null && wrapper.getDataModels().size() > 1) {
+            JButton pooled = new JButton("Pooled Report");
+            pooled.setToolTipText("<html>Estimate on every data set and pool the estimates by Rubin's rules."
+                                  + "<br>For imputations of one data set only.</html>");
+
+            pooled.addActionListener((e) -> {
+                class PooledProcess extends WatchedProcess {
+                    @Override
+                    public void watch() {
+                        try {
+                            String text = compilePooledReport(wrapper.estimateOnAllDataModels());
+
+                            SwingUtilities.invokeLater(() -> {
+                                JTextArea textArea = new JTextArea(text);
+                                textArea.setEditable(false);
+                                textArea.setFont(ThemeUtils.monospaced(12));
+                                textArea.setCaretPosition(0);
+
+                                JScrollPane scroll = new JScrollPane(textArea);
+                                scroll.setPreferredSize(new Dimension(900, 450));
+
+                                JPanel editorPanel = new JPanel(new BorderLayout());
+                                editorPanel.add(scroll, BorderLayout.CENTER);
+
+                                EditorWindow window = new EditorWindow(editorPanel,
+                                        "Pooled Parameter Estimates", "Close", false, SemEstimatorEditor.this);
+                                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+                                window.setVisible(true);
+                            });
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            SwingUtilities.invokeLater(
+                                    () -> JOptionPane.showMessageDialog(pooled, ex.getMessage()));
+                        }
+                    }
+                }
+
+                new PooledProcess();
+            });
+
+            lowerBar.add(Box.createHorizontalStrut(8));
+            lowerBar.add(pooled);
+        }
+        lowerBar.add(Box.createHorizontalStrut(8));
+        lowerBar.add(estimateButton);
 
         add(lowerBar, BorderLayout.SOUTH);
+
+        updateSettingEnabling(optimizerCombo, scoreBox, restarts);
+
+        try {
+            applyRobustStatistics();
+        } catch (Exception e) {
+            this.sandwich = null;
+            TetradLogger.getInstance().log("Robust statistics not computed: " + e.getMessage());
+        }
 
         resetSemImEditor();
     }
 
-    private String compileReport() {
+    /**
+     * Computes or clears the robust (Satorra-Bentler) statistics for the current estimate, according to the
+     * robust-statistics setting and the availability of a tabular data set, and installs or clears the robust standard
+     * errors on the estimated SEM so that the tabular editor and the report show them.
+     */
+    private void applyRobustStatistics() {
+        SemIm estSem = this.wrapper.getEstimatedSemIm();
+        this.sandwich = null;
+
+        if (estSem == null) {
+            return;
+        }
+
+        if (this.wrapper.getParams().getBoolean("semRobustStatistics", false) && this.dataSet != null) {
+            this.sandwich = new SemSandwichEstimator(estSem, this.dataSet);
+            estSem.setRobustStandardErrors(this.sandwich.getRobustStdErrs());
+        } else {
+            estSem.setRobustStandardErrors(null);
+        }
+    }
+
+    /**
+     * Constrains a component to its preferred size so that BoxLayout does not stretch it.
+     */
+    private static JComponent fixSize(JComponent comp) {
+        comp.setMaximumSize(comp.getPreferredSize());
+        return comp;
+    }
+
+    /**
+     * Enables or disables the score and restarts controls depending on whether the selected optimizer uses them. The
+     * score (Fgls or Fml) is minimized only by the Powell and Random Search optimizers; random restarts are used by the
+     * EM, Powell, and Random Search optimizers.
+     */
+    private void updateSettingEnabling(JComboBox<String> optimizerCombo, JComboBox<String> scoreBox,
+                                       IntTextField restarts) {
+        String type = (String) optimizerCombo.getSelectedItem();
+        boolean usesScore = "Powell".equals(type) || "Random Search".equals(type);
+        boolean usesRestarts = usesScore || "EM".equals(type);
+
+        scoreBox.setEnabled(usesScore);
+        restarts.setEnabled(usesRestarts);
+
+        scoreBox.setToolTipText(usesScore
+                ? "The discrepancy function minimized by the optimizer."
+                : "The score applies only to the Powell and Random Search optimizers.");
+        restarts.setToolTipText(usesRestarts
+                ? "The number of random restarts for the optimizer."
+                : "Restarts apply only to the EM, Powell, and Random Search optimizers.");
+    }
+
+    /**
+     * The estimates from each data set pooled by Rubin's rules: one row per free parameter and per variable mean.
+     */
+    private String compilePooledReport(List<SemIm> ims) {
+        SemIm first = ims.getFirst();
+        int m = ims.size();
+        int nameWidth = 4;
+
+        for (Node node : first.getSemPm().getGraph().getNodes()) {
+            nameWidth = TMath.max(nameWidth, node.getName().length());
+        }
+
+        nameWidth += 2;
+
+        String rowFormat = "%-" + nameWidth + "s %-" + nameWidth + "s %-8s %12s %12s %12s %10s %12s %8s %12s %12s%n";
         StringBuilder builder = new StringBuilder();
 
-        builder.append("Datset\tFrom\tTo\tType\tValue\tSE\tT\tP");
+        builder.append("Estimates pooled over ").append(m).append(" data sets by Rubin's rules.\n\n");
+        builder.append("Value is the mean of the ").append(m).append(" estimates. SE combines the average squared\n");
+        builder.append("standard error within a data set with the variance of the estimate between data\n");
+        builder.append("sets, so it includes the uncertainty due to the missing values, which the SE from\n");
+        builder.append("any one data set leaves out. FMI is the fraction of the information about the\n");
+        builder.append("parameter that was lost to missing data. Min and Max are over the data sets.\n\n");
+        builder.append("Valid only if the data sets are imputations of one data set; not for independent\n");
+        builder.append("samples, different subjects or different conditions. Tetrad's imputers do not draw\n");
+        builder.append("the imputation model's parameters, so the between-data-set variance, and with it\n");
+        builder.append("SE and FMI, are somewhat understated. The model chi-square is not pooled.\n\n");
+        builder.append(String.format(rowFormat, "From", "To", "Type", "Value", "SE", "T", "DF", "P", "FMI",
+                "Min", "Max"));
 
-//       Maximum number of free parameters for which statistics will
-//       be calculated. (Calculating standard errors is high
-//       complexity.) Set this to zero to turn off statistics
-//       calculations (which can be problematic sometimes).
+        final int maxFreeParamsForStatistics = 200;
+        double completeDataDf = first.getSampleSize() - first.getNumFreeParams();
+
+        for (Parameter parameter : first.getFreeParameters()) {
+            double[] estimates = new double[m];
+            double[] standardErrors = new double[m];
+
+            for (int i = 0; i < m; i++) {
+                // The parameter itself, so that the estimate and its standard error are on the same scale; for a
+                // variance that is the variance, where the single-data-set report shows its square root.
+                estimates[i] = ims.get(i).getParamValue(parameter);
+                standardErrors[i] = ims.get(i).getStandardError(parameter, maxFreeParamsForStatistics);
+            }
+
+            appendPooledRow(builder, rowFormat, String.valueOf(parameter.getNodeA()),
+                    String.valueOf(parameter.getNodeB()),
+                    parameter.getType() == ParamType.VAR ? "Variance" : typeString(parameter),
+                    RubinsRules.pool(estimates, standardErrors, completeDataDf));
+        }
+
+        for (Node node : first.getVariableNodes()) {
+            double[] estimates = new double[m];
+            double[] standardErrors = new double[m];
+
+            for (int i = 0; i < m; i++) {
+                SemIm im = ims.get(i);
+                Node variable = im.getSemPm().getGraph().getNode(node.getName());
+                estimates[i] = im.getMean(variable);
+                standardErrors[i] = im.getMeanStdDev(variable) / TMath.sqrt(im.getSampleSize());
+            }
+
+            appendPooledRow(builder, rowFormat, node.getName(), node.getName(), "Mean",
+                    RubinsRules.pool(estimates, standardErrors, first.getSampleSize() - 1));
+        }
+
+        return builder.toString();
+    }
+
+    private void appendPooledRow(StringBuilder builder, String rowFormat, String from, String to, String type,
+                                 RubinsRules.Pooled pooled) {
+        builder.append(String.format(rowFormat, from, to, type,
+                asString(pooled.estimate()), asString(pooled.standardError()), asString(pooled.t()),
+                String.format("%.1f", pooled.degreesOfFreedom()), asString(pooled.pValue()),
+                String.format("%.3f", pooled.fractionMissingInformation()),
+                asString(pooled.min()), asString(pooled.max())));
+    }
+
+    private String compileReport() {
         SemIm estSem = this.wrapper.getEstimatedSemIm();
-        String dataName = this.dataSet.getName();
 
-        estSem.getFreeParameters().forEach(parameter -> {
-            builder.append("\n");
-            builder.append(dataName).append("\t");
-            builder.append(parameter.getNodeA()).append("\t");
-            builder.append(parameter.getNodeB()).append("\t");
-            builder.append(typeString(parameter)).append("\t");
-            builder.append(asString(paramValue(estSem, parameter))).append("\t");
+        // Width of the From and To columns, based on the longest variable name.
+        int nameWidth = 4;
 
-//            Maximum number of free parameters for which statistics will
-//            be calculated.(Calculating standard errors is high
-//            complexity.)Set this to zero to turn off statistics
-//            calculations (which can be problematic sometimes).
-            final int maxFreeParamsForStatistics = 200;
-            builder.append(asString(estSem.getStandardError(parameter,
-                    maxFreeParamsForStatistics))).append("\t");
-            builder.append(asString(estSem.getTValue(parameter,
-                    maxFreeParamsForStatistics))).append("\t");
-            builder.append(asString(estSem.getPValue(parameter,
-                    maxFreeParamsForStatistics))).append("\t");
-        });
+        for (Node node : estSem.getSemPm().getGraph().getNodes()) {
+            nameWidth = TMath.max(nameWidth, node.getName().length());
+        }
+
+        nameWidth += 2;
+
+        String rowFormat = "%-" + nameWidth + "s %-" + nameWidth + "s %-8s %12s %12s %12s %12s%n";
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Dataset: ").append(this.dataSet.getName()).append("\n\n");
+
+        if (this.sandwich != null) {
+            builder.append("Standard errors are robust (Satorra-Bentler sandwich) estimates.\n\n");
+        }
+
+        builder.append(String.format(rowFormat, "From", "To", "Type", "Value", "SE", "T", "P"));
+
+        // Maximum number of free parameters for which statistics will be calculated. (Calculating standard errors
+        // is high complexity.) Set this to zero to turn off statistics calculations (which can be problematic
+        // sometimes).
+        final int maxFreeParamsForStatistics = 200;
+
+        estSem.getFreeParameters().forEach(parameter -> builder.append(String.format(rowFormat,
+                parameter.getNodeA(),
+                parameter.getNodeB(),
+                typeString(parameter),
+                asString(paramValue(estSem, parameter)),
+                asString(estSem.getStandardError(parameter, maxFreeParamsForStatistics)),
+                asString(estSem.getTValue(parameter, maxFreeParamsForStatistics)),
+                asString(estSem.getPValue(parameter, maxFreeParamsForStatistics)))));
 
         List<Node> nodes = estSem.getVariableNodes();
 
@@ -293,18 +575,12 @@ public final class SemEstimatorEditor extends JPanel {
             int df = n - 1;
             double mean = estSem.getMean(node);
             double stdDev = estSem.getMeanStdDev(node);
-            double stdErr = stdDev / FastMath.sqrt(n);
+            double stdErr = stdDev / TMath.sqrt(n);
             double tValue = mean / stdErr;
-            double p = 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
-            builder.append("\n");
-            builder.append(dataName).append("\t");
-            builder.append(node).append("\t");
-            builder.append(node).append("\t");
-            builder.append("Mean").append("\t");
-            builder.append(asString(mean)).append("\t");
-            builder.append(asString(stdErr)).append("\t");
-            builder.append(asString(tValue)).append("\t");
-            builder.append(asString(p)).append("\t");
+            double p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tValue), df));
+            builder.append(String.format(rowFormat,
+                    node, node, "Mean",
+                    asString(mean), asString(stdErr), asString(tValue), asString(p)));
         });
 
         return builder.toString();
@@ -341,7 +617,7 @@ public final class SemEstimatorEditor extends JPanel {
         double paramValue = im.getParamValue(parameter);
 
         if (parameter.getType() == ParamType.VAR) {
-            paramValue = FastMath.sqrt(paramValue);
+            paramValue = TMath.sqrt(paramValue);
         }
 
         return paramValue;
@@ -370,7 +646,7 @@ public final class SemEstimatorEditor extends JPanel {
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected optimizer type: "
-                                                   + type);
+                        + type);
         }
 
         int numRestarts = this.wrapper.getNumRestarts();
@@ -383,14 +659,36 @@ public final class SemEstimatorEditor extends JPanel {
         estimator.setScoreType(this.wrapper.getScoreType());
 
         estimator.estimate();
+
+        try {
+            applyRobustStatistics();
+        } catch (Exception e) {
+            this.sandwich = null;
+            TetradLogger.getInstance().log("Robust statistics not computed: " + e.getMessage());
+        }
+
         resetSemImEditor();
     }
 
     private void resetSemImEditor() {
+
+        // Preserve the view state across re-estimation so that "Estimate Again" doesn't throw the user back to the
+        // first tab.
+        int tabIndex = 0;
+        int matrixSelection = 0;
+
+        if (this.oneEditorPanel != null) {
+            tabIndex = this.oneEditorPanel.getTabSelectionIndex();
+            matrixSelection = this.oneEditorPanel.getMatrixSelection();
+        }
+
         this.oneEditorPanel = new OneEditor(this.wrapper, this.graphicalEditorTitle, this.tabularEditorTitle, TabbedPaneDefault.GRAPHICAL);
+        this.oneEditorPanel.setMatrixSelection(matrixSelection);
+        this.oneEditorPanel.setTabSelectionIndex(tabIndex);
         this.targetPanel.removeAll();
         this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
-        validate();
+        this.targetPanel.revalidate();
+        this.targetPanel.repaint();
     }
 
     private Component getComp() {
@@ -405,6 +703,15 @@ public final class SemEstimatorEditor extends JPanel {
         }
     }
 
+    /**
+     * Asks the user for lavaan export options and writes the given SEM IM to the given file in lavaan syntax.
+     * Does nothing if the user cancels.
+     *
+     * @param parent the parent window for the options dialog
+     * @param semIm  the SEM IM to export
+     * @param file   the file to write to
+     * @throws RuntimeException if the file cannot be written
+     */
     public void exportSemImToLavaan(Window parent, SemIm semIm, File file) {
         SemLavaanOptionsDialog dialog = new SemLavaanOptionsDialog(parent);
         dialog.showDialog();
@@ -449,11 +756,6 @@ public final class SemEstimatorEditor extends JPanel {
          * The implied covariance matrix is selected.
          */
         COVMATRIX,
-
-        /**
-         * The statistics are selected.
-         */
-        tabbedPanedDefault,
 
         /**
          * The statistics are selected.
@@ -591,10 +893,12 @@ public final class SemEstimatorEditor extends JPanel {
         private static final long serialVersionUID = -9096723049787232471L;
 
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        private final SemEstimatorWrapper wrapper;
+        private final SemEstimatorEditor editor;
 
-        public ModelStatisticsPanel(SemEstimatorWrapper wrapper) {
-            this.wrapper = wrapper;
+        public ModelStatisticsPanel(SemEstimatorEditor editor) {
+            this.editor = editor;
+            setEditable(false);
+            setMargin(new Insets(8, 8, 8, 8));
             reset();
 
             addComponentListener(new ComponentAdapter() {
@@ -651,35 +955,51 @@ public final class SemEstimatorEditor extends JPanel {
                 append("\nRMSEA = " + this.nf.format(semIm().getRmsea()));
 
             } else {
-                int numToFix = (int) FastMath.abs(modelDof);
+                int numToFix = (int) TMath.abs(modelDof);
                 append("\n\nA SEM with negative degrees of freedom is underidentified, "
-                       + "\nand other model statistics are meaningless.  Please increase "
-                       + "\nthe degrees of freedom to 0 or above by fixing at least "
-                       + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
+                        + "\nand other model statistics are meaningless.  Please increase "
+                        + "\nthe degrees of freedom to 0 or above by fixing at least "
+                        + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
+            }
+
+            SemSandwichEstimator sandwich = this.editor.sandwich;
+
+            if (sandwich != null && modelDof > 0) {
+                append("\n\nSatorra-Bentler scaled Chi Square = " + this.nf.format(sandwich.getScaledChiSquare()));
+                append("\nSatorra-Bentler scaling factor c = " + this.nf.format(sandwich.getScalingFactor()));
+                double sp = sandwich.getScaledPValue();
+                String spString = sp > 0.001 ? this.nf.format(sp) : new DecimalFormat("0.0000E0").format(sp);
+                append("\nScaled P Value = " + (Double.isNaN(sp) ? "undefined" : spString));
+                append("\n\nRobust statistics are showing: the scaled chi square divides the "
+                       + "chi square by the scaling factor c, which corrects the test for "
+                       + "non-normality using fourth moments estimated from the data (Satorra "
+                       + "and Bentler, 1994), and the standard errors in the tabular editor "
+                       + "and the report are robust (sandwich) estimates. Under normal data "
+                       + "c is close to 1 and the two tests agree.");
             }
 
             append("\n\nThe above chi square test assumes that the maximum "
-                   + "likelihood function over the measured variables has been "
-                   + "minimized. Under that assumption, the null hypothesis for "
-                   + "the test is that the population covariance matrix over all "
-                   + "of the measured variables is equal to the estimated covariance "
-                   + "matrix over all of the measured variables written as a function "
-                   + "of the free model parameters--that is, the unfixed parameters "
-                   + "for each directed edge (the linear coefficient for that edge), "
-                   + "each exogenous variable (the variance for the error term for "
-                   + "that variable), and each bidirected edge (the covariance for "
-                   + "the exogenous variables it connects).  The model is explained "
-                   + "in Bollen, Structural Equations with Latent Variable, 110. "
-                   + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
-                   + "is the number of linear coefficients, variance terms, and error "
-                   + "covariance terms that are not fixed in the model. For latent models, "
-                   + "the degrees of freedom are termed 'estimated' since extra contraints "
-                   + "(e.g. pentad constraints) are not taken into account.");
+                    + "likelihood function over the measured variables has been "
+                    + "minimized. Under that assumption, the null hypothesis for "
+                    + "the test is that the population covariance matrix over all "
+                    + "of the measured variables is equal to the estimated covariance "
+                    + "matrix over all of the measured variables written as a function "
+                    + "of the free model parameters--that is, the unfixed parameters "
+                    + "for each directed edge (the linear coefficient for that edge), "
+                    + "each exogenous variable (the variance for the error term for "
+                    + "that variable), and each bidirected edge (the covariance for "
+                    + "the exogenous variables it connects).  The model is explained "
+                    + "in Bollen, Structural Equations with Latent Variable, 110. "
+                    + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
+                    + "is the number of linear coefficients, variance terms, and error "
+                    + "covariance terms that are not fixed in the model. For latent models, "
+                    + "the degrees of freedom are termed 'estimated' since extra contraints "
+                    + "(e.g. pentad constraints) are not taken into account.");
 
         }
 
         private ISemIm semIm() {
-            return this.wrapper.getEstimatedSemIm();
+            return this.editor.wrapper.getEstimatedSemIm();
         }
     }
 
@@ -797,8 +1117,6 @@ public final class SemEstimatorEditor extends JPanel {
             }
             if (columnIndex == 0) {
                 return getColumnName(rowIndex);
-            } else if (rowIndex < columnIndex) {
-                return null;
             } else {
                 return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
             }
@@ -817,16 +1135,17 @@ public final class SemEstimatorEditor extends JPanel {
                     double d1 = implCovar[i][j];
                     double d2 = implCovar[i][i];
                     double d3 = implCovar[j][j];
-                    double d4 = d1 / FastMath.pow(d2 * d3, 0.5);
+                    double d4 = d1 / TMath.pow(d2 * d3, 0.5);
 
                     if (d4 <= 1.0 || Double.isNaN(d4)) {
                         corr[i][j] = d4;
+                        corr[j][i] = d4;
                     } else {
                         throw new IllegalArgumentException(
                                 "Off-diagonal element at (" + i + ", " + j
-                                + ") cannot be converted to correlation: "
-                                + d1 + " <= FastMath.pow(" + d2 + " * " + d3
-                                + ", 0.5)");
+                                        + ") cannot be converted to correlation: "
+                                        + d1 + " <= TMath.pow(" + d2 + " * " + d3
+                                        + ", 0.5)");
                     }
                 }
             }
@@ -906,6 +1225,11 @@ public final class SemEstimatorEditor extends JPanel {
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
+
+            // The SEM graph is shared with the SEM PM, so the flag may have been left on elsewhere.
+            // Error terms are hidden when the editor opens; "Show Error Terms" turns them on.
+            getSemGraph().setShowErrorTerms(false);
+
             displaySemIm(graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         }
 
@@ -935,8 +1259,6 @@ public final class SemEstimatorEditor extends JPanel {
                 this.tabbedPane.add(tabularEditorTitle, tabularEditor());
                 this.tabbedPane.add("Implied Matrices", impliedMatricesPanel());
             }
-
-            SemEstimatorEditor.this.targetPanel.add(this.tabbedPane, BorderLayout.CENTER);
 
             JMenuBar menuBar = new JMenuBar();
             JMenu file = new JMenu("File");
@@ -1013,11 +1335,11 @@ public final class SemEstimatorEditor extends JPanel {
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
                     getSemGraph().setShowErrorTerms(false);
-                    graphicalEditor().resetLabels();
+                    graphicalEditor().resetGraph();
                 } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
                     getSemGraph().setShowErrorTerms(true);
-                    graphicalEditor().resetLabels();
+                    graphicalEditor().resetGraph();
                 }
             });
 
@@ -1049,11 +1371,18 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             });
 
+            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient", true);
+            shadeEdges.setToolTipText("Color edges blue (positive) or vermillion (negative), darker for larger "
+                    + "|coefficient| relative to the largest in the model; error covariances by their correlation.");
+            shadeEdges.addActionListener((e) -> graphicalEditor().setShadeEdges(shadeEdges.isSelected()));
+
             JMenu params = new JMenu("Parameters");
             params.add(this.errorTerms);
             params.addSeparator();
             params.add(covariances);
             params.add(correlations);
+            params.addSeparator();
+            params.add(shadeEdges);
             params.addSeparator();
 
             if (!SemEstimatorEditor.this.wrapper.getEstimatedSemIm().isCyclic()) {
@@ -1065,7 +1394,6 @@ public final class SemEstimatorEditor extends JPanel {
             menuBar.add(params);
             menuBar.add(new LayoutMenu(this));
 
-            SemEstimatorEditor.this.targetPanel.add(menuBar, BorderLayout.NORTH);
             add(this.tabbedPane, BorderLayout.CENTER);
             add(menuBar, BorderLayout.NORTH);
         }
@@ -1097,22 +1425,24 @@ public final class SemEstimatorEditor extends JPanel {
 
         @Override
         public void layoutByGraph(Graph graph) {
-            SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
-            _graph.setShowErrorTerms(false);
+            // The workbench displays a plain copy of the model graph, so work on the model graph itself: hide error
+            // terms there, push the graph to the workbench, then lay out. Node positions live on the shared Node
+            // objects, so the layout is reflected in the model graph, and error nodes are placed relative to their
+            // variables when they are next shown.
+            hideErrorTermsForLayout();
             this.semImGraphicalEditor.getWorkbench().layoutByGraph(graph);
-            _graph.resetErrorPositions();
-//        semImGraphicalEditor.getWorkbench().setGraph(_graph);
-            this.errorTerms.setText("Show Error Terms");
         }
 
         @Override
         public void layoutByKnowledge() {
-            SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
-            _graph.setShowErrorTerms(false);
+            hideErrorTermsForLayout();
             this.semImGraphicalEditor.getWorkbench().layoutByKnowledge();
-            _graph.resetErrorPositions();
-//        semImGraphicalEditor.getWorkbench().setGraph(_graph);
+        }
+
+        private void hideErrorTermsForLayout() {
+            getSemGraph().setShowErrorTerms(false);
             this.errorTerms.setText("Show Error Terms");
+            this.semImGraphicalEditor.resetGraph();
         }
 
         private void checkForUnmeasuredLatents(ISemIm semIm) {
@@ -1147,6 +1477,23 @@ public final class SemEstimatorEditor extends JPanel {
          */
         public int getTabSelectionIndex() {
             return this.tabbedPane.getSelectedIndex();
+        }
+
+        /**
+         * Sets the selected tab. Used to restore the view state after re-estimation.
+         */
+        public void setTabSelectionIndex(int index) {
+            if (index >= 0 && index < this.tabbedPane.getTabCount()) {
+                this.tabbedPane.setSelectedIndex(index);
+            }
+        }
+
+        /**
+         * Sets the matrix selection in the implied matrices panel. Used to restore the view state after
+         * re-estimation.
+         */
+        public void setMatrixSelection(int index) {
+            impliedMatricesPanel().setMatrixSelection(index);
         }
 
         /**
@@ -1254,7 +1601,7 @@ public final class SemEstimatorEditor extends JPanel {
 
         private ModelStatisticsPanel modelStatisticsPanel() {
             if (this.modelStatisticsPanel == null) {
-                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this.wrapper);
+                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this);
             }
             return this.modelStatisticsPanel;
         }
@@ -1346,11 +1693,47 @@ public final class SemEstimatorEditor extends JPanel {
             };
             this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
+
+            // The table also refreshes for display options (means, intercepts, correlations), so only report a
+            // model change when a parameter value was actually set.
             this.tableModel.addTableModelListener((e) -> {
-                this.firePropertyChange("modelChanged", null, null);
+                if (this.tableModel.consumeEdited()) {
+                    this.firePropertyChange("modelChanged", null, null);
+                }
             });
 
+            TableRowSorter<ParamTableModel> sorter = new TableRowSorter<>(this.tableModel);
+            sorter.setComparator(0, NaturalSort.naturalComparator()); // From
+            sorter.setComparator(1, NaturalSort.naturalComparator()); // To
+
+            // Sort the Type column by semantic rank (coefficients, then error std. devs., then error covariances,
+            // then means or intercepts) rather than alphabetically, so that the grouping is stable when the type
+            // labels change (e.g., when covariances are displayed as correlations).
+            Comparator<Object> typeComparator = (a, b) -> Integer.compare(typeRank(a), typeRank(b));
+            sorter.setComparator(2, typeComparator);
+
+            sorter.setSortKeys(List.of(
+                    new RowSorter.SortKey(2, SortOrder.ASCENDING), // Type
+                    new RowSorter.SortKey(0, SortOrder.ASCENDING), // From
+                    new RowSorter.SortKey(1, SortOrder.ASCENDING)  // To
+            ));
+            sorter.sort();
+            table.setRowSorter(sorter);
             add(new JScrollPane(table), BorderLayout.CENTER);
+        }
+
+        /**
+         * Returns the sort rank for a Type column value: edge coefficients first, then error standard deviations,
+         * then error covariances (or correlations), then means or intercepts.
+         */
+        private static int typeRank(Object type) {
+            return switch (String.valueOf(type)) {
+                case "Edge Coef." -> 0;
+                case "Std. Dev." -> 1;
+                case "Covariance", "Correlation" -> 2;
+                case "Mean", "Intercept" -> 3;
+                default -> 4;
+            };
         }
 
         private ISemIm semIm() {
@@ -1373,6 +1756,20 @@ public final class SemEstimatorEditor extends JPanel {
     }
 
     final class ParamTableModel extends AbstractTableModel {
+
+        /**
+         * True if a parameter value has been set since the flag was last consumed.
+         */
+        private boolean edited;
+
+        /**
+         * True if a parameter value was set since the last call; resets the flag.
+         */
+        boolean consumeEdited() {
+            boolean wasEdited = this.edited;
+            this.edited = false;
+            return wasEdited;
+        }
 
         private static final long serialVersionUID = 2210883212769846304L;
 
@@ -1397,7 +1794,9 @@ public final class SemEstimatorEditor extends JPanel {
 
         @Override
         public int getRowCount() {
-            int numNodes = semIm().getVariableNodes().size();
+
+            // When the user has chosen not to show means or intercepts, hide those rows entirely.
+            int numNodes = this.editor.nodeParamDisplay() == 3 ? 0 : semIm().getVariableNodes().size();
             return semIm().getNumFreeParams() + semIm().getFixedParameters().size() + numNodes;
         }
 
@@ -1477,11 +1876,11 @@ public final class SemEstimatorEditor extends JPanel {
                 int df = n - 1;
                 double mean = semIm().getMean(node);
                 double stdDev = semIm().getMeanStdDev(node);
-                double stdErr = stdDev / FastMath.sqrt(n);
-//            double tValue = mean * FastMath.sqrt(n - 1) / stdDev;
+                double stdErr = stdDev / TMath.sqrt(n);
+//            double tValue = mean * TMath.sqrt(n - 1) / stdDev;
 
                 double tValue = mean / stdErr;
-                double p = 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
+                double p = 2.0 * (1.0 - ProbUtils.tCdf(TMath.abs(tValue), df));
 
                 switch (column) {
                     case 0:
@@ -1489,19 +1888,12 @@ public final class SemEstimatorEditor extends JPanel {
                     case 1:
                         return nodes.get(index);
                     case 2:
-                        if (this.editor.nodeParamDisplay() == 2) {
-                            return "Intercept";
-                        } else if (this.editor.nodeParamDisplay() == 1) {
-                            return "Mean";
-
-                        } else {
-                            return "Don't display means or intercepts";
-                        }
+                        return this.editor.nodeParamDisplay() == 2 ? "Intercept" : "Mean";
                     case 3:
                         if (this.editor.nodeParamDisplay() == 2) {
                             double intercept = semIm().getIntercept(node);
                             return asString(intercept);
-                        } else if (this.editor.nodeParamDisplay() == 1) {
+                        } else {
                             return asString(mean);
                         }
                     case 4:
@@ -1530,11 +1922,11 @@ public final class SemEstimatorEditor extends JPanel {
                     double varA = semIm().getParamValue(nodeA, nodeA);
                     double varB = semIm().getParamValue(nodeB, nodeB);
 
-                    paramValue *= FastMath.sqrt(varA * varB);
+                    paramValue *= TMath.sqrt(varA * varB);
                 }
             } else {
                 if (parameter.getType() == ParamType.VAR) {
-                    paramValue = FastMath.sqrt(paramValue);
+                    paramValue = TMath.sqrt(paramValue);
                 }
             }
 
@@ -1543,7 +1935,15 @@ public final class SemEstimatorEditor extends JPanel {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return isEditable() && columnIndex == 3;
+            if (!isEditable() || columnIndex != 3) {
+                return false;
+            }
+
+            // Free parameter rows and mean rows are editable; fixed parameter rows are not. The row order is free
+            // parameters, then fixed parameters, then means.
+            int numFree = semIm().getNumFreeParams();
+            int numParams = numFree + semIm().getFixedParameters().size();
+            return rowIndex < numFree || rowIndex >= numParams;
         }
 
         private boolean isEditable() {
@@ -1558,10 +1958,19 @@ public final class SemEstimatorEditor extends JPanel {
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
             if (columnIndex == 3) {
+                // Committing a cell without retyping it leaves the parameter alone. (Re-parsing the displayed,
+                // rounded text would otherwise change the parameter's value.)
+                if (String.valueOf(aValue).equals(String.valueOf(getValueAt(rowIndex, columnIndex)))) {
+                    return;
+                }
+
                 try {
                     double value = Double.parseDouble((String) aValue);
 
-                    if (rowIndex < semIm().getNumFreeParams()) {
+                    int numFree = semIm().getNumFreeParams();
+                    int numParams = numFree + semIm().getFixedParameters().size();
+
+                    if (rowIndex < numFree) {
                         Parameter parameter = semIm().getFreeParameters().get(rowIndex);
 
                         if (parameter.getType() == ParamType.VAR) {
@@ -1580,10 +1989,10 @@ public final class SemEstimatorEditor extends JPanel {
                             }
                         }
 
-                        this.editor.firePropertyChange("modelChanged", 0, 0);
+                        this.edited = true;
 
-                    } else {
-                        int index = rowIndex - semIm().getNumFreeParams();
+                    } else if (rowIndex >= numParams) {
+                        int index = rowIndex - numParams;
                         Node node = semIm().getVariableNodes().get(index);
 
                         if (semIm().getMean(semIm().getVariableNodes().get(index)) != value) {
@@ -1592,7 +2001,7 @@ public final class SemEstimatorEditor extends JPanel {
                             } else if (this.editor.nodeParamDisplay() == 1) {
                                 semIm().setMean(node, value);
                             }
-                            this.editor.firePropertyChange("modelChanged", 0, 0);
+                            this.edited = true;
 
                         }
                     }
@@ -1688,6 +2097,10 @@ public final class SemEstimatorEditor extends JPanel {
          */
         private boolean editable = true;
         private Container dialog;
+        /**
+         * Whether display edges are shaded by coefficient sign and relative magnitude.
+         */
+        private boolean shadeEdges = true;
 
         /**
          * Constructs a SemIm graphical editor for the given SemIm.
@@ -1772,14 +2185,14 @@ public final class SemEstimatorEditor extends JPanel {
             double d = semIm().getParamValue(parameter);
 
             if (this.editor.isEditCovariancesAsCorrelations()
-                && parameter.getType() == ParamType.COVAR) {
+                    && parameter.getType() == ParamType.COVAR) {
                 Node nodeA = parameter.getNodeA();
                 Node nodeB = parameter.getNodeB();
 
                 double varA = semIm().getParamValue(nodeA, nodeA);
                 double varB = semIm().getParamValue(nodeB, nodeB);
 
-                d /= FastMath.sqrt(varA * varB);
+                d /= TMath.sqrt(varA * varB);
             }
 
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
@@ -1839,84 +2252,79 @@ public final class SemEstimatorEditor extends JPanel {
 
             Parameter parameter = getNodeParameter(node);
             if (this.editor.isEditCovariancesAsCorrelations()
-                && parameter.getType() == ParamType.VAR) {
+                    && parameter.getType() == ParamType.VAR) {
                 return;
             }
 
-            double d = Double.NaN;
-            String prefix;
-            String postfix = "";
+            double d;
+            String title;
 
             if (parameter.getType() == ParamType.MEAN) {
                 if (this.editor.nodeParamDisplay() == 2) {
                     d = semIm().getIntercept(node);
-                    prefix = "B0_" + node.getName() + " = ";
+                    title = "Intercept for " + node;
                 } else if (this.editor.nodeParamDisplay() == 1) {
                     d = semIm().getMean(node);
-                    prefix = "Mean(" + node.getName() + ") = ";
+                    title = "Mean for " + node;
+                } else {
+
+                    // Means and intercepts are hidden; nothing to edit.
+                    return;
                 }
             } else {
-                d = FastMath.sqrt(semIm().getParamValue(parameter));
-                prefix = node.getName() + " ~ N(0,";
-                postfix = ")";
+                d = TMath.sqrt(semIm().getParamValue(parameter));
+                title = "Standard deviation for " + node;
             }
 
-            if (!Double.isNaN(d)) {
-                DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
-                field.setFilter((value, oldValue) -> {
-                    try {
-                        setNodeValue(node, "" + value);
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
-                });
+            if (Double.isNaN(d)) {
+                return;
+            }
 
-                Box box = Box.createHorizontalBox();
-                box.add(Box.createHorizontalGlue());
-                box.add(new JLabel("New value: "));
-                box.add(field);
-                box.add(Box.createHorizontalGlue());
-
-                field.addAncestorListener(new AncestorListener() {
-                    @Override
-                    public void ancestorMoved(AncestorEvent ancestorEvent) {
-                    }
-
-                    @Override
-                    public void ancestorRemoved(AncestorEvent ancestorEvent) {
-                    }
-
-                    @Override
-                    public void ancestorAdded(AncestorEvent ancestorEvent) {
-                        Container ancestor = ancestorEvent.getAncestor();
-
-                        if (ancestor instanceof JDialog) {
-                            SemImGraphicalEditor.this.dialog = ancestor;
-                        }
-                    }
-                });
-
-                field.addActionListener((e) -> {
-                    if (this.dialog != null) {
-                        this.dialog.setVisible(false);
-                    }
-                });
-
-                String s;
-
-                if (parameter.getType() == ParamType.MEAN) {
-                    if (this.editor.nodeParamDisplay() == 2) {
-                        s = "Intercept for " + node;
-                    } else if (this.editor.nodeParamDisplay() == 1) {
-                        s = "Mean for " + node;
-                    } else {
-                        s = "";
-                    }
-                } else {
-                    s = "Standard Deviation for " + node;
+            DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
+            field.setFilter((value, oldValue) -> {
+                try {
+                    setNodeValue(node, "" + value);
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
                 }
-            }
+            });
+
+            Box box = Box.createHorizontalBox();
+            box.add(Box.createHorizontalGlue());
+            box.add(new JLabel("New value: "));
+            box.add(field);
+            box.add(Box.createHorizontalGlue());
+
+            field.addAncestorListener(new AncestorListener() {
+                @Override
+                public void ancestorMoved(AncestorEvent ancestorEvent) {
+                }
+
+                @Override
+                public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                }
+
+                @Override
+                public void ancestorAdded(AncestorEvent ancestorEvent) {
+                    Container ancestor = ancestorEvent.getAncestor();
+
+                    if (ancestor instanceof JDialog) {
+                        SemImGraphicalEditor.this.dialog = ancestor;
+                    }
+
+                    field.selectAll();
+                    field.grabFocus();
+                }
+            });
+
+            field.addActionListener((e) -> {
+                if (this.dialog != null) {
+                    this.dialog.setVisible(false);
+                }
+            });
+
+            JOptionPane.showMessageDialog(this.workbench.getComponent(node), box, title, JOptionPane.PLAIN_MESSAGE);
         }
 
         private void finishEdit() {
@@ -1971,7 +2379,33 @@ public final class SemEstimatorEditor extends JPanel {
                 resetNodeLabel((Node) node, implCovar);
             }
 
+            SemGraphShading.applyEdgeShading(workbench(), graph(), semIm(), implCovar, this.shadeEdges,
+                    this::getEdgeParameter);
+
             workbench().repaint();
+        }
+
+        private void setEdgeAnnotation(Edge edge, String text) {
+            SemGraphShading.setEdgeAnnotation(workbench(), edge, text);
+        }
+
+        /**
+         * Re-syncs the workbench with the model graph and redraws labels. The workbench displays a copy of the graph,
+         * so structural changes to the model graph (showing or hiding error terms) do not reach it on their own.
+         */
+        public void resetGraph() {
+            workbench().setGraph(graph());
+            resetLabels();
+        }
+
+        /**
+         * Turns edge shading on or off and refreshes the display.
+         *
+         * @param shade true to shade edges by coefficient
+         */
+        public void setShadeEdges(boolean shade) {
+            this.shadeEdges = shade;
+            resetLabels();
         }
 
         private void resetEdgeLabel(Edge edge, Matrix implCovar) {
@@ -2004,14 +2438,14 @@ public final class SemEstimatorEditor extends JPanel {
                 }
 
                 if (this.editor.isEditCovariancesAsCorrelations()
-                    && parameter.getType() == ParamType.COVAR) {
+                        && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
 
-                    val /= FastMath.sqrt(varA * varB);
+                    val /= TMath.sqrt(varA * varB);
                 }
 
                 JLabel label = new JLabel();
@@ -2033,13 +2467,26 @@ public final class SemEstimatorEditor extends JPanel {
                 label.setToolTipText(parameter.getName() + " = " + asString(val));
                 label.addMouseListener(new EdgeMouseListener(edge, this));
                 if (!Double.isNaN(standardError) && semIm().isEstimated()) {
-                    label.setToolTipText("SE=" + asString(standardError) + ", T="
-                                         + asString(tValue) + ", P=" + asString(pValue));
+                    label.setToolTipText("<html>" + parameter.getName() + " = " + asString(val)
+                            + "<br>SE=" + asString(standardError) + ", T="
+                            + asString(tValue) + ", P=" + asString(pValue) + "</html>");
                 }
 
-                workbench().setEdgeLabel(edge, label);
+                if (this.shadeEdges) {
+                    // Shaded view: no label; the value goes into the edge tooltip instead.
+                    String info = parameter.getName() + " = " + asString(val);
+                    if (!Double.isNaN(standardError) && semIm().isEstimated()) {
+                        info += SemGraphShading.stats(semIm(), parameter, this.maxFreeParamsForStatistics, this::asString);
+                    }
+                    workbench().setEdgeLabel(edge, null);
+                    setEdgeAnnotation(edge, info);
+                } else {
+                    workbench().setEdgeLabel(edge, label);
+                    setEdgeAnnotation(edge, null);
+                }
             } else {
                 workbench().setEdgeLabel(edge, null);
+                setEdgeAnnotation(edge, null);
             }
         }
 
@@ -2082,7 +2529,7 @@ public final class SemEstimatorEditor extends JPanel {
                         = semIm().getPValue(parameter, this.maxFreeParamsForStatistics);
 
                 tooltip = "SE=" + asString(standardError) + ", T="
-                          + asString(tValue) + ", P=" + asString(pValue);
+                        + asString(tValue) + ", P=" + asString(pValue);
             }
 
             if (nodeType != NodeType.ERROR && !Double.isNaN(meanOrIntercept)) {
@@ -2091,18 +2538,18 @@ public final class SemEstimatorEditor extends JPanel {
 
                 if (this.editor.nodeParamDisplay() == 2) {
                     tooltip = "<html>" + "B0_" + node.getName() + " = "
-                              + asString(meanOrIntercept) + "</html>";
+                            + asString(meanOrIntercept) + "</html>";
                 } else if (this.editor.nodeParamDisplay() == 1) {
                     tooltip = "<html>" + "Mean(" + node.getName() + ") = "
-                              + asString(meanOrIntercept) + "</html>";
+                            + asString(meanOrIntercept) + "</html>";
                 }
             } else if (nodeType == NodeType.ERROR && !this.editor.isEditCovariancesAsCorrelations()
-                       && !Double.isNaN(stdDev)) {
+                    && !Double.isNaN(stdDev)) {
                 label.setForeground(Color.BLUE);
                 label.setText(asString(stdDev));
 
                 tooltip = "<html>" + node.getName() + " ~ N(0," + asString(stdDev)
-                          + ")" + "<br><br>" + tooltip + "</html>";
+                        + ")" + "<br><br>" + tooltip + "</html>";
 
             } else if (nodeType == NodeType.ERROR && this.editor.isEditCovariancesAsCorrelations()) {
                 label.setForeground(Color.GRAY);
@@ -2117,6 +2564,45 @@ public final class SemEstimatorEditor extends JPanel {
                 }
 
                 label.setToolTipText(tooltip);
+            }
+
+            if (!workbench().getModelNodesToDisplay().containsKey(node)) {
+                return; // e.g. an error node while error terms are hidden
+            }
+
+            if (this.shadeEdges) {
+                // Shaded view: no node label; the value goes into the node tooltip instead.
+                String info = null;
+                if (nodeType != NodeType.ERROR && !Double.isNaN(meanOrIntercept)) {
+                    info = (this.editor.nodeParamDisplay() == 2 ? "B0_" + node.getName() : "Mean(" + node.getName() + ")")
+                            + " = " + asString(meanOrIntercept);
+                } else if (nodeType == NodeType.ERROR && !Double.isNaN(stdDev)) {
+                    info = this.editor.isEditCovariancesAsCorrelations()
+                            ? "SD(" + node.getName() + ") = 1 (shown as correlations)"
+                            : node.getName() + " ~ N(0, " + asString(stdDev) + ")";
+                }
+                if (nodeType != NodeType.ERROR && parameter != null) {
+                    // Error variance of this node's error term (the variance parameter is keyed on the node itself).
+                    String errLine = SemGraphShading.errorVarianceLine(semIm(), node, parameter,
+                            this.editor.isEditCovariancesAsCorrelations(), this.maxFreeParamsForStatistics, this::asString);
+                    info = (info == null) ? errLine : info + "<br>" + errLine;
+                } else if (info != null && parameter != null) {
+                    info += SemGraphShading.stats(semIm(), parameter, this.maxFreeParamsForStatistics, this::asString);
+                }
+                boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
+                StringBuilder tip = new StringBuilder();
+                if (info != null) tip.append(info);
+                if (measured) {
+                    if (!tip.isEmpty()) tip.append("<br>");
+                    tip.append(getEquationOfNode(node));
+                }
+                workbench().setNodeLabel(node, null, 0, 0);
+                workbench().setNodeToolTip(node, tip.isEmpty() ? null : "<html>" + tip + "</html>");
+                return;
+            } else {
+                // Restore the equation tooltip the editor installs on measured nodes.
+                boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
+                workbench().setNodeToolTip(node, measured ? getEquationOfNode(node) : null);
             }
 
             // Offset the nodes slightly differently depending on whether
@@ -2167,7 +2653,7 @@ public final class SemEstimatorEditor extends JPanel {
                 double d = Double.parseDouble(text);
 
                 if (this.editor.isEditCovariancesAsCorrelations()
-                    && parameter.getType() == ParamType.COVAR) {
+                        && parameter.getType() == ParamType.COVAR) {
                     Node nodeA = edge.getNode1();
                     Node nodeB = edge.getNode2();
 
@@ -2176,12 +2662,12 @@ public final class SemEstimatorEditor extends JPanel {
                     double varA = semIm().getVariance(nodeA, implCovar);
                     double varB = semIm().getVariance(nodeB, implCovar);
 
-                    d *= FastMath.sqrt(varA * varB);
+                    d *= TMath.sqrt(varA * varB);
 
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (!this.editor.isEditCovariancesAsCorrelations()
-                           && parameter.getType() == ParamType.COVAR) {
+                        && parameter.getType() == ParamType.COVAR) {
                     semIm().setParamValue(parameter, d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.COEF) {
@@ -2284,9 +2770,13 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             }
 
-            eqn = eqn + " + " + semIm().getSemPm().getGraph().getExogenous(node);
+            eqn = eqn + " + " + errorTermName(node);
 
             return eqn;
+        }
+
+        private String errorTermName(Node node) {
+            return SemGraphShading.errorTermName(semIm().getSemPm().getGraph(), node);
         }
 
         public GraphWorkbench getWorkbench() {

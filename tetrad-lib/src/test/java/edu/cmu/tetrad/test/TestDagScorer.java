@@ -27,6 +27,7 @@ import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,12 @@ public class TestDagScorer {
 
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         GraphUtils.replaceNodes(dag, data.getVariables());
 

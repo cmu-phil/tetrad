@@ -23,16 +23,19 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IndTestIod;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
@@ -55,12 +58,12 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IOD",
         command = "iod",
-        algoType = AlgType.forbid_latent_common_causes,
+        algoType = AlgType.allow_latent_common_causes,
         dataType = DataType.All
 )
 // Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federated
 // in principle, so we've removed the bootstrapping annotation from it and deleted the bootstrapping code.
-public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
+public class FciIod implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesIndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -74,6 +77,12 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      * The independence test to use.
      */
     private IndependenceWrapper test;
+
+    /**
+     * Whether to exclude selection bias, captured from the parameters at search time and used to construct the
+     * comparison graph.
+     */
+    private boolean excludeSelectionBias = false;
 
     /**
      * <p>Constructor for FciIod.</p>
@@ -98,14 +107,27 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
         List<DataModel> _dataSets = new ArrayList<>();
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
+            // The datasets may have different variable sets, so the lag knowledge of the different
+            // lagged datasets must be merged; keeping only one dataset's knowledge would leave the
+            // lagged variables of the other datasets unconstrained.
+            Knowledge merged = new Knowledge();
+
             for (DataModel dataSet : dataSets) {
-                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
                 if (dataSet.getName() != null) {
                     timeSeries.setName(dataSet.getName());
                 }
                 _dataSets.add(timeSeries);
+
+                Knowledge k = timeSeries.getKnowledge();
+                for (int t = 0; t < k.getNumTiers(); t++) {
+                    for (String var : k.getTier(t)) {
+                        merged.addToTier(t, var);
+                    }
+                }
             }
 
+            this.knowledge = merged;
             dataSets = _dataSets;
         }
 
@@ -126,8 +148,38 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
         search.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        int anInt = parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE) - 1;
+        search.setR0ColliderRule(edu.cmu.tetrad.search.Fci.ColliderRule.values()[anInt]);
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        this.excludeSelectionBias = parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS);
+        search.setExcludeSelectionBias(this.excludeSelectionBias);
 
-        return search.search();
+        Graph graph = search.search();
+
+        // For a pair of variables that are never jointly measured in any dataset, the pooled test judges the
+        // pair dependent given every conditioning set, so the pair correctly remains adjacent: no dataset can
+        // rule the edge out. But by the same token, no dataset supports any endpoint orientation on such an
+        // edge, so any arrowheads or tails the orientation rules have placed there are unfounded claims; they
+        // are reset to circles here.
+        int screened = 0;
+
+        for (Edge edge : graph.getEdges()) {
+            if (!test.isJointlyMeasured(edge.getNode1(), edge.getNode2())) {
+                if (edge.getEndpoint1() != Endpoint.CIRCLE || edge.getEndpoint2() != Endpoint.CIRCLE) {
+                    graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.CIRCLE);
+                    graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.CIRCLE);
+                    screened++;
+                }
+            }
+        }
+
+        if (screened > 0) {
+            TetradLogger.getInstance().log("IOD: reset the endpoints of " + screened + " edge(s) between "
+                                           + "never-jointly-measured pairs to circles, since no dataset "
+                                           + "supports orientations there.");
+        }
+
+        return graph;
     }
 
     /**
@@ -136,14 +188,6 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         // Not used.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        this.test = test;
     }
 
     /**
@@ -159,7 +203,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        return GraphTransforms.dagToPag(graph, this.excludeSelectionBias);
     }
 
     /**
@@ -183,13 +227,19 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      */
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new LinkedList<>(test.getParameters());
+        List<String> parameters = new LinkedList<>();
+        if (this.test != null) {
+            parameters.addAll(this.test.getParameters());
+        }
         parameters.add(Params.DEPTH);
         parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
+        parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.VERBOSE);
 
         return parameters;

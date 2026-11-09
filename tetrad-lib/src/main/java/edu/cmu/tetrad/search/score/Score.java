@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -167,6 +168,18 @@ public interface Score {
      */
     default boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method determines() is not implemented for this score.");
+    }
+
+    /**
+     * Declares what this score can do, natively, with data containing missing values. The default is
+     * {@link MissingValueSupport#NONE}, meaning that missingness must be handled upstream (e.g., by imputation, or
+     * by supplying an EM-estimated covariance matrix if the score consumes one); scores that handle missing values
+     * themselves should override this.
+     *
+     * @return This support level.
+     */
+    default MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.NONE;
     }
 }
 

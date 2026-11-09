@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.special.Gamma;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -114,10 +115,10 @@ public class TaylorSeries {
             return derivative; // f(center) = f^(0)(center)
         }
 
-        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - center)) - logGamma(n + 1);
+        double logTerm = TMath.log(TMath.abs(derivative)) + n * TMath.log(TMath.abs(x - center)) - logGamma(n + 1);
 
         // Restore sign of derivative to avoid log of negatives
-        return Math.exp(logTerm) * Math.signum(derivative);
+        return TMath.exp(logTerm) * TMath.signum(derivative);
     }
 
     /**

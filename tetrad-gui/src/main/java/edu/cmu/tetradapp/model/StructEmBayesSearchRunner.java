@@ -46,6 +46,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     private static final long serialVersionUID = 23L;
 
     /**
+     * The name of this model.
+     *
      * @serial Can be null.
      */
     private String name;

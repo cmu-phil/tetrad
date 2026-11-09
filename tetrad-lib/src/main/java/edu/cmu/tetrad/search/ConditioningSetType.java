@@ -34,56 +34,55 @@ package edu.cmu.tetrad.search;
  * @see MarkovCheck
  */
 public enum ConditioningSetType {
-
     /**
-     * Testing all possible independence facts implied by the graph.  Some independence facts obtained in this way may
-     * be for implied dependencies.
+     * Full ordered local Markov property  (Richardson)
      */
-    GLOBAL_MARKOV,
-
+    ORDERED_LOCAL_MARKOV_PROPERTY("Ordered Local Markov Property"),
     /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph. Some
-     * independence facts obtained in this way may be for implied dependencies.
+     * Sink elimination ordered local Markov property (Andrews)
      */
-    LOCAL_MARKOV,
-
+    ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION("Ordered Local Markov (Sink Elimination)"),
     /**
-     * Conditioning on the parents and neighbors of each variable in the graph. Some independence facts obtained in this
-     * way may be for implied dependencies.
+     * Pairwise Markov property, conditioing on the anteriority of the endpoints.
      */
-    PARENTS_AND_NEIGHBORS,
-
+    PAIRWISE_MARKOV_PROPERTY("Pairwise Markov Property"),
     /**
-     * Conditioning on the Markov blanket of each variable in the graph. These are all conditional independence facts,
-     * so no conditional dependence facts will be listed if this option is selected.
+     * The Markov blanket of the target variable.
      */
-    MARKOV_BLANKET,
-
+    MARKOV_BLANKET("Markov Blanket"),
     /**
-     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
-     * obtained in this way may be for implied dependencies.
+     * Recursive blocking.
      */
-    RECURSIVE_MSEP,
-
+    RECURSIVE_BLOCKING("Recursive Blocking"),
     /**
-     * Conditioning on noncolliders only. Some independence facts obtained in this way may be for implied dependencies.
-     * This is equivalent to the "noncolliders only" option in the PC algorithm.
+     * Recursive blocking with graphoid closure.
      */
-    NONCOLLIDERS_ONLY,
-
+    RECURSIVE_BLOCKING_WITH_GRAPHOID_CLOSURE("Recursive Blocking, Graphoid Closure"),
     /**
-     * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
-     * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
+     * Recursive blocking with compositional graphoid closure.
      */
-    ORDERED_LOCAL_MARKOV,
-
+    RECURSIVE_BLOCKING_WITH_COMPOSITIONAL_GRAPHOID_CLOSURE("Recursive Blocking, Compositional Graphoid Closure"),
     /**
-     * Generates a set of independence facts that implies Global Markov for MAG. Taking a MAG in the given PAG in the
-     * calling method.
-     *
-     * @see OrderedLocalMarkovProperty
+     * Local Markov property, conditioning on the parents of the target variable.
      */
-    ORDERED_LOCAL_MARKOV_MAG
+    LOCAL_MARKOV("Local Markov (Parents)"),
+    /**
+     * Causal Markov property, conditioning on the parents and neighbors of the target variable.
+     */
+    PARENTS_AND_NEIGHBORS("Parents and Neighbors"),
+    /**
+     * Global Markov property, conditioning on all subsets implied by global Markov. For small models only.
+     */
+    GLOBAL_MARKOV("All Subsets (Global Markov)");
 
+    private final String displayName;
+
+    ConditioningSetType(String displayName) {
+        this.displayName = displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
 }
-

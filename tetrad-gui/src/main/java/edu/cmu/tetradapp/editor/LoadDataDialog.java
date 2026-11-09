@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -421,7 +423,7 @@ public final class LoadDataDialog extends JPanel {
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
         this.filePreviewTextArea.setEditable(false);
-        this.filePreviewTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.filePreviewTextArea.setFont(ThemeUtils.monospaced(12));
 
         // Set the default preview for the default selected file
         setPreview(this.loadedFiles.get(0), this.filePreviewTextArea);
@@ -773,12 +775,12 @@ public final class LoadDataDialog extends JPanel {
      */
     private void validateAllFiles() {
         for (File loadedFile : this.loadedFiles) {
-            try {
-                StringBuilder strBuilder = new StringBuilder();
-                strBuilder.append("<p>Validation result of ");
-                strBuilder.append(loadedFile.getName());
-                strBuilder.append(":&gt; 0");
+            StringBuilder strBuilder = new StringBuilder();
+            strBuilder.append("<p>Validation result of ");
+            strBuilder.append(loadedFile.getName());
+            strBuilder.append(":</p>");
 
+            try {
                 List<ValidationResult> results = this.loadDataSettings.validateDataWithSettings(loadedFile);
 
                 List<ValidationResult> infos = new LinkedList<>();
@@ -886,7 +888,15 @@ public final class LoadDataDialog extends JPanel {
                 this.validationResults.add(strBuilder.toString());
             } catch (IOException ex) {
                 Logger.getLogger(LoadDataDialog.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {  // catches DataReaderException AND IOException
+                // Treat any thrown exception as a hard validation failure
+                strBuilder.append("<p style=\"color: red;\"><b>Validation failed!</b><br />");
+                strBuilder.append(escapeHtml4(ex.getMessage()));
+                strBuilder.append("</p>");
+                this.failedFiles.add(loadedFile.getName());
             }
+
+            this.validationResults.add(strBuilder.toString());
         }
 
         showValidationResults();

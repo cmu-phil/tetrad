@@ -73,6 +73,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     //===========================CONSTRUCTORS===========================//
 
+    /**
+     * Constructs a new BayesImWrapper for an empty graph, using trinary initialization.
+     *
+     * @param parameters the parameters
+     */
     public BayesImWrapper(Parameters parameters) {
         parameters.set("initializationMode", "trinary");
         Graph graph = new EdgeListGraph();
@@ -134,19 +139,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * @param parameters the parameters, unused but the field is required.
      */
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
-    }
-
-    /**
-     * Constructs a new BayesImWrapper for a CptInvariantUpdaterWrapper.
-     *
-     * @param wrapper    the wrapper
-     * @param parameters the parameters, unused but the field is required.
-     */
-    public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }

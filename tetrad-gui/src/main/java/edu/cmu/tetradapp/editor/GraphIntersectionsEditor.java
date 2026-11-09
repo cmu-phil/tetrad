@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
@@ -58,7 +60,7 @@ public class GraphIntersectionsEditor extends JPanel {
     private void setup() {
         String compareString = GraphUtils.getIntersectionComparisonString(this.graphs);
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        Font font = ThemeUtils.monospaced(14);
         JTextArea textPane = new JTextArea();
         textPane.setText(compareString);
 

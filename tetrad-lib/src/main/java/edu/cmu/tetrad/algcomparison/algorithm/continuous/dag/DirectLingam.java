@@ -24,12 +24,15 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.PooledScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -56,7 +59,8 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, ReturnsBootstrapGraphs {
+public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
+        ReturnsBootstrapGraphs {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -65,6 +69,11 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
      * The score.
      */
     private ScoreWrapper score;
+
+    /**
+     * The knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * <p>Constructor for DirectLingam.</p>
@@ -98,7 +107,20 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
         DataSet data = SimpleDataLoader.getContinuousDataSet(dataModel);
         Score score = this.score.getScore(dataModel, parameters);
 
-        edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
+        // When the data sets are being pooled, the score is already pooled over all of them, but the ordering
+        // stage works from the data itself; it must see all of them too, not just the one handed in here.
+        List<DataSet> dataSets = new ArrayList<>();
+
+        if (this.score instanceof PooledScoreWrapper pooled) {
+            for (DataModel model : pooled.getDataSets()) {
+                dataSets.add(SimpleDataLoader.getContinuousDataSet(model));
+            }
+        } else {
+            dataSets.add(data);
+        }
+
+        edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(dataSets, score);
+        search.setKnowledge(this.knowledge);
         Graph graph = search.search();
         TetradLogger.getInstance().log(graph.toString());
         LogUtilsSearch.stampWithBic(graph, dataModel);
@@ -122,7 +144,7 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
+        return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model)";
     }
 
     /**
@@ -152,6 +174,22 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
      *
      * @return The ScoreWrapper object.
      */
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;

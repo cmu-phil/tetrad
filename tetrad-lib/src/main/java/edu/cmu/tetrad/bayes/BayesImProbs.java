@@ -214,11 +214,11 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
-        if (assertion.getVariableSource() != condition.getVariableSource()) {
-            throw new IllegalArgumentException(
-                    "Assertion and condition must be " +
-                    "for the same Bayes IM.");
-        }
+//        if (assertion.getVariableSource() != condition.getVariableSource()) {
+//            throw new IllegalArgumentException(
+//                    "Assertion and condition must be " +
+//                    "for the same Bayes IM.");
+//        }
 
         int[] variableValues = new int[condition.getNumVariables()];
 

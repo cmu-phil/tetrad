@@ -1,0 +1,1666 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetradapp.editor;
+
+import edu.cmu.tetradapp.ThemeUtils;
+
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.audit.AuditFinding;
+import edu.cmu.tetrad.data.audit.CovarianceAudit;
+import edu.cmu.tetrad.data.audit.DataAudit;
+import edu.cmu.tetrad.data.audit.DeterministicClusters;
+import edu.cmu.tetrad.data.audit.DeterminismRemovalSuggester;
+import edu.cmu.tetrad.data.audit.FindingCode;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingnessThreshold;
+import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ErrorDialogs;
+import edu.cmu.tetradapp.util.WatchedProcess;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Displays a data audit for the selected dataset, combining the general data-quality audit
+ * ({@link edu.cmu.tetrad.data.audit.DataAudit}) with the missingness audit
+ * ({@link edu.cmu.tetrad.data.missing.MissingDataAudit}). A summary line and, when the dataset has discrete
+ * variables, a serial-dependence grouping control sit above three tabs:
+ * <ul>
+ * <li><b>Findings</b>: the audit's findings (severity, code, variables, message), warnings highlighted. Per the
+ * audit's contract these describe properties of the data and carry no recommendations.</li>
+ * <li><b>Variables</b>: per-variable facts (type, observed/missing counts, distinct observed values,
+ * Anderson-Darling p, minimum pairwise complete count).</li>
+ * <li><b>Missingness &amp; Advice</b>: dataset-level missingness facts, Little's MCAR test where applicable, and
+ * the missing-data handling advice from {@link MissingDataAudit#advice()}.</li>
+ * </ul>
+ * The audit's notes ({@link DataAudit#notes()}), which cross-reference other diagnostics bearing on the findings
+ * that fired - for instance, pointing a non-Gaussianity finding at Tools &gt; Nonlinearity Checks..., since a
+ * non-Gaussian marginal is equally consistent with a non-Gaussian error term and with a nonlinear or non-additive
+ * dependence on parents - are not shown in the panel itself. A "Notes..." button on the control row opens them in
+ * a separate modeless dialog, so they take no space from the tables. The button reads the notes of the audit as it
+ * currently stands, so after a recode or removal it shows the recomputed audit's notes.
+ * All computation is done by the library classes, so this dialog reports exactly what causal-cmd and py-tetrad
+ * report for the same dataset.
+ * <p>
+ * The audit runs off the event thread under a {@link WatchedProcess}, so a wide dataset shows the usual
+ * "Processing (click to stop)" dialog instead of freezing the interface, and the Stop button cancels it: the audit
+ * checks its thread's interrupt flag between variables in each of its per-variable and pairwise passes. Only the
+ * Swing assembly of the result happens on the event thread. The same applies to the grouped recomputation triggered
+ * by the serial-dependence grouping control.
+ * <p>
+ * When the selected model is a covariance (or correlation) matrix rather than a tabular dataset, the dialog instead
+ * shows the covariance matrix audit ({@link CovarianceAudit}): a Findings tab and a Report tab containing the
+ * audit's full text report, which also states the scope limits of auditing second moments alone.
+ *
+ * @author josephramsey
+ * @see DataAudit
+ * @see CovarianceAudit
+ * @see MissingDataAudit
+ */
+class DataAuditAction extends AbstractAction {
+
+    /**
+     * The label of the no-grouping entry in the serial-dependence grouping combo box. The grouped-audit cache maps
+     * this label to the pooled (ungrouped) audit of the dataset as it currently stands; every recomputation after an
+     * in-place edit re-seeds the entry, so reading the cache at this key always yields the pooled audit matching
+     * the data.
+     */
+    private static final String NO_GROUP = "None";
+
+    /**
+     * The data editor that action is attached to.
+     */
+    private final ISelectedModel dataEditor;
+
+    /**
+     * Constructs the <code>DataAuditAction</code> given the editor that it's attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.ISelectedModel} object
+     */
+    public DataAuditAction(ISelectedModel editor) {
+        super("Data Audit...");
+        this.dataEditor = editor;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void actionPerformed(ActionEvent e) {
+        if (this.dataEditor.getSelectedDataModel() instanceof ICovarianceMatrix cov) {
+            if (cov.getDimension() == 0) {
+                JOptionPane.showMessageDialog(findOwner(), "Cannot audit an empty covariance matrix.");
+                return;
+            }
+
+            JComponent covPanel;
+
+            try {
+                covPanel = createCovarianceAuditPanel(cov);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(findOwner(), "Could not compute the covariance matrix audit: "
+                        + ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            EditorWindow covWindow = new EditorWindow(covPanel,
+                    DataWindowTitles.of("Covariance Matrix Audit", cov), null, false,
+                    (JComponent) this.dataEditor);
+            DesktopController.getInstance().addEditorWindow(covWindow, JLayeredPane.PALETTE_LAYER);
+            covWindow.setVisible(true);
+            return;
+        }
+
+        if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet dataSet)) {
+            JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset or covariance matrix to audit.");
+            return;
+        }
+
+        if (dataSet.getNumColumns() == 0) {
+            JOptionPane.showMessageDialog(findOwner(), "Cannot audit an empty data set.");
+            return;
+        }
+
+        // Run the audit off the event thread so that the interface stays responsive and the user can stop it. Only
+        // the Swing assembly is done on the event thread, once the audit has finished.
+        new WatchedProcess() {
+            @Override
+            public void watch() throws InterruptedException {
+                DataAudit pooledAudit;
+                MissingDataAudit missingAudit;
+
+                try {
+                    pooledAudit = new DataAudit(dataSet);
+                    missingAudit = missingAuditFor(dataSet, pooledAudit);
+                } catch (RuntimeException ex) {
+                    if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(findOwner(),
+                            "Could not compute the data audit: " + ex.getMessage(), "Error",
+                            JOptionPane.WARNING_MESSAGE));
+                    return;
+                }
+
+                SwingUtilities.invokeLater(() -> {
+                    Runnable refreshEditor = DataAuditAction.this.dataEditor instanceof DataEditor editor
+                            ? editor::refreshSelectedDisplay : () -> {
+                    };
+                    JComponent panel = createDataAuditPanel(dataSet, pooledAudit, missingAudit, refreshEditor);
+                    EditorWindow window = new EditorWindow(panel,
+                            DataWindowTitles.of("Data Audit", dataSet), null, false,
+                            (JComponent) DataAuditAction.this.dataEditor);
+                    DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+                    window.setVisible(true);
+                });
+            }
+        };
+    }
+
+    //============================== Private methods ============================//
+
+    /**
+     * The table of the currently selected tab: the variables table for the Variables tab, otherwise the findings
+     * table. (The Missingness &amp; Advice tab is a text area, which supports ordinary text selection and copy on its
+     * own.)
+     */
+    private static JTable currentTable(JTabbedPane tabs, JTable findingsTable, JTable variablesTable) {
+        return tabs.getSelectedIndex() == 1 ? variablesTable : findingsTable;
+    }
+
+    /**
+     * Selects all cells when no cells are selected, so that a menu-invoked copy with no selection copies the whole
+     * table instead of silently doing nothing (the transfer handler produces no transferable for an empty selection,
+     * leaving the clipboard unchanged). The emptiness condition matches the transfer handler's guard: with cell
+     * selection, both selected rows and selected columns must be nonempty for anything to be copied. Package visible
+     * for tests.
+     *
+     * @param table the table to guarantee a selection in.
+     */
+    static void ensureCellSelection(JTable table) {
+        if (table.getSelectedRowCount() == 0 || table.getSelectedColumnCount() == 0) {
+            table.selectAll();
+        }
+    }
+
+    /**
+     * The platform menu shortcut mask (Command on macOS, Control elsewhere). Hard-coding CTRL_DOWN_MASK here was a
+     * bug on macOS: the FlatLaf table bindings there use Command for select-all and copy, so Ctrl-A/Ctrl-C did
+     * nothing in the table, and the dialog's Ctrl-C accelerator additionally collided with the main menu bar's
+     * session-copy accelerator registered in the same top-level window. Falls back to Control in headless
+     * environments, where the toolkit refuses the query (this panel is constructed headlessly in tests).
+     */
+    private static int menuShortcutMask() {
+        try {
+            return Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (HeadlessException e) {
+            return InputEvent.CTRL_DOWN_MASK;
+        }
+    }
+
+    /**
+     * Builds the audit panel: a summary line, then tabs for findings, per-variable facts, and missingness/advice.
+     * Package visible so that it can be exercised headlessly in tests.
+     */
+    static JComponent createDataAuditPanel(DataSet dataSet) {
+        DataAudit pooledAudit = new DataAudit(dataSet);
+        return createDataAuditPanel(dataSet, pooledAudit, missingAuditFor(dataSet, pooledAudit));
+    }
+
+    /**
+     * The missingness audit to display: the DataAudit's delegated one, which is null for complete data, or a fresh
+     * one when the dialog wants one either way.
+     */
+    private static MissingDataAudit missingAuditFor(DataSet dataSet, DataAudit pooledAudit) {
+        return pooledAudit.getMissingDataAudit() != null
+                ? pooledAudit.getMissingDataAudit() : new MissingDataAudit(dataSet);
+    }
+
+    /**
+     * Builds the audit panel from an already computed audit. Split from {@link #createDataAuditPanel(DataSet)} so
+     * that the action can compute the audit on a background thread and assemble the Swing components on the event
+     * thread.
+     */
+    static JComponent createDataAuditPanel(DataSet dataSet, DataAudit pooledAudit, MissingDataAudit missingAudit) {
+        return createDataAuditPanel(dataSet, pooledAudit, missingAudit, () -> {
+        });
+    }
+
+    /**
+     * As {@link #createDataAuditPanel(DataSet, DataAudit, MissingDataAudit)}, with a callback run on the event
+     * thread immediately after any control edits the dataset in place (sentinel recode, removal by missingness,
+     * removal for determinism), so that the hosting data editor can redraw the edited dataset at once.
+     *
+     * @param onDatasetEdited run after each in-place edit; never null.
+     */
+    static JComponent createDataAuditPanel(DataSet dataSet, DataAudit pooledAudit, MissingDataAudit missingAudit,
+                                           Runnable onDatasetEdited) {
+        // The recode control edits the dataset, so the missingness audit and the grouped-audit cache below both go
+        // stale when it fires. Both are held indirectly so that the recode handler can replace them.
+        MissingDataAudit[] missingRef = {missingAudit};
+        java.util.Map<String, DataAudit> groupCache = new java.util.HashMap<>();
+
+        DataAuditJTable findingsTable =
+                new DataAuditJTable(new DataAuditFindingsModel(pooledAudit.getFindings()), 4);
+        sizeFindingsColumns(findingsTable);
+
+        DataAuditJTable variablesTable =
+                new DataAuditJTable(new DataAuditVariablesModel(dataSet, pooledAudit, null, missingAudit), 2);
+
+        JTextArea missingText = new JTextArea(missingnessText(dataSet, missingAudit));
+        missingText.setEditable(false);
+        missingText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, missingText.getFont().getSize()));
+        missingText.setLineWrap(true);
+        missingText.setWrapStyleWord(true);
+        missingText.setMargin(new Insets(8, 8, 8, 8));
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Findings", new JScrollPane(findingsTable));
+        tabs.addTab("Variables", new JScrollPane(variablesTable));
+        tabs.addTab("Missingness", new JScrollPane(missingText));
+        tabs.setPreferredSize(new Dimension(850, 450));
+
+        JMenuBar bar = new JMenuBar();
+        int menuMask = menuShortcutMask();
+
+        JMenuItem selectAllCells = new JMenuItem("Select All Cells");
+        selectAllCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, menuMask));
+        selectAllCells.addActionListener(e -> currentTable(tabs, findingsTable, variablesTable).selectAll());
+
+        JMenuItem copyCells = new JMenuItem("Copy Cells");
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        copyCells.addActionListener(e -> {
+            JTable target = currentTable(tabs, findingsTable, variablesTable);
+            ensureCellSelection(target);
+            Action copyAction = TransferHandler.getCopyAction();
+            copyAction.actionPerformed(new ActionEvent(target, ActionEvent.ACTION_PERFORMED, "copy"));
+        });
+
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.add(selectAllCells);
+        editMenu.add(copyCells);
+        bar.add(editMenu);
+
+        JLabel summary = new JLabel(summaryLine(dataSet, pooledAudit, missingAudit));
+        summary.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(bar, BorderLayout.NORTH);
+        north.add(summary, BorderLayout.CENTER);
+
+        JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingRef,
+                findingsTable, variablesTable, summary, groupCache);
+
+        JComponent recodeControl = createRecodeControl(dataSet, tabs, findingsTable, variablesTable, summary,
+                missingText, missingRef, groupCache, onDatasetEdited);
+
+        // The notes button shares the recode control's row so that it costs no vertical space. It reads the notes
+        // at click time from the pooled audit as it currently stands (the cache's NO_GROUP entry is re-seeded on
+        // every recomputation), not from the audit captured when the panel was built.
+        JButton notesButton = new JButton("Notes...");
+        notesButton.setToolTipText("Show the audit's notes cross-referencing other diagnostics that bear on the "
+                + "findings.");
+        notesButton.addActionListener(e -> showNotesDialog(notesButton,
+                groupCache.getOrDefault(NO_GROUP, pooledAudit).notes()));
+
+        JPanel controlRow = new JPanel(new BorderLayout());
+        controlRow.add(recodeControl, BorderLayout.CENTER);
+        JPanel notesHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        notesHolder.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        notesHolder.add(notesButton);
+        controlRow.add(notesHolder, BorderLayout.EAST);
+
+        Box southOfSummary = Box.createVerticalBox();
+        if (groupControl != null) southOfSummary.add(groupControl);
+        southOfSummary.add(controlRow);
+        north.add(southOfSummary, BorderLayout.SOUTH);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(north, BorderLayout.NORTH);
+        panel.add(tabs, BorderLayout.CENTER);
+
+        Box box = Box.createVerticalBox();
+        box.add(panel);
+
+        return box;
+    }
+
+    /**
+     * The text shown in the notes dialog: one bulleted line per note ({@link DataAudit#notes()}), or a sentence
+     * saying there are none. The notes are kept out of the Findings tab deliberately: they name further diagnostics
+     * bearing on a finding that fired, and the findings themselves are contracted to carry no such content. Package
+     * visible so that it can be exercised headlessly in tests.
+     *
+     * @param notes the notes to display.
+     * @return the dialog text.
+     */
+    static String notesText(List<String> notes) {
+        if (notes.isEmpty()) return "The audit produced no notes.";
+
+        StringBuilder sb = new StringBuilder();
+        for (String note : notes) {
+            if (sb.length() > 0) sb.append("\n");
+            sb.append("- ").append(note);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Opens the audit's notes in a modeless dialog with a read-only, word-wrapped text area, so that they can be
+     * read alongside the Findings table without occupying space in the audit panel. Each click opens a fresh dialog
+     * showing the notes as they stand; closing it disposes it.
+     *
+     * @param parent a component in the audit panel, used to find the owning window.
+     * @param notes  the notes to display.
+     */
+    private static void showNotesDialog(JComponent parent, List<String> notes) {
+        Window owner = SwingUtilities.getWindowAncestor(parent);
+        JDialog dialog = new JDialog(owner, "Data Audit Notes", Dialog.ModalityType.MODELESS);
+
+        JTextArea area = new JTextArea(notesText(notes));
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setMargin(new Insets(8, 8, 8, 8));
+        area.setCaretPosition(0);
+
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(600, 280));
+
+        JButton close = new JButton("Close");
+        close.addActionListener(e -> dialog.dispose());
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 6));
+        buttons.add(close);
+
+        JPanel content = new JPanel(new BorderLayout());
+        content.add(scroll, BorderLayout.CENTER);
+        content.add(buttons, BorderLayout.SOUTH);
+
+        dialog.setContentPane(content);
+        dialog.getRootPane().setDefaultButton(close);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Builds the covariance matrix audit panel: a summary line, then tabs for the findings and for the audit's full
+     * text report (which states the scope limits of auditing second moments alone). Per-variable, missingness, and
+     * serial-dependence tabs do not apply here, since a covariance matrix carries no row-level information. Package
+     * visible so that it can be exercised headlessly in tests.
+     */
+    static JComponent createCovarianceAuditPanel(ICovarianceMatrix cov) {
+        CovarianceAudit audit = new CovarianceAudit(cov);
+
+        DataAuditJTable findingsTable =
+                new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+        sizeFindingsColumns(findingsTable);
+
+        JTextArea reportText = new JTextArea(audit.report());
+        reportText.setEditable(false);
+        reportText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, reportText.getFont().getSize()));
+        reportText.setLineWrap(true);
+        reportText.setWrapStyleWord(true);
+        reportText.setMargin(new Insets(8, 8, 8, 8));
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Findings", new JScrollPane(findingsTable));
+        tabs.addTab("Report", new JScrollPane(reportText));
+        tabs.setPreferredSize(new Dimension(850, 450));
+
+        JMenuBar bar = new JMenuBar();
+        int menuMask = menuShortcutMask();
+
+        JMenuItem selectAllCells = new JMenuItem("Select All Cells");
+        selectAllCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, menuMask));
+        selectAllCells.addActionListener(e -> findingsTable.selectAll());
+
+        JMenuItem copyCells = new JMenuItem("Copy Cells");
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        copyCells.addActionListener(e -> {
+            ensureCellSelection(findingsTable);
+            Action copyAction = TransferHandler.getCopyAction();
+            copyAction.actionPerformed(new ActionEvent(findingsTable, ActionEvent.ACTION_PERFORMED, "copy"));
+        });
+
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.add(selectAllCells);
+        editMenu.add(copyCells);
+        bar.add(editMenu);
+
+        JLabel summary = new JLabel(covarianceSummaryLine(cov, audit));
+        summary.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(bar, BorderLayout.NORTH);
+        north.add(summary, BorderLayout.CENTER);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(north, BorderLayout.NORTH);
+        panel.add(tabs, BorderLayout.CENTER);
+
+        Box box = Box.createVerticalBox();
+        box.add(panel);
+
+        return box;
+    }
+
+    /**
+     * The always-visible one-line summary above the covariance audit tabs.
+     */
+    static String covarianceSummaryLine(ICovarianceMatrix cov, CovarianceAudit audit) {
+        long warnings = audit.getFindings().stream()
+                .filter(f -> f.getSeverity() == AuditFinding.Severity.WARNING).count();
+        long infos = audit.getFindings().size() - warnings;
+
+        return cov.getDimension() + " variables, stated sample size " + cov.getSampleSize()
+                + (audit.isCorrelationInput() ? " (correlation matrix)" : "") + "; "
+                + warnings + " warning(s), " + infos + " informational.";
+    }
+
+    /**
+     * Builds the serial-dependence grouping control: a combo of the dataset's discrete variables (plus "None"),
+     * defaulting to None. Selecting a variable recomputes the audit with that variable as the serial grouping
+     * variable and swaps the recomputed findings into the Findings tab, the within-group lag-1 autocorrelations into
+     * the Variables tab (alongside the pooled ones, whose comparison distinguishes genuine sequential dependence
+     * from block structure), and the recomputed counts into the summary line. Audits are cached per selection so
+     * toggling is free. Returns null when the dataset has no discrete variables, since there is then nothing to
+     * group by.
+     */
+    private static JComponent createGroupControl(DataSet dataSet, DataAudit pooledAudit,
+                                                 MissingDataAudit[] missingRef, DataAuditJTable findingsTable,
+                                                 DataAuditJTable variablesTable, JLabel summary,
+                                                 java.util.Map<String, DataAudit> cache) {
+        java.util.List<String> discreteNames = dataSet.getVariables().stream()
+                .filter(v -> v instanceof edu.cmu.tetrad.data.DiscreteVariable)
+                .map(edu.cmu.tetrad.graph.Node::getName).toList();
+
+        if (discreteNames.isEmpty()) return null;
+
+        final String none = NO_GROUP;
+        JComboBox<String> combo = new JComboBox<>();
+        combo.addItem(none);
+        discreteNames.forEach(combo::addItem);
+        combo.setToolTipText("Compute row autocorrelations within groups of the selected discrete variable "
+                + "(for block-structured data such as stacked regions or subjects).");
+
+        cache.clear();
+        cache.put(none, pooledAudit);
+
+        combo.addActionListener(e -> {
+            String selected = (String) combo.getSelectedItem();
+            DataAudit cached = cache.get(selected);
+
+            // The pooled audit and missingness audit are read at fire time, not from the values captured when the
+            // dialog was built: the recode and removal controls edit the dataset in place and recompute both, and
+            // an audit computed on the pre-edit data lists variables the edit removed and facts the edit changed.
+            // The cache's NO_GROUP entry is re-seeded on every recomputation, so it is the pooled audit of the
+            // data as it currently stands.
+            DataAudit pooled = cache.getOrDefault(none, pooledAudit);
+
+            if (cached != null) {
+                applyGroupedAudit(dataSet, pooled, cached, selected, none, missingRef[0], findingsTable,
+                        variablesTable, summary);
+                return;
+            }
+
+            // A grouped audit reruns every check, so on a wide dataset it takes as long as the original; run it
+            // off the event thread under the stop dialog, like the original, and swap the result in afterwards.
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    DataAudit current;
+
+                    try {
+                        current = new DataAudit(dataSet, new DataAudit.Config().withSerialGroupVariable(selected));
+                    } catch (RuntimeException ex) {
+                        SwingUtilities.invokeLater(() -> combo.setSelectedItem(none));
+                        if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(combo,
+                                "Could not compute the grouped audit: " + ex.getMessage(), "Error",
+                                JOptionPane.WARNING_MESSAGE));
+                        return;
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        cache.put(selected, current);
+                        applyGroupedAudit(dataSet, cache.getOrDefault(none, pooledAudit), current, selected, none,
+                                missingRef[0], findingsTable, variablesTable, summary);
+                    });
+                }
+            };
+        });
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        controls.add(new JLabel("Serial dependence within groups of:"));
+        controls.add(combo);
+        return controls;
+    }
+
+    /**
+     * Builds the sentinel recode control: a button that sets to missing the cells holding the codes named by the
+     * SENTINEL_VALUE findings currently selected in the Findings table. The button is disabled unless at least one
+     * such finding is selected, so it can only ever act on a value the audit reported and the user picked.
+     * <p>
+     * The recode is offered rather than performed because the audit cannot tell a code from a measurement: the check
+     * judges the shape of the observed distribution, and only the file's codebook settles what the flagged value
+     * means. The confirmation dialog therefore states the edit exactly - variable, value, and number of cells - and
+     * says that the dataset is modified in place and the edit cannot be undone, since the dataset is the one every
+     * downstream box in the session reads.
+     * <p>
+     * After the recode the audit is recomputed, off the event thread under the stop dialog as elsewhere in this
+     * dialog, and the findings, per-variable facts, summary line and missingness text are all replaced: the point of
+     * the recode is that the missingness numbers change, and the continuous checks that had been computed with the
+     * code treated as data are recomputed without it. The grouped-audit cache is cleared for the same reason.
+     */
+    private static JComponent createRecodeControl(DataSet dataSet, JTabbedPane tabs,
+                                                  DataAuditJTable findingsTable,
+                                                  DataAuditJTable variablesTable, JLabel summary,
+                                                  JTextArea missingText, MissingDataAudit[] missingRef,
+                                                  Map<String, DataAudit> groupCache, Runnable onDatasetEdited) {
+        JButton recode = new JButton("Recode Selected Sentinel Values to Missing...");
+        recode.setEnabled(false);
+        recode.setToolTipText("Set to missing the cells holding the codes named by the SENTINEL_VALUE findings "
+                + "selected above. Modifies the dataset in place; not undoable.");
+
+        findingsTable.getSelectionModel().addListSelectionListener(
+                e -> recode.setEnabled(!selectedSentinelFindings(findingsTable).isEmpty()));
+
+        recode.addActionListener(e -> {
+            List<AuditFinding> selected = selectedSentinelFindings(findingsTable);
+            if (selected.isEmpty()) return;
+
+            // One edit per (variable, value) pair, in selection order, with duplicates collapsed: the same finding
+            // can be reached twice through a multi-column selection in the table.
+            Map<String, Double> edits = new LinkedHashMap<>();
+
+            for (AuditFinding finding : selected) {
+                Double value = finding.getValues().get("value");
+                if (value != null) edits.put(finding.getVariables().get(0), value);
+            }
+
+            StringBuilder sb = new StringBuilder("Set the following cells to missing?\n\n");
+
+            for (Map.Entry<String, Double> edit : edits.entrySet()) {
+                int cells = 0;
+                int j = dataSet.getColumnIndex(dataSet.getVariable(edit.getKey()));
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    if (dataSet.getDouble(i, j) == edit.getValue()) cells++;
+                }
+
+                sb.append("    ").append(edit.getKey()).append(" = ").append(edit.getValue())
+                        .append("    (").append(cells).append(" of ").append(dataSet.getNumRows())
+                        .append(" cells)\n");
+            }
+
+            sb.append("\nThe audit cannot tell a missing-data code from a real measurement; the codebook for the "
+                    + "file settles that. This edit modifies the dataset in place, for every box downstream of it "
+                    + "in the session, and cannot be undone.");
+
+            int choice = JOptionPane.showConfirmDialog(recode, sb.toString(), "Recode to Missing",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (choice != JOptionPane.OK_OPTION) return;
+
+            int changed = 0;
+
+            try {
+                for (Map.Entry<String, Double> edit : edits.entrySet()) {
+                    changed += DataAudit.recodeToMissing(dataSet, edit.getKey(), edit.getValue());
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(recode, "Could not recode: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, recode, "The cells were recoded", changed + " cell(s) recoded to missing.",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    () -> recode.setEnabled(false));
+        });
+
+        // Two rows rather than one: the four buttons no longer fit the dialog's width. The first row holds the
+        // controls that act on what is selected in the table above, the second the two that remove variables.
+        JPanel inspectRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        inspectRow.add(recode);
+        inspectRow.add(createRecodeEverywhereControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache, onDatasetEdited, recode));
+        inspectRow.add(createPlotMatrixControl(dataSet, tabs, findingsTable, variablesTable));
+
+        JPanel removeRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        removeRow.add(createRemoveDeterminismControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache, onDatasetEdited));
+        removeRow.add(createRemoveByMissingnessControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache, onDatasetEdited));
+
+        JPanel controls = new JPanel(new GridLayout(2, 1, 0, 2));
+        controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        controls.add(inspectRow);
+        controls.add(removeRow);
+        return controls;
+    }
+
+    /**
+     * Builds the file-wide recode control: a button that sets to missing every cell, in every continuous variable,
+     * holding one value the user names. The per-finding recode above acts on one variable at a time, which is right
+     * when a code is specific to a column; but a code is usually file-wide -- a zero written for "not submitted"
+     * means the same thing in every grade column -- and recoding it finding by finding across forty variables is
+     * the kind of chore that stops an analysis. This button does the whole file in one confirmed edit.
+     * <p>
+     * The value defaults to the one named by a selected SENTINEL_VALUE finding, if any, and otherwise to 0. The
+     * confirmation lists every variable in which the value occurs, each with its cell count and a checkbox, all
+     * checked, in a scrolling list, so the user sees exactly what will change and can opt particular variables out
+     * -- a column in which the value is a real measurement rather than a code. A variable in which the value sits
+     * at the top or bottom of the observed range with other values right next to it is marked, since there it is
+     * more likely a floor or ceiling than a code and should be censored rather than recoded; a BOUNDARY_ATOM
+     * finding on that variable is the audit's own statement of the same thing. Variables in which the value does
+     * not occur are not listed and are not touched. Like the per-finding recode, this edits the dataset in place,
+     * cannot be undone, and recomputes the audit afterwards.
+     *
+     * @param perFindingRecode the per-finding recode button, disabled after a successful edit here for the same
+     *                         reason it disables itself: the findings it was enabled for have been recomputed.
+     */
+    private static JComponent createRecodeEverywhereControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                            DataAuditJTable variablesTable, JLabel summary,
+                                                            JTextArea missingText, MissingDataAudit[] missingRef,
+                                                            Map<String, DataAudit> groupCache,
+                                                            Runnable onDatasetEdited, JButton perFindingRecode) {
+        JButton recodeAll = new JButton("Recode a Value to Missing in All Variables...");
+        recodeAll.setToolTipText("Set to missing every cell in every continuous variable that holds one value you "
+                + "name (for instance 0 for \"not submitted\"). Modifies the dataset in place; not undoable.");
+
+        recodeAll.addActionListener(e -> {
+            // Default to the code of a selected sentinel finding, else 0, the commonest file-wide code.
+            double suggested = 0.0;
+            List<AuditFinding> selected = selectedSentinelFindings(findingsTable);
+
+            if (!selected.isEmpty()) {
+                Double v = selected.get(0).getValues().get("value");
+                if (v != null) suggested = v;
+            }
+
+            String answer = JOptionPane.showInputDialog(recodeAll,
+                    "Value to set to missing in every continuous variable:", suggested);
+            if (answer == null) return;
+
+            double value;
+
+            try {
+                value = Double.parseDouble(answer.trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(recodeAll, "Not a number: " + answer, "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Tally the value per continuous variable, and note where it is the variable's extreme with no gap
+            // (a candidate floor or ceiling), so the confirmation can say so.
+            Map<String, Integer> cells = new LinkedHashMap<>();
+            List<String> atBound = new ArrayList<>();
+
+            for (Node node : dataSet.getVariables()) {
+                if (!(node instanceof ContinuousVariable)) continue;
+                int j = dataSet.getColumnIndex(node);
+                int count = 0;
+                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+                double nextAboveMin = Double.POSITIVE_INFINITY, nextBelowMax = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double x = dataSet.getDouble(i, j);
+                    if (Double.isNaN(x)) continue;
+                    if (x == value) count++;
+                    if (x < min) { nextAboveMin = min; min = x; } else if (x > min && x < nextAboveMin) nextAboveMin = x;
+                    if (x > max) { nextBelowMax = max; max = x; } else if (x < max && x > nextBelowMax) nextBelowMax = x;
+                }
+
+                if (count == 0) continue;
+                cells.put(node.getName(), count);
+
+                // "No gap": the neighbor on the inside is within one unit of the value. Coarse on purpose; this is
+                // a caution in a dialog, not the audit's gap test, which is what the BOUNDARY_ATOM finding reports.
+                boolean floor = value == min && nextAboveMin - min <= 1.0;
+                boolean ceiling = value == max && max - nextBelowMax <= 1.0;
+                if (floor || ceiling) atBound.add(node.getName());
+            }
+
+            if (cells.isEmpty()) {
+                JOptionPane.showMessageDialog(recodeAll, "No continuous variable holds the value " + value + ".",
+                        "Nothing to Recode", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            List<String> chosen = showRecodeEverywhereDialog(recodeAll, dataSet, value, cells, atBound);
+            if (chosen == null || chosen.isEmpty()) return;
+
+            int changed = 0;
+
+            try {
+                for (String name : chosen) {
+                    changed += DataAudit.recodeToMissing(dataSet, name, value);
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(recodeAll, "Could not recode: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, recodeAll, "The cells were recoded",
+                    changed + " cell(s) equal to " + value + " recoded to missing in " + chosen.size()
+                            + " variable(s).",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    () -> perFindingRecode.setEnabled(false));
+        });
+
+        return recodeAll;
+    }
+
+    /**
+     * Shows the confirmation for the file-wide recode: one checkbox per variable in which the value occurs, with
+     * its cell count, all checked, in a scroll pane of fixed height so the OK and Cancel buttons stay on screen
+     * however many variables are implicated; a caution line naming the variables in which the value sits at an end
+     * of the range with neighbors right next to it; and select-all / select-none buttons for long lists.
+     *
+     * @param parent  the component to anchor the dialog on.
+     * @param dataSet the dataset, for the row count.
+     * @param value   the value to be recoded.
+     * @param cells   the implicated variables in dataset order, each with the number of cells holding the value.
+     * @param atBound the subset of those in which the value is at the top or bottom of the observed range with
+     *                other values adjacent to it.
+     * @return the names of the variables the user left checked, or null if the dialog was cancelled.
+     */
+    private static List<String> showRecodeEverywhereDialog(JComponent parent, DataSet dataSet, double value,
+                                                           Map<String, Integer> cells, List<String> atBound) {
+        int n = dataSet.getNumRows();
+        Set<String> bound = new LinkedHashSet<>(atBound);
+
+        JPanel list = new JPanel();
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        List<JCheckBox> boxes = new ArrayList<>();
+        JLabel totalLabel = new JLabel(" ");
+
+        Runnable updateTotal = () -> {
+            int vars = 0, total = 0;
+            for (JCheckBox box : boxes) {
+                if (box.isSelected()) {
+                    vars++;
+                    total += cells.get(box.getName());
+                }
+            }
+            totalLabel.setText(total + " cell(s) in " + vars + " of " + cells.size() + " variable(s) will be set "
+                    + "to missing.");
+        };
+
+        for (Map.Entry<String, Integer> entry : cells.entrySet()) {
+            String name = entry.getKey();
+            JCheckBox box = new JCheckBox(name + "    (" + entry.getValue() + " of " + n + " cells)"
+                    + (bound.contains(name) ? "    \u26a0 at the " + (isAtMaximum(dataSet, name, value)
+                    ? "top" : "bottom") + " of the range" : ""));
+            box.setName(name);
+            box.setSelected(true);
+            box.addItemListener(ev -> updateTotal.run());
+            boxes.add(box);
+            list.add(box);
+        }
+
+        updateTotal.run();
+
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setPreferredSize(new Dimension(520, 260));
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        JButton all = new JButton("Select All");
+        JButton none = new JButton("Select None");
+        all.addActionListener(ev -> boxes.forEach(b -> b.setSelected(true)));
+        none.addActionListener(ev -> boxes.forEach(b -> b.setSelected(false)));
+
+        JPanel selectRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        selectRow.add(all);
+        selectRow.add(none);
+
+        JPanel head = new JPanel();
+        head.setLayout(new BoxLayout(head, BoxLayout.Y_AXIS));
+        head.add(new JLabel("Set every cell equal to " + value + " to missing in the checked variables?"));
+        head.add(Box.createVerticalStrut(6));
+        head.add(selectRow);
+        head.add(Box.createVerticalStrut(6));
+
+        JTextArea notes = new JTextArea();
+        notes.setEditable(false);
+        notes.setLineWrap(true);
+        notes.setWrapStyleWord(true);
+        notes.setOpaque(false);
+        notes.setFont(totalLabel.getFont());
+        StringBuilder sb = new StringBuilder();
+
+        if (!bound.isEmpty()) {
+            sb.append("\u26a0 In ").append(String.join(", ", bound)).append(" the value ").append(value)
+                    .append(" is the top or bottom of the observed range with other values right next to it, so it ")
+                    .append("may be a floor or ceiling rather than a code. A ceiling or floor should be treated as ")
+                    .append("censored, not set to missing; uncheck those unless the codebook says otherwise.\n\n");
+        }
+
+        sb.append("The audit cannot tell a missing-data code from a real measurement; the codebook for the file "
+                + "settles that. This edit modifies the dataset in place, for every box downstream of it in the "
+                + "session, and cannot be undone.");
+        notes.setText(sb.toString());
+
+        JPanel foot = new JPanel();
+        foot.setLayout(new BoxLayout(foot, BoxLayout.Y_AXIS));
+        foot.add(Box.createVerticalStrut(6));
+        foot.add(totalLabel);
+        foot.add(Box.createVerticalStrut(6));
+        foot.add(notes);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 4));
+        panel.add(head, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(foot, BorderLayout.SOUTH);
+        panel.setPreferredSize(new Dimension(560, 480));
+
+        int choice = JOptionPane.showConfirmDialog(parent, panel, "Recode to Missing Everywhere",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (choice != JOptionPane.OK_OPTION) return null;
+
+        List<String> chosen = new ArrayList<>();
+        for (JCheckBox box : boxes) if (box.isSelected()) chosen.add(box.getName());
+        return chosen;
+    }
+
+    /**
+     * Whether the given value is the maximum observed value of the named continuous variable.
+     */
+    private static boolean isAtMaximum(DataSet dataSet, String variable, double value) {
+        int j = dataSet.getColumnIndex(dataSet.getVariable(variable));
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double x = dataSet.getDouble(i, j);
+            if (!Double.isNaN(x) && x > max) max = x;
+        }
+        return value == max;
+    }
+
+    /**
+     * Builds the plot-matrix control: a button opening a {@link PlotMatrix} over the variables named by the rows
+     * selected in the tab currently showing -- the variables of each selected finding in the Findings tab, the
+     * variables themselves in the Variables tab -- preselected on both axes, with the plot matrix's row and column
+     * selectors listing only those variables.
+     * <p>
+     * This is the counterpart of the plot-matrix button in the nonlinearity checks, and is here for the same
+     * reason. A finding states a property of the data as a number, and the number is usually ambiguous between
+     * explanations that the scatter separates at a glance: a low Anderson-Darling p is equally consistent with a
+     * skewed marginal, a mixture of two groups, and a pile of cells at a sentinel code, and a near-deterministic
+     * relation looks quite different when one variable is a rounding of another than when a few extreme points
+     * carry it. The plot decides nothing the audit reports; it shows what the reported number was computed from.
+     * <p>
+     * The button is disabled unless the current selection names at least one variable still in the dataset, so it
+     * never opens an empty plot. Dataset-level findings name no variable and leave it disabled.
+     *
+     * @see PlotMatrix
+     */
+    private static JComponent createPlotMatrixControl(DataSet dataSet, JTabbedPane tabs,
+                                                      DataAuditJTable findingsTable,
+                                                      DataAuditJTable variablesTable) {
+        JButton plot = new JButton("Plot Matrix for Selected Row(s)...");
+        plot.setEnabled(false);
+        plot.setToolTipText("Open a plot matrix over the variables named by the rows selected above. "
+                + "Does not modify the dataset.");
+
+        Runnable updateEnabled = () -> plot.setEnabled(
+                !selectedVariables(dataSet, tabs, findingsTable, variablesTable).isEmpty());
+
+        findingsTable.getSelectionModel().addListSelectionListener(e -> updateEnabled.run());
+        variablesTable.getSelectionModel().addListSelectionListener(e -> updateEnabled.run());
+        tabs.addChangeListener(e -> updateEnabled.run());
+
+        plot.addActionListener(e -> {
+            List<Node> variables = selectedVariables(dataSet, tabs, findingsTable, variablesTable);
+            if (variables.isEmpty()) return;
+
+            StringBuilder title = new StringBuilder("Plot Matrix: ");
+
+            for (int i = 0; i < variables.size() && i < 4; i++) {
+                if (i > 0) title.append(", ");
+                title.append(variables.get(i).getName());
+            }
+
+            if (variables.size() > 4) {
+                title.append(", ... (").append(variables.size()).append(" variables)");
+            }
+
+            PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
+            EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
+            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+            window.pack();
+            window.setVisible(true);
+        });
+
+        return plot;
+    }
+
+    /**
+     * The variables named by the rows selected in the tab currently showing, in selection order, with duplicates
+     * collapsed and names no longer in the dataset dropped. Names do go stale: a variable removed by one of the
+     * removal controls is still named by the findings of the audit that was showing when it was removed. Returns an
+     * empty list for the Missingness tab, which has no rows.
+     */
+    private static List<Node> selectedVariables(DataSet dataSet, JTabbedPane tabs, DataAuditJTable findingsTable,
+                                                DataAuditJTable variablesTable) {
+        Set<String> names = new LinkedHashSet<>();
+
+        if (tabs.getSelectedIndex() == 1) {
+            for (int viewRow : variablesTable.getSelectedRows()) {
+                Object name = variablesTable.getModel()
+                        .getValueAt(variablesTable.convertRowIndexToModel(viewRow), 0);
+                if (name != null) names.add(name.toString());
+            }
+        } else if (tabs.getSelectedIndex() == 0
+                   && findingsTable.getModel() instanceof DataAuditFindingsModel model) {
+            for (int viewRow : findingsTable.getSelectedRows()) {
+                names.addAll(model.getFinding(findingsTable.convertRowIndexToModel(viewRow)).getVariables());
+            }
+        }
+
+        List<Node> variables = new ArrayList<>();
+
+        for (String name : names) {
+            Node variable = dataSet.getVariable(name);
+            if (variable != null) variables.add(variable);
+        }
+
+        return variables;
+    }
+
+    /**
+     * Recomputes the audit after an in-place edit of the dataset, off the event thread under the stop dialog, and
+     * replaces the findings, per-variable facts, summary line and missingness text. The grouped-audit cache is
+     * cleared, since every grouped audit was computed on the old data.
+     *
+     * @param dataSet     the (already edited) dataset.
+     * @param parent      a component for error dialogs.
+     * @param editDone    a phrase describing the edit, for the error message if the audit fails ("The cells were
+     *                    recoded").
+     * @param summaryNote a note appended to the summary line ("3 cell(s) recoded to missing.").
+     * @param onDatasetEdited run on the event thread before the recomputation starts, so the hosting editor
+     *                        redraws the edited dataset without waiting for the audit.
+     * @param afterSwap   run on the event thread after the new results are in place; may be null.
+     */
+    private static void recomputeAudit(DataSet dataSet, JComponent parent, String editDone, String summaryNote,
+                                       DataAuditJTable findingsTable, DataAuditJTable variablesTable,
+                                       JLabel summary, JTextArea missingText, MissingDataAudit[] missingRef,
+                                       Map<String, DataAudit> groupCache, Runnable onDatasetEdited,
+                                       Runnable afterSwap) {
+        onDatasetEdited.run();
+
+        new WatchedProcess() {
+            @Override
+            public void watch() throws InterruptedException {
+                DataAudit current;
+                MissingDataAudit missing;
+
+                try {
+                    current = new DataAudit(dataSet);
+                    missing = missingAuditFor(dataSet, current);
+                } catch (RuntimeException ex) {
+                    if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(parent,
+                            editDone + ", but the audit could not be recomputed: " + ex.getMessage()
+                                    + " Reopen the Data Audit to see the updated findings.", "Error",
+                            JOptionPane.WARNING_MESSAGE));
+                    return;
+                }
+
+                SwingUtilities.invokeLater(() -> {
+                    missingRef[0] = missing;
+                    groupCache.clear();
+                    groupCache.put(NO_GROUP, current);
+
+                    findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+                    sizeFindingsColumns(findingsTable);
+                    variablesTable.setAuditModel(
+                            new DataAuditVariablesModel(dataSet, current, null, missing));
+                    missingText.setText(missingnessText(dataSet, missing));
+                    missingText.setCaretPosition(0);
+                    summary.setText(summaryLine(dataSet, current, missing) + "  " + summaryNote);
+                    if (afterSwap != null) afterSwap.run();
+                });
+            }
+        };
+    }
+
+    /**
+     * Builds the missingness-removal control: a button opening a dialog that previews, for a threshold the user
+     * moves, which variables would be dropped and what the retained data would look like -- complete cases and the
+     * worst pairwise count -- before anything is dropped.
+     * <p>
+     * Preview rather than apply-a-rule, for two reasons. The useful threshold is wherever the complete-case count
+     * turns, which is a fact about the dataset and not about the number 0.20; and dropping a variable that is a
+     * common cause of two retained variables manufactures latent confounding that no subsequent search can detect.
+     * The dialog therefore reports each candidate's strongest association with a retained variable and marks the
+     * strong ones, so the second cost is visible at the moment of the decision rather than inferred later from a
+     * surprising PAG.
+     *
+     * @see MissingnessThreshold
+     */
+    private static JComponent createRemoveByMissingnessControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                               DataAuditJTable variablesTable, JLabel summary,
+                                                               JTextArea missingText, MissingDataAudit[] missingRef,
+                                                               Map<String, DataAudit> groupCache,
+                                                               Runnable onDatasetEdited) {
+        JButton remove = new JButton("Remove Variables by Missingness...");
+        remove.setToolTipText("Preview and apply a missingness-rate cutoff on the variables. "
+                + "Modifies the dataset in place; not undoable.");
+
+        remove.addActionListener(e -> {
+            MissingDataAudit audit = missingRef[0];
+
+            if (audit == null || !audit.anyMissing()) {
+                JOptionPane.showMessageDialog(remove, "This dataset has no missing values.",
+                        "Remove Variables by Missingness", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            List<String> chosen = showMissingnessRemovalDialog(remove, dataSet, audit);
+            if (chosen == null || chosen.isEmpty()) return;
+
+            if (!confirmRemoval(remove, chosen)) return;
+
+            int removedCount = 0;
+
+            try {
+                for (Node variable : MissingnessThreshold.resolve(dataSet, chosen)) {
+                    dataSet.removeColumn(variable);
+                    removedCount++;
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(remove, "Could not remove: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    null);
+        });
+
+        return remove;
+    }
+
+    /**
+     * Shows the threshold dialog: a spinner over the distinct missingness rates present (nothing between them
+     * changes the dropped set), a live summary of what the retained data would be, and a table of the variables
+     * that would go with their rates and their strongest association with a retained variable. Returns the names
+     * to remove, or null if cancelled.
+     */
+    private static List<String> showMissingnessRemovalDialog(JComponent parent, DataSet dataSet,
+                                                             MissingDataAudit audit) {
+        double[] candidates = MissingnessThreshold.candidateThresholds(audit, dataSet.getNumColumns());
+
+        JSpinner spinner = new JSpinner(new SpinnerNumberModel(
+                Math.min(0.20, candidates[candidates.length - 1]), 0.0, 1.0, 0.01));
+        ((JSpinner.NumberEditor) spinner.getEditor()).getFormat().setMaximumFractionDigits(3);
+
+        JLabel effectLabel = new JLabel(" ");
+        JLabel warningLabel = new JLabel(" ");
+        warningLabel.setForeground(new Color(0x99, 0x33, 0x00));
+
+        String[] columns = {"Variable", "Missing", "Max |r| with a kept variable", "Strongest with", "Pairs"};
+        DefaultTableModel tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+        table.setAutoCreateRowSorter(true);
+
+        List<String> current = new ArrayList<>();
+
+        Runnable refresh = () -> {
+            double t = ((Number) spinner.getValue()).doubleValue();
+            MissingnessThreshold.Effect effect = MissingnessThreshold.effectOf(dataSet, audit, t);
+
+            tableModel.setRowCount(0);
+            int risky = 0;
+
+            for (MissingnessThreshold.Candidate c : effect.dropped()) {
+                boolean flag = MissingnessThreshold.isConfoundingRisk(c);
+                if (flag) risky++;
+
+                tableModel.addRow(new Object[]{
+                        (flag ? "\u26a0 " : "") + c.name(),
+                        String.format("%.3f", c.missingRate()),
+                        Double.isNaN(c.maxAbsCorrelation()) ? "-" : String.format("%.2f", c.maxAbsCorrelation()),
+                        c.maxCorrelatedWith() == null ? "-" : c.maxCorrelatedWith(),
+                        c.pairwiseN() == 0 ? "-" : String.valueOf(c.pairwiseN())
+                });
+            }
+
+            effectLabel.setText(String.format(
+                    "Drop %d, keep %d.  Complete cases: %d of %d.  Worst retained pair: %d.",
+                    effect.dropped().size(), effect.retained(), effect.completeRows(), dataSet.getNumRows(),
+                    effect.minPairwiseCount()));
+
+            warningLabel.setText(risky == 0 ? " " : String.format(
+                    "\u26a0 %d of these correlate at 0.50 or above with a variable you are keeping. Dropping a "
+                    + "common cause of retained variables creates latent confounding a search cannot detect.",
+                    risky));
+
+            current.clear();
+            current.addAll(MissingnessThreshold.droppedNames(effect));
+        };
+
+        spinner.addChangeListener(ev -> refresh.run());
+        refresh.run();
+
+        JPanel north = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        north.add(new JLabel("Drop variables with a missingness rate above:"));
+        north.add(spinner);
+
+        JPanel head = new JPanel();
+        head.setLayout(new BoxLayout(head, BoxLayout.Y_AXIS));
+        head.add(north);
+        head.add(effectLabel);
+        head.add(Box.createVerticalStrut(4));
+        head.add(warningLabel);
+        head.add(Box.createVerticalStrut(6));
+
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        panel.add(head, BorderLayout.NORTH);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        panel.setPreferredSize(new Dimension(760, 420));
+
+        int choice = JOptionPane.showConfirmDialog(parent, panel, "Remove Variables by Missingness",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) return null;
+        return new ArrayList<>(current);
+    }
+
+    /**
+     * Builds the determinism-removal control: a button that opens a dialog listing the variables whose removal
+     * would resolve the determinism findings currently shown (duplicate columns, deterministic and
+     * near-deterministic relations, discrete coarsenings), each with a checkbox and the reason, as computed by
+     * {@link DeterminismRemovalSuggester}. The user chooses which to remove; the chosen columns are removed from
+     * the dataset in place and the audit is recomputed.
+     * <p>
+     * Like the sentinel recode, this is offered rather than performed. The suggester's convention (remove the
+     * determined variable, the second of a duplicate pair, or the discrete coarsening) is a guess at which column
+     * is derived; the codebook settles it, and the user may prefer to drop a determiner instead. Removal modifies
+     * the dataset every downstream box reads and cannot be undone; the hosting data editor is redrawn at once.
+     */
+    private static JComponent createRemoveDeterminismControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                             DataAuditJTable variablesTable, JLabel summary,
+                                                             JTextArea missingText, MissingDataAudit[] missingRef,
+                                                             Map<String, DataAudit> groupCache,
+                                                             Runnable onDatasetEdited) {
+        JButton remove = new JButton("Remove Variables Creating Determinism...");
+        remove.setToolTipText("Choose variables to remove so that the determinism findings above are resolved. "
+                + "Modifies the dataset in place; not undoable.");
+
+        remove.addActionListener(e -> {
+            if (!(findingsTable.getModel() instanceof DataAuditFindingsModel model)) return;
+
+            List<AuditFinding> findings = new ArrayList<>();
+            for (int i = 0; i < model.getRowCount(); i++) findings.add(model.getFinding(i));
+
+            List<DeterminismRemovalSuggester.Suggestion> suggestions = DeterminismRemovalSuggester.suggest(findings);
+
+            if (suggestions.isEmpty()) {
+                JOptionPane.showMessageDialog(remove, "The audit reports no determinism findings that name a "
+                        + "variable to remove.", "Remove Variables Creating Determinism",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            // One Fitter per dialog opening: the correlation and precision matrices are computed once and every
+            // equation is a few small solves, so this stays fast on wide datasets with many deterministic relations.
+            DeterministicClusters.Fitter fitter =
+                    new DeterministicClusters.Fitter(dataSet, EXACT_EQUATION_THRESHOLD);
+            Map<String, String> equations = new LinkedHashMap<>();
+            for (DeterminismRemovalSuggester.Suggestion s : suggestions) {
+                equations.computeIfAbsent(s.variable(), name -> previewEquation(fitter, name));
+            }
+
+            List<String> chosen = showRemovalDialog(remove, suggestions, equations);
+            if (chosen == null || chosen.isEmpty()) return;
+
+            if (!confirmRemoval(remove, chosen)) return;
+
+            // The equations for the report are fitted BEFORE removal, each removed variable regressed on the
+            // RETAINED variables only, so the reported equations remain usable (the removed variables are
+            // reconstructible from the data that is left) even when several members of overlapping clusters go
+            // at once.
+            List<String> equationLines = retainedFormEquations(fitter, dataSet, chosen);
+
+            int removedCount = 0;
+
+            try {
+                for (String name : chosen) {
+                    Node variable = dataSet.getVariable(name);
+                    if (variable == null) continue;
+                    dataSet.removeColumn(variable);
+                    removedCount++;
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(remove, "Could not remove: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    null);
+
+            showEquationsReport(remove, equationLines);
+        });
+
+        return remove;
+    }
+
+    /**
+     * The residual-fraction level at or below which a fitted equation is labeled exact rather than approximate:
+     * residual variance / marginal variance below this is rounding, not noise.
+     */
+    private static final double EXACT_EQUATION_THRESHOLD = 1e-8;
+
+    /**
+     * Fits the equation writing the named variable in terms of the other variables of the dataset, for display in
+     * the removal dialog's Equation column. Returns a placeholder for variables with no linear equation (discrete
+     * variables; constants are reported as their value).
+     */
+    private static String previewEquation(DeterministicClusters.Fitter fitter, String name) {
+        DeterministicClusters.Constraint c = fitter.leaveOneOut(name);
+        if (c == null) return "(discrete; no linear equation)";
+        return c.equation() + exactnessTag(c);
+    }
+
+    /**
+     * Fits, for each chosen variable, its equation in terms of the RETAINED variables (all variables minus the
+     * chosen ones), before any column is removed. All targets share the retained support universe, so one solve of
+     * the retained submatrix serves every equation. One line per variable, copyable as text.
+     */
+    private static List<String> retainedFormEquations(DeterministicClusters.Fitter fitter, DataSet dataSet,
+                                                      List<String> chosen) {
+        List<String> retained = new ArrayList<>();
+        for (Node node : dataSet.getVariables()) {
+            if (!chosen.contains(node.getName())) {
+                retained.add(node.getName());
+            }
+        }
+        List<DeterministicClusters.Constraint> constraints = fitter.onCommonSupport(chosen, retained);
+        List<String> lines = new ArrayList<>();
+        for (int k = 0; k < chosen.size(); k++) {
+            DeterministicClusters.Constraint c = constraints.get(k);
+            if (c == null) {
+                lines.add(chosen.get(k) + " : (no linear equation: discrete or constant)");
+            } else {
+                lines.add(c.equation() + exactnessTag(c));
+            }
+        }
+        return lines;
+    }
+
+    private static String exactnessTag(DeterministicClusters.Constraint c) {
+        if (c.fractionResidual() < EXACT_EQUATION_THRESHOLD) {
+            return "    [exact]";
+        }
+        return String.format("    [approximate; R^2 = %.4f]", 1.0 - c.fractionResidual());
+    }
+
+    /**
+     * Shows the fitted equations for the removed variables in a selectable, monospaced text area with a
+     * copy-to-clipboard button, and writes them to the log, so the deterministic relations travel with the analysis
+     * after the columns are gone.
+     */
+    private static void showEquationsReport(Component parent, List<String> equationLines) {
+        if (equationLines.isEmpty()) return;
+
+        String text = String.join("\n", equationLines);
+        edu.cmu.tetrad.util.TetradLogger.getInstance().log("Removed-variable equations:\n" + text);
+
+        JTextArea area = new JTextArea(text);
+        area.setEditable(false);
+        area.setFont(ThemeUtils.monospaced(12));
+        area.setCaretPosition(0);
+
+        JButton copy = new JButton("Copy to Clipboard");
+        copy.addActionListener(ev -> Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new StringSelection(text), null));
+
+        JLabel note = new JLabel("<html>Equations for the removed variables, in terms of the retained variables. "
+                + "Which member of a deterministic cluster counts as derived is a judgment the data cannot make; "
+                + "these equations record the representation you chose. Include them in reports: within-cluster "
+                + "structure is not identified, and edges at the determining variables are relative to this "
+                + "representation.</html>");
+
+        JPanel south = new JPanel(new BorderLayout());
+        south.add(copy, BorderLayout.EAST);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.add(note, BorderLayout.NORTH);
+        panel.add(new JScrollPane(area), BorderLayout.CENTER);
+        panel.add(south, BorderLayout.SOUTH);
+
+        int rowHeight = area.getFontMetrics(area.getFont()).getHeight();
+        int listHeight = Math.min(20, Math.max(3, equationLines.size())) * rowHeight + 12;
+        panel.setPreferredSize(new Dimension(760, listHeight + 110));
+
+        JOptionPane.showMessageDialog(parent, panel, "Removed Variable Equations",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Shows the final are-you-sure dialog for a variable removal, with the chosen names in a scroll pane so that
+     * a long list cannot push the OK and Cancel buttons off the bottom of the screen. Returns true if the user
+     * confirmed.
+     */
+    private static boolean confirmRemoval(Component parent, List<String> chosen) {
+        JLabel question = new JLabel("Remove " + chosen.size() + " variable(s) from the dataset?");
+
+        JTextArea names = new JTextArea(String.join("\n", chosen));
+        names.setEditable(false);
+        names.setFocusable(false);
+        names.setCaretPosition(0);
+
+        JLabel warning = new JLabel("<html>This modifies the dataset in place, for every box downstream of it "
+                + "in the session, and cannot be undone.</html>");
+
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.add(question, BorderLayout.NORTH);
+        panel.add(new JScrollPane(names), BorderLayout.CENTER);
+        panel.add(warning, BorderLayout.SOUTH);
+
+        // Cap the list at 15 rows; beyond that the scroll pane scrolls. The fixed width keeps the HTML
+        // warning label wrapping instead of stretching the dialog.
+        int rowHeight = names.getFontMetrics(names.getFont()).getHeight();
+        int listHeight = Math.min(15, Math.max(3, chosen.size())) * rowHeight + 8;
+        panel.setPreferredSize(new Dimension(440, listHeight + 100));
+
+        int choice = JOptionPane.showConfirmDialog(parent, panel, "Remove Variables",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        return choice == JOptionPane.OK_OPTION;
+    }
+
+    /**
+     * Shows the removal dialog: a table of suggested variables with a checkbox (recommended ones checked), the
+     * finding code, and the reason. Returns the names the user checked, or null if the dialog was cancelled.
+     */
+    private static List<String> showRemovalDialog(JComponent parent,
+                                                  List<DeterminismRemovalSuggester.Suggestion> suggestions,
+                                                  Map<String, String> equations) {
+        String[] columns = {"Remove", "Variable", "Finding", "Equation", "Reason"};
+        Object[][] rows = new Object[suggestions.size()][5];
+
+        for (int i = 0; i < suggestions.size(); i++) {
+            DeterminismRemovalSuggester.Suggestion s = suggestions.get(i);
+            rows[i][0] = s.recommended();
+            rows[i][1] = s.variable();
+            rows[i][2] = s.code().name();
+            rows[i][3] = equations.getOrDefault(s.variable(), "");
+            rows[i][4] = s.reason();
+        }
+
+        javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(rows, columns) {
+            @Override
+            public Class<?> getColumnClass(int col) {
+                return col == 0 ? Boolean.class : String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                // The checkbox column is toggled directly on click (below) rather than through the table's Boolean
+                // cell editor, which did not respond inside this modal dialog on macOS.
+                return false;
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                int viewRow = table.rowAtPoint(e.getPoint());
+                int viewCol = table.columnAtPoint(e.getPoint());
+                if (viewRow < 0 || viewCol < 0 || table.convertColumnIndexToModel(viewCol) != 0) return;
+                toggleRemove(tableModel, table.convertRowIndexToModel(viewRow));
+            }
+        });
+
+        // Space toggles the selected rows.
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, 0), "toggleRemove");
+        table.getActionMap().put("toggleRemove", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                for (int viewRow : table.getSelectedRows()) {
+                    toggleRemove(tableModel, table.convertRowIndexToModel(viewRow));
+                }
+            }
+        });
+        table.getColumnModel().getColumn(0).setPreferredWidth(60);
+        table.getColumnModel().getColumn(0).setMaxWidth(70);
+        table.getColumnModel().getColumn(1).setPreferredWidth(150);
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);
+        table.getColumnModel().getColumn(3).setPreferredWidth(330);
+        table.getColumnModel().getColumn(4).setPreferredWidth(400);
+        table.setRowHeight(table.getRowHeight() + 2);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setPreferredSize(new Dimension(1150, Math.min(500, 60 + 22 * suggestions.size())));
+
+        JTextArea note = new JTextArea("Checked rows are recommended: for each determinism finding, the variable "
+                + "the audit judged to be determined (or the second of a duplicate pair, or the discrete coarsening "
+                + "of a continuous variable) is proposed, and findings already resolved by an earlier removal are "
+                + "listed unchecked. Which member of a relationship is the derived one is a fact about how the "
+                + "file was built; uncheck a row, or check an unrecommended one, if you know better.");
+        note.setEditable(false);
+        note.setLineWrap(true);
+        note.setWrapStyleWord(true);
+        note.setOpaque(false);
+        note.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(note, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+
+        int result = JOptionPane.showConfirmDialog(parent, panel, "Remove Variables Creating Determinism",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result != JOptionPane.OK_OPTION) return null;
+
+        List<String> chosen = new ArrayList<>();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            if (Boolean.TRUE.equals(tableModel.getValueAt(i, 0))) chosen.add((String) tableModel.getValueAt(i, 1));
+        }
+        return chosen;
+    }
+
+    private static void toggleRemove(javax.swing.table.DefaultTableModel model, int modelRow) {
+        boolean current = Boolean.TRUE.equals(model.getValueAt(modelRow, 0));
+        model.setValueAt(!current, modelRow, 0);
+    }
+
+    /**
+     * The SENTINEL_VALUE findings in the Findings table's current selection, in row order, without duplicates. The
+     * table sorts and the selection is by cell, so selected view rows are mapped to model rows and repeated rows
+     * (one per selected column) are collapsed.
+     *
+     * @param findingsTable the findings table.
+     * @return the selected sentinel findings, possibly empty.
+     */
+    private static List<AuditFinding> selectedSentinelFindings(DataAuditJTable findingsTable) {
+        List<AuditFinding> selected = new ArrayList<>();
+
+        if (!(findingsTable.getModel() instanceof DataAuditFindingsModel model)) return selected;
+
+        for (int viewRow : findingsTable.getSelectedRows()) {
+            AuditFinding finding = model.getFinding(findingsTable.convertRowIndexToModel(viewRow));
+
+            if (finding.getCode() == FindingCode.SENTINEL_VALUE && !selected.contains(finding)) {
+                selected.add(finding);
+            }
+        }
+
+        return selected;
+    }
+
+    /**
+     * Swaps a (pooled or grouped) audit's results into the dialog: findings, per-variable facts, and summary line.
+     * Must be called on the event thread.
+     */
+    private static void applyGroupedAudit(DataSet dataSet, DataAudit pooledAudit, DataAudit current,
+                                          String selected, String none, MissingDataAudit missingAudit,
+                                          DataAuditJTable findingsTable, DataAuditJTable variablesTable,
+                                          JLabel summary) {
+        boolean grouped = !none.equals(selected);
+        findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+        sizeFindingsColumns(findingsTable);
+        variablesTable.setAuditModel(new DataAuditVariablesModel(dataSet, pooledAudit,
+                grouped ? current : null, missingAudit));
+
+        // For block-sorted data the total finding count is invariant under grouping (each
+        // block-constant variable's SERIAL_DEPENDENCE finding converts to a
+        // GROUP_CONSTANT_VARIABLE finding), and the "Lag-1 r (grouped)" column is the last
+        // of eleven, typically outside the visible viewport. Without the cues below, the
+        // canonical use case looks like a no-op.
+        summary.setText(summaryLine(dataSet, current, missingAudit)
+                + (grouped ? "  Serial dependence computed within groups of " + selected + "." : ""));
+
+        if (grouped) {
+            int lastCol = variablesTable.getColumnCount() - 1;
+            variablesTable.scrollRectToVisible(variablesTable.getCellRect(0, lastCol, true));
+        }
+    }
+
+    /**
+     * Sets the findings table's column widths: fixed preferred widths for the first three columns, and the Message
+     * column sized to its longest message (reachable by scrolling right) rather than truncating at a fixed width;
+     * when messages are short it stretches to fill the rest of the dialog instead (see DataAuditJTable's sizing
+     * behavior). Reapplied whenever the findings model is swapped, since new findings mean new message widths.
+     */
+    private static void sizeFindingsColumns(DataAuditJTable findingsTable) {
+        setPreferredColumnWidths(findingsTable, new int[]{80, 220, 180, 500});
+        findingsTable.sizeColumnToContents(3, 500);
+    }
+
+    /**
+     * The always-visible one-line summary above the tabs.
+     */
+    static String summaryLine(DataSet dataSet, DataAudit audit, MissingDataAudit missingAudit) {
+        int numContinuous = audit.getContinuousNames().size();
+        int numDiscrete = dataSet.getNumColumns() - numContinuous;
+
+        long warnings = audit.getFindings().stream()
+                .filter(f -> f.getSeverity() == AuditFinding.Severity.WARNING).count();
+        long infos = audit.getFindings().size() - warnings;
+
+        NumberFormat pct = NumberFormat.getPercentInstance();
+        pct.setMaximumFractionDigits(1);
+
+        String missingness = missingAudit.anyMissing()
+                ? pct.format(missingAudit.getOverallMissingRate()) + " missing"
+                : "no missing values";
+
+        return dataSet.getNumRows() + " rows x " + dataSet.getNumColumns() + " variables ("
+                + numContinuous + " continuous, " + numDiscrete + " discrete); "
+                + warnings + " warning(s), " + infos + " informational; " + missingness + ".";
+    }
+
+    /**
+     * The Missingness &amp; Advice tab: dataset-level missingness facts and the library's missing-data advice.
+     * Per-variable rates are omitted here since the Variables tab shows them.
+     */
+    static String missingnessText(DataSet dataSet, MissingDataAudit audit) {
+        NumberFormat pct = NumberFormat.getPercentInstance();
+        pct.setMaximumFractionDigits(1);
+
+        StringBuilder b = new StringBuilder();
+
+        b.append("Overall missing rate: ").append(pct.format(audit.getOverallMissingRate())).append('\n');
+        b.append("Complete rows (listwise n): ").append(audit.getNumCompleteRows()).append('\n');
+        b.append("Distinct missingness patterns: ").append(audit.getNumPatterns()).append('\n');
+        b.append("Min pairwise complete count: ").append(audit.getMinPairwiseCount()).append('\n');
+        b.append("Mean pairwise complete count: ")
+                .append(String.format("%.1f", audit.getMeanPairwiseCount())).append('\n');
+
+        if (audit.anyMissing() && dataSet.isContinuous()) {
+            try {
+                MissingDataAudit.LittleResult r = audit.littlesMcarTest();
+                b.append("Little's MCAR test: chi-square = ").append(String.format("%.2f", r.chiSquare))
+                        .append(", df = ").append(r.df)
+                        .append(", p = ").append(String.format("%.4f", r.pValue));
+
+                if (r.numPatternsSkipped > 0) {
+                    b.append(" (").append(r.numPatternsSkipped).append(" singular pattern(s) skipped)");
+                }
+
+                b.append('\n');
+            } catch (Exception e) {
+                b.append("Little's MCAR test: could not be computed (").append(e.getMessage()).append(")\n");
+            }
+        }
+
+        b.append('\n').append("Missing-data advice:").append('\n');
+
+        List<String> advice = audit.advice();
+
+        for (int i = 0; i < advice.size(); i++) {
+            b.append(i + 1).append(". ").append(advice.get(i)).append('\n');
+        }
+
+        return b.toString();
+    }
+
+    /**
+     * Sets preferred widths for the given table's columns.
+     */
+    private static void setPreferredColumnWidths(JTable table, int[] widths) {
+        for (int i = 0; i < widths.length && i < table.getColumnModel().getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+        }
+    }
+
+    private JFrame findOwner() {
+        return (JFrame) SwingUtilities.getAncestorOfClass(
+                JFrame.class, (JComponent) this.dataEditor);
+    }
+}

@@ -192,7 +192,7 @@ public class BayesPmWrapper implements SessionModel {
         Dag graph;
 
         try {
-            graph = new Dag(graphWrapper.getGraph());
+            graph = new Dag(new EdgeListGraph(graphWrapper.getGraph(), true));
         } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
@@ -215,6 +215,17 @@ public class BayesPmWrapper implements SessionModel {
         }
     }
 
+    /**
+     * Constructs a new BayesPmWrapper for the graph in the given graph wrapper, using the given Bayes PM wrapper as
+     * a source of variable categories where applicable. The graph must be convertible to a DAG.
+     *
+     * @param graphWrapper the graph wrapper; must not be null
+     * @param pm           the existing Bayes PM wrapper
+     * @param params       the parameters, which determine how the number of categories is initialized
+     * @throws NullPointerException  if the graph wrapper is null
+     * @throws RuntimeException      if the graph cannot be converted to a DAG
+     * @throws IllegalStateException if the initialization mode is not recognized
+     */
     public BayesPmWrapper(GraphWrapper graphWrapper, BayesPmWrapper pm, Parameters params) {
         if (graphWrapper == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -223,7 +234,7 @@ public class BayesPmWrapper implements SessionModel {
         Dag graph;
 
         try {
-            graph = new Dag(graphWrapper.getGraph());
+            graph = new Dag(new EdgeListGraph(graphWrapper.getGraph(), true));
         } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
@@ -282,7 +293,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
-        this(new Dag(graphWrapper.getGraph()), dataWrapper);
+        this(new Dag(new EdgeListGraph(graphWrapper.getGraph(), true)), dataWrapper);
     }
 
     /**
@@ -305,7 +316,7 @@ public class BayesPmWrapper implements SessionModel {
             nodesToVars.put(node.getName(), var);
         }
 
-        BayesPm bayesPm = new BayesPm(graph);
+        BayesPm bayesPm = new BayesPm(graph, dataSet);
         List<Node> nodes = bayesPm.getDag().getNodes();
 
         for (Node node : nodes) {
@@ -343,7 +354,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
-        this(new Dag(wrapper.getGraph()), params);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), params);
     }
 
     /**
@@ -353,7 +364,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, DataWrapper dataWrapper) {
-        this(new Dag(wrapper.getGraph()), dataWrapper);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), dataWrapper);
     }
 
     /**
@@ -363,7 +374,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
-        this(new Dag(wrapper.getGraph()), simulation);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), simulation);
     }
 
     /**
@@ -373,7 +384,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
-        this(new Dag(wrapper.getGraph()), simulation);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), simulation);
     }
 
     /**
@@ -384,7 +395,7 @@ public class BayesPmWrapper implements SessionModel {
      */
     public BayesPmWrapper(BayesEstimatorWrapper wrapper,
                           DataWrapper dataWrapper) {
-        this(new Dag(wrapper.getGraph()), dataWrapper);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), dataWrapper);
     }
 
     /**
@@ -402,7 +413,7 @@ public class BayesPmWrapper implements SessionModel {
         Dag graph;
 
         try {
-            graph = new Dag(dagWrapper.getDag());
+            graph = new Dag(new EdgeListGraph(dagWrapper.getDag(), true));
         } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
@@ -484,8 +495,8 @@ public class BayesPmWrapper implements SessionModel {
             nodesToVars.put(node.getName(), var);
         }
 
-        Dag graph = new Dag(dagWrapper.getDag());
-        BayesPm bayesPm = new BayesPm(graph);
+        Dag graph = new Dag(new EdgeListGraph(dagWrapper.getDag(), true));
+        BayesPm bayesPm = new BayesPm(graph, dataSet);
         List<Node> nodes = bayesPm.getDag().getNodes();
 
         for (Node node : nodes) {
@@ -543,7 +554,27 @@ public class BayesPmWrapper implements SessionModel {
      * @return a {@link edu.cmu.tetrad.bayes.BayesPm} object
      */
     public BayesPm getBayesPm() {
-        return this.bayesPms.get(getModelIndex());
+        // The index is set from outside and may not match the number of PMs held (there is often just one);
+        // fall back to the first rather than fail.
+        int index = getModelIndex();
+        if (index < 0 || index >= this.bayesPms.size()) index = 0;
+        return this.bayesPms.get(index);
+    }
+
+    /**
+     * The Bayes PM to use with the data set at the given position in a list of data sets: the PM at that position
+     * if this wrapper holds one PM per data set (as from a simulation), otherwise the PM this wrapper currently
+     * shows, which then serves for every data set. Does not change the model index.
+     *
+     * @param dataIndex the position of the data set
+     * @return the Bayes PM for it
+     */
+    public BayesPm getBayesPmFor(int dataIndex) {
+        if (this.bayesPms.size() > 1 && dataIndex >= 0 && dataIndex < this.bayesPms.size()) {
+            return this.bayesPms.get(dataIndex);
+        }
+
+        return getBayesPm();
     }
 
     private void setBayesPm(BayesPm b) {

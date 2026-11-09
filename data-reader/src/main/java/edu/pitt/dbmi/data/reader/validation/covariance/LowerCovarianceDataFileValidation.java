@@ -23,6 +23,7 @@ package edu.pitt.dbmi.data.reader.validation.covariance;
 import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.*;
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +61,14 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
         List<ValidationResult> validationResults = new LinkedList<>();
 
         try {
+            String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+            if (encodingProblem != null) {
+                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, encodingProblem);
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
+                validationResults.add(result);
+                return validationResults;
+            }
+
             int numOfCases = validateNumberOfCases(validationResults);
             int numOfVars = validateVariables(validationResults);
             validateData(numOfVars, validationResults);

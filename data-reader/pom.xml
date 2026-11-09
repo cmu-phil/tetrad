@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.6.10</version>
+        <version>8.0.0</version>
     </parent>
     <!--    <groupId>io.github.cmu-phil</groupId>-->
     <artifactId>data-reader</artifactId>
@@ -14,8 +14,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+<!--        <maven.compiler.source>21</maven.coxmpiler.source>-->
+<!--        <maven.compiler.target>21</maven.compiler.target>-->
     </properties>
 
     <build>
@@ -25,19 +26,38 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <release>21</release>
+<!--                    <source>21</source>-->
+<!--                    <target>21</target>-->
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>3.2.1</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--            <artifactId>jackson-databind</artifactId>-->
+<!--            <version>2.19.2</version>-->
+<!--        </dependency>-->
+        <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.19.2</version>
         </dependency>
+
         <!--        <dependency>-->
         <!--            <groupId>org.slf4j</groupId>-->
         <!--            <artifactId>slf4j-log4j12</artifactId>-->
@@ -48,6 +68,11 @@
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.2.1</version>
         </dependency>
     </dependencies>
 </project>

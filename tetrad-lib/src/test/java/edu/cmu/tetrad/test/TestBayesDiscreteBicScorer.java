@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.junit.Test;
 
 import java.text.DecimalFormat;
@@ -82,14 +82,14 @@ public final class TestBayesDiscreteBicScorer {
     }
 
     private double prior(double e) {
-        double choose = FastMath.exp(MathUtils.choose(10 - 1, 1));
-        return choose * FastMath.pow(e / (10 - 1), 1) * FastMath.pow(1.0 - e / (10 - 1), (10 - 1 - 1));
+        double choose = TMath.exp(MathUtils.choose(10 - 1, 1));
+        return choose * TMath.pow(e / (10 - 1), 1) * TMath.pow(1.0 - e / (10 - 1), (10 - 1 - 1));
     }
 
     // Greg's structure prior
     private double prior2(double e, int k, int v) {
-        double choose = FastMath.exp(MathUtils.choose(v - 1, k));
-        return 1.0 / choose;//k * FastMath.log(e / (v - 1)) + (v - k - 1) * FastMath.log(1.0 - (e / (v - 1)));
+        double choose = TMath.exp(MathUtils.choose(v - 1, k));
+        return 1.0 / choose;//k * TMath.log(e / (v - 1)) + (v - k - 1) * TMath.log(1.0 - (e / (v - 1)));
     }
 }
 

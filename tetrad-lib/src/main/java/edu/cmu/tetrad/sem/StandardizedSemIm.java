@@ -29,12 +29,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * A special SEM model in which variances of variables are always 1 and means of variables are always 0. In order to
@@ -124,8 +125,9 @@ public class StandardizedSemIm implements Simulator {
      *
      * @param im         The SEM IM that the freeParameters will be initialized from.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
-    public StandardizedSemIm(SemIm im, Parameters parameters) {
+    public StandardizedSemIm(SemIm im, Parameters parameters) throws ParseException {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
 
@@ -135,8 +137,9 @@ public class StandardizedSemIm implements Simulator {
      * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws ParseException if any.
      */
-    public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
+    public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) throws ParseException {
         if (im.getSemPm().getGraph().isTimeLagModel()) {
             throw new IllegalArgumentException("Standardized SEM IM with a time lag model with latent variables is not supported.");
         }
@@ -214,8 +217,9 @@ public class StandardizedSemIm implements Simulator {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
+     * @throws ParseException if any
      */
-    public static StandardizedSemIm serializableInstance() {
+    public static StandardizedSemIm serializableInstance() throws ParseException {
         return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
     }
 
@@ -402,7 +406,6 @@ public class StandardizedSemIm implements Simulator {
                     this.semGraph.getExogenous(edge.getNode2()));
         }
 
-
         if (!(this.edgeParameters.containsKey(edge))) {
             throw new IllegalArgumentException("Not an edge in this model: " + edge);
         }
@@ -416,6 +419,11 @@ public class StandardizedSemIm implements Simulator {
         }
 
         double value = initial;
+
+        // Null out caches so paramInBounds gets fresh calculations
+        this.edgeCoef = null;
+        this.errorCovar = null;
+        this.errorVariances = null;
 
         // look upward for a point that fails.
         double high = value + 1;
@@ -487,6 +495,12 @@ public class StandardizedSemIm implements Simulator {
         } else if (Edges.isBidirectedEdge(edge)) {
             this.edgeParameters.put(edge, initial);
         }
+
+        // Restore original value and caches
+        this.edgeParameters.put(edge, initial);
+        this.edgeCoef = null;
+        this.errorCovar = null;
+        this.errorVariances = null;
 
         return new ParameterRange(edge, value, rangeLow, rangeHigh);
     }
@@ -857,7 +871,7 @@ public class StandardizedSemIm implements Simulator {
         double otherVariance = 0;
 
         for (Node parent : parents) {
-            if (parent == error) continue;
+            if (parent.equals(error)) continue;  // <-- was ==
             double coef = getEdgeCoef(parent, child);
             otherVariance += coef * coef;
         }
@@ -902,7 +916,14 @@ public class StandardizedSemIm implements Simulator {
                         if (Edges.isBidirectedEdge(edge)) {
                             factor = this.edgeParameters.get(edge);
                         } else if (!this.edgeParameters.containsKey(edge)) {
-                            factor = 1;
+                            // This edge is in the graph but not a model parameter (e.g. error->child
+                            // edge, which has implicit coefficient 1)
+                            if (edge.getNode1().getNodeType() == NodeType.ERROR
+                                    || edge.getNode2().getNodeType() == NodeType.ERROR) {
+                                factor = 1;  // correct: error terms always have coef 1
+                            } else {
+                                throw new IllegalStateException("Non-error edge missing from edgeParameters: " + edge);
+                            }
                         } else if (this.semGraph.isParentOf(_node1, _node2)) {
                             factor = getEdgeCoef(_node1, _node2);
                         } else {

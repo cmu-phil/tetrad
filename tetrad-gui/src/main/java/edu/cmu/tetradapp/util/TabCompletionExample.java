@@ -32,6 +32,12 @@ import java.util.List;
 public class TabCompletionExample {
 
     /**
+     * Constructs a new TabCompletionExample.
+     */
+    public TabCompletionExample() {
+    }
+
+    /**
      * The main method is the entry point of the TabCompletionExample program. It creates a JFrame window with a
      * JTextField and adds tab completion logic to the text field. The list of words used for tab completion is provided
      * as an argument to the EditorUtils.addTabCompleteLogic method. Finally, the JFrame is set visible and the program

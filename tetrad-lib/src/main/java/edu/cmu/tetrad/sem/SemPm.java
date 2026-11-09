@@ -323,15 +323,26 @@ public final class SemPm implements Pm, TetradSerializable {
      * @return a {@link edu.cmu.tetrad.sem.Parameter} object
      */
     public Parameter getVarianceParameter(Node node) {
+        node = getGraph().getNode(node.getName());
+
         if (node.getNodeType() == NodeType.ERROR) {
-            node = getGraph().getChildren(node).iterator().next();
+            List<Node> children = getGraph().getChildren(node);
+            try {
+                node = children.iterator().next();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         for (Parameter parameter : this.parameters) {
             Node _nodeA = parameter.getNodeA();
             Node _nodeB = parameter.getNodeB();
 
-            if (node == _nodeA && node == _nodeB && parameter.getType() == ParamType.VAR) {
+//            if (node == _nodeA && node == _nodeB && parameter.getType() == ParamType.VAR) {
+//                return parameter;
+//            }
+
+            if (node.equals(_nodeA) && node.equals(_nodeB) && parameter.getType() == ParamType.VAR) {
                 return parameter;
             }
         }

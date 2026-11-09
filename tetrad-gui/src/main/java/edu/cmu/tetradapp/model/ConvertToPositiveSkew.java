@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
                 double skew = StatUtils.skewness(c);
 
                 for (int i = 0; i < matrix2D.getNumRows(); i++) {
-                    matrix2D.set(i, j, matrix2D.get(i, j) * FastMath.signum(skew));
+                    matrix2D.set(i, j, matrix2D.get(i, j) * TMath.signum(skew));
                 }
             }
 

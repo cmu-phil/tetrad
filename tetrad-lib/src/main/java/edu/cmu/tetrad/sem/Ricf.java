@@ -34,7 +34,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.MatrixUtils;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -117,7 +117,7 @@ public class Ricf {
             for (int i = 0; i < p; i++) {
                 double d = L.get(i, i);
                 if (!(d > 0.0) || Double.isNaN(d)) throw new RuntimeException("non-SPD");
-                sumLogDiag += Math.log(d);
+                sumLogDiag += TMath.log(d);
             }
             logdetK = 2.0 * sumLogDiag;
         } catch (Exception e) {
@@ -132,10 +132,10 @@ public class Ricf {
                         new cern.colt.matrix.linalg.CholeskyDecomposition(Ks);
                 DoubleMatrix2D L2 = chol2.getL();
                 double sumLogDiag2 = 0.0;
-                for (int i = 0; i < p; i++) sumLogDiag2 += Math.log(Math.max(1e-300, L2.get(i, i)));
+                for (int i = 0; i < p; i++) sumLogDiag2 += TMath.log(TMath.max(1e-300, L2.get(i, i)));
                 logdetK = 2.0 * sumLogDiag2;
             } catch (Exception e2) {
-                logdetK = Math.log(Math.max(1e-300, Math.abs(A.det(Ks))));
+                logdetK = TMath.log(TMath.max(1e-300, TMath.abs(A.det(Ks))));
             }
         }
 
@@ -231,11 +231,15 @@ public class Ricf {
             Graph ugGraph = mag.subgraph(_ugNodes);
             ICovarianceMatrix ugCov = covMatrix.getSubmatrix(ug);
 
-            // FitConGraph returns Σ_hat (covariance). For UG block we actually need Λ⁻¹,
-            // since Ricf keeps Omega as a *precision* on non-UG nodes. So invert here.
-            DoubleMatrix2D lambdaInv = invSPD(fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat, 1e-10, algebra);
+            // FitConGraph returns Σ_hat, the fitted UG COVARIANCE. Omega is the error covariance
+            // throughout (it is initialized to diag(S), and the sweep assigns residual variances and
+            // covariances into it), so the UG block holds that covariance directly, exactly as ricf2
+            // does. (The final lambdahat inverts it to the UG precision.) Inverting here, as this
+            // method previously did, put a precision into a covariance slot: it corrupted sigmahat's
+            // UG block and, through oInv in the sweep, the fit of any spouse-bearing node.
+            DoubleMatrix2D ugCovHat = fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat;
 
-            omega.viewSelection(ug, ug).assign(lambdaInv);
+            omega.viewSelection(ug, ug).assign(ugCovHat);
         }
 
         // Prepare lists of parents and spouses.
@@ -416,8 +420,13 @@ public class Ricf {
             if (diff < tolerance) break;
         }
 
-        DoubleMatrix2D a34 = invSPD(B, 1e-10, algebra); // algebra.inverse(B);
-        DoubleMatrix2D a35 = invSPD(B.viewDice(), 1e-10, algebra);// algebra.inverse(B.viewDice());
+        // B = I - Beta is NOT symmetric; invSPD symmetrizes its argument before inverting, which
+        // mangled every coefficient and made sigmahat wrong for any graph with directed edges.
+        // B is unit triangular under a topological order of the directed part (det = 1), so the
+        // plain inverse is exact and well conditioned; the transpose of the inverse is the
+        // inverse of the transpose.
+        DoubleMatrix2D a34 = algebra.inverse(B);
+        DoubleMatrix2D a35 = algebra.transpose(a34);
 
         // ensure symmetry + tiny positive diagonal
         DoubleMatrix2D sym = omega.copy();
@@ -500,10 +509,12 @@ public class Ricf {
             Graph ugGraph = mag.subgraph(_ugNodes);
             ICovarianceMatrix ugCov = covMatrix.getSubmatrix(ug);
 
-            // FitConGraph returns Σ_hat (covariance). For UG block we actually need Λ⁻¹,
-            // since Ricf keeps Omega as a *precision* on non-UG nodes. So invert here.
-            DoubleMatrix2D lambdaInv = fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat;
-            omega.viewSelection(ug, ug).assign(lambdaInv);
+            // FitConGraph returns Σ_hat, the fitted UG COVARIANCE, and Omega is the error covariance
+            // throughout, so the UG block holds that covariance directly. (The old comment here
+            // claimed a precision was needed; the code was right and the comment wrong. The final
+            // lambdahat inverts this block to the UG precision.)
+            DoubleMatrix2D ugCovHat = fitConGraph(ugGraph, ugCov, p + 1, tolerance).shat;
+            omega.viewSelection(ug, ug).assign(ugCovHat);
         }
 
         // Prepare lists of parents and spouses.
@@ -676,8 +687,10 @@ public class Ricf {
             if (diff < tolerance) break;
         }
 
-        DoubleMatrix2D a34 = invSPD(B, 1e-10, algebra); // algebra.inverse(B);
-        DoubleMatrix2D a35 = invSPD(B.viewDice(), 1e-10, algebra); // algebra.inverse(B.viewDice());
+        // See the comment at the same spot in ricf(): B is not symmetric, and invSPD symmetrizes,
+        // so the plain inverse is the correct one here.
+        DoubleMatrix2D a34 = algebra.inverse(B);
+        DoubleMatrix2D a35 = algebra.transpose(a34);
 
         DoubleMatrix2D sym = omega.copy();
         sym.assign(omega.viewDice(), PlusMult.plusMult(1));
@@ -842,7 +855,7 @@ public class Ricf {
     private double lik(DoubleMatrix2D K, DoubleMatrix2D S, int n, int k) {
         Algebra algebra = new Algebra();
         DoubleMatrix2D SK = algebra.mult(S, K);
-        return (algebra.trace(SK) - FastMath.log(algebra.det(SK)) - k) * n;
+        return (algebra.trace(SK) - TMath.log(algebra.det(SK)) - k) * n;
     }
 
     private int[] range(int from, int to) {

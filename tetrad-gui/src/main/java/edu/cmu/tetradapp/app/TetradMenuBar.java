@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.Tetrad;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -31,7 +30,6 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.prefs.Preferences;
 
 import static java.awt.Desktop.getDesktop;
 
@@ -59,6 +57,7 @@ final class TetradMenuBar extends JMenuBar {
         setBorder(new EtchedBorder());
 
         // create the menus and add them to the menubar
+        JMenu tetradMenu = new JMenu("Tetrad");
         JMenu fileMenu = new JMenu("File");
         JMenu editMenu = new JMenu("Edit");
         JMenu loggingMenu = new JMenu("Logging");
@@ -66,6 +65,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenu windowMenu = new JMenu("Window");
         JMenu helpMenu = new JMenu("Help");
 
+        add(tetradMenu);
         add(fileMenu);
         add(editMenu);
         add(loggingMenu);
@@ -73,19 +73,75 @@ final class TetradMenuBar extends JMenuBar {
         add(windowMenu);
         add(helpMenu);
 
-
+        buildTetradMenu(tetradMenu);
         buildFileMenu(fileMenu);
         buildEditMenu(editMenu);
         buildLoggingMenu(loggingMenu);
         buildTemplateMenu(templateMenu);
         buildWindowMenu(windowMenu);
         buildHelpMenu(helpMenu);
+
+        wireDesktopIntegration();
     }
 
-    private JMenuItem getSuggestionBoxItem(TetradDesktop desktop, JMenu helpMenu) {
-        JMenuItem suggestionBoxItem = new JMenuItem("Suggestion Box!");
+    /**
+     * Builds the application menu, following the convention that an application has a menu named after itself
+     * holding About, Settings, and Quit, along with the legal notices. On all platforms this menu appears first
+     * in the menu bar; on macOS, the native application menu's About and Settings items are additionally wired
+     * to the same dialogs (see wireDesktopIntegration).
+     */
+    private void buildTetradMenu(JMenu tetradMenu) {
+        tetradMenu.add(new AboutTetradAction());
+        tetradMenu.add(new WarrantyAction());
+        tetradMenu.add(new LicenseAction());
+        tetradMenu.add(new ContributorsAction());
+        tetradMenu.addSeparator();
 
-        helpMenu.add(suggestionBoxItem);
+        JMenuItem settings = new JMenuItem("Settings...");
+        settings.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        settings.addActionListener(e -> SettingsDialog.showDialog());
+        tetradMenu.add(settings);
+        tetradMenu.addSeparator();
+
+        // The menu shortcut mask gives Command-Q on macOS and Control-Q elsewhere. (On macOS the native
+        // Command-Q is also caught by the quit handler installed in Tetrad.launchFrame, which routes
+        // through the same exit path.)
+        JMenuItem quit = new JMenuItem(new ExitAction());
+        quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        tetradMenu.add(quit);
+    }
+
+    /**
+     * On macOS, the About and Settings items in the native application menu do nothing unless handlers are
+     * installed for them. Point them at the same About dialog and Settings dialog the Tetrad menu uses. On
+     * platforms without a native application menu these actions are unsupported and nothing is installed.
+     */
+    private void wireDesktopIntegration() {
+        if (!Desktop.isDesktopSupported()) {
+            return;
+        }
+
+        Desktop awtDesktop = getDesktop();
+
+        try {
+            if (awtDesktop.isSupported(Desktop.Action.APP_ABOUT)) {
+                awtDesktop.setAboutHandler(e ->
+                        SwingUtilities.invokeLater(() -> new AboutTetradAction().actionPerformed(null)));
+            }
+
+            if (awtDesktop.isSupported(Desktop.Action.APP_PREFERENCES)) {
+                awtDesktop.setPreferencesHandler(e ->
+                        SwingUtilities.invokeLater(SettingsDialog::showDialog));
+            }
+        } catch (Exception e) {
+            TetradLogger.getInstance().warn("Could not set About/Settings handlers on this platform.");
+        }
+    }
+
+    private JMenuItem getSuggestionBoxItem(TetradDesktop desktop) {
+        JMenuItem suggestionBoxItem = new JMenuItem("Suggestion Box!");
 
         suggestionBoxItem.addActionListener(new ActionListener() {
             @Override
@@ -106,6 +162,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenuItem loadSession = new JMenuItem(new LoadSessionAction());
         JMenuItem closeSession = new JMenuItem(new CloseSessionAction());
         JMenuItem saveSession = new JMenuItem(new SaveSessionAction());
+        JMenuItem saveSessionAs = new JMenuItem(new SaveSessionAsAction());
 
         fileMenu.add(newSession);
         fileMenu.add(loadSession);
@@ -113,9 +170,7 @@ final class TetradMenuBar extends JMenuBar {
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
-        fileMenu.add(new SaveSessionAsAction());
-        fileMenu.addSeparator();
-        fileMenu.add(new SessionVersionAction());
+        fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
@@ -128,36 +183,9 @@ final class TetradMenuBar extends JMenuBar {
         });
 
         fileMenu.add(menuItem);
-        fileMenu.addSeparator();
 
-        JMenu settingsMenu = new JMenu("Settings");
-
-        JMenuItem loggingSettingMenuItem = new JMenuItem(new SetupLoggingAction());
-
-        JCheckBox showExperimentalBox = new JCheckBox(" Enable Experimental");
-
-        boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
-        showExperimentalBox.setSelected(Tetrad.enableExperimental);
-        Tetrad.enableExperimental = enableExperimental;
-
-        showExperimentalBox.setSelected(enableExperimental);
-        showExperimentalBox.addActionListener(e -> {
-            JCheckBox box = (JCheckBox) e.getSource();
-            Preferences.userRoot().putBoolean("enableExperimental", box.isSelected());
-            Tetrad.enableExperimental = box.isSelected();
-        });
-
-        settingsMenu.add(loggingSettingMenuItem);
-        settingsMenu.add(new JMenuItem(new NumberFormatAction()));
-        settingsMenu.add(showExperimentalBox);
-
-        fileMenu.add(settingsMenu);
-        fileMenu.addSeparator();
-
-        JMenuItem exit = new JMenuItem(new ExitAction());
-        fileMenu.add(exit);
-        exit.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
+        // Settings and Exit moved to the Tetrad menu, 2026-9-12. Settings is now a proper dialog
+        // (see SettingsDialog); Exit is now Quit Tetrad.
 
         newSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
@@ -165,6 +193,8 @@ final class TetradMenuBar extends JMenuBar {
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         saveSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+        saveSessionAs.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         closeSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK));
 
@@ -199,8 +229,13 @@ final class TetradMenuBar extends JMenuBar {
     private void buildTemplateMenu(JMenu templateMenu) {
         String[] templateNames = ConstructTemplateAction.getTemplateNames();
         for (String templateName : templateNames) {
-            if ("--separator--".equals(templateName)) {
+            if (ConstructTemplateAction.SEPARATOR.equals(templateName)) {
                 templateMenu.addSeparator();
+            } else if (templateName.startsWith(ConstructTemplateAction.LABEL_PREFIX)) {
+                JMenuItem label = new JMenuItem(
+                        templateName.substring(ConstructTemplateAction.LABEL_PREFIX.length()));
+                label.setEnabled(false);
+                templateMenu.add(label);
             } else {
                 ConstructTemplateAction action =
                         new ConstructTemplateAction(templateName);
@@ -220,15 +255,12 @@ final class TetradMenuBar extends JMenuBar {
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
-        helpMenu.add(new AboutTetradAction());
-        helpMenu.add(new WarrantyAction());
-        helpMenu.add(new LicenseAction());
-        helpMenu.add(new ContributorsAction());
-        helpMenu.addSeparator();
+        // About, Warranty, License, and Contributors moved to the Tetrad menu, 2026-9-12;
+        // this menu now holds only items that actually help.
         helpMenu.add(new LaunchWebsiteAction());
         helpMenu.add(new LaunchManualAction());
-        helpMenu.add(new LaunchFlowchartAction());
-        helpMenu.add(getSuggestionBoxItem(desktop, helpMenu));
+        helpMenu.add(new AlgorithmFlowchartAction(desktop));
+        helpMenu.add(getSuggestionBoxItem(desktop));
     }
 
     public static class SuggestionDialog extends JDialog {
@@ -240,13 +272,13 @@ final class TetradMenuBar extends JMenuBar {
 
             // Create a clickable link
             JLabel label = new JLabel("<html>" +
-                                      "<p>Please submit any issues you may have,</p>" +
-                                      "<p>whether bug reports, general encouragement,</p>" +
-                                      "<p>or feature requests, to our issues list. We'd</p>" +
-                                      "<p>love to hear from you as we continue to</p>" +
-                                      "<p>improve the Tetrad tools!</p>" +
-                                      "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
-                                      "</html>");
+                    "<p>Please submit any issues you may have,</p>" +
+                    "<p>whether bug reports, general encouragement,</p>" +
+                    "<p>or feature requests, to our issues list. We'd</p>" +
+                    "<p>love to hear from you as we continue to</p>" +
+                    "<p>improve the Tetrad tools!</p>" +
+                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
+                    "</html>");
             label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
             label.addMouseListener(new MouseAdapter() {

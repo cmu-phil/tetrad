@@ -34,9 +34,11 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,7 +73,7 @@ public class RoadmapTest {
         double best = 0.0;
         for (int[] pm : perms) {
             int ok = 0, tot = 0;
-            for (int k = 0; k < Math.min(truth.length, found.size()); k++) {
+            for (int k = 0; k < TMath.min(truth.length, found.size()); k++) {
                 Graph T = truth[k];
                 Graph F = found.get(pm[k]);
                 for (Edge e : T.getEdges()) {
@@ -156,8 +158,8 @@ public class RoadmapTest {
         inter.retainAll(skelH);
 
         int tp = inter.size();
-        int fp = Math.max(skelH.size() - tp, 0);
-        int fn = Math.max(skelT.size() - tp, 0);
+        int fp = TMath.max(skelH.size() - tp, 0);
+        int fn = TMath.max(skelT.size() - tp, 0);
 
         double precA = tp == 0 ? 0 : (double) tp / (tp + fp);
         double recA = tp == 0 ? 0 : (double) tp / (tp + fn);
@@ -303,7 +305,7 @@ public class RoadmapTest {
         int n = concat.getNumRows();
         List<Integer> perm = new ArrayList<>(n);
         for (int i = 0; i < n; i++) perm.add(i);
-        Collections.shuffle(perm, new Random(seed));
+        Collections.shuffle(perm);
         DataSet shuffled = concat.subsetRows(perm);
         int[] y = new int[n];
         for (int i = 0; i < n; i++) y[i] = labels[perm.get(i)];
@@ -313,11 +315,11 @@ public class RoadmapTest {
         return out;
     }
 
-    private static @NotNull Graph copyWithFlippedDirections(Graph g, int flips, Random rnd) {
+    private static @NotNull Graph copyWithFlippedDirections(Graph g, int flips) {
         Graph h = new EdgeListGraph(g);
         List<Edge> dir = h.getEdges().stream().filter(Edge::isDirected).collect(Collectors.toList());
         if (dir.isEmpty()) return h;
-        Collections.shuffle(dir, rnd);
+        Collections.shuffle(dir);
         int done = 0;
         for (Edge e : dir) {
             if (done >= flips) break;
@@ -369,8 +371,8 @@ public class RoadmapTest {
     private static double iqr(List<Double> xs) {
         double[] v = xs.stream().mapToDouble(Double::doubleValue).sorted().toArray();
         int n = v.length;
-        double q1 = v[(int) Math.floor(0.25 * (n - 1))];
-        double q3 = v[(int) Math.floor(0.75 * (n - 1))];
+        double q1 = v[(int) TMath.floor(0.25 * (n - 1))];
+        double q3 = v[(int) TMath.floor(0.75 * (n - 1))];
         return q3 - q1;
     }
 
@@ -496,7 +498,7 @@ public class RoadmapTest {
                     double d = x[j] - mean;
                     m2 += d * d;
                 }
-                double sd = Math.sqrt(m2 / Math.max(1, X.length - 1));
+                double sd = TMath.sqrt(m2 / TMath.max(1, X.length - 1));
                 if (sd < 1e-12) sd = 1.0;
                 for (int i = 0; i < X.length; i++) X[i][j] = (X[i][j] - mean) / sd;
             }
@@ -563,7 +565,7 @@ public class RoadmapTest {
         System.out.println("\n=== Phase2: robustness curves (meanÂ±IQR over seeds) ===");
         for (int nTot : nTotals) {
             for (double fracA : imbalances) {
-                int n1 = (int) Math.round(nTot * fracA);
+                int n1 = (int) TMath.round(nTot * fracA);
                 int n2 = nTot - n1;
                 for (double sig : signalScales) {
                     List<Double> arisEM = new ArrayList<>();
@@ -640,16 +642,11 @@ public class RoadmapTest {
         Graph gBackbone = RandomGraph.randomGraph(vars, 0, 20, 100, 100, 100, false);
 
         Parameters params = new Parameters();
-        params.set(Params.SIMULATION_ERROR_TYPE, 3);
-        params.set(Params.SIMULATION_PARAM1, 1);
-
-        SemIm imBack = new SemIm(new SemPm(gBackbone), params);
-        DataSet Dreal = imBack.simulateData(n1 + n2, false); // ârealisticâ marginal structure
 
         // Now create two regimes by injecting controlled shifts on top of Drealâs covariance:
         // (A) keep backbone; (B) flip edges & scale some parameters â simulate from shifted SEMs.
         Graph gA = gBackbone.copy();
-        Graph gB = copyWithFlippedDirections(gBackbone, flips, new Random(seed));
+        Graph gB = copyWithFlippedDirections(gBackbone, flips);
         SemIm imA = new SemIm(new SemPm(gA), params);
         SemIm imB = new SemIm(new SemPm(gB), params);
         // Scale B
@@ -663,8 +660,14 @@ public class RoadmapTest {
         }
         for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
-        DataSet dA = imA.simulateData(n1, false);
-        DataSet dB = imB.simulateData(n2, false);
+        DataSet dA = null;
+        DataSet dB = null;
+        try {
+            dA = imA.simulateData(n1, false);
+            dB = imB.simulateData(n2, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         DataSet concat = DataTransforms.concatenate(dA, dB);
         int[] lab = new int[n1 + n2];
         Arrays.fill(lab, 0, n1, 0);
@@ -757,8 +760,14 @@ public class RoadmapTest {
             }
             for (Node v : vars) imB.setErrVar(v, noiseScale * imB.getErrVar(v));
 
-            DataSet d1 = imA.simulateData(n1, false);
-            DataSet d2 = imB.simulateData(n2, false);
+            DataSet d1 = null;
+            DataSet d2 = null;
+            try {
+                d1 = imA.simulateData(n1, false);
+                d2 = imB.simulateData(n2, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             int[] lab = labelVec(n1, n2);
             return new Scenario("ParamsOnly", Kind.PARAMS_ONLY, nf, shuffleWithLabels(DataTransforms.concatenate(d1, d2), lab, seed).data,
                     lab, new Graph[]{g.copy(), g.copy()});
@@ -781,7 +790,7 @@ public class RoadmapTest {
             List<Node> vars = new ArrayList<>();
             for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("X" + i));
             Graph gA = RandomGraph.randomGraph(vars, 0, 14, 100, 100, 100, false);
-            Graph gB = copyWithFlippedDirections(gA, flips, new Random(seed));
+            Graph gB = copyWithFlippedDirections(gA, flips);
             Parameters par = new Parameters();
             setNoise(par, nf);
             SemIm imA = new SemIm(new SemPm(gA), par);
@@ -796,8 +805,14 @@ public class RoadmapTest {
                 }
                 for (Node v : vars) imB.setErrVar(v, paramScaleB * imB.getErrVar(v));
             }
-            DataSet d1 = imA.simulateData(n1, false);
-            DataSet d2 = imB.simulateData(n2, false);
+            DataSet d1 = null;
+            DataSet d2 = null;
+            try {
+                d1 = imA.simulateData(n1, false);
+                d2 = imB.simulateData(n2, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             int[] lab = labelVec(n1, n2);
             MixOut mix = shuffleWithLabels(DataTransforms.concatenate(d1, d2), lab, seed);
             return new Scenario(name, kind, nf, mix.data, mix.labels, new Graph[]{gA, gB});
@@ -805,10 +820,10 @@ public class RoadmapTest {
 
         private static void setNoise(Parameters par, NoiseFamily nf) {
             if (nf == NoiseFamily.GAUSSIAN) {
-                par.set(Params.SIMULATION_ERROR_TYPE, 0); // Gaussian
+                par.set(Params.CUSTOM_NOISE_OPTION, 1); // Gaussian
             } else {
-                par.set(Params.SIMULATION_ERROR_TYPE, 3); // Laplace-like (as used before)
-                par.set(Params.SIMULATION_PARAM1, 1);
+                par.set(Params.CUSTOM_NOISE_OPTION, 2);
+                par.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)"); // Laplace-like (as used before)
             }
         }
 

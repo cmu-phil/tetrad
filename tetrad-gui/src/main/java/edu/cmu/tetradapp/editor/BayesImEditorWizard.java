@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -171,10 +172,10 @@ public final class BayesImEditorWizard extends JPanel {
 
             ++current;
 
-            if (current == max) {
-                JOptionPane.showMessageDialog(this,
-                        "There are no more variables.");
-            }
+//            if (current == max) {
+//                JOptionPane.showMessageDialog(this,
+//                        "There are no more variables.");
+//            }
 
             int set = (current < max) ? current : 0;
 
@@ -196,12 +197,12 @@ public final class BayesImEditorWizard extends JPanel {
 
     private JComboBox<Node> createVarNamesComboBox(BayesIm bayesIm) {
         JComboBox<Node> varNameComboBox = new JComboBox<>();
-        varNameComboBox.setBackground(Color.white);
+//        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesIm.getBayesPm().getDag();
 
         List<Node> nodes = new ArrayList<>(graph.getNodes());
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
         nodes.forEach(varNameComboBox::addItem);
 
         if (varNameComboBox.getItemCount() > 0) {

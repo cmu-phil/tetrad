@@ -22,11 +22,13 @@ package edu.cmu.tetrad.study.examples.conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GfciOld;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+
+import java.text.ParseException;
 
 /**
  * An example script to load in data sets and graphs from files and analyze them. The files loaded must be in the same
@@ -88,7 +90,7 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+        algorithms.add(new GfciOld(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fges(new BdeuScore(),true));
 //        algorithms.add(new Fges(new DiscreteBicScore(),true));
 //        algorithms.add(new Fges(new SemBicScore()));
@@ -100,7 +102,11 @@ public class ExampleCompareFromFiles {
         comparison.setSaveGraphs(true);
         //DagToPag p = new DagToPag(graph);
 
-        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        try {
+            comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

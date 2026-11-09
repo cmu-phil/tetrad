@@ -22,10 +22,14 @@ package edu.pitt.dbmi.data.reader.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  * Mar 8, 2017 10:51:43 AM
@@ -51,6 +55,90 @@ public class TextFileUtils {
     protected static final byte SPACE_CHAR = ' ';
 
     private TextFileUtils() {
+    }
+
+    /**
+     * Examines the first bytes of the given file for signs that it is not
+     * plain UTF-8 or ASCII text that Tetrad can read: a UTF-16 or UTF-32 byte
+     * order mark, a zip archive signature such as an Excel workbook, or null
+     * bytes, which suggest UTF-16 text without a byte order mark or a binary
+     * file. Byte-wise readers cannot parse such files, and without this check
+     * they fail with confusing errors or silently produce garbage.
+     *
+     * @param file the file to examine
+     * @return a message describing the problem and how to fix it, or null if
+     * no problem is found
+     * @throws IOException if an I/O error occurs
+     */
+    public static String findEncodingProblem(Path file) throws IOException {
+        byte[] head = new byte[1024];
+        int len = 0;
+        try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
+            while (len < head.length) {
+                int count = in.read(head, len, head.length - len);
+                if (count == -1) {
+                    break;
+                }
+                len += count;
+            }
+        }
+
+        String fileName = (file.getFileName() == null) ? file.toString() : file.getFileName().toString();
+        final String advice = "Tetrad reads plain text encoded as UTF-8 or ASCII. "
+                + "Please save the file as UTF-8 text and try again.";
+
+        boolean utf32 = len >= 4
+                && (((head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xFE && head[2] == 0 && head[3] == 0)
+                || (head[0] == 0 && head[1] == 0 && (head[2] & 0xFF) == 0xFE && (head[3] & 0xFF) == 0xFF));
+        if (utf32) {
+            return String.format("File '%s' appears to be UTF-32 encoded; "
+                    + "a UTF-32 byte order mark was found. %s", fileName, advice);
+        }
+
+        boolean utf16 = len >= 2
+                && (((head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xFE)
+                || ((head[0] & 0xFF) == 0xFE && (head[1] & 0xFF) == 0xFF));
+        if (utf16) {
+            return String.format("File '%s' appears to be UTF-16 encoded; "
+                    + "a UTF-16 byte order mark was found. %s", fileName, advice);
+        }
+
+        if (len >= 4 && head[0] == 'P' && head[1] == 'K' && head[2] == 3 && head[3] == 4) {
+            return String.format("File '%s' appears to be a zip-based document, "
+                    + "such as an Excel workbook. Please export the data as a CSV file "
+                    + "saved as UTF-8 text and try again.", fileName);
+        }
+
+        for (int i = 0; i < len; i++) {
+            if (head[i] == 0) {
+                return String.format("File '%s' contains null bytes near the start of the file, "
+                        + "which suggests UTF-16 text without a byte order mark, or a binary file. %s",
+                        fileName, advice);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Skips a leading UTF-8 byte order mark (BOM) in the given buffer, if one
+     * is present at the buffer's current position. Spreadsheet programs such
+     * as Excel commonly write a BOM when exporting "CSV UTF-8" files; the BOM
+     * is not data and should not be displayed or parsed. Intended for buffers
+     * mapped at the start of a file.
+     *
+     * @param buffer the buffer to examine
+     */
+    public static void skipUtf8BOM(ByteBuffer buffer) {
+        if (buffer.remaining() >= 3) {
+            int pos = buffer.position();
+            if ((buffer.get(pos) & 0xFF) == 0xEF
+                    && (buffer.get(pos + 1) & 0xFF) == 0xBB
+                    && (buffer.get(pos + 2) & 0xFF) == 0xBF) {
+                // Do not delete this casting; it is needed to fix a versioning problem.
+                ((java.nio.Buffer) buffer).position(pos + 3);
+            }
+        }
     }
 
     /**
@@ -142,7 +230,11 @@ public class TextFileUtils {
                                 }
                             }
 
-                            if (reqCheck) {
+                            // If the comment-marker buffer is full, this line cannot be the
+                            // start of a comment (e.g., a UTF-8 BOM or leading whitespace longer
+                            // than the comment marker); fall through and count the bytes as data
+                            // instead of overflowing the buffer.
+                            if (reqCheck && byteBuffer.hasRemaining()) {
                                 byteBuffer.put(currChar);
                             } else {
                                 if (skip > 0) {

@@ -23,13 +23,13 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements the Anderson-Darling test against the given CDF, with P values calculated as in R's ad.test method (in
@@ -139,10 +139,10 @@ public class GeneralAndersonDarlingTest {
 
         for (int i = 1; i <= n; i++) {
             double x1 = this.data.get(i - 1);
-            double a1 = FastMath.log(this.dist.cumulativeProbability(x1));
+            double a1 = TMath.log(this.dist.cumulativeProbability(x1));
 
             double x2 = this.data.get(n + 1 - i - 1);
-            double a2 = FastMath.log(1.0 - this.dist.cumulativeProbability(x2));
+            double a2 = TMath.log(1.0 - this.dist.cumulativeProbability(x2));
 
             double k = (2 * i - 1) * (a1 + a2);
 
@@ -162,8 +162,15 @@ public class GeneralAndersonDarlingTest {
             p = 1 - exp(-8.318 + 42.796 * aa - 59.938 * aa * aa);
         } else if (aa < 0.6) {
             p = exp(0.9177 - 4.279 * aa - 1.38 * aa * aa);
-        } else {
+        } else if (aa < 10.0) {
             p = exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
+        } else {
+            // The Stephens interpolation above is a local quadratic fit with a positive
+            // aa^2 coefficient; outside its fitted range it turns around, so that p climbs
+            // back above any alpha near aa ~ 306 and overflows to Infinity near aa ~ 402.
+            // Following R's nortest::ad.test, report a hard floor for aa >= 10; 3.7e-24 is
+            // the formula's value at aa = 10, so the p-value is continuous at the boundary.
+            p = 3.7e-24;
         }
 
         this.aSquared = a;

@@ -24,7 +24,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.io.Serial;
@@ -58,6 +60,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Multinomial Logistic Retression Wald Test");
         return new IndTestMultinomialLogisticRegressionWald(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"),
@@ -87,6 +90,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add("alpha");
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

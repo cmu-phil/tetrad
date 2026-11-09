@@ -882,6 +882,10 @@ public final class SemGraph implements Graph {
         Node error = errorNodes().get(node);
 
         if (error == null) {
+            if (node.getName().startsWith("E)")) {
+                System.out.println(node.getName());
+            }
+
             error = new GraphNode("E" + "_" + node.getName());
             error.setCenter(node.getCenterX() + 50, node.getCenterY() + 50);
             error.setNodeType(NodeType.ERROR);

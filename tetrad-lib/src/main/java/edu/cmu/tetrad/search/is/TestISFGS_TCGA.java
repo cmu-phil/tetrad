@@ -159,7 +159,7 @@ public class TestISFGS_TCGA {
 
     private static DataSet stripNameColumn(DataSet withNames, String nameCol) {
         DataSet copy = withNames.copy();
-        int idx = copy.getColumn(copy.getVariable(nameCol));
+        int idx = copy.getColumnIndex(copy.getVariable(nameCol));
         copy.removeColumn(idx);
         return copy;
     }
@@ -210,7 +210,7 @@ public class TestISFGS_TCGA {
 
             // LOO × bootstrap
             final int n = data.getNumRows();
-            final int nameIdx = dataWithNames.getColumn(dataWithNames.getVariable(DEFAULT_NAME_COLUMN));
+            final int nameIdx = dataWithNames.getColumnIndex(dataWithNames.getVariable(DEFAULT_NAME_COLUMN));
 
             for (int i = 0; i < n; i++) {
                 // LOO split

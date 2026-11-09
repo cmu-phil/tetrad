@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -134,6 +135,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE, rows);
         this.chiSquareTest.setMinCountPerCell(minCountPerCell);
         this.rows = getAllRows(dataSet.getNumRows());
+        this.nEff = dataSet.getNumRows();
         this.sampleSize = this.rows.size();
     }
 
@@ -210,7 +212,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -489,7 +491,7 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -534,9 +536,15 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         return determined;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The count-sample cell table skips rows containing the missing-value code when building each conditional table, i.e., test-wise deletion, unbiased only under MCAR. (The AD-tree cell table does not; ChiSquareTest forces the count-sample table on incomplete data.)
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
+    }
 }
-
-
-
-
-

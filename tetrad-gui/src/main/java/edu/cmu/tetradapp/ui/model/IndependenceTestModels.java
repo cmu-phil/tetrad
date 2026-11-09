@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -39,15 +39,19 @@ import java.util.stream.Stream;
  */
 public final class IndependenceTestModels {
 
-    private static final IndependenceTestModels INSTANCE = new IndependenceTestModels();
+    // Changed 2026-8-24: two immutable instances, one with and one without experimental tests, selected at call
+    // time. Previously a single instance read Tetrad.enableExperimental once at class load, so the settings checkbox
+    // had no effect on tests until Tetrad was restarted.
+    private static final IndependenceTestModels WITH_EXPERIMENTAL = new IndependenceTestModels(true);
+    private static final IndependenceTestModels WITHOUT_EXPERIMENTAL = new IndependenceTestModels(false);
 
     private final List<IndependenceTestModel> models;
     private final Map<DataType, List<IndependenceTestModel>> modelMap = new EnumMap<>(DataType.class);
     private final Map<DataType, IndependenceTestModel> defaultModelMap = new EnumMap<>(DataType.class);
 
-    private IndependenceTestModels() {
+    private IndependenceTestModels(boolean includeExperimental) {
         TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
+        List<AnnotatedClass<TestOfIndependence>> list = includeExperimental
                 ? indTestAnno.getAnnotatedClasses()
                 : indTestAnno.filterOutExperimental(indTestAnno.getAnnotatedClasses());
         this.models = Collections.unmodifiableList(
@@ -66,17 +70,26 @@ public final class IndependenceTestModels {
      * @return a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModels} object
      */
     public static IndependenceTestModels getInstance() {
-        return IndependenceTestModels.INSTANCE;
+        return getInstance(Tetrad.enableExperimental);
+    }
+
+    /**
+     * Returns the registry with or without experimental tests, regardless of the global preference. Added 2026-8-24 so
+     * an editor can offer a local "include experimental" toggle.
+     *
+     * @param includeExperimental true to include tests marked {@code @Experimental}.
+     * @return the registry.
+     */
+    public static IndependenceTestModels getInstance(boolean includeExperimental) {
+        return includeExperimental ? WITH_EXPERIMENTAL : WITHOUT_EXPERIMENTAL;
     }
 
     private void initModelMap() {
-        // initialize enum map
         DataType[] dataTypes = DataType.values();
         for (DataType dataType : dataTypes) {
             this.modelMap.put(dataType, new LinkedList<>());
         }
 
-        // group by datatype
         this.models.forEach(e -> {
             DataType[] types = e.getIndependenceTest().annotation().dataType();
             for (DataType dataType : types) {
@@ -85,18 +98,37 @@ public final class IndependenceTestModels {
         });
 
         // merge continuous datatype with mixed datatype
-        List<IndependenceTestModel> mergedModels = Stream.concat(this.modelMap.get(DataType.Continuous).stream(), this.modelMap.get(DataType.Mixed).stream())
+        List<IndependenceTestModel> mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.Mixed).stream())
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Continuous, mergedModels);
 
-        // merge discrete datatype with mixed datatype
-        mergedModels = Stream.concat(this.modelMap.get(DataType.Discrete).stream(), this.modelMap.get(DataType.Mixed).stream())
+        // merge discrete datatype with mixed datatype. A test annotated Mixed alone is taken to handle all-discrete
+        // data, which is why the merge exists; a test annotated with BOTH Continuous and Mixed has said explicitly
+        // which data it handles -- continuous and mixed, not pure discrete -- and is taken at its word and left out
+        // (e.g. the Stratified Rank test, which needs continuous variables plus a discrete domain column).
+        mergedModels = Stream.concat(
+                        this.modelMap.get(DataType.Discrete).stream(),
+                        this.modelMap.get(DataType.Mixed).stream()
+                                .filter(e -> !Arrays.asList(e.getIndependenceTest().annotation().dataType())
+                                        .contains(DataType.Continuous)))
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);
 
-        // make map values unmodifiable
+        // ContinuousGeneral gets the same models as Continuous
+        List<IndependenceTestModel> continuousGeneralModels = Stream.concat(
+                        this.modelMap.get(DataType.Continuous).stream(),
+                        this.modelMap.get(DataType.ContinuousGeneral).stream())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        this.modelMap.put(DataType.ContinuousGeneral, continuousGeneralModels);
+
         this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
     }
 
@@ -124,18 +156,14 @@ public final class IndependenceTestModels {
     }
 
     private String getProperty(DataType dataType) {
-        switch (dataType) {
-            case Continuous:
-                return "datatype.continuous.test.default";
-            case Discrete:
-                return "datatype.discrete.test.default";
-            case Mixed:
-                return "datatype.mixed.test.default";
-            case Blocks:
-                return "datatype.blocks.test.default";
-            default:
-                return null;
-        }
+        return switch (dataType) {
+            case Continuous -> "datatype.continuous.test.default";
+            case ContinuousGeneral -> "datatype.continuous.test.general.default";
+            case Discrete -> "datatype.discrete.test.default";
+            case Mixed -> "datatype.mixed.test.default";
+            case Blocks -> "datatype.blocks.test.default";
+            default -> null;
+        };
     }
 
     /**

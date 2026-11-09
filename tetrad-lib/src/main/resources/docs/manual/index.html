@@ -1868,7 +1868,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         noted that while these test statistics are standard, they are not in
         general correct. See Mathias Drton, 2009, Likelihood ratio tests and
         singularities. Annals of Statistics 37(2):979-1012.
-        arXiv:math.ST/0703360. Note also that BIC is calculated as 2L - k ln N,
+        arXiv:TMath.ST/0703360. Note also that BIC is calculated as 2L - k ln N,
         so "higher is better." </p>
 
     <p>When the EM algorithm is used with latent variable models, we
@@ -2133,6 +2133,32 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         variables in Tier 1. If you have information about the effects of the
         intervention variables you can use the groups tab to indicate this.</p>
 
+    <h3>Other Tiers</h3>
+
+    <p>The Other Tiers and Groups tabs are hidden by default, since most
+        analyses do not use them; turn either on in the editor's Show menu.
+        A tab is always shown while the knowledge actually contains tier
+        structures or groups, so active constraints are never out of
+        sight.</p>
+
+    <p>Some data sets carry several temporal orderings at once. In a course
+        data set, for example, the exams are ordered among themselves, the
+        module checkpoints among themselves, and the unit completions among
+        themselves, but a single tier list cannot hold all three orderings
+        without also forbidding edges between them. The Other Tiers tab holds
+        any number of additional, named tier structures, each an independent
+        set of tiers over its own variables. Within one structure, edges from
+        a later tier to an earlier tier are forbidden, and a tier can forbid
+        edges within itself; structures place no constraints on one another,
+        and a variable may appear in several structures (and in the main
+        tiers) at the same time.</p>
+
+    <p>Add a structure with the button at the top, name it, and drag
+        variables from the structure's "Not in this structure" list into its
+        tiers, or move them in bulk with the pattern bar, as in the Tiers
+        tab. These constraints are saved with the knowledge, under
+        tierstructure sections of the knowledge text format.</p>
+
     <h3>Groups</h3>
 
     <p>The groups tab for a graph with four variables looks like this:
@@ -2167,6 +2193,19 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         bottom of the window. You can adjust the layout to mimic the layout of
         the source (by clicking “source layout”) or to see the variables in their
         timeline tiers (by clicking “knowledge layout”).</p>
+
+    <h3>Text</h3>
+
+    <p>The Text tab shows the knowledge in the same text form that Save
+        Knowledge writes and Load Knowledge reads, and the text can be edited
+        or pasted over and applied. Names in this format are ordinarily
+        separated by whitespace, so a variable name containing spaces cannot
+        be written that way; when some name needs it, the file is written in
+        a comma-separated variant instead, marked by the header line
+        "/knowledge comma", in which the names in tier and group lines are
+        separated by commas and a name containing a comma is put in double
+        quotes. Both variants load from either the Text tab or Load
+        Knowledge.</p>
 
     <h2>Forbidden Graph</h2>
 
@@ -3259,11 +3298,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
-    <h3>The BOSS-FCI Algorithm</h3>
+    <h3>The BFCI (BOSS-FCI) Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="boss-fci">
+    <div id="bfci">
         <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG
             than GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI
             is here:</p>
@@ -3277,9 +3316,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
             temporal tiers.</p>
         <p>FCIT, along with BOSS-FCI, can produce highly accurate models in simulation. FCIT, in particular, is
-            highly scalable. A paper describing BOSS-FCI and FCIT in more detail is planned. We make both BFCI and
-            FCIT non-experimental for this version since requests have been made to use them.</p>
-        </p>
+            highly scalable. A paper describing BOSS-FCI and FCIT in more detail is planned.</p>
+        <p>As of version 8.0.0 the extra-edge-removal step follows Bryan Andrews's formulation, shared by the whole
+            *-FCI family: the state of the search is the committed sepset map, the carried graph is the projection of
+            that map, and separating sets are re-selected rather than frozen when a candidate induces an illegal
+            orientation. The fcitCorrectness parameter chooses the warrant the search relies on: 1 = Guarantee I-map
+            (every committed state must be an I-map of the test at imapAlpha; the default), 2 = Score step (every
+            removal must strictly improve a RICF BIC score on the Zhang MAG; continuous data with a SEM BIC score
+            required), or 3 = Saturating step (the configuration proved correct in the oracle under the GFCI
+            assumptions). Because the default is new and has not yet been measured at scale on real data, BFCI is
+            marked experimental in this version. The former BFCI-Bryan and BFCI-Bryan-Score entries are retired;
+            they correspond to options 1 or 3 and to option 2 of this algorithm.</p>
 
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
@@ -3298,8 +3345,57 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
-        GRaSP.</p>
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and BOSS, together with
+        <a href="#fcitCorrectness">fcitCorrectness</a> and <a href="#imapAlpha">imapAlpha</a>.</p>
+
+    <h3>The BFCI-Bryan Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="bfci-bryan">
+        <p>Retired in version 8.0.0. BFCI-Bryan was an experimental arm whose gated removal step, sepset re-selection,
+            and I-map gate have been merged into the shipping BFCI and the rest of the *-FCI family (see BFCI, above).
+            Its behavior with requireImapStates on is BFCI with fcitCorrectness = 1; with it off, BFCI with
+            fcitCorrectness = 3. The class is kept, unregistered, only so that sessions saved with it continue to
+            load; such a session re-runs through BFCI with the equivalent option. The usePass0 and reharvestSepsets
+            options were not carried over and are ignored.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Retired; see BFCI.</p>
+
+    <h3>The BFCI-Bryan-Score Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="bfci-bryan-score">
+        <p>Retired in version 8.0.0. BFCI-Bryan-Score added a RICF BIC scoring step to every gated move of
+            BFCI-Bryan; that step is now fcitCorrectness = 2 of BFCI and of the rest of the *-FCI family (see BFCI,
+            above), with the same requirement of continuous data and a SEM BIC score with zero structure prior. The
+            class is kept, unregistered, only so that sessions saved with it continue to load; such a session re-runs
+            through BFCI with option 2.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Retired; see BFCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Retired; see BFCI.</p>
 
     <h3>The SP-FCI Algorithm</h3>
 
@@ -3348,6 +3444,221 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             selection variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth
             International Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference
             Proceedings.</p>
+
+    </div>
+
+    <h3>The Resricted BOSS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="r-boss">
+        <p>Implements a restricted version of the BOSS (Best Order Score Search) algorithm that focuses search on a set
+            of target variables and their immediate causes.
+            The algorithm proceeds in two stages. In the first stage, BOSS is run on the full dataset with the target
+            variables placed in a later tier than all other variables, with edges forbidden within the first tier. This
+            uses the Grow-Shrink Tree (GST) structure from the resulting search to identify the "first layer" of each
+            target — that is, the variables that are direct or proximal causes of the targets.
+            In the second stage, the data is restricted to just the target variables and their first-layer variables,
+            and BOSS is run again on this reduced dataset, once more with the target variables in a later tier. The
+            resulting graph is then trimmed according to the specified trimming style to yield the final output.
+            This two-stage approach is more computationally efficient than running BOSS on the full variable set when
+            only the relationships among a small set of target variables and their causes are of interest.</p>
+
+    </div>
+
+    <h3>The Resricted PCMCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="pcmci">
+        <p>PCMCI (Runge et al.) — minimal, time-series implementation with lagged edges only (τ≥1).
+            Pipeline:
+            Build lagged variables up to maxLag.
+            Parent pre-selection per node V: PC1-like elimination using only the strict past of V.
+            MCI step: keep Xt-τ → Yt iff X ¬⊥ Y | Pa(Y)\{X} ∪ Pa(X).
+            Add directed edges Xt-τ → Yt; optionally collapse to base-time nodes.
+            Notes:
+            IndependenceTest is user-supplied (e.g., FisherZ, etc.).
+            Knowledge constraints are enforced for allowed/forbidden arcs (including tiering).
+            This version orients only τ>0 (no instantaneous τ=0); add later for PCMCI+.</p>
+
+    </div>
+
+    <h3>The Trek-MIMIC Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="trek-mimic">
+        <p>Implements the Trek-MIMIC algorithm for recovering latent structure from measured data, including both the
+            latent-latent skeleton and the measured parents (inputs) of each latent variable.
+            The algorithm proceeds in five stages:
+            Measurement model construction. TSC (Trek Separation Clustering) is run to identify clusters of measured
+            indicators and assign each cluster to a latent variable, yielding a block specification with per-latent
+            ranks. PC with a trek/block independence test is then run to produce an initial latent-indicator graph.
+            Measured parent recovery. Rank-one clique groups are identified among a pool of candidate measured
+            variables. Each group is assigned to the latent it best explains (by block strength), and directed edges
+            from those measured parents into the latent are added to the graph.
+            Higher-rank expansion (optional). Candidate measured variables not yet assigned as parents are tested
+            individually and in pairs against subsets of latents. A candidate is added as a shared parent of a latent
+            subset when it satisfies a trek-rank condition (contributing missing channels to the joint parent set) and
+            an explanatory condition (its presence reduces the cross-indicator rank for at least one adjacent latent
+            pair). Transitive input edges introduced during this phase are subsequently pruned.
+            Latent-latent edge pruning. Edges between latents that are explained by recovered measured parents — as
+            evidenced by conditional rank dropping to zero — are removed.
+            Orientation and final pruning (optional). Remaining latent-latent edges are oriented using parent/child
+            correlations, and any latent-transitive edges that become non-identifiable are removed, leaving the final
+            graph.</p>
+
+    </div>
+
+    <h3>The RFCI-BSC Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="rfci-bsc">
+        <p>Implements the RFCI-BSC (Really Fast Causal Inference with Bayesian Scoring of Constraints) algorithm for
+            learning PAGs (Partial Ancestral Graphs) from discrete data with probabilistic uncertainty quantification.
+            The algorithm proceeds in four stages:
+            Randomized PAG search. RFCI is run multiple times using a probabilistic independence test (BSC test) to
+            generate a collection of candidate PAGs. Independence facts whose probabilities of independence fall within
+            a specified uncertainty band [lowerBound, upperBound] are retained as "uncertain constraints" for downstream
+            scoring.
+            Bootstrap constraint data construction. Bootstrap samples of the original data are drawn and a probabilistic
+            independence test is applied to each sample, recording the independence/dependence outcome for each
+            uncertain constraint. This yields an empirical dataset whose rows are bootstrap samples and whose columns
+            are uncertain independence facts.
+            Constraint structure learning. FGES with a BDeu score is run on the bootstrap constraint dataset to learn a
+            Bayesian network over the uncertain constraints, and its parameters are estimated via Dirichlet estimation.
+            This learned model captures the dependency structure among the uncertain constraints.
+            PAG scoring. Each candidate PAG is scored under two methods:
+            BSC-I (independent scoring): each constraint fact is scored independently using its marginal probability of
+            independence.
+            BSC-D (dependent scoring): constraint facts are scored using the learned Bayesian network over constraints,
+            accounting for dependencies among facts.
+            The highest-scoring PAG under each method is returned as graphRBI and graphRBD respectively. Normalized
+            BSC-I and BSC-D scores are attached as attributes on both output graphs. The method selected for the primary
+            return value is controlled by the outputRBD flag.
+            Edge type probabilities across the sampled PAGs are computed and attached to the edges of the returned
+            graph, providing bootstrap uncertainty estimates for each edge.</p>
+
+    </div>
+
+    <h3>The CD-NOD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cdnod">
+        <p>Implements the CD-NOD (Causal Discovery from Non-stationary/heterogeneous Data) algorithm, which learns a
+            causal graph from data in the presence of context variables that index changing causal mechanisms across
+            data segments or environments.
+            Context variables are identified as all Tier-0 variables in the supplied Knowledge object. Any variable in
+            Tier-0 that is also present in the dataset is treated as a context variable and is forced to be a cause of
+            every adjacent non-context variable. This matches the CD-NOD-PAG semantics, where changing mechanisms are
+            indicated by directed edges from context nodes.
+            The algorithm proceeds in four stages:
+            Skeleton search. FAS (Fast Adjacency Search) is run using the supplied independence test to find the
+            undirected skeleton of the causal graph and the corresponding sepsets.
+            Context forcing. For each context variable C and each adjacent non-context variable X, the undirected edge C
+            --- X is replaced by the directed edge C → X, subject to any background knowledge constraints.
+            Collider orientation. Unshielded triples are oriented as colliders or non-colliders using one of three
+            strategies, selectable via Cdnod.ColliderOrientationStyle:
+            SEPSETS: orients x → z ← y if z is not in the sepset of x and y (standard PC rule).
+            CONSERVATIVE: orients a collider only if every sepset excludes z and no sepset includes z (Conservative PC
+            rule).
+            MAX_P: selects the sepset with the highest p-value and uses it to decide orientation, with an optional
+            tie-guard margin.
+            Context variables are excluded from conditioning sets during this step by default, consistent with
+            CD-NOD-PAG behavior.
+            Meek closure. Meek's orientation rules are applied to propagate implied orientations and complete the
+            partially directed graph.</p>
+
+    </div>
+
+    <h3>The CD-NOD-BOSS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cd-nod-boss">
+        <p>Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/ heterogeneous Data) algorithm that
+            uses BOSS (Best Order Score Search) for skeleton construction rather than FAS, combining score-based
+            skeleton search with constraint-based collider orientation.
+            Context variables are identified as all Tier-0 variables in the supplied Knowledge object. Any variable in
+            Tier-0 that is also present in the dataset is treated as a context variable and is forced to be a cause of
+            every adjacent non-context variable, reflecting the assumption that changing causal mechanisms are indexed
+            by those context variables.
+            The algorithm proceeds in four stages:
+            BOSS skeleton search. BOSS is run using a SEM BIC score on the augmented dataset (X ∪ contexts), with
+            knowledge extended to forbid all edges into context variables. The resulting CPDAG provides the initial
+            skeleton and a set of sepsets, which are cached and supplemented by a recursive blocking heuristic and
+            conditional independence fallback during collider orientation.
+            Context forcing. For each context variable C and each adjacent non-context variable X, the undirected edge C
+            --- X is replaced by the directed edge C → X, subject to any background knowledge constraints.
+            Collider orientation. Unshielded triples are oriented as colliders or non-colliders using one of three
+            strategies, selectable via CdnodBoss.ColliderOrientationStyle:
+            SEPSETS: orients x → z ← y if z is not in the sepset of x and y (standard PC rule).
+            CONSERVATIVE: orients a collider only if every sepset excludes z and no sepset includes z (Conservative PC
+            rule).
+            MAX_P: selects the sepset with the highest p-value and uses it to decide orientation, with an optional
+            tie-guard margin.
+            Meek closure. Meek's orientation rules are applied to propagate implied orientations and complete the
+            partially directed graph.</p>
+
+    </div>
+
+    <h3>The CAM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cam">
+        <p>Implements the CAM (Causal Additive Model) algorithm for causal discovery from continuous observational data
+            under the assumption that each variable is a nonlinear additive function of its parents plus independent
+            noise.
+            The algorithm proceeds in three stages:
+            Prior Neighborhood Selection (PNS). For each target variable y, all other variables are ranked by their
+            univariate additive BIC score (the score of y regressed on each x individually), and the top-k candidates
+            are retained as the set of plausible parents for y. This reduces the search space from O(p²) to O(p·k)
+            before the more expensive order search begins.
+            Incremental edge order search. A causal ordering over all variables is found greedily using the IncEdge
+            method: variables are appended one at a time to the order, each time choosing the variable whose local score
+            (given its already-placed PNS predecessors) is minimized. The search is restarted from multiple random
+            initial permutations and the best-scoring order is kept.
+            DAG construction and pruning. Given the best order, a DAG is constructed by running forward selection and
+            backward pruning for each variable restricted to its PNS predecessors. Forward selection greedily adds
+            parents that improve the local score; backward pruning then removes any parent whose removal further
+            improves the score.
+            Local scores are computed by an AdditiveLocalScorer, which defaults to CamAdditivePsplineBic (penalized
+            spline BIC) if none is supplied. A custom scorer can be injected via setScorer. Scores are cached internally
+            in an LRU cache to avoid redundant computation.</p>
+
+    </div>
+
+    <h3>The CPW Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cpw">
+        <p>Implements the CPW (Cyclic Pairwise) algorithm for causal discovery from continuous, causally sufficient
+            observational data. CPW combines FCI with a pairwise left-right orientation rule to resolve edge directions
+            that FCI leaves ambiguous, under the assumption of no latent common causes and no selection bias.
+            The algorithm proceeds iteratively until the PAG stabilizes:
+            Pairwise forbidden knowledge construction. For every pair of variables (X, Y), a pairwise left-right
+            statistic is computed on standardized data. If the statistic favors X → Y, the reverse edge Y → X is added
+            to a forbidden knowledge object. This internal knowledge is passed to FCI to bias skeleton orientation
+            without hard-constraining the independence tests.
+            FCI search. FCI is run with the pairwise forbidden knowledge, producing a PAG. The collider orientation
+            strategy (SEPSETS, CONSERVATIVE, or MAX_P) and other FCI parameters are configurable. Optionally an FDR
+            correction loop is applied to the independence tests.
+            Pairwise edge orientation. Edges left ambiguous by FCI are further oriented using the pairwise left-right
+            rule on standardized data, subject to the following case analysis:
+            Tail–tail (—): oriented fully as X → Y or Y → X per the pairwise statistic.
+            Tail–circle (—o) or circle–tail (o—): the circle end is resolved to a tail or arrow if the pairwise
+            statistic provides clear evidence.
+            Circle–circle (o–o): one circle end is converted to an arrow in the preferred direction.
+            Circle–arrow (o→) or arrow–circle (←o): under causal sufficiency, the circle is resolved to a tail.
+            Bidirected (↔) edges are never altered, and existing tails and arrows are never flipped.
+            The pairwise left-right rule is selected via the PAIRWISE_RULE parameter (1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW,
+            5=TANH; default 2). Time-lagged data is supported via the TIME_LAG parameter, which prepends lag columns
+            before search.</p>
 
     </div>
 
@@ -3487,6 +3798,48 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Cutoff for alpha, maximum size of conditioning set,
         Yes if orient away from arrow rule should be applied,
         Yes if verbose output should be printed.</p>
+
+
+    <h3>The BOSS-CCD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss-ccd">
+
+        <p>BOSS-CCD runs BOSS first and uses the skeleton of the resulting
+            CPDAG as an adjacency superstructure for CCD (Richardson's Cyclic
+            Causal Discovery). For linear cyclic models, every pair that CCD
+            would judge adjacent (including the "virtual edges" induced by
+            cycles) must be adjacent in any DAG that the data distribution is
+            Markov to, so in the large-sample limit the BOSS skeleton contains
+            all CCD adjacencies. Handing the adjacency decisions to a global
+            score-based search improves finite-sample adjacency quality and
+            stabilizes CCD's orientation steps, while greatly reducing the
+            number of independence tests. Like CCD, and unlike non-Gaussian
+            cyclic methods (e.g., FASK), BOSS-CCD needs only second-order
+            statistics, so it can be run from a covariance or correlation
+            matrix alone. Cycle detectability follows CCD's identifiability
+            limits: for example, a feedback loop is marked (via
+            dotted-underlined colliders) when it has two nonadjacent external
+            parents. See Richardson, T. S. (2013). A discovery algorithm for
+            directed cyclic graphs. arXiv preprint arXiv:1302.3599.</p></div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Data from a possibly cyclic (feedback) linear model without latent
+        variables, for which both a score (for BOSS) and an independence test
+        (for CCD) are available; a covariance matrix suffices.</p>
+
+    <h4>Output Format</h4>
+
+    <p>A cyclic PAG, as for CCD.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Cutoff for alpha, penalty discount (or other score parameters),
+        maximum size of conditioning set, Yes if orient away from arrow rule
+        should be applied, Yes if BES should be used in BOSS, number of random
+        restarts for BOSS, Yes if verbose output should be printed.</p>
 
 
     <h3>The FGES-MB Algorithm</h3>
@@ -3762,8 +4115,20 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             This step is needed for correctness but for large models, since usually
             nearly all edges are oriented in the CPDAG, it is heuristically not needed.</p>
         <p> numStarts - The number of times the algorithm should be re-run from different
-            random starting permutations. The model with the most optimal BIC score will
+            starting permutations. The model with the most optimal BIC score will
             be selected.</p>
+        <p> useIlsRestarts - If true, restarts after the first perturb the best order
+            found so far with about ln(m) random transpositions and rerun the search from
+            there (iterated local search), in the style of the FLOP algorithm, rather than
+            starting from a fresh random permutation. A perturbed order is only a few
+            swaps away from a local optimum, so it typically reconverges much faster than
+            a descent from a random order; in benchmarks this has given the same accuracy
+            as random restarts in roughly half the time. The number of restarts is still
+            controlled by numStarts.</p>
+        <p> numThreads - The number of threads used to score candidate positions within
+            a reinsertion step. Note that the search itself is sequential and each
+            parallel region is short, so the speedup from additional threads is well
+            below linear.</p>
         <p> allowInternalRandomness - If true, the algorithm allow the algorithm to
             use certain heuristic random steps. This can improve performance, but
             may make the algorithm non-deterministic.</p>
@@ -3800,11 +4165,99 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p><a href="#graspDepth">graspDepth</a>, <a
-            href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
-            href="#graspSingularDepth">graspSingularDepth</a> <a
-            href="#graspOrderedAlg">graspOrderedAlg</a> <a
-            href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
+    <p><a href="#useBes">useBes</a>, <a
+            href="#numStarts">numStarts</a> <a
+            href="#useIlsRestarts">useIlsRestarts</a> <a
+            href="#useDataOrder">useDataOrder</a> <a
+            href="#numThreads">numThreads</a> <a
+            href="#outputCpdag">outputCpdag</a> <a
+            href="#timeLag">timeLag</a> <a
+            href="#timeLagReplicatingGraph">timeLagReplicatingGraph</a> <a
+            href="#seed">seed</a> <a href="#verbose">verbose</a>
+
+    </p>
+
+    <h3>The FLOP Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="flop">
+
+        <p> FLOP (Fast Learning of Order and Parents) is a permutation search of the
+            same family as BOSS and GRaSP, due to Wienobst, Henckel, and Weichwald
+            (2026). Like BOSS it searches over topological orders, repeatedly removing
+            each variable from the order and reinserting it at its best-scoring
+            position until no reinsertion improves the total score. It differs from
+            BOSS in three respects.</p>
+
+        <p> First, parent sets are chosen by a non-greedy grow-shrink procedure rather
+            than a greedy one: the grow phase adds any variable that improves the local
+            score, not necessarily the best such variable, and the shrink phase removes
+            any parent whose removal improves it. Candidates are visited in random order,
+            so repeated searches from the same order can settle on different DAGs of
+            equal score. Second, when a variable enters or leaves a candidate prefix the
+            parent set is updated by a warm start from the previous parent set, with
+            early exits in the cases where the changed variable cannot affect the
+            result. Third, the search is restarted by iterated local search rather than
+            by independent random restarts: each restart perturbs the best order found
+            so far by about ln(p) random transpositions, rather than drawing a fresh
+            random order.</p>
+
+        <p> This implementation is specialized to the linear Gaussian BIC score and
+            takes continuous data or a covariance matrix. It does not accept an
+            arbitrary Score object, and knowledge is not currently supported. For
+            searches needing either of those, use BOSS, which supports the same
+            iterated local search through its useIlsRestarts parameter.</p>
+
+        <p> The parameters are as follows:</p>
+
+        <p> penaltyDiscount - The multiplier on the ln(N) * |parents| BIC penalty term,
+            written lambda in the paper. The default is 2, following Foygel and Drton
+            (2010).</p>
+
+        <p> flopNumRestarts - The number of iterated local search restarts. Note that
+            this differs in meaning from BOSS's numStarts: zero restarts gives one
+            search, from the initial order described below, rather than no search. More
+            restarts can never return a worse-scoring graph, so this parameter trades
+            runtime against score.</p>
+
+        <p> seed - The random seed for the perturbations and for the grow-shrink
+            candidate orderings, or -1 for a nondeterministic seed. Because the local
+            search is randomized, results are reproducible only when this is set.</p>
+
+        <p> The initial order is constructed by a pivoted Cholesky decomposition of the
+            correlation matrix, which places strongly correlated variables adjacently.
+            The motivation is that grow-shrink parent selection can fail on far-apart
+            ancestor-descendant pairs whose marginal dependence is too weak to detect at
+            finite sample sizes, path graphs being the canonical hard case; an order
+            that puts such pairs close together avoids asking grow-shrink to detect
+            those dependencies. This order is available separately, for use with BOSS or
+            GRaSP, as edu.cmu.tetrad.search.utils.FlopInitialOrder.</p>
+
+        <p> Wienobst, M., Henckel, L., &amp; Weichwald, S. (2026). Embracing discrete
+            search: a reasonable approach to causal structure learning.</p>
+
+        <p> Foygel, R., &amp; Drton, M. (2010). Extended Bayesian information criteria
+            for Gaussian graphical models. Advances in Neural Information Processing
+            Systems, 23.</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency; continuous variables with a linear Gaussian
+        model.</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated
+        possible causal structures over the set of variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a>, <a
+            href="#flopNumRestarts">flopNumRestarts</a> <a
+            href="#seed">seed</a> <a href="#verbose">verbose</a>
 
     </p>
 
@@ -3927,6 +4380,109 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     </div>
 
+    <h3>Factor Analysis</h3>
+
+    <h4>Description</h4>
+
+    <div id="factor-anal">
+
+        <p>Implements the classical Factor Analysis algorithm. Some references include: Horst, P. (1965). Factor
+            analysis of data matrices. Holt, Rinehart and Winston. This work has good specifications and explanations of
+            factor analysis algorithm and methods of communality estimation.
+        </p>
+        <p>
+            Rummel, R. J. (1988). Applied factor analysis. Northwestern University Press. This book is a good companion
+            to the book listed above. While it doesn't specify any actual algorithm, it has a great introduction to the
+            subject that gives the reader a good appreciation of the philosophy and the mathematics behind factor
+            analysis.
+        </p>
+
+    </div>
+
+    <h3>IOD</h3>
+
+    <h4>Description</h4>
+
+    <div id="iod">
+
+        <p>Runs FCI on multiple datasets using the IOD pooled dataset independence test. The reference is here:
+            Tillman, R., & Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and
+            selection variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth
+            International Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference
+            Proceedings.
+        </p>
+
+        <p>For each queried independence, the p-values of the datasets containing all the relevant variables are
+            pooled using Fisher's method. A pair of variables that are never jointly measured in any dataset is
+            always judged dependent, so such a pair remains adjacent in the output; no dataset can rule the edge out.
+            Since no dataset supports any endpoint orientation on such an edge either, both of its endpoints are
+            reset to circles in the returned graph.
+        </p>
+
+    </div>
+
+    <h3>ION</h3>
+
+    <h4>Description</h4>
+
+    <div id="ion">
+
+        <p>Runs the ION (Integration of Overlapping Networks) algorithm on multiple datasets whose variable sets may
+            overlap only partially. BFCI is run separately on each dataset using the chosen independence test and
+            score, and the resulting PAGs are integrated by ION into a set of PAGs over the union of the variables that
+            are consistent with every input PAG. BFCI is used for the per-dataset searches, rather than FCI, because
+            ION requires that its inputs be legal PAGs, and FCI is not guaranteed to produce a legal PAG, whereas BFCI
+            is designed to. For oracle experiments the analogous choice is GRaSP-FCI with the m-separation test and
+            score. Since this interface returns a single graph, the graph with the fewest edges is
+            returned, and the full set of graphs is printed to the log. If the input PAGs are jointly inconsistent
+            (which can happen when they are estimated from finite samples of different datasets), ION may return no
+            graphs at all; in that case an edgeless graph over the union of the variables is returned and a warning is
+            logged. Note that ION is exponential in the number of variables and is intended for problems with a small
+            number of variables. The reference is here: Danks, D., Glymour, C., & Tillman, R. E. (2008). Integrating
+            locally learned causal structures with overlapping variables. In Advances in Neural Information Processing
+            Systems 21 (NIPS 2008), pp. 1665-1672.
+        </p>
+
+    </div>
+
+    <h3>LV-BOSS</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-boss">
+
+        <p>LV-BOSS is an experimental, fully score-based latent-variable search. It embeds a MAG
+            projection inside a BOSS-style search over orders of the observed variables: each order is
+            projected to a high-scoring ancestral graph (directed and bidirected edges, ancestrality
+            enforced), scored by an exact Gaussian MAG BIC computed by maximum likelihood with RICF, and
+            the search relocates one variable at a time to its best position, keeping the best-scoring
+            order found. No independence test is used anywhere. The output is the PAG of the found MAG.
+        </p>
+
+        <p>Caveats, stated plainly: the method is experimental, continuous Gaussian only, has no
+            consistency proof (none is known for any greedy search over MAG space), does not support
+            background knowledge yet, and is slower than the hybrid searches in this family. Rarely, the
+            score prefers a sparser ancestral graph that is not a legal MAG (latent-projection
+            distributions can satisfy rank-type constraints beyond their MAG's independence
+            constraints); in that case the ancestral graph itself is returned, with a note in the log.
+        </p>
+
+    </div>
+
+    <h3>LV-Heuristic</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-heuristic">
+
+        <p>LV-Heuristic is a class that implements the IGraphSearch interface. The LV-Heuristic algorithm finds the BOSS
+            DAG for the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG,
+            without doing any further latent variable reasoning.
+        </p>
+
+    </div>
+
+
     <h3>The FTFC Algorithm</h3>
 
     <h4>Description</h4>
@@ -3961,11 +4517,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a href="#useWishart">useWishart</a>,
         <a href="#useGap">useGap</a></p>
 
-    <h3>The ICA LiNGAM Algorithm</h3>
+    <h3>The LiNGAM Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="ica-lingam"><p>ICA LiNGAM (Shimizu et al., 2006) was one of the
+    <div id="lingam"><p>LiNGAM (Shimizu et al., 2006) was one of the
         first of the algorithms that assumed linearity among the variables and
         non-Gaussianity of error term, and still one of the best for smaller
         models, for the basic algorithm, implemented here. The idea is to use the
@@ -4008,16 +4564,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p> This requires no parameters. This algorithm is applicable to data generated by linear, non-Gaussian
         models.</p>
 
-    <h3>The ICA LiNG-D Algorithm</h3>
+    <h3>The LiNG-D Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="ica-ling-d">
-        <p>Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and LiNGAM. The
+    <div id="ling-d">
+        <p>Implements the LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and LiNGAM. The
             reference is here:</p>
         <p>Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering cyclic causal models by
             independent components analysis. arXiv preprint arXiv:1206.3273.</p>
-        <p>ICA-LING-D is a method for estimating a possible cyclic linear models graph from a dataset. It is based on
+        <p>LING-D is a method for estimating a possible cyclic linear models graph from a dataset. It is based on
             the assumption that the data are generated by a linear model with non-Gaussian noise. The method is based on
             the following assumptions:</p>
         <ol>
@@ -4036,7 +4592,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             lowest number in absolute value that a W matrix entry can take to be part of a diagonal; the implied
             permutations is the permutations that permutes rows so that these combination lies along the their
             respective diagonals in W, which are then scaled, and the separate satisfactory B Hat matrices reported.</p>
-        <p> ICA-LiNG-D, which takes this W as an impute, is a method for estimating a directed graph (DG) from a
+        <p> LiNG-D, which takes this W as an impute, is a method for estimating a directed graph (DG) from a
             dataset. The graph is estimated by finding a
             permutation of the columns of the dataset so that the resulting matrix has a strong diagonal. This
             permutation is then used to estimate a DG. The method is an relaxation of LiNGAM, which estimates a DAG from
@@ -4228,6 +4784,22 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     </div>
 
 
+    <h4>Input Assumptions</h4>
+
+    <p>Continuous data in which the variables are non-Gaussian.
+        Non-Gaussianity can be assessed using the Anderson-Darling score, which
+        is available in the Data box.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Orients all the edges in the input graph using the selected
+        score.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
+
+
     <h3>The DM-PC Algorithm</h3>
 
     <h4>Description</h4>
@@ -4249,80 +4821,34 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     </div>
 
 
-    <h3>The FASK-Vote Algorithm</h3>
+    <h3>The FASK-Pool Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="fask-vote"><p>FASK-Vote is a metascript that learns a
-        model from a list of datasets in a method similar to IMaGES (see). For
-        adjacencies, it uses FAS-Stable with the voting-based score from IMaGES
-        used as a test (using all the datasets, standardized), producing a
-        single undirected graph G. It then orients each edge X--Y in G for each
-        dataset using the FASK (see) left-right rule and orient X->Y if that rule
-        orients X--Y as such in at least half of the datasets. The final graph is
-        returned. </p>
+    <div id="fask-pool"><p>FASK-Pool learns a model from a list of continuous
+        datasets, in the manner of FASK-Vote (see), but pooling rather than voting.
+        A graph-based stage supplies the common adjacency structure&mdash;IMaGES,
+        a pooled adjacency search, or one external graph per dataset,
+        combined&mdash;and each adjacency is then oriented by the sign of the FASK
+        left-right statistic pooled across the datasets (sample-size weighted by
+        default), rather than by voting on per-dataset orientations as FASK-Vote
+        does. Where the graph stage compels a direction, that direction is kept as
+        a default orientation that the pooled statistic can overturn only on
+        strong opposing signal.</p>
 
-        <p>For FASK, See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour
+        <p>For FASK, see Sanchez-Romero R, Ramsey JD, Zhang K, Glymour
             MR, Huang B, Glymour C. Causal discovery of feedback networks with
             functional magnetic resonance imaging. Network Neuroscience 2018.</p>
     </div>
 
     <h4>Input Assumptions</h4>
 
-    <p>Same as FASK.</p>
+    <p>Same as FASK-Vote: a list of continuous datasets over the same variables.</p>
 
     <h4>Output Format</h4>
 
     <p>Same as FASK.</p>
 
-    <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
-
-    <h4>Description</h4>
-
-    <div id="r3">
-
-        <p>This is an algorithm that orients an edge X--Y for continuous
-            variables based on non-Gaussian information. This rule in particular
-            uses an entropy calculation to make the orientation. Note that if the
-            variables X and Y are both Gaussian, and the model is linear, it is
-            not possible to orient the edge X--Y pairwise; any attempt to do so
-            would result in random orientation. But if X and Y are non-Gaussian,
-            the orientation is fairly easy. This rule is similar to Hyvarinen and
-            Smith's (2013) EB rule, but using Anderson Darling for the measure of
-            non-Gaussianity, to somewhat better effect. See Ramsey et al. (2012).
-        </p></div>
-
-
-    <div id="skew">
-
-        <p>This is an algorithm that orients an edge X--Y for continuousz
-            variables based on non-Gaussian information. This rule in particular
-            uses a skewness to make the orientation. Note that if the variables X
-            and Y are both Gaussian, and the model is linear, it is not possible
-            to orient the edge X--Y pairwise; any attempt to do so would result
-            in random orientation. But if X and Y are non-Gaussian, in particular
-            in this case, if X and Y are skewed, the orientation is relatively
-            straightforward. See Hyvarinen and Smith (2013) for details. </p>
-
-        <p>The Skew rule is differently motivated from the RSkew rule
-            (see), though they both appeal to the skewness of the variables.</p>
-
-    </div>
-
-    <h4>Input Assumptions</h4>
-
-    <p>Continuous data in which the variables are non-Gaussian.
-        Non-Gaussianity can be assessed using the Anderson-Darling score, which
-        is available in the Data box.</p>
-
-    <h4>Output Format</h4>
-
-    <p>Orients all the edges in the input graph using the selected
-        score.</p>
-
-    <h4>Parameters</h4>
-
-    <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
 
     <h3>The BOSS-LiNGAM Algorithm</h3>
 
@@ -4423,6 +4949,199 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Input Assumptions</h4>
 
 
+
+    <h3>The BOSS-TopK Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss-topk">
+        <p>BOSS-TopK runs the BOSS (Best Order Score Search, see) permutation search but retains the top k distinct variable orderings by score rather than only the best one. Each hill-climbing run records the ordering it converges to; orderings whose score is within a split threshold (splitDelta) of the one being pursued are deferred and later explored to convergence themselves, reusing the same score cache, until the deferred queue is empty or a run cap (maxRuns) is reached.</p>
+        <p>In this version the wrapper returns the single top-scoring graph, so it behaves like BOSS for the purposes of the interface, and prints each of the top orderings, with its score and its graph, to the log. It is intended for examining how many near-equivalent models the data support: with splitDelta = 0 and a single restart exactly one model is produced, so diversity comes from a positive splitDelta and/or several restarts. Requires a score. Experimental.</p>
+        <p>The reference for BOSS is Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., &amp; Kummerfeld, E. (2024). Fast scalable and accurate discovery of DAGs using the best order score search and grow shrink trees. Advances in Neural Information Processing Systems, 36.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#numStarts">numStarts</a>, <a href="#timeLag">timeLag</a>, <a href="#numThreads">numThreads</a>, <a href="#useDataOrder">useDataOrder</a>, outputCpdag, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The CD-NOD-PAG Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cdnodpag">
+        <p>CD-NOD-PAG is the latent-variable (PAG) form of CD-NOD (see), for data pooled across environments, domains, or time segments whose causal mechanisms may change. Every variable placed in Tier 0 of the background knowledge is treated as a context variable indexing those changes; contexts are assumed exogenous (they have no causes among the measured variables).</p>
+        <p>The search first builds a baseline PAG over all variables, contexts included, using BFCI (see) with the supplied test and score. Every context adjacency C *-* V, for V a non-context variable, is then oriented C --&gt; V, which is fully identified under exogeneity. Finally an orienter adds arrowheads X *-&gt; Y where conditioning on X screens Y from the contexts, as judged by a change test (a conditional-Gaussian likelihood-ratio test of whether the residual distribution of Y depends on the context); each candidate orientation is applied to a copy of the graph and kept only if the propagated result is a legal PAG. Requires both a test and a score. Experimental.</p>
+        <p>See Huang, B., Zhang, K., Zhang, J., Ramsey, J., Sanchez-Romero, R., Glymour, C., &amp; Sch&ouml;lkopf, B. (2020). Causal discovery from heterogeneous/nonstationary data. Journal of Machine Learning Research, 21(89), 1-53.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The FCIT-ZM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fcit-zm">
+        <p>FCIT-ZM is a variant of FCIT (see) in which every proposed change is judged on the MAG side. A score-based search (BOSS or GRaSP) supplies a seed CPDAG whose unshielded colliders are taken as sound and are recalled, rather than recomputed, throughout. A recursive path-blocking search then proposes single-edge deletions, each committed only when the candidate graph projects to a legal Zhang MAG; a final saturating pass removes any test-separable adjacency the single-edge phase left standing.</p>
+        <p>Two commit routes are available: reorienting the PAG directly, leaving endpoints as circles until a rule commits them (the default), or projecting through the Zhang MAG and back to its canonical PAG (the route described as FCIT-ZM in the reachability analysis). Either way the returned graph is certified as a legal PAG, modulo background knowledge when knowledge is supplied: its implied MAG is legal and the graph equals the canonical PAG of that MAG. As of version 8.0.0 FCIT-ZM also takes the fcitCorrectness choice shared with FCIT and the *-FCI family: 1 = Guarantee I-map (the default), 2 = Score step, or 3 = Saturating step; the saturating pass runs only under option 3. Requires both a test and a score. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, excludeSelectionBias, <a href="#fcitCorrectness">fcitCorrectness</a>, <a href="#imapAlpha">imapAlpha</a>, <a href="#testTimeout">testTimeout</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The FCIT-SL Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fcit-sl">
+        <p>FCIT-SL is FCIT-ZM (see) extended with a Step-Lemma-guided search for a representative MAG when the single-edge deletion phase stalls. It shares FCIT-ZM's seed, its MAG-side legality gate, and its PAG legality certificate on the returned graph, and adds one option (fcitSlAllowClassEscape) controlling whether the representative search may leave the current Markov equivalence class. Requires both a test and a score. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, <a href="#testTimeout">testTimeout</a>, lvHeuristicOnly, fcitSlAllowClassEscape, excludeSelectionBias, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The GMAS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="gmas">
+        <p>GMAS (Greedy MAG Search) is a latent-variable search that uses no independence tests. A BOSS CPDAG is projected to a PAG and then to its Zhang MAG, and that MAG is improved by steepest-ascent greedy search under a Gaussian MAG BIC (likelihood from RICF, with one parameter per directed or bidirected edge plus one error variance per variable), moving only among legal MAGs. The move set from the current MAG is: delete an edge; reverse a directed edge; change a directed edge to bidirected or a bidirected edge to directed (either orientation); and, when gmasAllowAdditions is on (the default), add a directed or bidirected edge between a non-adjacent pair. The highest-scoring improving legal candidate is applied and the sweep repeats until no move improves the score. The final MAG is projected back to a PAG.</p>
+        <p>The motivation is that the GFCI/BFCI template can only delete from its initial CPDAG and cannot express pure confounding without a directed edge; working in MAG space with type-change and addition moves lifts both limits. The MAG BIC is invariant across a Markov equivalence class of MAGs, so the output should be read as a class, which is what the final projection to a PAG reports.</p>
+        <p>This is a local search with no consistency guarantee: the move set is not known to connect an arbitrary starting MAG to the true MAG's class, so the search can stop at local optima. It is offered as a prototype for measuring whether score-only moves find anything the test-driven template misses, not as a correct latent-variable search. Related published approaches include Claassen and Bucur (2022) and the score-based MAG searches of Triantafillou and Tsamardinos and of Ali and Richardson. Requires a score. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, scoreCheckPenaltyDiscount, gmasAllowAdditions, gmasLookaheadDepth, gmasTriangleEscapeOnly, excludeSelectionBias, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The Mimbuild (Bollen) Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="mimbuild-bollen">
+        <p>Mimbuild (Bollen) is the second stage of a two-stage latent-variable analysis. Given a clustering of the measured variables into disjoint pure clusters (a block specification, as produced by BPC, FOFC, or FTFC, see), with one latent variable per cluster, it estimates the covariance matrix among the latents by maximizing a simple likelihood-style objective over the measurement model, and then learns a causal structure over the latents by running BOSS with the SEM BIC score on that latent covariance.</p>
+        <p>This is the MIMBuild procedure of Spirtes, Glymour, and Scheines, Causation, Prediction, and Search (2000), in the estimation style of Bollen, K. A. (1989), Structural Equations with Latent Variables, Wiley. Compare Mimbuild (PCA), which replaces the latent covariance estimate by principal-component scores. This algorithm is only offered when the search box is connected to a clustering result; continuous data are required.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>The Mimbuild (PCA) Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="mimbuild-pca">
+        <p>Mimbuild (PCA) is the second stage of a two-stage latent-variable analysis. Given a clustering of the measured variables into disjoint pure clusters (a block specification, as produced by BPC, FOFC, or FTFC, see), each cluster's latent is estimated as the first principal component of that cluster's standardized indicators, re-scaled to unit variance. A covariance matrix over these latent scores is formed (with a small ridge for stability) and BOSS with the SEM BIC score learns a causal structure over the latents from it.</p>
+        <p>Compare Mimbuild (Bollen), which estimates the latent covariance from the measurement model directly rather than through component scores. This algorithm is only offered when the search box is connected to a clustering result; continuous data are required. See Spirtes, Glymour, and Scheines, Causation, Prediction, and Search (2000), for MIMBuild.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>The PC-AR Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="pc-ar">
+        <p>PC-AR (PC with Adjacency Rescue) is the PC algorithm (see) augmented with detection, and optionally repair, of adjacencies lost to cancellation in unfaithful triangles, following the draft "Unfaithful Triangles and Where to Find Them" (Ramsey and Glymour). It runs the usual skeleton search, collider orientation (sepset, conservative, or max-p style), and Meek rule propagation, and adds three tiers of checking. First, every unshielded triple's deletion is re-tested against all candidate separating sets, CPC-style, and two kinds of conflict are recorded against the deleted pair: an ambiguity within the triple, and a cross-triple conflict that would create a bidirected edge. Second, for each flagged pair, posterior odds that the edge is really present are computed as a cancellation base rate (which falls with sample size) times a likelihood ratio from a discriminating re-test of the pair with the pivot's separating-set membership toggled. Third, the finished graph is audited against its own local Markov implications using the search's test, with a Benjamini-Hochberg correction at the test's alpha, and the number of surviving failures is reported.</p>
+        <p>The rescueAction parameter selects the response to a flagged pair: 0 runs no detection; 1 (MARK, the default) records the deletion as contested and leaves the skeleton exactly as found; 2 (RECOVER) reinstates the edge when the posterior odds reach recoveryOddsThreshold; 3 recovers only corroborated flags. The counts of contested deletions, orientation clashes, and Markov-audit failures are attached to the output graph as attributes and can be read from the graph's attribute display. Two limits of the recovery step are worth knowing: the discriminating re-test's size guarantee holds within the paper's model, so a pivot that is in truth a common cause of the pair produces over-recovery exactly where the clash pass over-flags; and no multiplicity correction is applied across flags, so raising the threshold is the crude compensation. Detection has proved far more reliable than repair; in practice MARK, followed by the Markov Checker on the result, is the informative setting. Requires a test.</p>
+    </div>
+    <h4>Parameters</h4>
+
+    <p><a href="#stableFAS">stableFAS</a>, <a href="#colliderOrientationStyle">colliderOrientationStyle</a>, <a href="#allowBidirected">allowBidirected</a>, <a href="#depth">depth</a>, <a href="#fdrQ">fdrQ</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The RLCD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="rlcd">
+        <p>RLCD (Rank-based Latent Causal Discovery) learns a graph over the observed variables together with newly
+            introduced latent variables, under a linear model in which latent variables may be causes or effects of
+            one another and of observed variables. It uses rank constraints on sub-blocks of the covariance matrix: a
+            set of variables whose cross-covariance with the remaining variables has rank k is explained by k shared
+            latent parents. The reference is Dong, X., Huang, B., Ng, I., Song, X., Zheng, Y., Jin, S., Legaspi, R.,
+            Spirtes, P., and Zhang, K. (2024). A versatile causal discovery framework to allow causally-related hidden
+            variables. International Conference on Learning Representations. This implementation is a translation of
+            the one released in the causal-learn package.</p>
+        <p>The method has two stages. In stage 1 a score-based search over the observed variables (BOSS with the SEM
+            BIC score by default, or FGES) is run and its skeleton is used to partition the variables: maximal cliques
+            of at least rlcdPartitionCliqueThreshold members are merged when they share two or more variables, and
+            merged groups of at least four variables become partitions. In stage 2, within each partition, sets of
+            variables (and of previously found latent covers) are tested for rank deficiency against the remaining
+            variables with a canonical-correlation chi-square test at level alpha, for cardinalities up to
+            rlcdMaxK; each rank-deficient cluster is placed under new latent variables, and the search restarts with
+            the new covers available. Observed variables may be found to be parents rather than indicators
+            (rlcdAllowNonLeafX). The output is the stage-1 graph with, inside each partition in which latents were
+            introduced, the observed-observed edges replaced by what stage 2 found, plus the latent variables and their
+            edges. Latent variables are named L1, L2, and so on.</p>
+        <p>The directions of edges between latent variables are decided by rank tests, in the manner of PC. Rank
+            constraints cannot tell L1 &rarr; L2 from L2 &rarr; L1 for two latents with their own indicators, so the
+            direction in which stage 2 built an edge carries no information; instead the skeleton among the latents is
+            kept, and for each pair of nonadjacent latents a separating set is sought among their neighbours, using
+            the trek-separation blocks test (TSBI) as the test of conditional independence: each latent is a block of
+            its pure indicators, a latent in the conditioning set has its indicators split between the two sides of
+            the test, and the pair is separated when the rank of the cross-covariance is the sum of the conditioning
+            latents' ranks. The blocks test runs on RLCD's own rank test, so that with multiple imputations it is
+            pooled in the same way as the search. Among the candidate sets the one with the largest p-value is taken,
+            as in PC-Max. Unshielded colliders are then oriented where the middle
+            latent is not in the separating set, and the Meek rules are applied, so the latent part of the output is a
+            CPDAG: an edge is directed only when a collider determines it. (The causal-learn implementation reports the
+            direction in which the search happened to build each such edge.) Edges from a latent to its observed
+            variables are drawn directed by convention; the data do not distinguish an indicator of a latent from an
+            observed cause of it.</p>
+        <p>Stage 2 is run on a partition only if a latent is indicated there (rlcdLatentGate): the partition must
+            contain two sets of mutually adjacent variables whose cross-covariance, possibly given a neighbor, is rank
+            deficient, which is the paper's condition for the existence of a latent. Otherwise the partition keeps
+            its stage-1 edges. This keeps a dense group of observed variables with no latent behind them from being
+            given one.</p>
+        <p>Some things to know about the output. A rank-k cluster with k greater than one is placed under k latents
+            that are not connected to each other. Edges between latents are found when one cluster is unfolded into
+            its indicators while the other is kept as a cover, but sets consisting only of latent covers are never
+            tested; when the search ends with several latent roots, they are connected in a chain of undirected edges,
+            since the data do not determine which way those edges go (the causal-learn implementation directs them
+            arbitrarily), and the chain itself is a convention: no test is made of which of those latents are
+            dependent. Stage-1 edges between observed variables inside a partition are dropped
+            whether or not stage 2 explains them. Requires continuous data.</p>
+        <p>Background knowledge over the observed variables is honored in three places: the stage-1 search obeys it
+            as any search does; in stage 2 an observed variable is never used as a parent of a cluster member it is
+            forbidden to cause, and a cluster whose cover would create a forbidden edge between observed variables is
+            rejected; and required edges between observed variables are kept in the output, oriented as required.
+            Temporal tiers are also read as constraining ancestry, since a cause cannot come after its effect: a
+            cluster that would make an observed variable an ancestor, through latents, of one in an earlier tier is
+            rejected, and an edge between latents is not oriented in a direction that would do so.
+            Knowledge cannot refer to the latent variables, which are created by the search, so it cannot prevent an
+            observed variable from being placed under a latent.</p>
+        <p>A direct edge between two indicators of one latent is rank-equivalent to a second latent over the pair,
+            and RLCD reports the second latent. With rlcdResolveTwoIndicatorLatents set, a latent with exactly two
+            indicators, no observed parent and one latent neighbor with at least three pure indicators is tested with
+            third-order cumulants, and is replaced by a direct edge if the test shows one. The test is conservative
+            and needs skewed data; see the parameter's description.</p>
+        <p>Given several imputations of a data set with missing values, RLCD by default returns one graph per
+            imputation, and these can differ a great deal, since the search is a sequence of yes-or-no decisions and
+            each imputation perturbs the ones near their thresholds. With poolImputations set, one search is run
+            instead: stage 1 is scored on the average of the imputations' covariance matrices, and each stage-2 rank
+            statistic is computed on every imputation and combined by the rule of Li, Meng, Raghunathan, and Rubin
+            (1991), which shrinks the statistic by the disagreement among the imputations. The combining rule is an
+            approximation; it assumes values missing at random, and stage 1 still scores at the full sample
+            size.</p>
+        <p>RLCD is marked experimental in version 8.0.0: the clique-based stage 1 and the merge and finish rules
+            depart from the paper, so its identifiability theorem does not transfer to the implementation as written,
+            and several of the newer options are unit-tested but not yet measured at scale.</p>
+    </div>
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#rlcdMaxK">rlcdMaxK</a>, <a href="#rlcdAllowNonLeafX">rlcdAllowNonLeafX</a>,
+        <a href="#rlcdUnfoldCovers">rlcdUnfoldCovers</a>, <a href="#rlcdCheckV">rlcdCheckV</a>,
+        <a href="#rlcdLatentGate">rlcdLatentGate</a>,
+        <a href="#rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</a>,
+        <a href="#rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</a>, <a href="#rlcdStage1Fges">rlcdStage1Fges</a>,
+        <a href="#poolImputations">poolImputations</a>, <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
+
     <h2>Statistical Tests</h2>
 
     <p>All the below tests do testwise deletion as a default way of
@@ -4454,13 +5173,35 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>Fisher Z Test</h3>
 
-    <div id="fisher-z-test"><p> Fisher Z judges independence if the
-        conditional correlation is cannot statistically be distinguished from
-        zero. Primarily for the linear, Gaussian case. </p></div>
+    <div id="fisher-z-test">
+        <p>Judges X independent of Y given Z when their partial correlation cannot be
+            distinguished from zero. The partial correlation r is taken from the covariance matrix
+            of x, y and Z, transformed by Fisher's z as q = atanh(|r|), and referred to a standard
+            normal as sqrt(n - 3 - |Z|) * q with a two-sided p-value; independence is reported when
+            that p-value exceeds alpha. This is the standard conditional independence test for the
+            linear, Gaussian case, and the usual default for continuous data.</p>
+        <p>It needs nothing beyond second moments, so it accepts either a continuous data set or a
+            covariance matrix, and it is much the fastest test available here - the natural choice
+            when a covariance matrix is all that is on hand. Under test-wise deletion the sample
+            size used for the degrees of freedom is the number of rows complete on x, y and Z
+            rather than the full row count. For ill-conditioned covariance matrices, shrinkageMode
+            selects no shrinkage, a ridge penalty, or Ledoit-Wolf shrinkage, with
+            regularizationLambda setting the ridge.</p>
+        <p>Because it reads only linear, second-moment dependence, it has no power against
+            dependence that leaves the covariance unchanged, such as dependence in variance or in
+            the tails; the CCI, KCI and CORD tests are nonparametric alternatives for that case.
+            Note also that failing to reject zero correlation is not evidence that the correlation
+            is zero, which matters when a search deletes an edge on a report of independence; the
+            Equivalence (TOST) test inverts that burden of proof. Continuous data or a covariance
+            matrix.</p>
+    </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#alpha">alpha</a></p>
+    <p><a href="#alpha">alpha</a>, <a href="#shrinkageMode">shrinkageMode</a>,
+        <a href="#regularizationLambda">regularizationLambda</a>,
+        <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy, missingEmRidge,
+        missingEmTolerance, missingEmMaxIterations, missingEssMode</p>
 
     <h3>SEM BIC Test</h3>
 
@@ -4725,6 +5466,406 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Similarly, for <-- edges.
     </p>
 
+    <h3>FFCI Test</h3>
+
+    <div id="ffci-test"><p> A approximate kernel-based conditional independence (CI) test for datasets containing any
+        mix of continuous and discrete variables, implementing the Feature-Function CI (FF-CI) framework.
+        Overview:
+        FF-CI tests whether two variables X and Y are conditionally independent given a set Z, using a nonparametric
+        kernel approach. Variables are mapped into a finite-dimensional feature space, cross-covariances are computed
+        there, and a quadratic-form statistic is evaluated against its null distribution to produce a p-value.
+        Continuous-only datasets
+        If the dataset contains no discrete variables, all CI queries are delegated transparently to FfCiContinuous, and
+        this class behaves identically to that implementation given the same hyperparameter settings.
+        Mixed datasets:
+        When discrete variables are present, each variable type is featurized separately:
+        Continuous variables — mapped via Random Fourier Features (RFF) or Orthogonal Random Features (ORF),
+        approximating a Gaussian kernel. The kernel bandwidth is estimated from the data using the median pairwise
+        distance heuristic.
+        Discrete variables — mapped via a categorical feature map. When catRho == 0 (the default), this reduces to
+        standard one-hot encoding. When catRho > 0, a PSD feature map is used corresponding to the kernel with diagonal
+        entries 1 and off-diagonal entries catRho, constructed via Cholesky factorization.
+        The continuous and discrete feature blocks are horizontally stacked to form a joint feature representation for
+        each variable (or block of variables).
+        Conditional testing:
+        Conditioning on Z is handled by ridge residualization in feature space: the feature matrices for X and Y are
+        each regressed on the feature matrix for Z using a ridge penalty (lambda), and the residuals are used to compute
+        the test statistic. This mirrors the approach used in FfCiContinuous.
+        Test statistic and p-value:
+        The test statistic is n * ||Cov(fX, fY)||_F^2, where fX and fY are the (possibly residualized) feature matrices.
+        Its null distribution is approximated as a weighted sum of chi-squared(1) variables, with weights given by the
+        positive eigenvalues of the sample Khatri-Rao covariance matrix. The p-value can be obtained via one of four
+        methods selectable through setApproximation:
+        GAMMA — Satterthwaite/moment-matching gamma approximation (default)
+        SADDLEPOINT — Lugannani-Rice saddlepoint approximation
+        DAVIES_IMHOF — Davies/Imhof numerical integration
+        PERMUTATION — permutation test (exact but slow)
+        Caching:
+        Feature matrices and kernel bandwidths are cached by a key that encodes the variable names, active row set,
+        hyperparameters, and a dataVersion counter. Call bumpDataVersion() after any in-place modification of the
+        dataset (e.g., resimulation) to invalidate stale cached values.
+        Key references:
+        Zhang et al. (2012). "Kernel-based conditional independence test and application in causal discovery." UAI.
+        Rahimi & Recht (2007). "Random features for large-scale kernel machines." NeurIPS.
+        Yu et al. (2016). "Orthogonal random features." NeurIPS. </p></div>
+
+    <h3>GCM Test</h3>
+
+    <div id="gcm-test"><p> Generalized Covariance Measure (GCM) conditional independence test.
+        Tests conditional independence of X and Y given Z by measuring residual dependence after regressing out the
+        effect of Z from each variable. The test follows the generalized covariance framework of Shah and Peters and is
+        suitable for nonlinear regression models when good predictors of conditional means are available.
+        Test construction. To test X ⟂⟂ Y | Z:
+        Fit regression models x̂(Z) ≈ E[X | Z] and ŷ(Z) ≈ E[Y | Z].
+        Compute residuals rX = X − x̂(Z) and rY = Y − ŷ(Z).
+        Form the elementwise product u = rX · rY.
+        Compute the test statistic
+        T = sqrt(n) · mean(u) / sd(u),
+
+        which is asymptotically standard normal under the null hypothesis, given mild regularity conditions.
+        Interpretation. Under X ⟂⟂ Y | Z, the residuals rX and rY are uncorrelated, so E[rX · rY] = 0. Systematic
+        deviation from zero indicates conditional dependence.
+        Regression models. The power and validity of the test depend critically on the quality of the regressors used to
+        approximate E[X | Z] and E[Y | Z]. In this implementation, regression options include linear and nonlinear
+        models (e.g., ridge regression with random Fourier features).
+        Practical considerations.
+        The test is only as reliable as the underlying regression fits.
+        Performance in causal search depends strongly on caching: residuals should be cached by (target, conditioning
+        set Z, rows) to avoid repeated regression during search.
+        The test is fast and scalable when regressions are reused, making it suitable for constraint-based structure
+        learning.
+        Intended use. GCM is well-suited for conditional independence testing in nonlinear settings when approximate
+        conditional mean models are available, and serves as a computationally efficient alternative to fully
+        nonparametric kernel-based tests. </p></div>
+
+    <h3>KCI-CL Test</h3>
+
+    <div id="kci-cl-test"><p> An IndependenceWrapper that runs the Kernel-based Conditional Independence (KCI) test
+        implemented in the Python causal-learn library, bridging it into Tetrad's IndependenceTest framework.
+        How it works
+        Each call to getTest launches (or connects to) a persistent Python process running a bundled server script
+        (python/kci_server.py). CI queries from Java are forwarded to that process via ProcessPythonCiService, and
+        results are returned as standard IndependenceTest responses through PythonKciIndependenceTest.
+        Python environment
+        A Python interpreter that has causal-learn and its dependencies installed must be available on the host machine.
+        The path to that interpreter is supplied via the Params.PYTHON_EXE parameter. There is no default that is likely
+        to be valid on any machine other than the developer's, so this parameter should always be set explicitly before
+        use.
+        Server script resolution
+        The Python server script is resolved in the following order:
+        If Params.PYTHON_CI_SERVER is set to a non-empty path (and not the sentinel value "Use bundled script"), that
+        path is used directly.
+        Otherwise, the bundled resource python/kci_server.py is extracted to the user's local cache directory (via
+        PythonResource.extractToUserCache) and that extracted copy is used. </p></div>
+
+    <h3>Legendre LR Test</h3>
+
+    <div id="legendre-lr-test"><p> A likelihood-ratio conditional independence (CI) test built on top of
+        LegendreBicScore local polynomial fits.
+        Hypotheses:
+        Tests X ⊥ Y | Z by fitting two nested regression models for Y:
+        Reduced model: Y ~ Z
+        Full model: Y ~ Z ∪ {X}
+        If X carries no additional information about Y beyond what Z already explains, the two models should fit equally
+        well.
+        Test statistic:
+        The likelihood-ratio statistic is:
+        D = 2 * (ll_full − ll_reduced)
+
+        where ll denotes the log-likelihood of each local Legendre fit. Under the null hypothesis of independence, D is
+        approximately chi-squared with degrees of freedom:
+        Δdf = edf_full − edf_reduced
+
+        where edf is the effective degrees of freedom reported by each fit. The p-value is 1 − CDF_χ²(D ; Δdf).
+        Nesting guarantee:
+        For the chi-squared approximation to be valid, the reduced model must be nested within the full model — i.e.,
+        the reduced model must be a special case of the full model. Interaction terms in LegendreBicScore can break this
+        nesting. When disableInteractionsForTest is true (the default, and recommended setting), interactions are
+        temporarily disabled in the score object for the duration of each CI query and restored afterward, ensuring
+        valid nesting.
+        Row alignment:
+        Both the reduced and full fits are evaluated on the same set of rows — those with valid (non-missing) values
+        across Y, Z, and X jointly. This is critical for a fair likelihood-ratio comparison under missing data.
+        Degenerate cases:
+        The test returns a non-independent result with NaN p-value when:
+        X or any node in Z is not found in the variable list.
+        Either fit produces a non-finite log-likelihood or effective df.
+        The effective df difference Δdf is less than 1e-8.
+        Fewer than 10 valid rows are available for the joint fit. </p></div>
+
+    <h3>RCIT Test</h3>
+
+    <div id="rcit-test"><p> A Java implementation of the RCIT (Randomized Conditional Independence Test) and its variant
+        RCoT (Randomized Conditional correlation Test), following the architecture of FfCiContinuous but with the
+        feature-block construction described in:
+        Strobl, Zhang, and Visweswaran (2019). "Approximate kernel-based conditional independence tests for fast
+        non-parametric causal discovery." Journal of Causal Inference 7(1).
+        Hypotheses:
+        Tests X ⊥ Y | Z nonparametrically by mapping variables into finite-dimensional feature spaces and measuring
+        cross-covariance between the feature representations of X and Y after regressing out the influence of Z.
+        Feature construction:
+        All variables are assumed to be continuous. Each variable or block of variables is mapped to a feature matrix
+        using either:
+        RFF (Random Fourier Features) — i.i.d. Gaussian frequency vectors, approximating an RBF kernel via sqrt(2/m)
+        cos(Wx + b).
+        ORF (Orthogonal Random Features) — block-orthogonalized frequency vectors with chi-distributed norms, typically
+        giving a better kernel approximation for the same feature budget.
+        The RBF bandwidth is estimated from the data using the median pairwise squared distance heuristic, optionally
+        scaled by bandwidthMultiplier.
+        RCIT vs. RCoT:
+        The two modes differ only in how the Y feature block is constructed when Z is non-empty:
+        RCIT (doRcit=true, default) — the Y feature block is built from the joint variable set [Y, Z], using numFeatYAug
+        features. This augmentation allows the test to be more sensitive to conditional dependence mediated through Z.
+        RCoT (doRcit=false) — the Y feature block is built from Y alone, using numFeatXY features. This is the simpler
+        variant and matches unconditional RIT when Z is empty.
+        Test statistic:
+        Given feature matrices FX, FY, and FZ:
+        Residualize: RX = FX − FZ (FZ'FZ + λI)⁻¹ FZ'FX, and similarly RY.
+        Center residual columns.
+        Compute: stat = n · ‖cov(RX, RY)‖²_F
+        Under the null, this statistic follows an asymptotic weighted sum of chi-squared(1) variables, with weights
+        given by the eigenvalues of the Khatri-Rao residual covariance matrix.
+        P-value approximation
+        Four methods are available via Rcit.Approx:
+        GAMMA (default) — Satterthwaite gamma approximation via moment matching. Moments are computed without forming
+        the full Khatri-Rao matrix, using the identity tr(Cov) = ‖Z‖²_F/(n−1) and tr(Cov²) = ‖ZZᵀ‖²_F/(n−1)², making
+        this substantially faster than eigendecomposition-based methods.
+        SADDLEPOINT — Lugannani-Rice saddlepoint approximation (requires eigendecomposition of the Khatri-Rao
+        covariance).
+        DAVIES_IMHOF — Davies/Imhof numerical integration (requires eigendecomposition).
+        PERMUTATION — permutation test over row shuffles of RY; exact but slow. The number of permutations is controlled
+        by setPermutations.
+        Caching:
+        Feature matrices are cached by a key that encodes the variable names, active row set, feature count, feature
+        type, bandwidth settings, seed, and RCIT/RCoT mode. The cache is invalidated whenever any hyperparameter that
+        affects feature construction is changed, or when the active row set is updated via setRows. </p></div>
+
+    <h3>RCIT-CL Test</h3>
+
+    <div id="rcit-cl-test"><p> An IndependenceWrapper that runs the Randomized Conditional Independence Test (RCIT)
+        implemented in the Python causal-learn library, bridging it into Tetrad's IndependenceTest framework.
+        How it works
+        Each call to getTest launches (or connects to) a persistent Python process running a bundled server script
+        (python/rcit_server.py). CI queries from Java are forwarded to that process via ProcessPythonCiService, and
+        results are returned as standard IndependenceTest responses through PythonRcitIndependenceTest.
+        Python environment
+        A Python interpreter that has causal-learn and its dependencies installed must be available on the host machine.
+        The path to that interpreter is supplied via the Params.PYTHON_EXE parameter. There is no default that is likely
+        to be valid on any machine other than the developer's, so this parameter should always be set explicitly before
+        use.
+        Server script resolution
+        The Python server script is resolved in the following order:
+        If Params.PYTHON_CI_SERVER is set to a non-empty path (and not the sentinel value "Use bundled script"), that
+        path is used directly.
+        Otherwise, the bundled resource python/rcit_server.py is extracted to the user's local cache directory (via
+        PythonResource.extractToUserCache) and that extracted copy is used. </p></div>
+
+    <h3>TSBI</h3>
+
+    <div id="tsbi"><p> A block-level conditional independence test based on trek separation, operating under linear
+        latent factor measurement models. This class implements the Trek Separation Blocks Independence (TSBI) test,
+        elaborating on the IndTestTrekSep class of Adam Brodie and Peter Spirtes.
+        Setting
+        Variables are organized into blocks, where each block corresponds to a set of observed indicator variables that
+        measure a common latent factor. The independence test operates at the block level: X, Y, and the conditioning
+        set Z = {Z1, ..., Zk} are each a block (latent factor), and the test assesses whether the latent factor behind X
+        is independent of the latent factor behind Y given the latent factors behind Z1, ..., Zk.
+        Test logic
+        The test is based on the rank of the cross-covariance matrix between two constructed variable sets L and R:
+        Each conditioning block Zi is split into two nearly equal halves ZiA and ZiB.
+        The left side is formed as L = cols(X) ∪ cols(Z1A) ∪ ... ∪ cols(ZkA).
+        The right side is formed as R = cols(Y) ∪ cols(Z1B) ∪ ... ∪ cols(ZkB).
+        The rank of the cross-covariance submatrix Σ_{L,R} is estimated via RankTests.estimateWilksRank.
+        Under a linear measurement model with k conditioning latent factors, trek separation implies that X ⊥ Y |
+        Z1,...,Zk if and only if:
+        rank(Σ_{L,R}) = sum of ranks(Zi)
+
+        where the rank of each Zi block is specified externally via BlockSpec.ranks(). The test declares independence
+        when the estimated rank equals this target sum.
+        Splitting strategy:
+        Each conditioning block Zi is split either deterministically or randomly:
+        When randomizeSplits=false, the same fixed split (determined by splitSeed) is used for every query.
+        When randomizeSplits=true (default), each trial uses a different seed derived from splitSeed + trialIndex,
+        allowing the minimum rank over multiple trials to be taken. This reduces sensitivity to unlucky splits for
+        odd-sized blocks.
+        When a block has an odd number of indicators, the leftGetsSmallerHalfWhenOdd flag controls whether the left or
+        right side receives the extra column.
+        Multiple trials:
+        When numTrials > 1 and randomizeSplits=true, the test runs the full rank estimation procedure numTrials times
+        with different random splits and takes the minimum estimated rank. This provides a more conservative (less
+        likely to falsely declare dependence) result when block sizes are small.
+        Caching:
+        Rank estimates are cached in a thread-safe LRU cache keyed by the left and right column sets together with all
+        hyperparameters that affect the rank estimate (sample size, alpha, seed, randomize flag, and number of trials).
+        The cache holds up to 400000 entries.
+        P-values:
+        This test does not produce p-values. All IndependenceResult objects returned carry NaN for both the p-value and
+        the alpha-minus-p fields. The independence decision is made purely by comparing the estimated rank to the target
+        rank. </p></div>
+
+
+
+    <h3>BE-GCM (Basis-Expanded GCM) Test</h3>
+
+    <div id="be-gcm-test">
+        <p>BE-GCM is a nonlinear conditional independence test that combines a basis expansion with the Generalised Covariance Measure. To test X _||_ Y | Z, each of X and Y is expanded in Legendre polynomial basis functions (up to truncationLimit), each expanded block is residualized on the basis expansion of Z by ridge-stabilized least squares, and the largest studentized residual cross-covariance over the grid of basis pairs is referred to a Rademacher multiplier-bootstrap null (or a Sidak bound when the number of multiplier samples is 0). It is doubly robust in the GCM sense, so the complexity of the Z-regressions does not enter the null distribution, and heteroskedasticity-robust through self-normalization. Rows are assumed independent. With adaptive basis selection on, uninformative higher-order basis columns are pruned by a BIC-crossing screen, which keeps the grid small as the truncation limit grows.</p>
+        <p>See Shah, R. D., &amp; Peters, J. (2020). The hardness of conditional independence testing and the generalised covariance measure. Annals of Statistics, 48(3), 1514-1538. Continuous data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#singularityLambda">singularityLambda</a>, gcmZTruncationLimit, gcmMultiplierSamples, gcmControlFunction, missingDataPolicy</p>
+
+    <h3>BF-LRT (Basis Function Likelihood Ratio) Test</h3>
+
+    <div id="bf-lr-test">
+        <p>BF-LRT is a conditional independence test for the same basis-expanded model as the BF-BIC score (see): each continuous variable is represented by its Legendre polynomial expansion up to truncationLimit, and each discrete variable by indicator columns, so that nonlinear and mixed dependence becomes linear dependence among blocks of columns. The test of X _||_ Y | Z is a block-level test, using the Wilks' lambda / Bartlett chi-square statistic for the regression of the Y block on the X and Z blocks against the Z block alone, with degrees of freedom equal to the product of the (rank-aware) block sizes. The statistic is symmetric in X and Y, and its p-values are uniformly distributed under the null, which matters for consumers of p-values such as PC-Max sepset selection and the Markov Checker.</p>
+        <p>Changed 2026-8: an earlier implementation referred a trace-averaged residual-variance ratio to a chi-square with |Y-block| degrees of freedom; that was not a likelihood ratio for the block regression and its p-values were not uniform under the null. Near-singularity is handled by rank-aware whitening with an internal ridge, so the former singularityLambda setting no longer applies. Supports an effective sample size. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>Blocks-Test-TS (Trek Separation)</h3>
+
+    <div id="blocks-test-ts">
+        <p>Blocks-Test-TS is the trek-separation block independence test (TSBI, see) in the form used by block searches: it takes a block specification (a clustering of the measured variables into pure clusters, one latent per cluster, with a rank for each block) from a connected clustering result, and tests independence between the latents behind two blocks given the latents behind a set of conditioning blocks. Each conditioning block is split into two halves; the rank of the cross-covariance between the left side (X plus one half of each conditioning block) and the right side (Y plus the other halves) is estimated by a Wilks rank test, and independence is declared when that rank equals the sum of the conditioning blocks' ranks, as trek separation implies under a linear measurement model.</p>
+        <p>See Sullivant, S., Talaska, K., &amp; Draisma, J. (2010). Trek separation for Gaussian graphical models. Annals of Statistics, 38(3), 1665-1685. This wrapper is only offered when the search box is connected to a clustering result; for the plain covariance form use TSBI.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>CORD Test</h3>
+
+    <div id="cord-test">
+        <p>CORD is an omnibus, nonparametric conditional independence test built on orthogonal rank scores of the full conditional distribution. Where covariance- and mean-based tests (Fisher Z, GCM) see only dependence in location, CORD keeps power against dependence in variance, tails, and co-volatility. The implementation is cross-fitted: the sample is partitioned into three folds, the three cyclic role-rotations of the partition are run, and the per-observation scores are pooled into a single studentized statistic, so the p-value is continuous and does not pile up at 1, which lets it be thresholded in a constraint-based search. Because CORD models the conditional distribution of one variable it is directional; by default both orientations are run and their p-values combined by the Cauchy (ACAT) rule of Liu and Xie (2020), which is order-invariant and valid under arbitrary dependence.</p>
+        <p>Requires the raw continuous sample rather than a covariance matrix; rows with missing values are dropped listwise. It is considerably slower than Fisher Z. Continuous data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p>alphaDefault0.05, <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
+        <h3>Equivalence (TOST) Test</h3>
+
+    <div id="equivalence-test">
+        <p>Judges independence only on positive evidence that the partial correlation is negligible, by a two-one-sided-test (TOST) equivalence test on the Fisher z scale. An ordinary test answers "can I reject rho = 0?", and a constraint-based adjacency search deletes an edge when it cannot, which treats absence of evidence as evidence of absence. This test answers the question edge removal actually needs, "can I show |rho| is below a margin?", reporting independence just in case the (1 - 2*alpha) confidence interval for the Fisher z of the partial correlation lies entirely inside (-z0, +z0), where z0 = atanh(equivalenceMargin).</p>
+        <p>The practical difference is which way the burden of proof falls, and it matters most for weak associations. An ordinary test's removal region, |z| &lt; c*se, shrinks as the sample grows, so a weak but real edge is deleted most eagerly at the sample sizes where deleting it is least justified; and because a search tries many conditioning subsets per pair and removes the edge if any one of them fails to reject, each extra subset is another chance to delete a real adjacency. This test's removal region instead grows with the sample size toward |rho| &lt; margin, so nothing is deleted until the data can show it is negligible. On bivariate normal data at margin 0.10 and alpha 0.05, a true correlation of 0.05 was called independent 81% of the time by Fisher Z at n = 500 against 23% here, while at a true correlation of 0.10, the boundary of this test's null hypothesis, the rate stayed at alpha for every sample size tried.</p>
+        <p>Two cautions. The margin must exceed roughly 1.645/sqrt(n) at alpha = 0.05 or no pair is ever removable and the search returns a complete graph, which is why equivalenceMargin defaults to 0, meaning that the margin is scaled to the sample size; and asymptotically every pair whose partial correlation falls below the margin is removed, so the margin must sit below the weakest association worth keeping. Note also that this test's notion of independence is weaker than an ordinary test's notion of dependence, so an algorithm whose orientation rules ask whether two variables are dependent may be degraded by it; for CCD, prefer the algorithm's useEquivalenceRemoval parameter, which applies the equivalence rule to the adjacency phase alone and leaves orientation on the selected test. Continuous data or a covariance matrix.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#equivalenceMargin">equivalenceMargin</a>, <a href="#equivalenceMarginMultiplier">equivalenceMarginMultiplier</a></p>
+
+    <h3>Fisher Z Test, Causal-Learn (Python)</h3>
+
+    <div id="fisherz-cl-test">
+        <p>This runs the Fisher Z conditional independence test as implemented in the Python causal-learn library, for comparison with Tetrad's own Fisher Z test (see). A persistent Python process is started from a bundled server script, independence queries are forwarded to it, and the results are returned as ordinary test results. A Python interpreter with causal-learn installed must be available on the machine, and its path must be supplied in the pythonExe parameter; there is no default that will be valid outside the developer's machine. The server script can be overridden with pythonCiServer. Continuous data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, pythonCiServer, <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
+    <h3>Minimax Conditional Independence Test</h3>
+
+    <div id="minimax-ci-test">
+        <p>A stratified permutation test of X _||_ Y | Z. The conditioning set is discretized: each continuous Z
+            variable is binned, and each combination of Z bins (and discrete Z values) forms a stratum. Within each
+            stratum, X is permuted relative to Y to build a permutation null for a within-stratum association statistic
+            (a correlation-based statistic for continuous pairs; a G-type statistic when X or Y is discrete), and the
+            per-stratum permutation p-values are combined across strata by a conservative quantile ("soft minimax")
+            aggregation. Because the permutation is carried out within strata, the test makes no distributional or
+            functional-form assumptions about the dependence of X and Y on Z.</p>
+        <p>The permutation null is exact for X _||_ Y | bin(Z), not X _||_ Y | Z: residual variation of Z within a bin
+            is a bin-geometry bias that does not shrink as n grows, so with a fixed number of bins the test's size
+            degrades as n increases. By default the number of bins per continuous Z dimension therefore grows
+            adaptively at the n^(2/5) rate of Neykov, Balakrishnan, and Wasserman (2021), capped so that expected
+            stratum sizes stay workable (useAdaptiveZBins; set it false to control binsPerContZ manually). Intended
+            scope: conditioning sets with at most about two continuous variables and n of roughly 1000 or more;
+            residual size inflation of a few percentage points above nominal remains at smaller n, and power falls as
+            strata multiply. Best used for spot checks of individual facts rather than as the test inside a search.
+            Mixed data. See Neykov, M., Balakrishnan, S., & Wasserman, L. (2021). Minimax optimal conditional
+            independence testing. The Annals of Statistics, 49(4), 2151-2177.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, useAdaptiveZBins, binsPerContZ, binsPerContXY, minStratumSize,
+        minimaxPermutations, maxCellsPerStratum, maxObservedLevelsPerVar, <a href="#verbose">verbose</a>,
+        missingDataPolicy</p>
+
+    <h3>TRFF LR Test</h3>
+
+    <div id="trff-lr-test">
+        <p>A likelihood-ratio conditional independence test built on the TRFF BIC score's local model: each variable
+            is regressed on its conditioning set using ridge regression over random Fourier features of the continuous
+            conditioners plus indicator columns for discrete conditioners, with a Student-t error model for continuous
+            targets and a multinomial logistic model for discrete targets. To test X _||_ Y | Z, a reduced model
+            (Y given Z) and a full model (Y given Z plus X) are fit on a single shared design matrix in which the
+            reduced model's columns are a prefix of the full model's columns - the full design appends a linear X
+            column and a fresh block of random Fourier features over (Z, X), or the indicator columns of X when X is
+            discrete - so the two models are nested by construction and the likelihood-ratio statistic is nonnegative.
+            Explicit linear columns for the continuous conditioners are included in both designs so that linear
+            conditional means are represented exactly and the random features carry only the nonlinear remainder.</p>
+        <p>The degrees of freedom are approximated by the difference in ridge effective degrees of freedom. For a
+            discrete target the deviance is referred to a chi-square with those degrees of freedom. For a continuous
+            target the error scale is profiled per model, and the chi-square reference fails when the added block is
+            not small relative to n; the statistic is therefore converted to the classical F form and referred to an F
+            distribution, which agrees with the chi-square when the added block is small and remains calibrated when
+            it is not. The test is symmetrized: both directions (target Y, adding X; and target X, adding Y) are
+            computed and the more conservative p-value is reported, so results do not depend on argument order. The
+            reference distributions are approximations rather than exact permutation or Wilks results, and the test
+            should be considered experimental; with the default number of random features it is also computationally
+            heavy inside a search. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, minimaxRidge,
+        minimaxFfFeatures, <a href="#penaltyDiscount">penaltyDiscount</a>, trffSymmetrized,
+        <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
+    <h3>Stratified Rank (Domain-Pooled) Test</h3>
+
+    <div id="stratified-rank-test">
+        <p>A conditional independence test for data gathered in several domains - batches, sites, cohorts,
+            semesters, countries - whose causal structure is shared but whose linear coefficients, means, and noise
+            variances may differ by domain. The hypothesis X _||_ Y | Z is judged by the vanishing of the partial
+            cross-covariance of X and Y given Z within each domain: the Bartlett canonical-correlation statistic is
+            computed inside each domain separately and the statistics and degrees of freedom are summed across
+            domains, which is valid because the domains are disjoint samples. This is the Phase 1 test of LCD-NOD
+            (Dong, Dai, Ng, Spirtes, and Zhang, Identifying Partially Observed Causal Models from
+            Heterogeneous/Nonstationary Data, ICML 2026), whose Theorem 1 shows that the within-domain covariance
+            constraints are exactly those of the homogeneous linear model with the same graph. The covariance of the
+            domains mixed together carries no such guarantee: testing it both invents dependence that is an artifact
+            of the mixing and can mask real dependence whose sign or strength varies by domain, which is why a
+            search run on concatenated multi-site data so often returns a hairball.</p>
+        <p>To use it: include in the data set one column holding the domain index - a discrete column, or a
+            continuous column whose values are all whole numbers - and load the data as usual. In a Search box,
+            choose a constraint-based algorithm such as PC or FCI, select this test, and set the Domain column name
+            parameter to that column's name; the default is a column named "domain", and if no column of the given
+            name exists but the data set has exactly one discrete column, that column is used and a note is logged.
+            The domain column is removed from the variable list and used only to split the rows, so it does not
+            appear in the output graph; the remaining variables must be continuous. The same test can be selected in
+            the Markov Checker to ask whether a fitted graph satisfies its implied independencies within domains.</p>
+        <p>Each domain must have enough rows for its own covariance matrix: domains too small for the statistic to
+            discriminate are skipped, along with their degrees of freedom, and if no domain is usable the result is
+            marked invalid. Many very small domains make the chi-square approximation rough even when they are not
+            skipped, so merge small domains into larger ones first. The statistic is the Gaussian likelihood-ratio
+            form and assumes linearity within each domain; with a single domain it reduces to the ordinary Wilks
+            rank test. A tabular data set is required - a covariance matrix cannot be used, since the rows must be
+            split by domain. Continuous data plus one discrete domain column.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#domainColumn">domainColumn</a>, <a href="#alpha">alpha</a>, missingDataPolicy</p>
+
     <h2>Scoring Functions</h2>
 
     <p>Like the tests, above, all the below tests do testwise deletion
@@ -4781,6 +5922,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#structurePrior">structurePrior</a></p>
 
+    <h3>DG-BGe (Degenerate Gaussian BGe) Score</h3>
+
+    <div id="dg-bge-score">
+        <p>DG-BGe is the BGe score (see) applied to the degenerate Gaussian embedding of the DG-BIC score: continuous variables are kept as they are and each discrete variable is replaced by one 0/1 indicator column per category but the last, and the resulting columns are scored with the Normal-Wishart marginal likelihood, taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets of the child and its parents. On purely continuous data this is exactly the BGe score; on purely discrete data it is the marginal-likelihood counterpart of DG-BIC in the way that BDeu is the counterpart of the discrete BIC score, though, like DG-BIC, it models only additive (main-effect) dependence of a child's indicators on the parents' indicators, not interactions among parents. It is BF-BGe with truncation limit 1 and no rescaling; see that entry for the hyperparameters and for discreteInteractionOrder, which adds interaction columns among discrete parents (saturating the parent design at high enough order) at the cost of score equivalence. Decomposable, and score-equivalent at interaction order 1; "higher is better." Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#discreteInteractionOrder">discreteInteractionOrder</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
     <h3>M-separation Score</h3>
 
     <div id="m-sep-score"><p> This uses m-separation to make something
@@ -4820,6 +5971,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>BGe Score</h3>
+
+    <div id="bge-score">
+        <p>BGe (Bayesian Gaussian equivalent) is the Gaussian analog of the BDeu score: the local score of a family Y | Pa is the exact log marginal likelihood of the data for that family under a Normal-Wishart prior on the mean and precision of the linear Gaussian model, so no asymptotic penalty term is involved. It is score-equivalent and decomposable, and "higher is better." See Geiger, D., and Heckerman, D. (2002), Parameter priors for directed acyclic graphical models and the characterization of several probability distributions, Annals of Statistics 30(5), 1412-1440, and the corrected formula in Kuipers, J., Moffa, G., and Heckerman, D. (2014), Addendum on the scoring of Gaussian directed acyclic graphical models, Annals of Statistics 42(4), 1689-1691.</p>
+        <p>The prior has two hyperparameters: bgeAlphaMu, the prior precision on the mean (alpha_mu), and bgeAlphaWOffset, the Wishart degrees of freedom above the number of variables p (alpha_w = p + bgeAlphaWOffset). The prior mean is the sample mean and the prior scale matrix is T = t diag(s_j^2), with t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) and s_j^2 the sample variance of variable j; for unit-variance data this is the bnlearn/Kuipers default T = t I, and scaling to the sample variances makes the DAG ranking invariant to the units of measurement. The defaults alpha_mu = 1, alpha_w = p + 2 follow Kuipers et al. and bnlearn. As with BDeu's prior equivalent sample size, larger alpha_mu tends to favor denser graphs. Supports an effective sample size. Continuous data or a covariance matrix.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
 
     <h3>EBIC Score</h3>
 
@@ -4873,6 +6035,222 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         false positive risk probability).
     </p>
     </div>
+
+    <h3>FFML Score</h3>
+
+    <div id="ffml-score"><p>
+        FFML: Feature-Function Marginal Likelihood score for mixed (continuous + discrete) parents
+        This class extends the continuous FFML (random-feature Gaussian-process marginal likelihood) score to parent
+        sets containing both continuous and discrete variables. The goal is to retain nonlinear flexibility for
+        continuous parents while treating discrete parents via an appropriate categorical kernel, rather than embedding
+        integer-coded levels into a smooth Euclidean geometry.
+        Product-kernel model
+        For parent vector Z = (Z_c, Z_d) with continuous part Z_c and discrete part Z_d, we use a product kernel:
+        k((z_c, z_d), (z'_c, z'_d)) = k_cont(z_c, z'_c) * k_cat(z_d, z'_d)
+
+        k_cont is an RBF kernel over continuous parents, approximated using Random Fourier Features (RFF) or Orthogonal
+        Random Features (ORF), as in the continuous FFML score.
+        k_cat is a positive semidefinite categorical kernel returning 1 for a level match and ρ for a mismatch (0 ≤ ρ <
+        1). When ρ=0, this corresponds to independent function draws per joint discrete level; larger ρ induces partial
+        pooling across levels.
+        Feature representation:
+        The product kernel is implemented via an explicit finite feature map. Discrete parents are mapped to a
+        categorical feature block (indexed by joint discrete levels), and continuous parents are mapped via Fourier
+        features. The mixed feature map is the Kronecker product:
+        φ_mix(z_c, z_d) = φ_cat(z_d) ⊗ φ_cont(z_c)
+
+        This guarantees that inner products in feature space correspond to the product kernel above. For a discrete
+        parent with L levels, the feature dimension is multiplied by L; with multiple discrete parents, the feature
+        space corresponds to their joint level combinations.
+        Scoring objective:
+        The local score for Y | Pa(Y) is the log marginal likelihood of a Bayesian linear model in the random-feature
+        space. This is equivalent to a low-rank Gaussian-process marginal likelihood under the chosen kernel
+        approximation. Computation uses the standard Woodbury reduction to an m×m system (where m is the mixed feature
+        dimension), avoiding formation of an n×n kernel matrix.
+        Bandwidths and preprocessing:
+        Continuous parent columns are globally z-scored.
+        The RBF bandwidth for k_cont is selected using a median pairwise (squared) distance heuristic on continuous
+        parents only (typically via subsampling).
+        If no continuous parents are present, the model reduces to a purely categorical-kernel marginal likelihood.
+        Random-feature generation is deterministic per (target, parent set), enabling stable caching and
+        reproducibility.
+        Practical notes:
+        Intended for mixed data with genuinely categorical (unordered) discrete parents.
+        Feature dimension grows with joint discrete cardinality; runtime scales accordingly.
+        The parameter ρ controls similarity across categorical levels.
+    </p>
+    </div>
+
+    <h3>Heavy-Tail SEM BIC Score</h3>
+
+    <div id="ht-sem-bic-score"><p>
+        A BIC-style local score for structural equation models (SEMs) that replaces the standard Gaussian log-likelihood
+        with a heavier-tailed or more robust noise model, making it better suited to data with outliers or non-Gaussian
+        residuals.
+        Local score formula:
+        For a target variable Y with parent set Pa(Y), the local score is:
+        score(Y, Pa(Y)) = 2 · ll(e) + bonus(e) − penalty_discount · df · log(n)
+
+        where:
+        e are the OLS residuals from regressing Y on Pa(Y) (with optional ridge regularization and optional
+        centering/standardization).
+        ll(e) is the log-likelihood of the residuals under the chosen HeavyTailSemBicScore.NoiseModel.
+        bonus(e) is an optional non-Gaussian reward (see below).
+        df is the number of free parameters: one per parent plus one noise scale parameter (and one intercept if
+        centering is disabled).
+        n is the effective sample size.
+        Noise models:
+        The residual log-likelihood is computed under one of four models, selectable via setNoiseModel:
+        GAUSSIAN — standard Gaussian MLE; equivalent to ordinary SEM-BIC when no bonus is applied.
+        LAPLACE — double-exponential distribution; robust to outliers, promotes sparse residuals. The scale parameter is
+        estimated as the mean absolute residual.
+        STUDENT_T (default) — Student-t with fixed degrees of freedom ν (default 4). Provides heavy tails while
+        remaining unimodal. The scale parameter is estimated from the mean squared residual. Requires ν > 2.
+        LOG_COSH — log-cosh loss, a smooth approximation to the Laplace log-likelihood that is differentiable
+        everywhere.
+        Non-Gaussian bonus:
+        An optional additive reward can be enabled via setNonGaussianBonus:
+        NONE (default) — no bonus.
+        KURTOSIS — adds kurtosisGamma · n · g2² to the score, where g2 is the excess kurtosis of the residuals,
+        optionally capped at ±kurtosisCap. This rewards parent sets whose residuals are more non-Gaussian (larger |g2|),
+        which can help identify the correct causal direction in non-Gaussian additive noise models.
+        Regression details:
+        The regression of Y on Pa(Y) is solved via:
+        (XᵀX + ridge · I) β = Xᵀy
+
+        using an EJML symmetric positive-definite solver. If the solver fails (ill-conditioned XᵀX), the ridge is
+        increased automatically in up to six doubling steps before the score is reported as NaN. When centerData=true
+        (default), Y and all parent columns are z-scored before regression and no intercept is included. When
+        centerData=false and includeInterceptWhenNotCentered=true, an intercept column is added to the design matrix.
+        Missing data
+        When the dataset contains missing values, each local score computation uses only the rows that are complete for
+        the target and all its parents jointly (listwise deletion). Scores are not computed when fewer than 10 complete
+        rows are available.
+        Score equivalence:
+        This is not a score-equivalent score: DAGs in the same Markov equivalence class may receive different scores,
+        because the log-likelihood of the residuals depends on the direction of the regression. This makes the score
+        well suited to DAG-based searches such as BOSS, but unsuitable for algorithms that rely on score equivalence
+        such as FGES.
+        Caching:
+        Local scores are cached by a hash of the target index and sorted parent indices. The cache is cleared whenever
+        any hyperparameter that affects the score is changed.
+    </p>
+    </div>
+
+    <h3>Legendre BIC Score</h3>
+
+    <div id="legendre-bic-score"><p>
+        Legendre BIC score
+        Local BIC-style score for structure learning with mixed continuous and discrete variables. Continuous children
+        are modeled using a Student-t location model of the form Y = f(Pa) + ε, fit via IRLS with ridge regularization.
+        Discrete children are modeled using multinomial logistic regression (softmax) with ridge regularization, also
+        fit via IRLS.
+        Continuous parents enter through additive Legendre basis expansions. For each continuous parent X (globally
+        z-scored), values are mapped to [-1,1] and polynomial terms P1(x)..Pt(x) are included, where t = legendreDegree.
+        (The intercept is handled separately.) Discrete parents enter via baseline-dropped one-hot blocks.
+        This yields a nonlinear additive location-model representation in which the conditional mean lies in the span of
+        the chosen Legendre basis.
+        Missing data: Rows with missing values in {Y} ∪ Pa(Y) are excluded locally (testwise deletion).
+        Score:
+        score(Y | Pa(Y)) = logLik_hat − 0.5 · penaltyDiscount · edf · log(n)
+
+        where logLik_hat is the maximized penalized log-likelihood, n is the effective local sample size, and edf is the
+        ridge-based effective degrees of freedom.
+        Implementation notes:
+        No hard NaN cutoff at small n; if n is very small, a stable intercept-only fallback is used.
+        Mapping to [-1,1] defaults to quantile-based bounds (e.g., 1%..99%) for robustness rather than raw global
+        extrema.
+        Cholesky failures during IRLS are handled via adaptive jitter.
+        Cache keys include all tuning parameters to ensure correctness under configuration changes.
+    </p>
+    </div>
+
+    <h3>TRFF BIC Score</h3>
+
+    <div id="trff-bic-score"><p>
+        TRFF BIC score (mixed)
+        Local Bayesian Information Criterion (BIC)–style score for structure learning with mixed continuous and discrete
+        variables. The score combines nonlinear mean modeling via Random Fourier Features (RFF) with Student-t
+        likelihoods for robustness to heavy-tailed residuals, while remaining computationally stable and fully local.
+        Local conditional models. For each candidate parent set Pa(Y), the conditional distribution of Y is modeled as:
+        Continuous child Y: Student-t location model of the form Y = f(Pa) + ε. Continuous parents enter through RFF;
+        discrete parents enter via one-hot encoding. Parameters are estimated by iteratively reweighted ridge regression
+        (IRLS), yielding robustness to heavy-tailed residuals.
+        Discrete child Y: Multinomial logistic (softmax) regression with ridge regularization. Continuous parents are
+        represented via RFF; discrete parents via one-hot encoding. Fitting is performed using IRLS.
+        Score definition. The local score takes a generalized BIC form
+        score(Y | Pa(Y)) = logLik_hat − 0.5 · edf · log(n),
+
+        where logLik_hat is the maximized penalized log-likelihood, n is the effective sample size for the local family,
+        and edf is the ridge-based effective degrees of freedom.
+        For multinomial logistic models, the effective degrees of freedom are approximated by summing the ridge edf
+        contributions of the K − 1 one-vs-reference logistic blocks using the final IRLS weights.
+        Student-t robustness. The Student-t likelihood induces residual-dependent reweighting that downweights extreme
+        observations, reducing sensitivity to outliers relative to Gaussian BIC variants while preserving a
+        location-model structure.
+        Missing data handling. Rows with missing values in the local family {Y} ∪ Pa(Y) are excluded on a per-score
+        basis (testwise deletion).
+        Intended use. Intended for robust causal structure learning in mixed-type data when nonlinear mean effects are
+        expected and residual distributions may be heavy-tailed.
+    </p>
+    </div>
+
+
+    <h3>BF-BIC (Basis Function BIC) Score</h3>
+
+    <div id="bf-bic-score">
+        <p>BF-BIC generalizes the Degenerate Gaussian BIC score (see) from linear to nonlinear relationships. Each continuous variable is represented by its Legendre polynomial basis functions up to truncationLimit, and each discrete variable by one indicator column per category, as in the Degenerate Gaussian score. A conditional Gaussian likelihood is then computed over these expanded columns from their covariance matrix, and the score is BIC = 2L - c k ln N, where c is the penalty discount and k the number of parameters in the expansion, so "higher is better." With adaptive basis selection on, uninformative higher-order basis columns are dropped by a BIC-crossing screen. The doOneEquationOnly option fits a single pooled equation per expansion rather than one per expanded column; singularityLambda adds a ridge to the covariance diagonal (or, if negative, uses a pseudoinverse).</p>
+        <p>Because the penalty charges the full block of expanded parameters while the likelihood gain from a weak linear edge comes mostly from its first equation, BF-BIC is conservative relative to SEM BIC on linear data; its advantage is on data with nonlinear or mixed dependence. Its companion test is BF-LRT. Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#singularityLambda">singularityLambda</a>, <a href="#doOneEquationOnly">doOneEquationOnly</a>, missingDataPolicy</p>
+
+    <h3>BF-BGe (Basis Function BGe) Score</h3>
+
+    <div id="bf-bge-score">
+        <p>BF-BGe is the BGe score applied to the same embedding BF-BIC uses: each continuous variable is expanded into its Legendre basis columns up to truncationLimit and each discrete variable into one indicator column per category but the last. Where BF-BIC scores the expanded family with a BIC-penalized Gaussian likelihood, BF-BGe scores it with the exact Normal-Wishart marginal likelihood of the BGe score (see), taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets A of the child and B of its parents. This replaces the BIC penalty on the whole expanded block (the source of BF-BIC's conservatism on weak linear edges) with the Bayesian Occam factor, in the same way that BDeu replaces the discrete BIC penalty. The score is decomposable and score-equivalent, and because the prior scale is added to the scatter matrix, no singularity lambda is needed. "Higher is better."</p>
+        <p>The prior conventions and hyperparameters are those of the BGe score; alpha_mu acts only through the prior scale, so smaller values make edges more expensive (bgeAlphaMu = 0.1 tracks SEM BIC at penalty discount 2 in null false-positive rate; the default 1 sits between penalty discounts 1 and 2). Embedded columns with zero variance (unobserved categories) are dropped. Mixed data. Experimental.</p>
+        <p>With discreteInteractionOrder above 1, a family's parent block is augmented with products of indicator columns from up to that many distinct discrete parents, so that a discrete child can depend on its discrete parents through interactions and not only main effects; an order at least the number of discrete parents gives the saturated design, the same span as BDeu's conditional table, with empty-cell columns dropped. This is not score-equivalent (Markov-equivalent DAGs may score differently), so use it with BOSS or GRaSP; the default order 1 is the score-equivalent additive design.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#discreteInteractionOrder">discreteInteractionOrder</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>Blocks-BIC Score</h3>
+
+    <div id="blocks-bic-score">
+        <p>Blocks-BIC is a block-structured score for searches over latent variables that are each measured by a cluster of indicators, taking its blocks from a connected clustering result. For a candidate family Y | Pa(Y), let the X block be the concatenation of the indicator columns of the parent blocks and the Y block the indicator columns of the target; the score evaluates reduced-rank models between these two blocks by regularized canonical correlation analysis. For canonical rank r, score(r) = fit(r) - c k(r) ln N - (m c) ln N (r - r*)^2, where fit(r) is -N times the sum of log(1 - rho_i^2) over the top r canonical correlations, k(r) = r(p + q - r) is the parameter count, r* is the trek-implied rank (the sum of the ranks of the parent blocks), and m weights a soft regularizer encouraging agreement with that rank. The score of the family is the maximum over r. Supports an effective sample size.</p>
+        <p>This score is only offered when the search box is connected to a clustering result. Its companion test is Blocks-Test-TS. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>Instance-Specific BDeu Score</h3>
+
+    <div id="is-bdeu-score">
+        <p>The instance-specific BDeu score augments the BDeu score (see) with a term rewarding structures that predict a particular instance well, so that the learned structure is tailored to that instance rather than to the population alone. The local score is IS(i | Pa) = BDeu(i | Pa) + alpha log P(instance), where log P(instance) is the Dirichlet-multinomial posterior predictive probability of the instance's value of variable i given its parent configuration, (N_ijk + ESS/(r_i q)) / (N_ij + ESS/q), and alpha (instanceSpecificAlpha) weights the instance term. A missing value in the instance for the variable or any parent contributes zero. The instance is a row of a testing data set (instanceRow), matched to the training variables by name with category indices remapped if the label orders differ.</p>
+        <p>See Jabbari, F., Visweswaran, S., &amp; Cooper, G. F. (2018). Instance-specific Bayesian network structure learning. Proceedings of Machine Learning Research, 72 (PGM 2018). Discrete data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#instanceSpecificAlpha">instanceSpecificAlpha</a>, <a href="#instanceRow">instanceRow</a>, <a href="#priorEquivalentSampleSize">priorEquivalentSampleSize</a>, missingDataPolicy</p>
+
+    <h3>KML (Kernel Marginal Likelihood) Score</h3>
+
+    <div id="kml-score">
+        <p>KML is a Gaussian-process marginal-likelihood score for continuous children with continuous and discrete parents; it is the exact-kernel analogue of the FFML score (see), which uses a random Fourier feature approximation. For a child Y with parents Z, the score is the log marginal likelihood of Y under a Gaussian process with a product kernel: an exact RBF kernel over the continuous parents (bandwidth from the median heuristic, scaled by kmlBandwidthMultiplier) multiplied elementwise by a categorical kernel over the discrete parents that returns 1 on a level match and catRho on a mismatch. Noise variance is set by kmlLambda and a small jitter (kmlJitter) is added for stability. Because the full n-by-n Gram matrix is used there is no random basis and no seeding, but the cost grows with the cube of the number of rows; bwMaxRows caps the rows used to estimate the bandwidth.</p>
+        <p>Higher is better. Slow on large samples relative to FFML; preferred where exactness matters more than speed. Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#effectiveSampleSize">effectiveSampleSize</a>, kmlLambda, kmlBandwidthMultiplier, bwMaxRows, kmlJitter, catRho, missingDataPolicy</p>
 
     <!-- ─────────────  NEW SCORES  ───────────── -->
     <h3 id="score-cca-bic">CCA Scores (Wishart, Bollen–Ting)</h3>
@@ -6203,6 +7581,54 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="doFgesFirst_value_type">Boolean</span></li>
         </ul>
 
+
+        <h3 class="parameter_description"
+            id="equivalenceMargin">equivalenceMargin</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="equivalenceMargin_short_desc">
+                    Largest |partial correlation| counted as negligible, or 0 to scale it to the sample size.
+        </span></li>
+            <li>Long Description: <span
+                    id="equivalenceMargin_long_desc">
+                    The equivalence (TOST) test reports independence only when it can show the partial correlation is smaller in magnitude than this margin, rather than merely failing to reject zero. The margin is squeezed from both sides: it must exceed about 1.645/sqrt(n) at alpha = 0.05 or nothing is ever removable and the adjacency search returns a complete graph, and it must stay below the weakest association worth keeping, since asymptotically every pair below the margin is removed. Because the usable range depends on the sample size, leaving this at 0 is recommended: the margin is then set automatically to equivalenceMarginMultiplier times the smallest margin the sample size could certify.
+         </span></li>
+            <li>Default Value: <span
+                    id="equivalenceMargin_default_value">0.0</span></li>
+            <li>Lower Bound: <span
+                    id="equivalenceMargin_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="equivalenceMargin_upper_bound">0.999</span></li>
+            <li>Value
+                Type: <span
+                        id="equivalenceMargin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="equivalenceMarginMultiplier">equivalenceMarginMultiplier</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="equivalenceMarginMultiplier_short_desc">
+                    Equivalence margin as a multiple of the smallest one the sample size can certify (min &gt; 1).
+        </span></li>
+            <li>Long Description: <span
+                    id="equivalenceMarginMultiplier_long_desc">
+                    Used when equivalenceMargin is 0. The margin is set to this multiple of tanh(c/sqrt(n-3)), the smallest margin the sample size could certify at all, which turns a sample-size-dependent choice into one dimensionless knob. The multiplier trades adjacency precision for the retention of weak real edges: on random cyclic linear-Gaussian graphs, 2.0 improved recall of Richardson virtual edges and of dotted-underline triples at every sample size tested for about 0.015 of adjacency precision, 1.6 moved further in that direction at a real cost in endpoint accuracy at large samples, and values above about 2.5 began deleting the virtual edges and degraded everything. Values at or below 1 are not allowed, since the margin would then certify nothing.
+         </span></li>
+            <li>Default Value: <span
+                    id="equivalenceMarginMultiplier_default_value">2.0</span></li>
+            <li>Lower Bound: <span
+                    id="equivalenceMarginMultiplier_lower_bound">1.01</span></li>
+            <li>Upper
+                Bound: <span
+                        id="equivalenceMarginMultiplier_upper_bound">100.0</span></li>
+            <li>Value
+                Type: <span
+                        id="equivalenceMarginMultiplier_value_type">Double</span></li>
+        </ul>
         <h3 class="parameter_description"
             id="errorsNormal">errorsNormal</h3>
         <ul
@@ -7718,7 +9144,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="anmNonlinearity">anmNonlinearity</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="anmNonlinearity_short_desc">
-        Controls strength of nonlinearity in ANM simulator
+        Controls strength of nonlinearity in GAM simulator
     </span></li>
             <li>Long Description: <span id="anmNonlinearity_long_desc">
         A slider in [0,1] that simultaneously controls the number of basis units
@@ -7749,7 +9175,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="anmNoiseStrength">anmNoiseStrength</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="anmNoiseStrength_short_desc">
-        Controls variance/strength of noise in ANM simulator
+        Controls variance/strength of noise in GAM simulator
     </span></li>
             <li>Long Description: <span id="anmNoiseStrength_long_desc">
         A slider in [0,1] that scales the standard deviation of the chosen noise distribution.
@@ -9999,8 +11425,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="resamplingWithReplacement_short_desc">Yes, if sampling with
         replacement (bootstrapping)</span></li>
             <li>Long Description: <span
-                    id="resamplingWithReplacement_long_desc"> Yes if resampling can be
-        done with replacement, No if not. or without replacement. If with
+                    id="resamplingWithReplacement_long_desc"> Yes if resampling is to be
+        done with replacement, No if without replacement. If with
         replacement, it is possible to have more than one copy of some of the
         records in the original dataset being included in the
         bootstrap.</span></li>
@@ -10598,6 +12024,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="useCorrDiffAdjacencies_value_type">Boolean</span></li>
         </ul>
 
+
+        <h3 class="parameter_description"
+            id="useEquivalenceRemoval">useEquivalenceRemoval</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useEquivalenceRemoval_short_desc">
+                    Yes if CCD should remove edges only on positive evidence of independence.
+        </span></li>
+            <li>Long Description: <span
+                    id="useEquivalenceRemoval_long_desc">
+                    If Yes, CCD's adjacency phase uses an equivalence (TOST) test governed by equivalenceMargin and equivalenceMarginMultiplier, while the orientation steps keep the independence test selected for the algorithm. The adjacency phase decides whether to delete an edge, which is served by a test demanding positive evidence that the partial correlation is negligible; the orientation steps instead ask whether two variables are dependent, where an equivalence test's weaker "not shown to be negligible" would worsen CCD's tendency to commit to directions the data do not support. This requires the selected test to be Fisher Z, since the equivalence test is defined on the partial correlation. Default No, which leaves CCD's behaviour unchanged.
+         </span></li>
+            <li>Default Value: <span
+                    id="useEquivalenceRemoval_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="useEquivalenceRemoval_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="useEquivalenceRemoval_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="useEquivalenceRemoval_value_type">Boolean</span></li>
+        </ul>
         <h3 class="parameter_description"
             id="useFasAdjacencies">useFasAdjacencies</h3>
         <ul
@@ -11052,23 +12502,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="outputCpdag">outputCpdag</h3>
+            id="outputPdag">outputPdag</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="outputCpdag_short_desc">Yes if CPDAG should be output, no if a
+                    id="outputPdag_short_desc">Yes if PDAG should be output, no if a
         DAG.</span></li>
             <li>Long Description: <span
-                    id="outputCpdag_long_desc">BOSS can output a DAG or the CPDAG of the
-        DAG.</span></li>
+                    id="outputPdag_long_desc">BOSS can output a DAG or the PDAG of the
+        DAG (A CPDAG in which additional edges may be oriented by knowledge.</span></li>
             <li>Default Value: <span
-                    id="outputCpdag_default_value">true</span></li>
+                    id="outputPdag_default_value">true</span></li>
             <li>Lower Bound:
-                <span id="outputCpdag_lower_bound"></span></li>
+                <span id="outputPdag_lower_bound"></span></li>
             <li>Upper Bound:
-                <span id="outputCpdag_upper_bound"></span></li>
+                <span id="outputPdag_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="outputCpdag_value_type">Boolean</span></li>
+                    id="outputPdag_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -11331,6 +12781,36 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="effectiveSampleSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="effectiveSampleSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="bgeAlphaMu">bgeAlphaMu</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bgeAlphaMu_short_desc">BGe prior precision on the mean (alpha_mu)</span></li>
+            <li>Long Description: <span id="bgeAlphaMu_long_desc">The prior precision on the mean in the Normal-Wishart prior of the BGe score (bnlearn's iss.mu). Acts like a prior equivalent sample size for the mean; larger values tend to favor denser graphs. Default 1.</span></li>
+            <li>Default Value: <span id="bgeAlphaMu_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="bgeAlphaMu_lower_bound">1.0E-4</span></li>
+            <li>Upper Bound: <span id="bgeAlphaMu_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="bgeAlphaMu_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="bgeAlphaWOffset">bgeAlphaWOffset</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bgeAlphaWOffset_short_desc">BGe Wishart degrees of freedom above the number of variables (alpha_w = p + offset)</span></li>
+            <li>Long Description: <span id="bgeAlphaWOffset_long_desc">The degrees of freedom of the Wishart prior in the BGe score, given as an offset above the number of variables p, so alpha_w = p + bgeAlphaWOffset. Must exceed 1 so that the prior scale t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) is positive. The default 2 gives alpha_w = p + alpha_mu + 1 for the default alpha_mu = 1, as recommended by Kuipers et al. (2014) and used by bnlearn.</span></li>
+            <li>Default Value: <span id="bgeAlphaWOffset_default_value">2.0</span></li>
+            <li>Lower Bound: <span id="bgeAlphaWOffset_lower_bound">1.01</span></li>
+            <li>Upper Bound: <span id="bgeAlphaWOffset_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="bgeAlphaWOffset_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="discreteInteractionOrder">discreteInteractionOrder</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="discreteInteractionOrder_short_desc">Interaction order among discrete parents in the BGe embedding scores (1 = additive)</span></li>
+            <li>Long Description: <span id="discreteInteractionOrder_long_desc">For the BF-BGe and DG-BGe scores: the maximum number of distinct discrete parents whose indicator columns are multiplied to form interaction columns in a family's parent block. 1 (the default) is the additive design of DG-BIC and BF-BIC. 2 adds pairwise interactions; an order at least the number of discrete parents gives the saturated design, the same span as BDeu's conditional table. Empty-cell product columns are dropped. Orders above 1 are not score-equivalent, so they are intended for permutation searches such as BOSS and GRaSP.</span></li>
+            <li>Default Value: <span id="discreteInteractionOrder_default_value">1</span></li>
+            <li>Lower Bound: <span id="discreteInteractionOrder_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="discreteInteractionOrder_upper_bound">20</span></li>
+            <li>Value Type: <span id="discreteInteractionOrder_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"

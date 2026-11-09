@@ -1,31 +1,15 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-//                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
-// and Richard Scheines.                                                     //
-//                                                                           //
-// This program is free software: you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation, either version 3 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.QuadCurve2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
@@ -50,154 +34,106 @@ import java.beans.PropertyChangeListener;
  */
 public class DisplayEdge extends JComponent implements IDisplayEdge {
 
-    /**
-     * Represents the fact that this is a directed edge, A--&gt;B.
-     */
+    /** Edge type constant for a directed edge. */
     public static final int DIRECTED = 0;
-    /**
-     * Represents the fact that this is an nondirected edge, Ao-oB
-     */
+    /** Edge type constant for a nondirected edge. */
     public static final int NONDIRECTED = 1;
-    /**
-     * Represents the fact that this is an undirected edge, A---B
-     */
+    /** Edge type constant for an undirected edge. */
     public static final int UNDIRECTED = 2;
-    /**
-     * Represents the fact that this is a partially directed edge, Ao-&gt;B.
-     */
+    /** Edge type constant for a partially oriented edge. */
     public static final int PARTIALLY_ORIENTED = 3;
-    /**
-     * Represents the fact that this is a bidirected edge, A&lt;-&gt;B.
-     */
+    /** Edge type constant for a bidirected edge. */
     public static final int BIDIRECTED = 4;
-    /**
-     * Represents a session edge
-     */
+    /** Edge type constant for a session edge. */
     public static final int SESSION = 5;
-    /**
-     * Indicates that one end of the edge is anchored to one component, but the other half is tracking the mouse point.
-     */
+
     protected static final int HALF_ANCHORED = 0;
-    /**
-     * Indicates that both ends of the edg  e are anchored to components.  The edge will move when those components move.
-     */
     protected static final int ANCHORED_UNSELECTED = 1;
-    /**
-     * Indicates that the edge is under construction, which is similar to the normal mode except that it's displayed as
-     * selected and will identify itself as selected upon request (for possible deletion, e.g.).
-     */
     protected static final int ANCHORED_SELECTED = 2;
+
     /**
-     * The node that this edge is linked "from."
+     * The largest deflection, in pixels, of a curved edge's apex from the straight chord between its endpoints. Caps
+     * obstacle avoidance so a curve never loops around far-off nodes.
      */
+    private static final double BEZIER_MAX_APEX = 70.0;
+
+    /**
+     * Clearance, in pixels, that a curved edge tries to keep between itself and the boundary of a node it bends
+     * around.
+     */
+    private static final double BEZIER_NODE_MARGIN = 10.0;
+
+    /**
+     * How far the component bounds are grown beyond the union of the two node rectangles when the edge is drawn as
+     * a curve, so the bow (plus endpoint decorations) is not clipped. Must exceed BEZIER_MAX_APEX.
+     */
+    private static final int BEZIER_BOUNDS_PAD = (int) BEZIER_MAX_APEX + 26;
+
+    /** The first display node of the edge (the one the edge is anchored to). */
     private final DisplayNode node1;
-    /**
-     * Handler for <code>ComponentEvent</code>s.
-     */
+    /** Listens for moves and resizes of the endpoint nodes and resets the edge bounds. */
     private final ComponentHandler compHandler = new ComponentHandler();
-    /**
-     * Handler for <code>PropertyChange</code>s.
-     */
-    private final PropertyChangeHandler propertyChangeHandler =
-            new PropertyChangeHandler();
-    /**
-     * The model edge that this display is is portraying.
-     */
+    /** Listens for property changes on the endpoint nodes. */
+    private final PropertyChangeHandler propertyChangeHandler = new PropertyChangeHandler();
+
+    /** The model edge this display edge represents; null for a half-anchored tracking edge. */
     private Edge modelEdge;
-    /**
-     * The getModel mode of the edge--HALF_ANCHORED, ANCHORED_UNSELECTED, or ANCHORED_SELECTED.
-     */
+    /** The anchoring mode: HALF_ANCHORED, ANCHORED_UNSELECTED, or ANCHORED_SELECTED. */
     private int mode;
-    /**
-     * The type of the edge, one of DIRECTED, NONDIRECTED, UNDIRECTED, PARTIALLY_ORIENTED, BIDIRECTED.
-     */
+    /** The edge type, one of DIRECTED, NONDIRECTED, UNDIRECTED, PARTIALLY_ORIENTED, BIDIRECTED, or SESSION. */
     private int type;
-    /**
-     * The node that this edge is linked "to."
-     */
+    /** The second display node of the edge; null while the edge is half-anchored. */
     private DisplayNode node2;
-    /**
-     * For HALF_ANCHORed edges, this is the mouse point they connect to.
-     */
+    /** The mouse location, in workbench coordinates, tracked by a half-anchored edge. */
     private Point mouseTrackPoint = new Point();
-    /**
-     * This is the same mouse point, but relative to *this* edge component.
-     */
+    /** The tracked mouse location relative to this component's bounds. */
     private Point relativeMouseTrackPoint = new Point();
-    /**
-     * If the user clicks in this region, the edge will select.
-     */
-    private Polygon clickRegion;
-    /**
-     * True iff only adacencies (and no endpoints) should be shown.
-     */
+    /** The region around the edge that responds to mouse clicks. */
+    private Shape clickRegion;
+    /** Whether only adjacencies are shown, without endpoint decorations. */
     private boolean showAdjacenciesOnly;
+
     /**
-     * The offset of this edge for multiple edges between node pairs.
+     * Whether the current bounds were computed for this edge drawn as a curve. An edge is drawn straight unless it
+     * has to bend around a node, and which it is can change when any node moves; paint() notices the mismatch and
+     * recomputes the bounds, so no external wiring is needed.
      */
+    private boolean boundsForBezier;
+    /** The perpendicular offset, in pixels, used to separate multiple edges between the same pair of nodes. */
     private double offset;
-    /**
-     * The pair of points that this edge connects, from the edge of one component to the edge of the other.
-     */
+    /** The pair of points on the node boundaries that the edge connects. */
     private PointPair connectedPoints;
 
     /**
-     * The color of the line.
+     * User-specified override for the line color; null means use theme color.
      */
-    private Color lineColor = new Color(26, 113, 169, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
+    private Color lineColor;
 
     /**
-     * The color of the line when selected.
+     * User-specified override for the selected color; null means use theme color.
      */
-    private Color selectedColor = new Color(244, 0, 20);//DisplayNodeUtils.getNodeSelectedFillColor();   // this one
+    private Color selectedColor;
 
     /**
-     * The color of the line when highlighted.
+     * User-specified override for the highlighted color; null means use theme color.
      */
-    private Color highlightedColor = new Color(238, 180, 34);
+    private Color highlightedColor;
 
-    /**
-     * The width of the stroke.
-     */
+    /** The width of the stroke used to draw the edge. */
     private float strokeWidth = 1.2f;
-
-    /**
-     * True iff this edge is highlighted.
-     */
+    /** Whether the edge is highlighted. */
     private boolean highlighted;
-
-    /**
-     * True iff this edge is solid.
-     */
+    /** Whether the edge is drawn solid (true) or dashed (false). */
     private boolean solid = true;
-
-    /**
-     * True iff this edge is thick.
-     */
+    /** Whether the edge is drawn thick. */
     private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//
 
-    /**
-     * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
-     * model edge will not be needed.
-     *
-     * @param node1 the 'from' component.
-     * @param node2 the 'to' component.
-     * @param type  the type of the edge, either UNRANDOMIZED or RANDOMIZED.
-     */
     protected DisplayEdge(DisplayNode node1, DisplayNode node2, int type) {
         this(node1, node2, type, null);
     }
 
-    /**
-     * <p>Constructor for DisplayEdge.</p>
-     *
-     * @param node1 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param node2 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param type  a int
-     * @param color a {@link java.awt.Color} object
-     */
     protected DisplayEdge(DisplayNode node1, DisplayNode node2, int type, Color color) {
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
@@ -227,31 +163,31 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         node1.addPropertyChangeListener(this.propertyChangeHandler);
         node2.addPropertyChangeListener(this.propertyChangeHandler);
 
+        setOpaque(false);
         resetBounds();
     }
 
     /**
-     * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
-     * model edge will be needed.
+     * Constructs a new display edge for the given model edge, connecting the two given display nodes.
      *
-     * @param node1     the 'from' component.
-     * @param node2     the 'to' component.
-     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param modelEdge the model edge represented; must not be null.
+     * @param node1     the first display node; must not be null.
+     * @param node2     the second display node; must not be null.
      */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2) {
         this(modelEdge, node1, node2, null);
     }
 
     /**
-     * <p>Constructor for DisplayEdge.</p>
+     * Constructs a new display edge for the given model edge, connecting the two given display nodes and drawn in the
+     * given color.
      *
-     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
-     * @param node1     a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param node2     a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param color     a {@link java.awt.Color} object
+     * @param modelEdge the model edge represented; must not be null.
+     * @param node1     the first display node; must not be null.
+     * @param node2     the second display node; must not be null.
+     * @param color     the line color, or null to use the theme color.
      */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2, Color color) {
-
         if (modelEdge == null) {
             throw new NullPointerException("Model edge must not be null.");
         }
@@ -271,6 +207,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         if (color != null) {
             this.lineColor = color;
         }
+
         this.mode = DisplayEdge.ANCHORED_UNSELECTED;
 
         node1.addComponentListener(this.compHandler);
@@ -279,42 +216,39 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         node1.addPropertyChangeListener(this.propertyChangeHandler);
         node2.addPropertyChangeListener(this.propertyChangeHandler);
 
+        setOpaque(false);
         resetBounds();
     }
 
     /**
-     * Constructs a new unanchored session edge.  The end of the edge at 'node1' isO anchored, but the other end tracks
-     * a mouse point. The mouse point should be updated by the parent component using repeated calls to
-     * 'updateTrackPoint'; this process is finished by finally anchoring the second end of the of edge using
-     * 'anchorSecondEnd'.  Once this is done, the edge is considered anchored and will not be able to track a mouse
-     * point any longer.
+     * Constructs a new half-anchored display edge from the given node to the given mouse location, used while an edge is
+     * being drawn.
      *
-     * @param node1           the 'from' component.
-     * @param mouseTrackPoint the initial value of the mouse track point.
-     * @param type            a int
-     * @see #updateTrackPoint
+     * @param node1           the node the edge is anchored to; must not be null.
+     * @param mouseTrackPoint the mouse location to track; must not be null.
+     * @param type            the edge type, one of the type constants of this class.
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type) {
         this(node1, mouseTrackPoint, type, null);
     }
 
     /**
-     * <p>Constructor for DisplayEdge.</p>
+     * Constructs a new half-anchored display edge from the given node to the given mouse location, drawn in the given
+     * color.
      *
-     * @param node1           a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param mouseTrackPoint a {@link java.awt.Point} object
-     * @param type            a int
-     * @param color           a {@link java.awt.Color} object
+     * @param node1           the node the edge is anchored to; must not be null.
+     * @param mouseTrackPoint the mouse location to track; must not be null.
+     * @param type            the edge type, one of the type constants of this class.
+     * @param color           the line color, or null to use the theme color.
+     * @throws IllegalArgumentException if the type is not one of the type constants.
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type, Color color) {
-
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");
         }
 
         if (mouseTrackPoint == null) {
-            throw new NullPointerException(
-                    "Mouse track point must not " + "be null.");
+            throw new NullPointerException("Mouse track point must not be null.");
         }
 
         if (type < 0 || type > 5) {
@@ -331,33 +265,48 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
         this.mode = DisplayEdge.HALF_ANCHORED;
 
+        setOpaque(false);
         resetBounds();
     }
 
-    /**
-     * Calculates the distance between a pair of points.
-     *
-     * @param p1 a {@link java.awt.Point} object
-     * @param p2 a {@link java.awt.Point} object
-     * @return a double
-     */
+    //============================THEME HELPERS========================//
+
+    private static boolean isDarkMode() {
+        return com.formdev.flatlaf.FlatLaf.isLafDark();
+    }
+
+    private static Color getDefaultLineColor() {
+        return WorkbenchStyle.edge();
+    }
+
+    private static Color getDefaultSelectedColor() {
+        return WorkbenchStyle.edgeSelected();
+    }
+
+    private static Color getDefaultHighlightedColor() {
+        return WorkbenchStyle.edgeHighlighted();
+    }
+
+    private static Color getCircleInteriorColor() {
+        return WorkbenchStyle.circleInterior();
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        repaint();
+    }
+
+    //============================UTILITY========================//
+
     protected static double distance(Point p1, Point p2) {
         double d;
-
         d = (p1.x - p2.x) * (p1.x - p2.x);
         d += (p1.y - p2.y) * (p1.y - p2.y);
-        d = FastMath.sqrt(d);
-
+        d = TMath.sqrt(d);
         return d;
     }
 
-    /**
-     * Calculates the degenerate horizontal sleeve in the case where the point pair is near horizontal.
-     *
-     * @param pp        the given point pair.
-     * @param halfWidth the half-width of the sleeve.
-     * @return the sleeve as a polygon.
-     */
     private static Polygon getHorizSleeve(PointPair pp, int halfWidth) {
         int[] xpoints = new int[4];
         int[] ypoints = new int[4];
@@ -376,15 +325,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     //============================PUBLIC METHODS========================//
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Paints the component.
-     */
+    @Override
     public void paint(Graphics g) {
+        if (checkCurveBounds()) {
+            return;
+        }
 
-        // NOTE:  For this component, the resetBounds() methods should ALWAYS
-        // be called before repaint().
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
                 g.setColor(getLineColor());
@@ -394,7 +340,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 if (getConnectedPoints() != null) {
                     drawEdge(g);
                 }
-
                 break;
 
             case DisplayEdge.ANCHORED_UNSELECTED:
@@ -404,7 +349,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 if (getConnectedPoints() != null) {
                     drawEdge(g);
                 }
-
                 break;
 
             case DisplayEdge.ANCHORED_SELECTED:
@@ -414,7 +358,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 if (getConnectedPoints() != null) {
                     drawEdge(g);
                 }
-
                 break;
 
             default:
@@ -422,18 +365,37 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
-    /**
-     * Draws the actual edge.
-     *
-     * @param g the graphics context.
-     */
     private void drawEdge(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        getConnectedPoints().getFrom().translate(-getLocation().x,
-                -getLocation().y);
-        getConnectedPoints().getTo().translate(-getLocation().x,
-                -getLocation().y);
+        WorkbenchStyle.applyHints(g2d);
+
+        Stroke s;
+        float z = zoomScale();
+        float width = (thick ? 3f : 1.5f) * z;
+
+        Stroke solidStroke = new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        Stroke dashedStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 1f,
+                new float[]{7f * z, 5f * z}, 0f);
+
+        s = this.solid ? solidStroke : dashedStroke;
+        g2d.setStroke(s);
+
+        if (!isSelected()) {
+            g2d.setColor(this.getLineColor());
+        } else {
+            g2d.setColor(this.getSelectedColor());
+        }
+
+        // An edge anchored to two nodes is drawn as a curve if it has to bend around a node; a tracking edge stays
+        // straight. If the edge need not bend, or the curve cannot be built (coincident or overlapping nodes), fall
+        // through to the straight rendering.
+        if (drawBezierEdge(g2d)) {
+            return;
+        }
+
+        getConnectedPoints().getFrom().translate(-getLocation().x, -getLocation().y);
+        getConnectedPoints().getTo().translate(-getLocation().x, -getLocation().y);
 
         setClickRegion(null);
 
@@ -442,105 +404,324 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         int x2 = getConnectedPoints().getTo().x;
         int y2 = getConnectedPoints().getTo().y;
 
-//        Endpoint endpointA = this.getModelEdge().getEndpoint1();
-//        Endpoint endpointB = this.getModelEdge().getEndpoint2();
-//
-//        if (endpointA == Endpoint.ARROW) {
-//            x1 += FastMath.signum(x2 - x1) * getStrokeWidth();
-//            y1 += FastMath.signum(x2 - x1) * getStrokeWidth();
-//        }
-//
-//        if (endpointB == Endpoint.ARROW) {
-//            x2 += FastMath.signum(x1 - x2) * getStrokeWidth();
-//            y2 += FastMath.signum(x1 - x2) * getStrokeWidth();
-//        }
-
-        // This silly-looking next line is required to get around an annoying
-        // bug that appears in Windows (but not Linux) in JDK
-        // 1.4.2_08 and 1.5.0_02 at least. If you display an editor, then
-        // select the "Save Screenshot" menu item, then do it again (or
-        // select the "Save Graph Image" menu item), all of the lines drawn
-        // by Graphics2D.drawLine in this class get atomized and distributed
-        // across the entire dialog, and this atomization doesn't go away
-        // even if you close the editor and reopen it. Must be some
-        // undocumented interaction between the two graphics contexts
-        // (the one drawing the image on screen and the other drawing it
-        // in the Graphics2D from BufferedImage). In any case, any stroke
-        // width <= 1.0 seems to cause the problem, so we pick a stroke
-        // width slightly greater than 1.0. jdramsey 4/16/2005
-//        g2d.setStroke(new BasicStroke(1.000001f));
-        Stroke s;
-        float width = thick ? 3f : 1.1f;
-
-        Stroke solid = new BasicStroke(width);
-        Stroke dashed = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
-
-        if (this.solid) {
-            s = solid;
-        } else {
-            s = dashed;
-        }
-
-        g2d.setStroke(s);
-
-        if (!isSelected()) {
-            g2d.setColor(this.lineColor);
-        }
-
         g2d.drawLine(x1, y1, x2, y2);
 
         if (!isShowAdjacenciesOnly()) {
-            drawEndpoints(getConnectedPoints(), g);
+            drawEndpoints(getConnectedPoints(), g2d);
         }
 
         firePropertyChange("newPointPair", null, getConnectedPoints());
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overrides the parent's contains() method using the click region, so that points not in the click region are
-     * passed through to components lying beneath this one in the z-order. (Equates the effective shape of this edge to
-     * its click region.)
-     */
-    public boolean contains(int x, int y) {
-        Polygon clickRegion = getClickRegion();
+    //============================BEZIER RENDERING========================//
 
-        if (clickRegion != null) {
-            return clickRegion.contains(new Point(x, y));
-        } else {
+    /**
+     * Draws this edge as a quadratic Bezier curve between its two nodes, trimmed to their boundaries, with endpoint
+     * decorations aligned to the curve's tangents and a click region following the curve. The curve bows away from
+     * the straight chord only as far as it has to: not at all when the chord is clear of the other nodes, more when
+     * nodes sit in its way (bowing to whichever side needs less deflection, capped at BEZIER_MAX_APEX), and, for
+     * multiple edges between the same pair of nodes, to opposite sides per the edge offset.
+     *
+     * @param g2d the graphics to draw on, with stroke and color already set.
+     * @return true if the curve was drawn; false if it could not be built, in which case the caller should fall back
+     * to the straight rendering and nothing has been changed.
+     */
+    private boolean drawBezierEdge(Graphics2D g2d) {
+        QuadCurve2D.Double curve = bezierCurve();
+
+        if (curve == null) {
             return false;
+        }
+
+        g2d.draw(curve);
+
+        float sleeveWidth = Math.max(getStrokeWidth(), 1.5f) + 12f;
+        setClickRegion(new BasicStroke(sleeveWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+                .createStrokedShape(curve));
+
+        Point p0 = new Point((int) Math.round(curve.x1), (int) Math.round(curve.y1));
+        Point pc = new Point((int) Math.round(curve.ctrlx), (int) Math.round(curve.ctrly));
+        Point p2 = new Point((int) Math.round(curve.x2), (int) Math.round(curve.y2));
+
+        setConnectedPoints(new PointPair(p0, p2));
+
+        if (!isShowAdjacenciesOnly()) {
+            // The tangent of a quadratic at either end points at the control point, so the control point is the
+            // direction anchor for both endpoint decorations.
+            drawEndpoints(p0, p2, pc, pc, g2d);
+        }
+
+        firePropertyChange("newPointPair", null, getConnectedPoints());
+        return true;
+    }
+
+    /**
+     * Recomputes the bounds if this edge has changed between straight and curved since they were last computed,
+     * since they may now be too small for the bow or needlessly padded. To be called at the start of painting; if
+     * it returns true the edge must not be painted this time.
+     * <p>
+     * Changing the bounds moves this component, but the graphics it has been handed to paint with was set up for
+     * where the component was. Painting on after the change drew the edge displaced by the amount the bounds had
+     * moved, which is the padding of a curved edge up and to the left: a stray copy of the edge, parallel to the
+     * real one, for one frame each time an edge straightened or bent as a node was dragged. The change of bounds
+     * schedules a repaint of the edge where it now is, so nothing is lost by not painting here.
+     * <p>
+     * A workbench brings the bounds of its edges up to date before it paints any of them (see
+     * {@link #syncCurveBounds()}), so in a workbench this finds nothing to do.
+     *
+     * @return True if the bounds were changed.
+     */
+    protected final boolean checkCurveBounds() {
+        if (this.boundsForBezier != (bezierApex() != 0.0)) {
+            resetBounds();
+            repaint();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Recomputes the bounds if this edge has changed between straight and curved since they were last computed.
+     * For the workbench to call when it has chosen anew which edges bend, before it paints them.
+     */
+    final void syncCurveBounds() {
+        if (this.boundsForBezier != (bezierApex() != 0.0)) {
+            resetBounds();
         }
     }
 
     /**
-     * Retrieves the getModel region where mouse clicks are responded to (as opposed to passed on).
-     *
-     * @return the click region.
+     * @return the signed apex of this edge (see chooseApex), which is zero if the edge is to be drawn straight: it
+     * is not anchored to two nodes, or the two nodes coincide, or it does not have to bend around any node.
      */
-    private Polygon getClickRegion() {
+    private double bezierApex() {
+        if (this.mode == DisplayEdge.HALF_ANCHORED || getNode1() == null || getNode2() == null) {
+            return 0.0;
+        }
 
+        Rectangle r1 = getNode1().getBounds();
+        Rectangle r2 = getNode2().getBounds();
+
+        double dx = r2.getCenterX() - r1.getCenterX();
+        double dy = r2.getCenterY() - r1.getCenterY();
+        double len = Math.hypot(dx, dy);
+
+        if (len < 1e-6) {
+            return 0.0;
+        }
+
+        return chooseApex(new Point2D.Double(r1.getCenterX(), r1.getCenterY()), dx / len, dy / len, -dy / len,
+                dx / len, len);
+    }
+
+    /**
+     * @return this edge as a quadratic Bezier curve between its two nodes, trimmed to their boundaries, in this
+     * component's coordinates; or null if the edge is to be drawn straight: it does not have to bend around any
+     * node (see bezierApex), or the curve cannot be built.
+     */
+    protected final QuadCurve2D.Double bezierCurve() {
+        double apex = bezierApex();
+
+        if (apex == 0.0) {
+            return null;
+        }
+
+        Rectangle r1 = getNode1().getBounds();
+        Rectangle r2 = getNode2().getBounds();
+
+        Point2D.Double c1 = new Point2D.Double(r1.getCenterX(), r1.getCenterY());
+        Point2D.Double c2 = new Point2D.Double(r2.getCenterX(), r2.getCenterY());
+
+        double len = Math.hypot(c2.x - c1.x, c2.y - c1.y);
+
+        // Unit normal; positive apex bows to this side.
+        double nx = -(c2.y - c1.y) / len;
+        double ny = (c2.x - c1.x) / len;
+
+        // A quadratic Bezier with its control point displaced h from the chord midpoint passes h / 2 from the chord
+        // at its apex, so the control displacement is twice the requested apex.
+        double h = 2.0 * apex;
+        Point2D.Double ctrl = new Point2D.Double((c1.x + c2.x) / 2.0 + nx * h, (c1.y + c2.y) / 2.0 + ny * h);
+
+        // Trim the curve to the node boundaries by bisection in the curve parameter.
+        double t0 = exitParameter(getNode1(), c1, ctrl, c2, 0.0);
+        double t1 = exitParameter(getNode2(), c1, ctrl, c2, 1.0);
+
+        if (Double.isNaN(t0) || Double.isNaN(t1) || t0 >= t1) {
+            return null;
+        }
+
+        // Restrict the curve to [t0, t1] (de Casteljau, via the polar form); then move to local coordinates.
+        Point2D.Double q0 = bezierPoint(c1, ctrl, c2, t0);
+        Point2D.Double q1 = blossom(c1, ctrl, c2, t0, t1);
+        Point2D.Double q2 = bezierPoint(c1, ctrl, c2, t1);
+
+        int lx = getLocation().x;
+        int ly = getLocation().y;
+
+        return new QuadCurve2D.Double(q0.x - lx, q0.y - ly, q1.x - lx, q1.y - ly, q2.x - lx, q2.y - ly);
+    }
+
+    /**
+     * Chooses the signed apex (deflection of the curve from the chord at its midpoint) for this edge. The sign picks
+     * the side of the chord: positive bows toward the unit normal (nx, ny).
+     */
+    private double chooseApex(Point2D.Double c1, double ux, double uy, double nx, double ny, double len) {
+        // In a workbench the sides of all the curves are chosen together, so that they cross as little as
+        // possible; see BezierRouter. What follows is the choice this edge makes on its own, for an edge that is
+        // not in a workbench.
+        if (getParent() instanceof AbstractWorkbench workbench) {
+            Double routed = workbench.routedApex(this);
+
+            if (routed != null) {
+                return routed;
+            }
+        }
+
+        // As in BezierRouter: an edge is drawn straight unless it has to bend, so there is no bow to start from,
+        // except for separating several edges between the same two nodes.
+//        double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
+        double base = getOffset() != 0.0 ? Math.min(16.0, Math.max(5.0, 0.06 * len)) : 0.0;
+        double maxApex = Math.min(DisplayEdge.BEZIER_MAX_APEX, 0.35 * len);
+
+        // Deflection needed on each side to clear sibling nodes sitting in the chord's corridor.
+        double needPlus = 0.0;
+        double needMinus = 0.0;
+
+        Container parent = getParent();
+
+        if (parent != null) {
+            for (Component comp : parent.getComponents()) {
+                if (!(comp instanceof DisplayNode) || comp == getNode1() || comp == getNode2()) {
+                    continue;
+                }
+
+                Rectangle b = comp.getBounds();
+                double px = b.getCenterX() - c1.x;
+                double py = b.getCenterY() - c1.y;
+
+                double u = (px * ux + py * uy) / len;
+
+                if (u < 0.08 || u > 0.92) {
+                    continue;
+                }
+
+                double d = px * nx + py * ny;
+                double r = Math.max(b.width, b.height) / 2.0 + DisplayEdge.BEZIER_NODE_MARGIN;
+
+                if (Math.abs(d) > r + maxApex) {
+                    continue;
+                }
+
+                // A curve with apex a passes 4u(1 - u)a from the chord near chord fraction u.
+                double w = 4.0 * u * (1.0 - u);
+
+                if (d + r > 0.0) {
+                    needPlus = Math.max(needPlus, (d + r) / w);
+                }
+
+                if (r - d > 0.0) {
+                    needMinus = Math.max(needMinus, (r - d) / w);
+                }
+            }
+        }
+
+        double sign;
+        double need;
+
+        if (this.offset != 0.0) {
+            // Multiple edges between the same pair: the offset already alternates sign across them, so use it to
+            // put the arcs on opposite sides, bowing at least far enough to separate them.
+            sign = Math.signum(this.offset);
+            need = Math.max(Math.abs(this.offset), sign > 0 ? needPlus : needMinus);
+        } else if (needPlus <= needMinus) {
+            sign = 1.0;
+            need = needPlus;
+        } else {
+            sign = -1.0;
+            need = needMinus;
+        }
+
+        return sign * Math.min(maxApex, Math.max(base, need));
+    }
+
+    /**
+     * Finds the curve parameter at which the quadratic Bezier (c1, ctrl, c2) crosses the boundary of the given node,
+     * searching between the given inside parameter (0 or 1, whose curve point is the node's center) and the curve
+     * midpoint.
+     *
+     * @return the boundary parameter, or NaN if the curve midpoint is itself inside the node (overlapping nodes), in
+     * which case the caller should fall back to straight rendering.
+     */
+    private static double exitParameter(DisplayNode comp, Point2D.Double c1, Point2D.Double ctrl,
+                                        Point2D.Double c2, double tInside) {
+        if (!containsCurvePoint(comp, c1, ctrl, c2, tInside)) {
+            return tInside;
+        }
+
+        double tOutside = 0.5;
+
+        if (containsCurvePoint(comp, c1, ctrl, c2, tOutside)) {
+            return Double.NaN;
+        }
+
+        for (int i = 0; i < 20; i++) {
+            double tm = (tInside + tOutside) / 2.0;
+
+            if (containsCurvePoint(comp, c1, ctrl, c2, tm)) {
+                tInside = tm;
+            } else {
+                tOutside = tm;
+            }
+        }
+
+        return tOutside;
+    }
+
+    private static boolean containsCurvePoint(DisplayNode comp, Point2D.Double c1, Point2D.Double ctrl,
+                                              Point2D.Double c2, double t) {
+        Point2D.Double p = DisplayEdge.bezierPoint(c1, ctrl, c2, t);
+        Point loc = comp.getLocation();
+        return comp.contains((int) Math.round(p.x) - loc.x, (int) Math.round(p.y) - loc.y);
+    }
+
+    /**
+     * The point of the quadratic Bezier (p0, p1, p2) at parameter t.
+     */
+    private static Point2D.Double bezierPoint(Point2D.Double p0, Point2D.Double p1, Point2D.Double p2, double t) {
+        return DisplayEdge.blossom(p0, p1, p2, t, t);
+    }
+
+    /**
+     * The polar form (blossom) of the quadratic Bezier (p0, p1, p2) at (s, t). blossom(t, t) is the curve point at
+     * t, and the control points of the curve restricted to [u, v] are blossom(u, u), blossom(u, v), blossom(v, v).
+     */
+    private static Point2D.Double blossom(Point2D.Double p0, Point2D.Double p1, Point2D.Double p2,
+                                          double s, double t) {
+        double a = (1.0 - s) * (1.0 - t);
+        double b = s * (1.0 - t) + t * (1.0 - s);
+        double c = s * t;
+        return new Point2D.Double(a * p0.x + b * p1.x + c * p2.x, a * p0.y + b * p1.y + c * p2.y);
+    }
+
+    @Override
+    public boolean contains(int x, int y) {
+        Shape clickRegion = getClickRegion();
+        return clickRegion != null && clickRegion.contains(x, y);
+    }
+
+    private Shape getClickRegion() {
         if ((this.clickRegion == null) && (getConnectedPoints() != null)) {
             this.clickRegion = getSleeve(getConnectedPoints());
         }
-
         return this.clickRegion;
     }
 
-    /**
-     * Allows subclasses to set the clickable region is for this component.
-     *
-     * @param clickRegion a {@link java.awt.Polygon} object
-     */
-    protected final void setClickRegion(Polygon clickRegion) {
+    protected final void setClickRegion(Shape clickRegion) {
         this.clickRegion = clickRegion;
     }
 
-    /**
-     * Retrieves the currents point pair which defines the line segment of the edge.
-     *
-     * @return the getModel point pair.
-     */
     public final PointPair getPointPair() {
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
@@ -549,8 +730,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 break;
 
             case DisplayEdge.ANCHORED_UNSELECTED:
-
-                // Falls through!
             case DisplayEdge.ANCHORED_SELECTED:
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
                 break;
@@ -562,58 +741,26 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return getConnectedPoints();
     }
 
-    /**
-     * <p>getComp1.</p>
-     *
-     * @return the 'from' AbstractGraphNode to which this session edge is anchored.
-     */
     public final DisplayNode getComp1() {
         return this.getNode1();
     }
 
-    /**
-     * <p>getComp2.</p>
-     *
-     * @return the 'to' AbstractGraphNode to which this session edge is anchored.
-     */
     public final DisplayNode getComp2() {
         return this.getNode2();
     }
 
-    /**
-     * <p>Getter for the field <code>mode</code>.</p>
-     *
-     * @return the getModel mode of the component.
-     */
     protected final int getMode() {
         return this.mode;
     }
 
-    /**
-     * <p>getTrackPoint.</p>
-     *
-     * @return the getModel track point for the edge.  When a new edge is being created in the UI, one end is anchored
-     * to a AbstractGraphNode while the other tracks the mouse point.  When the mouse is released, the latest mouse
-     * track point is needed to determine which node it's closest to so that it can be anchored to that node.
-     */
     public final Point getTrackPoint() {
         return this.mouseTrackPoint;
     }
 
-    /**
-     * <p>isSelected.</p>
-     *
-     * @return true iff the component is selected.
-     */
     public final boolean isSelected() {
         return this.mode == DisplayEdge.ANCHORED_SELECTED;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether the component is selected.
-     */
     public final void setSelected(boolean selected) {
         if (selected == isSelected()) {
             return;
@@ -628,23 +775,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
-    /**
-     * Launches the editor for this edge, if there is one.
-     */
     public void launchAssociatedEditor() {
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Updates the position of the free end of the edge while it is in the HALF_ANCHORED mode.
-     */
     public final void updateTrackPoint(Point p) {
         if (this.mode != DisplayEdge.HALF_ANCHORED) {
             throw new IllegalStateException(
-                    "Cannot call the updateTrackPoint " +
-                    "method when the edge is " +
-                    "not in HALF_ANCHORED mode.");
+                    "Cannot call the updateTrackPoint method when the edge is not in HALF_ANCHORED mode.");
         }
 
         this.mouseTrackPoint = new Point(p);
@@ -652,76 +789,37 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         repaint();
     }
 
-    /**
-     * <p>Getter for the field <code>node1</code>.</p>
-     *
-     * @return node 1.
-     */
     public final DisplayNode getNode1() {
         return this.node1;
     }
 
-    /**
-     * <p>Getter for the field <code>node2</code>.</p>
-     *
-     * @return node 2.
-     */
     public final DisplayNode getNode2() {
         return this.node2;
     }
 
-    /**
-     * <p>Getter for the field <code>connectedPoints</code>.</p>
-     *
-     * @return the two points this edge actually connects--that is, the intersections of the edge with node 1 and node
-     * 2.
-     */
     public final PointPair getConnectedPoints() {
         return this.connectedPoints;
     }
 
     //==========================PROTECTED METHODS========================//
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Allows subclasses to set what the connected points are.
-     */
     public final void setConnectedPoints(PointPair connectedPoints) {
         this.connectedPoints = connectedPoints;
     }
 
-    /**
-     * <p>Getter for the field <code>relativeMouseTrackPoint</code>.</p>
-     *
-     * @return the moure track point relative to this component. (It's usually given relative to the containing
-     * component.)
-     */
     public final Point getRelativeMouseTrackPoint() {
         return this.relativeMouseTrackPoint;
     }
 
-    /**
-     * Calculates the two endpoints of the line segment connecting two given non-overlapping rectangles.  (Should give
-     * back null for overlapping rectangles but doesn't always...)
-     *
-     * @param comp1 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param comp2 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @return a point pair which represents the connecting line segment through the center of each rectangle touching
-     * the edge of each.
-     */
     protected final PointPair calculateEdge(DisplayNode comp1, DisplayNode comp2) {
         Rectangle r1 = comp1.getBounds();
         Rectangle r2 = comp2.getBounds();
-        Point c1 = new Point((int) (r1.x + r1.width / 2.0),
-                (int) (r1.y + r1.height / 2.0));
-        Point c2 = new Point((int) (r2.x + r2.width / 2.0),
-                (int) (r2.y + r2.height / 2.0));
+        Point c1 = new Point((int) (r1.x + r1.width / 2.0), (int) (r1.y + r1.height / 2.0));
+        Point c2 = new Point((int) (r2.x + r2.width / 2.0), (int) (r2.y + r2.height / 2.0));
 
-        double angle = FastMath.atan2(c1.y - c2.y, c1.x - c2.x);
-        angle += FastMath.PI / 2;
-        Point d = new Point((int) (this.offset * FastMath.cos(angle)),
-                (int) (this.offset * FastMath.sin(angle)));
+        double angle = TMath.atan2(c1.y - c2.y, c1.x - c2.x);
+        angle += TMath.PI / 2;
+        Point d = new Point((int) (this.offset * TMath.cos(angle)), (int) (this.offset * TMath.sin(angle)));
         c1.translate(d.x, d.y);
         c2.translate(d.x, d.y);
 
@@ -729,10 +827,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         Point p2 = getBoundaryIntersection(comp2, c2, c1);
 
         if ((p1 == null) || (p2 == null)) {
-            c1 = new Point((int) (r1.x + r1.width / 2.0),
-                    (int) (r1.y + r1.height / 2.0));
-            c2 = new Point((int) (r2.x + r2.width / 2.0),
-                    (int) (r2.y + r2.height / 2.0));
+            c1 = new Point((int) (r1.x + r1.width / 2.0), (int) (r1.y + r1.height / 2.0));
+            c2 = new Point((int) (r2.x + r2.width / 2.0), (int) (r2.y + r2.height / 2.0));
 
             p1 = getBoundaryIntersection(comp1, c1, c2);
             p2 = getBoundaryIntersection(comp2, c2, c1);
@@ -745,18 +841,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return new PointPair(p1, p2);
     }
 
-    /**
-     * Calculates the point pair which defines the straight line segment edge from a given point p to a given component.
-     * Assumes that the component contains the center point of its bounding rectangle.
-     *
-     * @param comp a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param p    a {@link java.awt.Point} object
-     * @return a {@link edu.cmu.tetradapp.workbench.PointPair} object
-     */
     protected final PointPair calculateEdge(DisplayNode comp, Point p) {
         Rectangle r = comp.getBounds();
-        Point p1 = new Point((int) (r.x + r.width / 2.0),
-                (int) (r.y + r.height / 2.0));
+        Point p1 = new Point((int) (r.x + r.width / 2.0), (int) (r.y + r.height / 2.0));
         Point p2 = new Point(p);
 
         p2.translate(getLocation().x, getLocation().y);
@@ -767,58 +854,63 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     //============================PRIVATE METHODS========================//
 
-    /**
-     * Draws endpoints appropriate to the type of edge this is.
-     *
-     * @param pp the point pair which specifies where and at what angle the endpoints are to be drawn.  The 'from'
-     *           endpoint is drawn at the 'from' point angled as it it were coming from the 'to' endpoint, and
-     *           vice-versa.
-     * @param g  the graphics context.
-     */
     protected final void drawEndpoints(PointPair pp, Graphics g) {
+        drawEndpoints(pp.getFrom(), pp.getTo(), pp.getTo(), pp.getFrom(), g);
+    }
 
+    /**
+     * Draws the endpoint decorations of this edge at the given endpoint positions, using separate direction anchors
+     * for each. For a straight edge each endpoint's direction anchor is the opposite endpoint; for a quadratic
+     * Bezier it is the control point, which both end tangents point at.
+     *
+     * @param pFrom     the position of the node-1 endpoint.
+     * @param pTo       the position of the node-2 endpoint.
+     * @param dirForFrom the point the decoration at pFrom points away from.
+     * @param dirForTo   the point the decoration at pTo points away from.
+     * @param g         the graphics to draw on.
+     */
+    private void drawEndpoints(Point pFrom, Point pTo, Point dirForFrom, Point dirForTo, Graphics g) {
         if (this.getModelEdge() != null) {
             Endpoint endpointA = this.getModelEdge().getEndpoint1();
             Endpoint endpointB = this.getModelEdge().getEndpoint2();
 
             if (endpointA == Endpoint.CIRCLE) {
-                drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
+                drawCircleEndpoint(dirForFrom, pFrom, g);
             } else if (endpointA == Endpoint.ARROW) {
-                drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
+                drawArrowEndpoint(dirForFrom, pFrom, g);
             }
 
             if (endpointB == Endpoint.CIRCLE) {
-                drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
+                drawCircleEndpoint(dirForTo, pTo, g);
             } else if (endpointB == Endpoint.ARROW) {
-                drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                drawArrowEndpoint(dirForTo, pTo, g);
             }
         } else {
             switch (this.type) {
-
                 case DisplayEdge.SESSION:
-                    drawSessionArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawSessionArrowEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.DIRECTED:
-                    drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawArrowEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.NONDIRECTED:
-                    drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
-                    drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawCircleEndpoint(dirForFrom, pFrom, g);
+                    drawCircleEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.UNDIRECTED:
                     break;
 
                 case DisplayEdge.PARTIALLY_ORIENTED:
-                    drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
-                    drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawCircleEndpoint(dirForFrom, pFrom, g);
+                    drawArrowEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.BIDIRECTED:
-                    drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
-                    drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
+                    drawArrowEndpoint(dirForTo, pTo, g);
+                    drawArrowEndpoint(dirForFrom, pFrom, g);
                     break;
 
                 default:
@@ -827,68 +919,94 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
+    private float endpointScale() {
+        return Math.max(1f, getStrokeWidth()) * (thick ? 1.35f : 1f) * zoomScale();
+    }
+
     /**
-     * Draws an arrowhead at the 'to' end of the edge.
+     * The zoom factor of the workbench this edge sits in, or 1 outside a workbench. Strokes, dashes, arrowheads,
+     * and circle endpoints are scaled by this, so the rendering tracks the zoom the way an affine transform would;
+     * click sleeves are left unscaled, so the click tolerance stays a constant number of screen pixels.
      */
+    private float zoomScale() {
+        return getParent() instanceof AbstractWorkbench workbench ? (float) workbench.getZoom() : 1f;
+    }
+
     private void drawArrowEndpoint(Point from, Point to, Graphics g) {
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = FastMath.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
-
-//        g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
-        g.fillArc(to.x - 17, to.y - 17, 34, 34,
-                itheta - 14 - 3 * (int) getStrokeWidth(), 29 + 6 * (int) getStrokeWidth());
+        float scale = endpointScale();
+        fillArrowhead(from, to, 11f * scale, 4.5f * scale, g);
     }
 
-    /**
-     * Draws an session arrowhead at the 'to' end of the edge.
-     */
     private void drawSessionArrowEndpoint(Point from, Point to, Graphics g) {
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = FastMath.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
-
-//        g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
-        g.fillArc(to.x - 18, to.y - 18, 36, 36,
-                itheta - 33 * (int) getStrokeWidth(), 66 * (int) getStrokeWidth());
+        float scale = endpointScale();
+        fillArrowhead(from, to, 13f * scale, 6f * scale, g);
     }
 
     /**
-     * Draws a circle endpoint at the 'to' point angled as if coming from the 'from' point.
+     * Fills a triangular arrowhead with its tip at {@code to}, pointing away from {@code from}.
+     *
+     * @param from      the point the edge comes from.
+     * @param to        the tip of the arrowhead.
+     * @param length    the length of the arrowhead along the edge.
+     * @param halfWidth half the width of the arrowhead base.
+     * @param g         the graphics to draw on.
      */
+    private void fillArrowhead(Point from, Point to, float length, float halfWidth, Graphics g) {
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double len = TMath.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return;
+
+        double ux = dx / len;
+        double uy = dy / len;
+        double bx = to.x - ux * length;
+        double by = to.y - uy * length;
+
+        Path2D.Double head = new Path2D.Double();
+        head.moveTo(to.x, to.y);
+        head.lineTo(bx - uy * halfWidth, by + ux * halfWidth);
+        head.lineTo(bx + uy * halfWidth, by - ux * halfWidth);
+        head.closePath();
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            g2.fill(head);
+            g2.setStroke(new BasicStroke(zoomScale(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.draw(head);
+        } finally {
+            g2.dispose();
+        }
+    }
+
     private void drawCircleEndpoint(Point from, Point to, Graphics g) {
-//        final int diameter = 13;
-        int diameter = 12 + (int) getStrokeWidth();
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = FastMath.atan2(b, a);
-        //        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
-        int xminus = (int) (FastMath.cos(theta) * diameter / 2);
-        int yplus = (int) (FastMath.sin(theta) * diameter / 2);
+        double diameter = 11.0 * endpointScale();
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double len = TMath.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return;
 
-        g.fillOval(to.x - xminus - diameter / 2, to.y + yplus - diameter / 2,
-                diameter, diameter);
+        // Center the circle so it is tangent to the node boundary at 'to'.
+        double cx = to.x - dx / len * diameter / 2.0;
+        double cy = to.y - dy / len * diameter / 2.0;
 
-        Color c = g.getColor();
-
-        g.setColor(Color.white);
-        g.fillOval(to.x - xminus - diameter / 4 - 1,
-                to.y + yplus - diameter / 4 - 1, (int) (diameter / 1.4),
-                (int) (diameter / 1.4));
-        g.setColor(c);
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            Ellipse2D.Double circle = new Ellipse2D.Double(cx - diameter / 2.0, cy - diameter / 2.0,
+                    diameter, diameter);
+            Color ring = g2.getColor();
+            g2.setColor(getCircleInteriorColor());
+            g2.fill(circle);
+            g2.setColor(ring);
+            g2.setStroke(new BasicStroke((thick ? 2.5f : 1.6f) * zoomScale()));
+            g2.draw(circle);
+        } finally {
+            g2.dispose();
+        }
     }
 
-    /**
-     * Calculates the intersection with the boundary of the given component along a line which connects one point which
-     * lies inside the boundary of the component with another point which lies outside the boundary of the component. If
-     * the first point does not lie inside the boundary, or if the second point does not lie outside the boundary, a
-     * null is returned. If the connecting line intersects the boundary at more than one place, the outermost one is
-     * returned.
-     */
-    private Point getBoundaryIntersection(DisplayNode comp, Point pIn,
-                                          Point pOut) {
+    private Point getBoundaryIntersection(DisplayNode comp, Point pIn, Point pOut) {
         Point loc = comp.getLocation();
 
         if (!comp.contains(pIn.x - loc.x, pIn.y - loc.y)) {
@@ -899,13 +1017,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             return null;
         }
 
-        // Set up from, to, mid for a binary search (result = boundary
-        // intersection).  In testing, this binary search method was
-        // comparable to analytic methods for finding boundary
-        // intersections for rectangular nodes but has the advantage
-        // of flexibility, since this same algorithm applies without
-        // modification to any convexly shaped nodes.  (The 'contains'
-        // method for that node will of course need to be different.)
         Point pFrom = new Point(pOut);
         Point pTo = new Point(pIn);
         Point pMid = null;
@@ -923,44 +1034,29 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return pMid;
     }
 
-    /**
-     * Calculates a sleeve around the edge which represents the region within which mouse clicks will be send to the
-     * edge (as opposed to ignored).
-     *
-     * @param pp the point pair representing the line segment of the edge.
-     * @return the Polygon representing the sleeve, or null if no such Polygon exists (because, e.g., one of the
-     * endpoints is null).
-     */
     private Polygon getSleeve(PointPair pp) {
         if ((pp == null) || (pp.getFrom() == null) || (pp.getTo() == null)) {
             return null;
         }
 
-//        int d = 7;    // halfwidth of the sleeve.
-        int d = (int) getStrokeWidth() + 6;    // halfwidth of the sleeve.
+        int d = (int) getStrokeWidth() + 6;
 
-        if (FastMath.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
+        if (TMath.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
             return DisplayEdge.getHorizSleeve(pp, d);
         }
 
         int[] xpoints = new int[4];
         int[] ypoints = new int[4];
-        double qx;
-        double qy;
+        double qx = pp.getTo().x - pp.getFrom().x;
+        double qy = pp.getTo().y - pp.getFrom().y;
 
-        qx = pp.getTo().x - pp.getFrom().x;
-        qy = pp.getTo().y - pp.getFrom().y;
-
-        double sx, sy;
-
-        sx = (double) (d * d) / (1.0 + (qx * qx) / (qy * qy));
-        sx = FastMath.pow(sx, 0.5);
-        sy = -(qx / qy) * sx;
+        double sx = (double) (d * d) / (1.0 + (qx * qx) / (qy * qy));
+        sx = TMath.pow(sx, 0.5);
+        double sy = -(qx / qy) * sx;
         sx += (double) pp.getFrom().x + 1.0;
         sy += (double) pp.getFrom().y + 1.0;
 
-        Point t = new Point((int) (sx) - pp.getFrom().x,
-                (int) (sy) - pp.getFrom().y);
+        Point t = new Point((int) (sx) - pp.getFrom().x, (int) (sy) - pp.getFrom().y);
 
         xpoints[0] = pp.getFrom().x + t.x;
         xpoints[1] = pp.getTo().x + t.x;
@@ -974,47 +1070,40 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return new Polygon(xpoints, ypoints, 4);
     }
 
-    /**
-     * This method resets the bounds of the edge component to the union of the bounds of the two components which the
-     * edge connects.  It also calculates the bounds of these two components relative to this new union.
-     */
     private void resetBounds() {
+        this.boundsForBezier = bezierApex() != 0.0;
+
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
-                Rectangle temp = new Rectangle(this.mouseTrackPoint.x,
-                        this.mouseTrackPoint.y, 0, 0);
-
+                Rectangle temp = new Rectangle(this.mouseTrackPoint.x, this.mouseTrackPoint.y, 0, 0);
                 setBounds(getNode1().getBounds().union(temp.getBounds()));
-
-                //                node1RelativeBounds = new Rectangle(getNode1().getBounds());
                 this.relativeMouseTrackPoint = new Point(this.mouseTrackPoint);
-
-                //                node1RelativeBounds.translate(-getLocation().x, -getLocation().y);
-                getRelativeMouseTrackPoint().translate(-getLocation().x,
-                        -getLocation().y);
+                getRelativeMouseTrackPoint().translate(-getLocation().x, -getLocation().y);
                 break;
 
             case DisplayEdge.ANCHORED_UNSELECTED:
-
-                // Falls through!
             case DisplayEdge.ANCHORED_SELECTED:
                 Rectangle r1 = this.node1.getBounds();
                 Rectangle r2 = this.node2.getBounds();
-                Point c1 = new Point((int) (r1.x + r1.width / 2.0),
-                        (int) (r1.y + r1.height / 2.0));
-                Point c2 = new Point((int) (r2.x + r2.width / 2.0),
-                        (int) (r2.y + r2.height / 2.0));
+                Point c1 = new Point((int) (r1.x + r1.width / 2.0), (int) (r1.y + r1.height / 2.0));
+                Point c2 = new Point((int) (r2.x + r2.width / 2.0), (int) (r2.y + r2.height / 2.0));
 
-                double angle = FastMath.atan2(c1.y - c2.y, c1.x - c2.x);
-                angle += FastMath.PI / 2;
-                Point d = new Point((int) (this.offset * FastMath.cos(angle)),
-                        (int) (this.offset * FastMath.sin(angle)));
+                double angle = TMath.atan2(c1.y - c2.y, c1.x - c2.x);
+                angle += TMath.PI / 2;
+                Point d = new Point((int) (this.offset * TMath.cos(angle)), (int) (this.offset * TMath.sin(angle)));
 
                 r1.translate(d.x, d.y);
                 r2.translate(d.x, d.y);
 
-                setBounds(r1.getBounds().union(r2.getBounds()));
+                Rectangle bounds = r1.getBounds().union(r2.getBounds());
 
+                // A curved edge bows outside the union of the node rectangles; grow the bounds so the curve and its
+                // endpoint decorations are not clipped.
+                if (this.boundsForBezier) {
+                    bounds.grow(DisplayEdge.BEZIER_BOUNDS_PAD, DisplayEdge.BEZIER_BOUNDS_PAD);
+                }
+
+                setBounds(bounds);
                 break;
 
             default:
@@ -1026,118 +1115,74 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return this.showAdjacenciesOnly;
     }
 
-    /**
-     * <p>Getter for the field <code>modelEdge</code>.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Edge} object
-     */
     public final Edge getModelEdge() {
         return this.modelEdge;
     }
 
-    /**
-     * <p>Getter for the field <code>offset</code>.</p>
-     *
-     * @return a double
-     */
     public double getOffset() {
         return this.offset;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setOffset(double offset) {
         this.offset = offset;
     }
 
-    /**
-     * <p>Getter for the field <code>lineColor</code>.</p>
-     *
-     * @return a {@link java.awt.Color} object
-     */
     public Color getLineColor() {
-        return this.highlighted ? getHighlightedColor() : this.lineColor;
-//        return lineColor;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setLineColor(Color lineColor) {
-        if (lineColor != null) {
-            this.lineColor = lineColor;
+        if (this.highlighted) {
+            return getHighlightedColor();
         }
+
+        if (this.lineColor == null) {
+            return getDefaultLineColor();
+        }
+
+        // A color set explicitly on the edge is usually chosen for light backgrounds; lift it a little in dark mode.
+        return isDarkMode() ? this.lineColor.brighter() : this.lineColor;
     }
 
-    /**
-     * <p>Getter for the field <code>solid</code>.</p>
-     *
-     * @return a boolean
-     */
+    @Override
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
+    }
+
     public boolean getSolid() {
         return this.solid;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setSolid(boolean solid) {
         this.solid = solid;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setThick(boolean thick) {
         this.thick = thick;
     }
 
-    /**
-     * <p>Getter for the field <code>selectedColor</code>.</p>
-     *
-     * @return a {@link java.awt.Color} object
-     */
     public Color getSelectedColor() {
-        return this.selectedColor;
+        return this.selectedColor != null ? this.selectedColor : getDefaultSelectedColor();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setSelectedColor(Color selectedColor) {
         this.selectedColor = selectedColor;
     }
 
-    /**
-     * <p>Getter for the field <code>highlightedColor</code>.</p>
-     *
-     * @return a {@link java.awt.Color} object
-     */
     public Color getHighlightedColor() {
-        return this.highlightedColor;
+        return this.highlightedColor != null ? this.highlightedColor : getDefaultHighlightedColor();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setHighlightedColor(Color highlightedColor) {
         this.highlightedColor = highlightedColor;
     }
 
-    /**
-     * <p>Getter for the field <code>strokeWidth</code>.</p>
-     *
-     * @return a float
-     */
     public float getStrokeWidth() {
         return this.strokeWidth;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setStrokeWidth(float strokeWidth) {
         if (strokeWidth < 0f) {
             throw new IllegalArgumentException("Stroke width must be at least 0.");
@@ -1146,40 +1191,29 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         this.strokeWidth = strokeWidth;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
     }
 
     //======================= Event handler class========================//
 
-    /**
-     * Handles <code>ComponentEvent</code>s.
-     */
     private final class ComponentHandler extends ComponentAdapter {
+        @Override
         public void componentMoved(ComponentEvent e) {
             resetBounds();
             repaint();
         }
 
+        @Override
         public void componentResized(ComponentEvent e) {
             resetBounds();
             repaint();
         }
     }
 
-    /**
-     * Handles <code>PropertyChangeEvent</code>s.
-     */
     private final class PropertyChangeHandler implements PropertyChangeListener {
-
-        /**
-         * This method gets called when a bound property is changed.
-         *
-         * @param evt A PropertyChangeEvent object describing the event source and the property that has changed.
-         */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String name = evt.getPropertyName();
 
@@ -1191,9 +1225,3 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 }
-
-
-
-
-
-

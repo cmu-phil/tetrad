@@ -37,6 +37,12 @@ import edu.cmu.tetradapp.session.Session;
  * @version $Id: $Id
  */
 public class DesktopController implements DesktopControllable {
+
+    /**
+     * Constructs a new DesktopController. Access to the desktop is through the static methods.
+     */
+    public DesktopController() {
+    }
     private static DesktopControllable INSTANCE;
 
 
@@ -107,7 +113,7 @@ public class DesktopController implements DesktopControllable {
      * <p>closeEmptySessions.</p>
      */
     public void closeEmptySessions() {
-        DesktopController.getInstance().closeAllSessions();
+        getInstance().closeEmptySessions();
     }
 
     /**
@@ -150,9 +156,7 @@ public class DesktopController implements DesktopControllable {
     }
 
     /**
-     * <p>closeAllSessions.</p>
-     *
-     * @return a boolean
+     * {@inheritDoc}
      */
     public boolean closeAllSessions() {
         return DesktopController.getInstance().closeAllSessions();

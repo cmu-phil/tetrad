@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -83,6 +84,7 @@ public class BlocksBicScore implements BlockScoreWrapper {
      */
     @Override
     public Score getScore(DataModel model, Parameters parameters) {
+        BlockSpec blockSpec = MissingDataUtils.gate(this.blockSpec, parameters, "Blocks-BIC");
         edu.cmu.tetrad.search.score.BlocksBicScore score = new edu.cmu.tetrad.search.score.BlocksBicScore(
                 blockSpec);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
@@ -124,6 +126,7 @@ public class BlocksBicScore implements BlockScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

@@ -20,7 +20,7 @@
 
 package edu.cmu.tetradapp.workbench;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -85,10 +85,10 @@ class Rubberband extends JComponent {
      * @param p a {@link java.awt.Point} object
      */
     public void updateTrackPoint(Point p) {
-        int newLocX = FastMath.min(p.x, this.anchor.x);
-        int newLocY = FastMath.min(p.y, this.anchor.y);
-        int deltaX = FastMath.abs(p.x - this.anchor.x);
-        int deltaY = FastMath.abs(p.y - this.anchor.y);
+        int newLocX = TMath.min(p.x, this.anchor.x);
+        int newLocY = TMath.min(p.y, this.anchor.y);
+        int deltaX = TMath.abs(p.x - this.anchor.x);
+        int deltaY = TMath.abs(p.y - this.anchor.y);
         setLocation(newLocX, newLocY);
         setSize(deltaX, deltaY);
     }
@@ -100,8 +100,12 @@ class Rubberband extends JComponent {
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+        WorkbenchStyle.applyHints(g2);
         resetShapeBounds();
-        g2.setColor(Color.black);
+        Color accent = WorkbenchStyle.accent();
+        g2.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 28));
+        g2.fill(this.shape);
+        g2.setColor(accent);
         g2.setStroke(this.stroke);
         g2.draw(this.shape);
     }

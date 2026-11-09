@@ -1,0 +1,328 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.data.audit;
+
+/**
+ * Machine-readable codes for the findings a {@link DataAudit} can emit. Each code identifies a property of the data
+ * matrix that bears on the choice or reliability of a causal search procedure. Codes are findings, not
+ * recommendations: the audit reports what is true of the data and leaves the response to the user (or to
+ * documentation that interprets these codes, such as the analysis guide in the py-tetrad repository).
+ * <p>
+ * The set of codes is part of the audit's public contract; downstream tools (py-tetrad, reports, AI assistants)
+ * dispatch on them. New codes may be added in future releases, so consumers should tolerate unknown codes.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+public enum FindingCode {
+
+    /**
+     * A variable declared continuous takes only a small number of distinct observed values, suggesting it may be
+     * better treated as discrete, or that it was mechanically converted from a discrete source.
+     */
+    CONTINUOUS_FEW_VALUES,
+
+    /**
+     * A discrete variable has many observed levels. Conditioning on such a variable, or crossing it with other
+     * discrete variables, produces many small cells; if the levels are ordered, continuous treatment may be an
+     * alternative.
+     */
+    DISCRETE_MANY_LEVELS,
+
+    /**
+     * A column is constant: it has at most one distinct value among its non-missing entries. This includes the
+     * degenerate cases of a column with a single non-missing entry and a column with no non-missing entries at all.
+     * Constancy is determined exactly (equality of observed values), not by a variance threshold. A constant column
+     * carries no sample information: every independence test and score involving it is degenerate, and including it
+     * renders the covariance matrix of the continuous variables singular. A column flagged with this code is not
+     * additionally flagged NEAR_CONSTANT.
+     */
+    CONSTANT_COLUMN,
+
+    /**
+     * A variable varies but is nearly constant (a continuous variable with negligible but nonzero variance, or a
+     * discrete variable with more than one observed category but almost all mass on one of them). Exactly constant
+     * columns are flagged CONSTANT_COLUMN instead.
+     */
+    NEAR_CONSTANT,
+
+    /**
+     * A discrete variable has one or more observed categories with very small counts.
+     */
+    SMALL_MARGINAL_CELL,
+
+    /**
+     * A pair of discrete variables has small expected cell counts under independence, so conditional independence
+     * tests involving this pair (or conditioning sets containing them) will be unreliable.
+     */
+    SMALL_PAIRWISE_CELLS,
+
+    /**
+     * A pair of continuous variables is very highly correlated in absolute value. Emitted by {@link DataAudit} from
+     * pairwise-complete sample correlations and by {@link CovarianceAudit} from the correlations implied by a
+     * supplied covariance matrix (in which case nUsed is the matrix's stated sample size).
+     */
+    HIGH_CORRELATION,
+
+    /**
+     * The correlation matrix of the continuous variables is singular (rank-deficient): some continuous variable is an
+     * exact linear function of the others on the analyzed rows. Also emitted by {@link CovarianceAudit} when the
+     * correlation matrix implied by a supplied covariance matrix is rank-deficient.
+     */
+    EXACT_LINEAR_DEPENDENCE,
+
+    /**
+     * A continuous variable is nearly a linear function of the other continuous variables (multiple R-squared above
+     * threshold), a near-faithfulness violation that destabilizes conditional independence judgments. This is the
+     * linear member of the continuous-determiner pair; NEAR_DETERMINISM_NONLINEAR covers smooth nonlinear
+     * mechanisms and fires only where this check did not.
+     * <p>
+     * The determined variable is listed FIRST in the finding's variable list. When a small subset of the other
+     * variables accounts for most of the dependence, that subset follows it, as in the other determinism findings;
+     * when the dependence is diffuse the list holds the determined variable alone.
+     */
+    NEAR_DETERMINISM_LINEAR,
+
+    /**
+     * A continuous variable is nearly a smooth (generally nonlinear) function of a small set of other continuous
+     * variables: the leave-one-out cross-validated R-squared of a spline regression of the variable on the set is at
+     * or above threshold, while the linear check (NEAR_DETERMINISM_LINEAR) did not fire for the variable.
+     * Computed or derived columns whose defining formulas are nonlinear -- for example, the FWI fire-weather indices,
+     * which are exponential functions of their inputs -- are detected here and not by the linear check; the
+     * cell-inspection finding (DETERMINISTIC_RELATION) covers the complementary case where the determining variables
+     * take few distinct values, whereas the determiners here may be fully continuous.
+     * <p>
+     * Leave-one-out cross-validation is the overfitting guard: the reported R-squared is out-of-sample, so a high
+     * value cannot be produced by basis flexibility alone; on independent Gaussian data of comparable size the
+     * statistic stays near zero even after greedy subset selection. The determined variable is listed FIRST in the
+     * finding's variable list; the determining set follows. Subsets are grown greedily and reported at the first
+     * size reaching the threshold; supersets are not searched, and with correlated predictors the subset is not
+     * unique. The spline basis is linear beyond its boundary knots, so dependence carried mostly by extreme tails
+     * can be understated; the absence of this finding does not rule out such dependence. Near-determinism of any
+     * functional form is a near-faithfulness violation that destabilizes conditional independence judgments.
+     */
+    NEAR_DETERMINISM_NONLINEAR,
+
+    /**
+     * A continuous variable is nearly determined by a discrete variable (eta-squared above threshold): the discrete
+     * variable is close to a deterministic coarsening of the continuous one.
+     */
+    NEAR_DETERMINISM_DISCRETE_CONTINUOUS,
+
+    /**
+     * A continuous variable's marginal distribution deviates from Gaussian by the Anderson-Darling test. This is a
+     * threat to linear-Gaussian machinery but an asset to methods that exploit non-Gaussianity (LiNGAM family).
+     */
+    NON_GAUSSIAN,
+
+    /**
+     * The ratio of sample size to number of variables is small, limiting the conditioning depth that can be trusted.
+     */
+    LOW_SAMPLE_RATIO,
+
+    /**
+     * The dataset contains missing values. The finding carries summary statistics; detailed pattern information and
+     * Little's MCAR test are available from the delegated {@link edu.cmu.tetrad.data.missing.MissingDataAudit}.
+     */
+    MISSING_DATA,
+
+    /**
+     * A continuous variable has a repeated point mass at one extreme of its observed range, separated from the rest
+     * of the distribution by a gap far larger than the typical spacing between adjacent observed values elsewhere in
+     * the column. This is the signature of a sentinel code - a fixed value such as 0, -1, -99 or 999 written into
+     * the file to mark a measurement that was not taken - which arithmetic cannot distinguish from a real
+     * measurement, so every downstream computation silently treats the code as data.
+     * <p>
+     * The consequences are not confined to the flagged variable's marginal distribution. A shared code creates
+     * spurious association between any two variables that carry it on the same rows and attenuates the association
+     * between a coded variable and an uncoded one, so correlations move in both directions and can change sign. A
+     * large point mass also drives the variable toward degeneracy, which costs conditional-independence tests their
+     * power: partial correlations shrink toward zero and a graph can pass a Markov check because nothing rejects
+     * rather than because the graph is right. Non-Gaussianity findings on such a column typically describe the
+     * point mass rather than the measured quantity.
+     * <p>
+     * The finding is per variable, with the candidate code in the values under "value" and the count of cells
+     * holding it under "count"; a variable coded at both ends (for instance -999 and 999) produces two findings.
+     * The check is a heuristic on the shape of the observed distribution and cannot read the codebook: a genuine
+     * boundary value that repeats and sits far from its neighbors will be flagged, and a sentinel code that falls
+     * inside the observed range or coincides with plausible measurements will not be. Whether the flagged value is a
+     * code or a measurement is a question about the data's provenance, and the audit takes no position on it. Only
+     * continuous variables are checked; a sentinel category of a discrete variable is visible in its level list.
+     * An extreme value adjacent to the rest of the distribution -- within a small fraction of the range, or one
+     * grid step -- is never reported here however large its mass; with a large mass it is a {@link #BOUNDARY_ATOM}.
+     */
+    SENTINEL_VALUE,
+
+    /**
+     * A continuous variable has a large share of its observed values at the top or bottom of its observed range,
+     * with no gap separating that value from the rest of the distribution: a grade of 100, a detector at its
+     * maximum, a scale that ran out. The value is a real measurement, not a code, but it is a censored one: a cell
+     * at the ceiling says "at least this much," and a cell at the floor "at most this much." Treating the atom as an
+     * exact value flattens the top (or bottom) of the distribution and attenuates every correlation the variable
+     * takes part in, by an amount that differs from variable to variable with the size of the atom, so the
+     * attenuation does not cancel across a block and rank-based or correlation-based structure tests see it as
+     * structure. Rank correlation does not rescue it: the ordering inside the tied mass does not exist to be
+     * recovered. Treating the atom as missing is wrong in the other direction, since it throws away the information
+     * that the value was large and is missing-not-at-random besides.
+     * <p>
+     * The remedy is to treat the bound as a bound: a censored covariance estimate (for RLCD, the censor-ceiling
+     * option; for score-based searches, the censored covariance estimator from code), or a test for discrete or
+     * mixed data after dichotomizing at the bound. The finding is per variable and per end, with the bound under
+     * "value", the number of cells at it under "count", its share of the observed values under "mass", and 1.0
+     * under "atMinimum" for a floor. This is the complement of {@link #SENTINEL_VALUE}: the two checks share the
+     * mass condition and are separated by the gap, a repeated extreme value with a gap below (above) it being a
+     * candidate code and one without being a candidate bound. Only continuous variables are checked.
+     */
+    BOUNDARY_ATOM,
+
+    /**
+     * Two columns are exact affine functions of one another on the rows where both are observed (identical columns,
+     * complementary indicators such as y = 1 - x, or rescaled copies). Unlike EXACT_LINEAR_DEPENDENCE, which reports
+     * a rank deficiency it cannot localize, this finding names the specific pair; the values carry the number of
+     * jointly observed rows the identity is based on. One of each such pair carries no information the other does
+     * not, on the observed overlap. Also emitted by {@link CovarianceAudit} when the correlation implied by a
+     * supplied covariance matrix has absolute value 1 within tolerance; the values then carry the implied
+     * correlation, and no row counts, since no rows are available.
+     */
+    DUPLICATE_COLUMNS,
+
+    /**
+     * The pairwise-complete correlation matrix of the continuous variables has at least one negative eigenvalue.
+     * Because each entry is computed on a different subset of rows, the assembled matrix is not the correlation
+     * matrix of any single sample; joint quantities derived from it (rank, variance inflation factors, partial
+     * correlations) can therefore be incoherent. Individual pairwise correlations remain interpretable, each on its
+     * own row subset.
+     */
+    PAIRWISE_CORRELATION_NOT_PSD,
+
+    /**
+     * The number of complete rows minus one is smaller than the number of continuous variables, so ANY covariance or
+     * correlation matrix computed on complete cases is singular by arithmetic, regardless of what the variables
+     * measure. When this holds, joint linear-dependence findings cannot be attributed to relationships among
+     * specific variables: the singularity is forced by the complete-case count. Localizable exact dependencies, if
+     * any, are reported separately as DUPLICATE_COLUMNS.
+     */
+    COMPLETE_CASES_FORCE_SINGULARITY,
+
+    /**
+     * A variable is constant, within tolerance, inside every multi-row cell of the joint values of a small set of
+     * other few-valued variables: on the analyzed rows, the variable is a function of that set (up to tolerance).
+     * Exact or near-exact functional determinism violates faithfulness and destabilizes conditional-independence
+     * judgments: conditioning sets containing the determining variables render the determined variable
+     * pseudo-independent of everything, sepsets become pathological, and constraint-based orientation can produce
+     * arrowheads that no data-generating mechanism supports (a computed or derived column "causing" its inputs).
+     * <p>
+     * The determined variable is listed FIRST in the finding's variable list; the determining set follows. Only
+     * minimal determining sets are reported: once a set is found for a variable, its supersets are not searched. A
+     * pair already reported as DUPLICATE_COLUMNS is not re-reported here as a one-element determinism. The linear
+     * whole-matrix analog is EXACT_LINEAR_DEPENDENCE; the regression- and eta-squared-based near-determinism
+     * findings (NEAR_DETERMINISM_LINEAR, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
+     * mechanisms, NEAR_DETERMINISM_NONLINEAR covers smooth functions of many-valued continuous determiners, while
+     * this finding is nonparametric and joint over few-valued determiners, so it detects nonlinear functions of
+     * variable combinations (e.g., a boundary-layer quantity computed from several experimental settings) that the
+     * linear and single-discrete checks miss.
+     * <p>
+     * The check is bounded: determining sets up to a configured size, determiner variables up to a configured
+     * distinct-value count, and a fixed work budget; single-row cells are vacuous and are excluded, with coverage
+     * and multi-row-cell minimums guarding against vacuously "deterministic" fine grids. The absence of this finding
+     * therefore does not rule out determinism beyond those bounds.
+     */
+    DETERMINISTIC_RELATION,
+
+    /**
+     * A variable is constant within every level of the configured serial grouping variable (e.g., a subject-level
+     * attribute in a repeated-measures file). Its effective sample size for correlational judgments is the number of
+     * groups, not the number of rows, and with few groups such variables are frequently exactly collinear with one
+     * another by accident.
+     */
+    GROUP_CONSTANT_VARIABLE,
+
+    /**
+     * A continuous variable is serially dependent in file order (autocorrelated across consecutive rows), so rows are
+     * not exchangeable as given and independence tests that assume i.i.d. rows may be anticonservative. This check is
+     * one-sided with respect to row order: a flag means rows are dependent in the order given, but the absence of a
+     * flag does not rule out dependence under some other ordering of the rows (e.g., if a time series was shuffled
+     * before saving). If the dataset concatenates blocks (e.g., regions or subjects), autocorrelations should be
+     * computed within blocks by naming a grouping variable, since block-level mean shifts and boundary jumps
+     * otherwise contaminate the pooled estimate.
+     */
+    SERIAL_DEPENDENCE,
+
+    /**
+     * A supplied covariance matrix is not symmetric within tolerance: some entry (i, j) differs from its transpose
+     * entry (j, i) by more than a small fraction of the largest absolute entry. A genuine covariance matrix is
+     * symmetric by definition, so asymmetry indicates a transcription or assembly error. Subsequent checks in the
+     * same audit are run on the symmetrized matrix (S + S')/2, as stated in the finding's message. Emitted only by
+     * {@link CovarianceAudit}.
+     */
+    COVARIANCE_NOT_SYMMETRIC,
+
+    /**
+     * A diagonal entry of a supplied covariance matrix is zero or negative. A zero variance is the covariance-matrix
+     * analog of a constant column: the variable carries no sample information, its correlations are undefined, and
+     * including it makes the matrix singular. A negative variance is not a variance at all and marks the matrix as
+     * invalid input. Variables flagged with this code are excluded from the correlation-derived checks in the same
+     * audit. Emitted only by {@link CovarianceAudit}.
+     */
+    NONPOSITIVE_VARIANCE,
+
+    /**
+     * A supplied covariance matrix has at least one negative eigenvalue (judged on the implied correlation matrix,
+     * for scale invariance): it is not the covariance matrix of any dataset. This arises when matrices are assembled
+     * entrywise from different row subsets (pairwise deletion), transcribed or rounded, or produced by procedures
+     * that do not guarantee positive semidefiniteness. Quantities that presuppose a valid covariance matrix
+     * (likelihoods, partial correlations, regression coefficients) can fail or behave incoherently. Emitted only by
+     * {@link CovarianceAudit}; the analogous finding for a matrix Tetrad itself assembles pairwise from a dataset
+     * with missing values is PAIRWISE_CORRELATION_NOT_PSD.
+     */
+    COVARIANCE_NOT_PSD,
+
+    /**
+     * The ratio of the largest to the smallest positive variance on the diagonal of a supplied covariance matrix is
+     * extreme. This usually reflects unstandardized variables measured in very different units and degrades the
+     * numerical conditioning of decompositions and inversions even when the implied correlations are unremarkable.
+     * Emitted only by {@link CovarianceAudit}.
+     */
+    EXTREME_VARIANCE_SCALE,
+
+    /**
+     * The stated sample size n of a supplied covariance matrix satisfies n - 1 &lt; p, where p is the number of
+     * (positive-variance) variables, so any ordinary sample covariance matrix computed from n rows is singular by
+     * arithmetic. If the supplied matrix has rank at most n - 1, it is consistent with that arithmetic, and joint
+     * linear-dependence findings cannot be attributed to relationships among specific variables. If its rank exceeds
+     * n - 1, it cannot be an ordinary sample covariance matrix at the stated n: either the sample size is misstated
+     * or the matrix was regularized, shrunk, or model-implied. The finding's message states which case holds. Emitted only
+     * by {@link CovarianceAudit}; the dataset analog is COMPLETE_CASES_FORCE_SINGULARITY.
+     */
+    SAMPLE_SIZE_FORCES_SINGULARITY,
+
+    /**
+     * A variable name collides with a naming convention that Tetrad's own machinery gives special meaning. The
+     * cases reported are: a name of the form base:k with integer k, which the time-series machinery reads as
+     * base lagged k steps (INFO, since the data may genuinely be lagged); a name containing a colon whose suffix
+     * does not parse as a lag, which collides with the lag-suffix convention without being readable as a lag
+     * (WARNING); a name beginning with "E_", the prefix under which SEM graphs generate error-term nodes and
+     * which some graph utilities treat as marking an error term (WARNING); and a name containing '*' or ',',
+     * characters that knowledge specifications interpret as a wildcard and a list separator respectively
+     * (WARNING). The finding reports the property; it takes no position on whether the name should change.
+     */
+    RESERVED_VARIABLE_NAME
+}

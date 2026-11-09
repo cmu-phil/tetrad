@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,23 +16,22 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.distribution.RealDistribution;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -120,12 +119,6 @@ public class PostnonlinearSem {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Random source used to generate independent function parameters (MLPs) per variable and per layer (f1, f2).
-     * Using a single Random instance here avoids hardcoding a seed and ensures different mechanisms per node.
-     */
-    private final Random functionRng;
-
-    /**
      * Constructs a PostnonlinearCausalModel object. This model generates synthetic data based on a directed acyclic
      * graph (DAG) with causal relationships, utilizing post-nonlinear causal mechanisms of the form
      * X_i = f_{2,i}( f_{1,i}(Pa(X_i)) + N_i ).
@@ -157,9 +150,6 @@ public class PostnonlinearSem {
         this.noiseDistribution = noiseDistribution;
         this.hiddenDimension = hiddenDimension;
         this.inputScale = inputScale;
-
-        // Use a fresh Random instance so each model instance gets its own independent mechanisms.
-        this.functionRng = new Random();
     }
 
     /**
@@ -192,14 +182,11 @@ public class PostnonlinearSem {
                     data.setDouble(sample, colIndex, value);
                 }
             } else {
-                int f1Seed = functionRng.nextInt();
-
                 Function<double[], Double> f1 = new MultiLayerPerceptronFunctionND(
                         parents.size(),           // Input dimension
                         this.hiddenDimension,     // Hidden neurons
                         this.activationFunction,  // Activation
-                        this.inputScale,          // Input scale
-                        f1Seed                    // Seed
+                        this.inputScale          // Input scale
                 )::evaluateAdjusted;
 
                 for (int sample = 0; sample < numSamples; sample++) {
@@ -220,19 +207,19 @@ public class PostnonlinearSem {
             int colIndex = nodeToIndex.get(node);
 
             // Draw parameters for this node's f2
-            double a = 0.5 + Math.abs(functionRng.nextGaussian()); // ensure strictly positive
-            double b = functionRng.nextGaussian();
+            double a = 0.5 + TMath.abs(RandomUtil.getInstance().nextGaussian(0, 1)); // ensure strictly positive
+            double b = RandomUtil.getInstance().nextGaussian();
 
             // g is the activationFunction (default  cubic-perturbation-of-identity), assumed strictly monotone
 
-            double c = Math.abs(functionRng.nextGaussian()) * 0.3; // e.g. 0..~1
+            double c = TMath.abs(RandomUtil.getInstance().nextGaussian(0, 1)) * 0.3; // e.g. 0..~1
             Function<Double, Double> g = x -> x + c * x * x * x;   // strictly increasing
             Function<Double, Double> f2 = x -> a * g.apply(x) + b;
 
 //            double outerScale = 0.5; // new param, default
 //            Function<Double, Double> f2 = x -> a * activationFunction.apply(outerScale * x) + b;
 
-//            Function<Double, Double> f2 = x -> a * Math.tanh(outerScale * x) + b;
+//            Function<Double, Double> f2 = x -> a * TMath.tanh(outerScale * x) + b;
 
             for (int sample = 0; sample < numSamples; sample++) {
                 double value = data.getDouble(sample, colIndex);

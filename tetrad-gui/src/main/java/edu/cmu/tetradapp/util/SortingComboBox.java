@@ -31,6 +31,12 @@ import javax.swing.*;
 public class SortingComboBox extends JComboBox {
 
     /**
+     * Constructs an empty sorting combo box.
+     */
+    public SortingComboBox() {
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Overrides the addItem() method of JComboBox to automatically sort items as they are added.  Items are sorted by

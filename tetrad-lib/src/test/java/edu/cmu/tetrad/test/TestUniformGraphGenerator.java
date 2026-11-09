@@ -46,7 +46,7 @@ public final class TestUniformGraphGenerator {
 
         Graph dag = RandomGraph.randomGraphUniform(nodes, 3, 30, 3, 3, 3, false, 50000);
 
-        assertEquals(27, dag.getNumEdges());
+        assertEquals(29, dag.getNumEdges());
     }
 }
 

@@ -45,7 +45,7 @@ class DescriptiveStatsAction extends AbstractAction {
     /**
      * The data editor that action is attached to.
      */
-    private final DataEditor dataEditor;
+    private final ISelectedModel dataEditor;
 
 
     /**
@@ -53,7 +53,7 @@ class DescriptiveStatsAction extends AbstractAction {
      *
      * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
-    public DescriptiveStatsAction(DataEditor editor) {
+    public DescriptiveStatsAction(ISelectedModel editor) {
         super("Descriptive Statistics...");
         this.dataEditor = editor;
     }
@@ -75,7 +75,8 @@ class DescriptiveStatsAction extends AbstractAction {
         Box panel = createDescriptiveStatsDialog();
 
         EditorWindow window = new EditorWindow(panel,
-                "Descriptive Statistics", "Close", false, this.dataEditor);
+                DataWindowTitles.of("Descriptive Statistics", dataSet), null, false,
+                (JComponent) this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -109,8 +110,10 @@ class DescriptiveStatsAction extends AbstractAction {
 
         JMenuBar bar = new JMenuBar();
         JMenuItem copyCells = new JMenuItem("Copy Cells");
+        // Platform menu shortcut mask (Command on macOS, Control elsewhere); hard-coded Control did not work on
+        // macOS and collided with the main menu bar's session-copy accelerator.
         copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         copyCells.addActionListener(e -> {
             Action copyAction = TransferHandler.getCopyAction();
             ActionEvent actionEvent = new ActionEvent(jTable,
@@ -148,7 +151,7 @@ class DescriptiveStatsAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, this.dataEditor);
+                JFrame.class, (JComponent) this.dataEditor);
     }
 }
 

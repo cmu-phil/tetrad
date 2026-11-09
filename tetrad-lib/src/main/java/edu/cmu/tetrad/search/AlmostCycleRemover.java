@@ -125,7 +125,6 @@ public class AlmostCycleRemover implements TetradSerializable {
 
         Map<Node, Set<Edge>> B = getBMap(pag);
 
-        System.out.println("B: " + B);
 
         List<Node> nodesInOrder = new ArrayList<>(B.keySet());
         nodesInOrder.sort(Comparator.comparingInt(x -> B.get(x).size()));

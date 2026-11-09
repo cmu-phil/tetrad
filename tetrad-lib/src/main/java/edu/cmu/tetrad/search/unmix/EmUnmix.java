@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,18 +110,7 @@ public final class EmUnmix {
         if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
 
         // 2) EM on residuals
-        GaussianMixtureEM.Config emc = new GaussianMixtureEM.Config();
-        emc.K = cfg.K;
-        emc.covType = cfg.covType;
-        emc.maxIters = cfg.emMaxIters;
-        emc.tol = cfg.emTol;
-        emc.seed = cfg.seed;
-        emc.ridge = cfg.ridge;
-        emc.kmeansRestarts = cfg.kmeansRestarts;
-        emc.covShrinkage = cfg.covShrinkage;
-        emc.covRidgeRel = cfg.covRidgeRel;
-        emc.annealSteps = cfg.annealSteps;
-        emc.annealStartT = cfg.annealStartT;
+        GaussianMixtureEM.Config emc = toGmmConfig(cfg, cfg.K);
 
         GaussianMixtureEM.Model model = GaussianMixtureEM.fit(R, emc);
         int[] z = EmUtils.mapLabels(model.responsibilities);
@@ -160,34 +150,31 @@ public final class EmUnmix {
             Function<DataSet, Graph> perClusterSearch,
             Config base
     ) {
+        if (Kmin < 1) throw new IllegalArgumentException("Kmin must be >= 1");
+        if (Kmax > data.getNumRows()) throw new IllegalArgumentException("Kmax cannot exceed number of rows");
+
+        // The residual signatures do not depend on K, so compute them once rather than once per candidate K.
+        // (The parent superset screening in particular can be expensive for Kendall's tau on larger data sets.)
+        double[][] R = buildResiduals(data, base, regressor, pooledSearch);
+        if (base.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
+
         double bestBIC = Double.POSITIVE_INFINITY;
         UnmixResult best = null;
 
         for (int K = Kmin; K <= Kmax; K++) {
-            if (K < 1) throw new IllegalArgumentException("K must be >= 1");
-            if (K > data.getNumRows()) throw new IllegalArgumentException("K cannot exceed number of rows");
-
-            Config cfg = copy(base);
-            cfg.K = K;
-
-            double[][] R = buildResiduals(data, cfg, regressor, pooledSearch);
-            if (cfg.robustScaleResiduals) ResidualUtils.robustStandardizeInPlace(R);
-
-            GaussianMixtureEM.Config emc = new GaussianMixtureEM.Config();
-            emc.K = K;
-            emc.covType = cfg.covType;
-            emc.maxIters = cfg.emMaxIters;
-            emc.tol = cfg.emTol;
-            emc.seed = cfg.seed;
-            emc.ridge = cfg.ridge;
-            emc.kmeansRestarts = cfg.kmeansRestarts;
-            emc.covShrinkage = cfg.covShrinkage;
-            emc.covRidgeRel = cfg.covRidgeRel;
-            emc.annealSteps = cfg.annealSteps;
-            emc.annealStartT = cfg.annealStartT;
+            GaussianMixtureEM.Config emc = toGmmConfig(base, K);
 
             GaussianMixtureEM.Model m = GaussianMixtureEM.fit(R, emc);
             double bic = m.bic(R.length);
+
+            if (base.logIntermediate) {
+                int[] zK = EmUtils.mapLabels(m.responsibilities);
+                int[] sizes = new int[K];
+                for (int lab : zK) if (lab >= 0 && lab < K) sizes[lab]++;
+                TetradLogger.getInstance().log(String.format(
+                        "Unmix model selection: K = %d  BIC = %.2f  cluster sizes = %s",
+                        K, bic, java.util.Arrays.toString(sizes)));
+            }
 
             if (bic < bestBIC) {
                 bestBIC = bic;
@@ -202,6 +189,26 @@ public final class EmUnmix {
             }
         }
         return best;
+    }
+
+    /**
+     * Maps an EmUnmix configuration to a GaussianMixtureEM configuration for the given K.
+     */
+    private static GaussianMixtureEM.Config toGmmConfig(Config cfg, int K) {
+        GaussianMixtureEM.Config emc = new GaussianMixtureEM.Config();
+        emc.K = K;
+        emc.covType = cfg.covType;
+        emc.maxIters = cfg.emMaxIters;
+        emc.tol = cfg.emTol;
+        emc.seed = cfg.seed;
+        emc.ridge = cfg.ridge;
+        emc.kmeansRestarts = cfg.kmeansRestarts;
+        emc.covShrinkage = cfg.covShrinkage;
+        emc.covRidgeRel = cfg.covRidgeRel;
+        emc.annealSteps = cfg.annealSteps;
+        emc.annealStartT = cfg.annealStartT;
+        emc.setLogIntermediate(cfg.logIntermediate);
+        return emc;
     }
 
     private static double[][] buildResiduals(
@@ -272,6 +279,7 @@ public final class EmUnmix {
         d.annealSteps = c.annealSteps;
         d.annealStartT = c.annealStartT;
         d.randomSeed = c.randomSeed;
+        d.logIntermediate = c.logIntermediate;
         return d;
     }
 
@@ -397,6 +405,11 @@ public final class EmUnmix {
          * consistent sequence of random numbers when the same seed is used.
          */
         public long randomSeed = 35L;
+        /**
+         * If true, intermediate EM state and per-K model selection information are written to the Tetrad log.
+         * The default is false.
+         */
+        public boolean logIntermediate = false;
 
         /**
          * Creates a copy of this configuration object.

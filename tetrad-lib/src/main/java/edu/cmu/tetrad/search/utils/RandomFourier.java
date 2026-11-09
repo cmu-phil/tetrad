@@ -20,7 +20,9 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
+
 import java.util.stream.DoubleStream;
 
 /**
@@ -52,11 +54,10 @@ public class RandomFourier {
         this.sinAmplitudes = new double[numTerms];
         this.frequencies = new double[numTerms];
 
-        Random random = new Random();
         for (int i = 0; i < numTerms; i++) {
-            cosAmplitudes[i] = -2 + 4 * random.nextDouble(); // Random values in range [-2, 2]
-            sinAmplitudes[i] = -2 + 4 * random.nextDouble(); // Random values in range [-2, 2]
-            frequencies[i] = frequencyScale * (0.5 + random.nextDouble()); // Random frequencies > 0
+            cosAmplitudes[i] = -2 + 4 * RandomUtil.getInstance().nextDouble(); // Random values in range [-2, 2]
+            sinAmplitudes[i] = -2 + 4 * RandomUtil.getInstance().nextDouble(); // Random values in range [-2, 2]
+            frequencies[i] = frequencyScale * (0.5 + RandomUtil.getInstance().nextDouble()); // Random frequencies > 0
         }
     }
 
@@ -94,8 +95,8 @@ public class RandomFourier {
     public double compute(double x) {
         double result = 0.0;
         for (int i = 0; i < numTerms; i++) {
-            result += cosAmplitudes[i] * Math.cos(frequencies[i] * x)
-                      + sinAmplitudes[i] * Math.sin(frequencies[i] * x);
+            result += cosAmplitudes[i] * TMath.cos(frequencies[i] * x)
+                      + sinAmplitudes[i] * TMath.sin(frequencies[i] * x);
         }
         return result;
     }

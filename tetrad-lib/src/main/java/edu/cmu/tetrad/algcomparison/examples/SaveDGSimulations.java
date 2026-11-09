@@ -26,6 +26,8 @@ import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.text.ParseException;
+
 /**
  * An example script to save out data files and graphs from a simulation.
  *
@@ -61,7 +63,11 @@ public class SaveDGSimulations {
         Simulation simulation = new ConditionalGaussianSimulation(new RandomForward());
 
         Comparison comparison = new Comparison();
-        comparison.saveToFiles("comparison-CG-measures", simulation, parameters);
+        try {
+            comparison.saveToFiles("comparison-CG-measures", simulation, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

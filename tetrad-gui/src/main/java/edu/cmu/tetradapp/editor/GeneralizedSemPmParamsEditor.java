@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;
@@ -87,7 +88,7 @@ class GeneralizedSemPmParamsEditor extends JPanel {
         this.formulasBox.removeAll();
 
         java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
-        Collections.sort(parameters);
+        parameters.sort(NaturalSort.naturalComparator());
 
         for (String parameter : parameters) {
             Box c = Box.createHorizontalBox();

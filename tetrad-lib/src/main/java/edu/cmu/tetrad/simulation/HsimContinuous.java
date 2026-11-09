@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.*;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -165,7 +166,7 @@ public class HsimContinuous {
             //loop through all the nodes being conditioned upon, and set their values in the evidence prop
             for (Node i : mbAll) {
                 //int nodeIndex = evidence.getNodeIndex(i.getName());
-                int nodeColumn = this.data.getColumn(i);
+                int nodeColumn = this.data.getColumnIndex(i);
                 evidence.getProposition().setValue(i, this.data.getDouble(row, nodeColumn));
             }
 
@@ -174,13 +175,18 @@ public class HsimContinuous {
             conditionUpdate.setEvidence(evidence);
             SemIm updatedIM = conditionUpdate.getUpdatedSemIm();
             //draw values for the node we're resimming
-            DataSet newValues = updatedIM.simulateData(1, false);
+            DataSet newValues = null;
+            try {
+                newValues = updatedIM.simulateData(1, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             //DataSet newValues = updatedIM.simulateDataRecursive(1,false);
 
             //take these new simnodes values and replace the old values in the data set with them
             for (Node node : this.simnodes) {
                 //if (verbose) System.out.println(data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
-                this.data.setDouble(row, this.data.getColumn(node), newValues.getDouble(0, newValues.getColumn(node)));
+                this.data.setDouble(row, this.data.getColumnIndex(node), newValues.getDouble(0, newValues.getColumnIndex(node)));
                 //if (verbose) System.out.println(" and again?: " + data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
             }
         }

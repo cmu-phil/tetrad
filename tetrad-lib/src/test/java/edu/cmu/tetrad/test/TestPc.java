@@ -38,9 +38,11 @@ import org.junit.Test;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.ejml.UtilEjml.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -144,6 +146,11 @@ public class TestPc {
         try {
             Graph trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
+
+            // This we can assert theoretically — knowledge must be respected
+            assertTrue(!knowledge.isViolatedBy(CPDAG));
+
+            // This is just a regression snapshot — we know no better
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
             e.printStackTrace();
@@ -314,7 +321,12 @@ public class TestPc {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(1000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(1000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
@@ -337,13 +349,10 @@ public class TestPc {
                     search = new Fci(test);
                     break;
                 case 4:
-                    search = new FgesFci(test, score);
+                    search = new Gfci(test, score);
                     break;
                 case 5:
                     search = new Rfci(test);
-                    break;
-                case 6:
-                    search = new Cfci(test);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -568,7 +577,7 @@ public class TestPc {
 
         RandomUtil.getInstance().setSeed(12345);
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI", "Regression"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
 
         final int numMeasures = 10;
@@ -650,7 +659,12 @@ public class TestPc {
                     10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(10000, false);
+            DataSet data = null;
+            try {
+                data = im.simulateData(10000, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             Graph comparison = GraphTransforms.dagToPag(dag, false);
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
@@ -705,7 +719,7 @@ public class TestPc {
                     }
                     break;
                 case 4:
-                    search = new FgesFci(test, score);
+                    search = new Gfci(test, score);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {
@@ -721,14 +735,6 @@ public class TestPc {
                     }
                     break;
                 case 6:
-                    search = new Cfci(test);
-                    try {
-                        out = search.search();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-                case 7:
                     out = getRegressionGraph(data, target);
                     break;
                 default:

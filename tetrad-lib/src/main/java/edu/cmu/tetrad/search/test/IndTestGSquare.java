@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -194,7 +195,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
 
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -286,7 +287,7 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
         }
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -436,9 +437,16 @@ public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSi
     public void setCellTableType(ChiSquareTest.CellTableType cellTableType) {
         this.gSquareTest.setCellTableType(cellTableType);
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The count-sample cell table skips rows containing the missing-value code when building each conditional table, i.e., test-wise deletion, unbiased only under MCAR. (The AD-tree cell table does not; ChiSquareTest forces the count-sample table on incomplete data.)
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
+    }
 }
-
-
-
-
-

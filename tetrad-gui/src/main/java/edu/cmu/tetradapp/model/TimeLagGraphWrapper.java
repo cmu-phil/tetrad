@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -129,41 +130,17 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         Knowledge knowledge1 = new Knowledge();
-        int lag;
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
-            laglist.add(lag);
+            laglist.add(TsUtils.getLag(node.getName()));
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
+            int lag = TsUtils.getLag(node.getName());
             laglist.add(lag);
             knowledge1.addToTier(numLags - lag, node.getName());
         }
 
         System.out.println("Knowledge in graph = " + knowledge1);
-    }
-
-    /**
-     * <p>Constructor for TimeLagGraphWrapper.</p>
-     */
-    public TimeLagGraphWrapper() {
-        this.graph = new TimeLagGraph();
-        log();
     }
 
     /**
@@ -301,28 +278,12 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         List<Node> variables = this.graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         Knowledge knowledge1 = new Knowledge();
-        int lag;
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
-            laglist.add(lag);
+            laglist.add(TsUtils.getLag(node.getName()));
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
+            int lag = TsUtils.getLag(node.getName());
             laglist.add(lag);
             knowledge1.addToTier(numLags - lag, node.getName());
         }

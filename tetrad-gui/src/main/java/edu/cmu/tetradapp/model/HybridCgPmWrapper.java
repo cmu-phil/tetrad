@@ -2,12 +2,16 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.session.SessionModel;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -28,14 +32,37 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * The wrapped Hybrid CG PM.
+     */
     private HybridCgModel.HybridCgPm hybridCgPm;
+    /**
+     * The name of this session model.
+     */
     private String name = "Hybrid CG PM";
+    /**
+     * Free-form notes attached to this model.
+     */
     private String notes = "";
 
+    /**
+     * Constructs a HybridCgPmWrapper from the graph of the given graph source, with no data set.
+     *
+     * @param graph      the source of the graph
+     * @param parameters the parameters used to configure the model
+     */
     public HybridCgPmWrapper(GraphSource graph, Parameters parameters) {
         this(graph.getGraph(), null, parameters);
     }
 
+    /**
+     * Constructs a HybridCgPmWrapper from the graph of the given graph source, taking variable types from the data
+     * wrapper's selected data set.
+     *
+     * @param graph      the source of the graph
+     * @param data       the data wrapper; its selected data model must be a DataSet
+     * @param parameters the parameters used to configure the model
+     */
     public HybridCgPmWrapper(GraphSource graph, DataWrapper data, Parameters parameters) {
         this(graph.getGraph(), (DataSet) data.getSelectedDataModel(), parameters);
     }
@@ -63,21 +90,55 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         Objects.requireNonNull(params, "params");
 
         if (dataSet != null) {
-            graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+            // Take the variable types (and categories) from the data, but give the model its own node objects
+            // carrying the input graph's layout. replaceNodes alone made the model's nodes the data set's variable
+            // objects, shared with every other box on that data, so this box showed whatever layout was last set
+            // through them, and the layout of the input graph was lost.
+            Graph input = graph;
+            graph = new EdgeListGraph(GraphUtils.replaceNodes(graph, dataSet.getVariables()), true);
+            LayoutUtil.arrangeBySourceGraph(graph, input);
         }
 
         final List<Node> nodeOrder = new ArrayList<>(graph.getNodes());
 
-        // Build type/category maps from node classes (normalize categories to avoid nulls)
+        // Decide which variables are discrete. When a data set is attached, types come
+        // from the data's variables (mode "fromGraph" after replaceNodes); otherwise the
+        // "hybridcg.pmTypeMode" parameter governs: fromGraph (default), allContinuous,
+        // allDiscrete, or mixed (a fixed proportion chosen by a seeded shuffle).
+        final String mode = (dataSet != null) ? "fromGraph"
+                : params.getString("hybridcg.pmTypeMode", "fromGraph");
+
+        final int minCats = TMath.max(2, params.getInt("hybridcg.minCategories", 2));
+        final int maxCats = TMath.max(minCats, params.getInt("hybridcg.maxCategories", 4));
+
+        final Set<Node> forcedDiscrete = new HashSet<>();
+
+        if ("mixed".equals(mode)) {
+            int pct = TMath.min(100, TMath.max(0, params.getInt("hybridcg.percentDiscrete", 50)));
+            int numDiscrete = (int) TMath.round(pct / 100.0 * nodeOrder.size());
+            List<Node> shuffled = new ArrayList<>(nodeOrder);
+            RandomUtil.shuffle(shuffled);
+            forcedDiscrete.addAll(shuffled.subList(0, numDiscrete));
+        } else if ("allDiscrete".equals(mode)) {
+            forcedDiscrete.addAll(nodeOrder);
+        }
+
+        // Build type/category maps (normalize categories to avoid nulls)
         final Map<Node, Boolean> isDisc = new LinkedHashMap<>();
         final Map<Node, List<String>> cats = new LinkedHashMap<>();
 
         for (Node v : nodeOrder) {
-            final boolean discrete = v instanceof DiscreteVariable;
+            final boolean discrete = switch (mode) {
+                case "allContinuous" -> false;
+                case "allDiscrete", "mixed" -> forcedDiscrete.contains(v);
+                default -> v instanceof DiscreteVariable;
+            };
+
             isDisc.put(v, discrete);
+
             if (discrete) {
-                List<String> c = ((DiscreteVariable) v).getCategories();
-                cats.put(v, (c == null) ? List.of("0", "1") : new ArrayList<>(c));
+                List<String> c = (v instanceof DiscreteVariable dv) ? dv.getCategories() : null;
+                cats.put(v, (c == null || c.isEmpty()) ? randomCategories(minCats, maxCats) : new ArrayList<>(c));
             } else {
                 cats.put(v, null);
             }
@@ -105,7 +166,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
      */
     public HybridCgPmWrapper(Graph graph, Parameters params, DataSet data) {
         this(graph, null, params); // builds PM first
-        int bins = Math.max(2, params.getInt("hybridcg.cutBins", 3));
+        int bins = TMath.max(2, params.getInt("hybridcg.cutBins", 3));
 
         String m = params.getString("hybridcg.cutMethod", "freq").trim().toLowerCase(Locale.ROOT);
         CutMethod method = switch (m) {
@@ -116,6 +177,17 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         if (data != null) {
             applyCutpointsFromDataInternal(this.hybridCgPm, data, bins, method);
         }
+    }
+
+    /**
+     * Draws a category count uniformly at random in [minCats, maxCats] and returns default
+     * category names "0", "1", ..., using Tetrad's seeded random source for reproducibility.
+     */
+    private static List<String> randomCategories(int minCats, int maxCats) {
+        int k = minCats + RandomUtil.getInstance().nextInt(maxCats - minCats + 1);
+        List<String> out = new ArrayList<>(k);
+        for (int i = 0; i < k; i++) out.add(Integer.toString(i));
+        return out;
     }
 
     /**
@@ -152,7 +224,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         // Build name → column index map once
         Map<Node, Integer> col = new HashMap<>();
         for (Node n : nodes) {
-            int c = data.getColumn(n);
+            int c = data.getColumnIndex(n);
             if (c >= 0) col.put(n, c);
         }
 
@@ -262,7 +334,7 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         if (q <= 0) return sorted[0];
         if (q >= 1) return sorted[sorted.length - 1];
         double pos = q * (sorted.length - 1);
-        int i = (int) Math.floor(pos);
+        int i = (int) TMath.floor(pos);
         double frac = pos - i;
         if (i + 1 >= sorted.length) return sorted[i];
         return sorted[i] * (1 - frac) + sorted[i + 1] * frac;
@@ -364,6 +436,8 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
 
     /**
      * Quick diagnostic for the GUI: are there any discrete children with continuous parents that still lack cutpoints?
+     *
+     * @return true if some discrete node with continuous parents lacks cutpoints; false otherwise or if the PM is null
      */
     public boolean hasDiscreteChildrenNeedingCutpoints() {
         if (hybridCgPm == null) return false;

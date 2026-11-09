@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
@@ -27,6 +28,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestBasisFunctionBlocks;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -41,12 +43,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "BF-Blocks-Test",
-        command = "bf-blocks-test",
-        dataType = DataType.Mixed
-)
-@Mixed
+//@TestOfIndependence(
+//        name = "BF-Blocks-Test",
+//        command = "bf-blocks-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+//@General
 public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
 
     @Serial
@@ -63,8 +66,10 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-Blocks-Test");
         IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE));
+                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
@@ -75,7 +80,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF Blocks Test";
+        return "BF-Blocks";
     }
 
     /**
@@ -94,8 +99,10 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
+        parameters.add(Params.ADAPTIVE_BASIS_SELECTION);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.BASIS_TYPE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 }

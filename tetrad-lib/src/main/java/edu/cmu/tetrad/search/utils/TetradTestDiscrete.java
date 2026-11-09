@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -229,7 +229,7 @@ public final class TetradTestDiscrete implements TetradTest {
 
     private void initialization() {
         for (int i = 0; i < TetradTestDiscrete.GHY.length; i++) {
-            TetradTestDiscrete.GHY[i] *= FastMath.sqrt(2);
+            TetradTestDiscrete.GHY[i] *= TMath.sqrt(2);
         }
         int numRows = this.dataSet.getNumRows();
         int numColumns = this.dataSet.getNumColumns();
@@ -597,7 +597,7 @@ public final class TetradTestDiscrete implements TetradTest {
             for (int j = 0; j < this.values[this.currentVar2].length; j++) {
                 score -=
                         this.currentCounts[this.currentVar1][this.currentVar2][i][j] *
-                        FastMath.log(this.currentPi[i][j]);
+                        TMath.log(this.currentPi[i][j]);
             }
         }
         return score;

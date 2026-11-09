@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetradapp.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -143,8 +143,8 @@ public class EditorWindow extends JInternalFrame
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-        int width = FastMath.min(b0.getPreferredSize().width + 50, screenSize.width);
-        int height = FastMath.min(b0.getPreferredSize().height + 50, screenSize.height - 100);
+        int width = TMath.min(b0.getPreferredSize().width + 50, screenSize.width);
+        int height = TMath.min(b0.getPreferredSize().height + 50, screenSize.height - 100);
 
         if (!(editor instanceof DoNotScroll) && (b0.getPreferredSize().width > width || b0.getPreferredSize().height > height)) {
             JScrollPane scroll = new JScrollPane(b0);

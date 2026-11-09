@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.NtadExplorer;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.ui.DualListDragAndDrop;
 import edu.cmu.tetradapp.model.datamanip.NtadExplorerWrapper;
 
 import javax.swing.*;
@@ -47,23 +48,62 @@ import java.util.List;
  */
 public class NtadExplorerEditor extends JPanel {
 
+    /**
+     * The wrapper holding the data and the Ntad results.
+     */
     private final NtadExplorerWrapper wrapper;
 
+    /**
+     * The data model whose variables are explored.
+     */
     private final DataModel dataSet;
 
+    /**
+     * List model for the variables available for selection.
+     */
     private final DefaultListModel<Node> availableModel = new DefaultListModel<>();
+    /**
+     * List model for the selected variables.
+     */
     private final DefaultListModel<Node> selectedModel = new DefaultListModel<>();
 
+    /**
+     * List showing the available variables.
+     */
     private final JList<Node> availableList = new JList<>(availableModel);
+    /**
+     * List showing the selected variables.
+     */
     private final JList<Node> selectedList = new JList<>(selectedModel);
 
+    /**
+     * Spinner for the block size m.
+     */
     private final JSpinner blockSizeSpinner;
+    /**
+     * Spinner for the maximum number of results.
+     */
     private final JSpinner maxResultsSpinner;
+    /**
+     * Field for the significance level alpha.
+     */
     private final JFormattedTextField alphaField;
 
+    /**
+     * Table model for the Ntad results.
+     */
     private final NtadResultTableModel tableModel;
+    /**
+     * Table showing the Ntad results.
+     */
     private final JTable resultsTable;
 
+    /**
+     * Constructs the editor for the given wrapper.
+     *
+     * @param wrapper the Ntad explorer wrapper; must not be null
+     * @throws NullPointerException if wrapper is null
+     */
     public NtadExplorerEditor(NtadExplorerWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException("NtadExplorerWrapper is required.");
@@ -174,6 +214,9 @@ public class NtadExplorerEditor extends JPanel {
         removeButton.addActionListener(e -> moveSelected(selectedList, selectedModel, availableModel));
         addAllButton.addActionListener(e -> moveAll(availableModel, selectedModel));
         clearButton.addActionListener(e -> moveAll(selectedModel, availableModel));
+
+        // Dragging does what the arrows do; a drop on the same list reorders.
+        DualListDragAndDrop.install(availableList, selectedList, null);
 
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);

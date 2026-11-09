@@ -21,14 +21,18 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A caching wrapper for IndependenceTest.
  * <p>
- * Ensures that each unique conditional independence test (X â Y | Z) is evaluated at most once. Results are cached and
+ * Ensures that each unique conditional independence test (X _||_ Y | Z) is evaluated at most once. Results are cached and
  * re-used. Both (X,Y|Z) and (Y,X|Z) map to the same cache entry.
  * <p>
  * Useful for expensive tests such as KCI.
@@ -38,7 +42,7 @@ public class CachingIndependenceTest implements IndependenceTest {
     private final IndependenceTest base;
 
     // Canonical key -> cached result
-    private final Map<CacheKey, IndependenceResult> cache = new HashMap<>();
+    private final Map<CacheKey, IndependenceResult> cache = new ConcurrentHashMap<>();
 
     /**
      * Constructs a caching wrapper for an IndependenceTest. This wrapper ensures that each unique
@@ -129,6 +133,59 @@ public class CachingIndependenceTest implements IndependenceTest {
         return base;
     }
 
+    /**
+     * Returns the alpha of the base test. Without this delegation, consumers relying on alpha (for instance,
+     * MarkovCheck's statistics) fail with UnsupportedOperationException when handed a cached test.
+     *
+     * @return the base test's alpha.
+     */
+    @Override
+    public double getAlpha() {
+        return this.base.getAlpha();
+    }
+
+    /**
+     * Sets the alpha of the base test and clears the cache, since cached independence judgments were made under the
+     * previous alpha and would otherwise be returned inconsistently.
+     *
+     * @param alpha the new alpha.
+     */
+    @Override
+    public void setAlpha(double alpha) {
+        this.base.setAlpha(alpha);
+        this.cache.clear();
+    }
+
+    /**
+     * Returns the sample size of the base test.
+     *
+     * @return the base test's sample size.
+     */
+    @Override
+    public int getSampleSize() {
+        return this.base.getSampleSize();
+    }
+
+    /**
+     * Returns the covariance matrix of the base test.
+     *
+     * @return the base test's covariance matrix.
+     */
+    @Override
+    public ICovarianceMatrix getCov() {
+        return this.base.getCov();
+    }
+
+    /**
+     * Returns the datasets of the base test.
+     *
+     * @return the base test's datasets.
+     */
+    @Override
+    public List<DataSet> getDataSets() {
+        return this.base.getDataSets();
+    }
+
     // ---------------------------------------------------------------------
     // Internal cache key
     // ---------------------------------------------------------------------
@@ -149,7 +206,7 @@ public class CachingIndependenceTest implements IndependenceTest {
             // canonicalize: sorted conditioning set
             this.z = new ArrayList<>();
             for (Node n : condSet) this.z.add(n.getName());
-            Collections.sort(this.z);
+            this.z.sort(NaturalSort.naturalComparator());
         }
 
         @Override

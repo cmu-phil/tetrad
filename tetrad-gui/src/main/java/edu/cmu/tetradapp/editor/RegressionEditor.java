@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
@@ -27,6 +29,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.RegressionRunner;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -99,7 +102,7 @@ public class RegressionEditor extends JPanel {
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
         this.reportText = new JTextArea();
-        this.reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.reportText.setFont(ThemeUtils.monospaced(12));
         this.reportText.setTabSize(10);
 
         if (this.runner.getResult() != null) {
@@ -141,6 +144,7 @@ public class RegressionEditor extends JPanel {
 
         if (numModels > 1) {
             JComboBox<Integer> comp = new JComboBox<>();
+            ArrowKeyNavigation.install(this, comp);
 
             for (int i = 0; i < numModels; i++) {
                 comp.addItem(i + 1);
@@ -196,7 +200,7 @@ public class RegressionEditor extends JPanel {
         this.runner.execute();
         Graph graph = this.runner.getOutGraph();
         LayoutUtil.defaultLayout(graph);
-        LayoutUtil.fruchtermanReingoldLayout(graph);
+//        LayoutUtil.fruchtermanReingoldLayout(graph);
         this.workbench.setGraph(graph);
         RegressionResult report = this.runner.getResult();
         this.reportText.setText(report.toString());

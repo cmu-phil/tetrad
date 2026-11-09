@@ -21,12 +21,17 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -90,10 +95,31 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private final DataSet embeddedDataSetFull;
     private IndTestBlocksWilkes blocksTest;          // delegate
     private int sampleSize;
+
+    /**
+     * The missing-data specification, handed to every delegate rebuild (null: the data set is complete).
+     */
+    private final MissingDataSpec missingSpec;
     private final int basisType;
+    /**
+     * If true, uninformative higher-order basis columns were pruned from the blocks at construction; remembered so
+     * that marginal tests built by computePValue use the same behavior.
+     */
+    private final boolean adaptiveBasisSelection;
     // ---- Knobs ----
     private double alpha = 0.01;
     private int nEff;
+    /**
+     * The caller-requested effective sample size (-1 = default). Remembered so that it
+     * survives setRows; see setEffectiveSampleSize.
+     */
+    private int userNEff = -1;
+
+    /**
+     * Under EM_COVARIANCE, the effective sample size the spec's mode implies for the raw data (-1 for FULL_N), used
+     * when the caller has not set one. Computed on the raw variables, not the embedding; see the constructor.
+     */
+    private final int emNEff;
 
     // Optional row subset (null = use all rows)
     private List<Integer> rows;
@@ -109,12 +135,71 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
      */
     public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType) {
+        this(dataSet, truncationLimit, basisType, false);
+    }
+
+    /**
+     * Constructs an instance of IndTestBasisFunctionBlocks, optionally with adaptive basis selection.
+     *
+     * @param dataSet                the input dataset, which provides the raw data to be analyzed. Cannot be null.
+     * @param truncationLimit        the degree of the basis function transformation. Must be a non-negative integer.
+     * @param basisType              the type of basis functions to use for transformations.
+     * @param adaptiveBasisSelection if true, basis columns beyond the linear term that fail a BIC-crossing screen
+     *                               against every other variable's embedded block are dropped from the blocks before
+     *                               testing, so that the effective truncation is chosen by the data and the test's
+     *                               behavior converges as the truncation limit is raised past the data-supported
+     *                               order. The screen is computed once, from the full-sample embedded correlation
+     *                               matrix, and the same pruned blocks are used for every test and every row subset
+     *                               (so bootstrap subsamples share one fixed block structure). Wilks degrees of
+     *                               freedom shrink accordingly.
+     * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
+     * @see Embedding#pruneUninformativeBasisColumns(DataSet, Map, edu.cmu.tetrad.data.ICovarianceMatrix)
+     */
+    public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType,
+                                      boolean adaptiveBasisSelection) {
+        this(dataSet, truncationLimit, basisType, adaptiveBasisSelection, null);
+    }
+
+    /**
+     * As the four-argument constructor, with an explicit missing-data specification. On a data set with missing
+     * values the supported policies are LISTWISE, TESTWISE and EM_COVARIANCE. In both of the last two the embedding
+     * carries NaN in every derived column of a variable wherever that variable is missing, and the adaptive screen
+     * (if any) uses pairwise-deletion correlations. Under TESTWISE the delegate blocks test computes each test's
+     * correlation matrix over the rows complete on the columns it uses. Under EM_COVARIANCE it estimates one
+     * correlation matrix of the embedded columns by EM, under a jointly Gaussian working model, and the spec's
+     * effective-sample-size mode sets the sample size unless the caller sets one. As for the basis-function BIC
+     * score, this working model ignores the exact relations among a continuous variable's basis columns (the
+     * quadratic column is the square of the linear one), so the EM path is offered for comparison, not as the
+     * default. A null spec on missing data throws.
+     *
+     * @param dataSet                the input dataset.
+     * @param truncationLimit        the degree of the basis function transformation.
+     * @param basisType              the type of basis functions.
+     * @param adaptiveBasisSelection see the four-argument constructor.
+     * @param spec                   the missing-data specification, or null.
+     */
+    public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType,
+                                      boolean adaptiveBasisSelection, MissingDataSpec spec) {
         if (dataSet == null) throw new IllegalArgumentException("raw == null");
         if (truncationLimit < 0) throw new IllegalArgumentException("degree must be >= 0");
 
+        // Decided before the deletion gate, which rejects EM_COVARIANCE: under EM no rows are deleted, and the
+        // delegate estimates the covariance of the embedded columns.
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
+                               && dataSet.existsMissingValue();
+
+        // On the raw variables: MIN_PAIRWISE is the same before and after embedding, but MEAN_PAIRWISE is not,
+        // since averaging over embedded columns would weight each variable by the width of its block.
+        this.emNEff = emCovariance ? MissingDataUtils.effectiveSampleSize(dataSet, spec) : -1;
+
+        if (!emCovariance) {
+            dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "IndTestBasisFunctionBlocks");
+        }
+        this.missingSpec = spec;
         this.dataSet = dataSet;
         this.truncationLimit = truncationLimit;
         this.basisType = basisType;
+        this.adaptiveBasisSelection = adaptiveBasisSelection;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(dataSet.getVariables());
 
@@ -127,21 +212,31 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // Keep the full embedded DataSet so we can subset rows later
         this.embeddedDataSetFull = embeddedData.embeddedData();
 
+        // With adaptive basis selection, prune uninformative higher-order basis columns once, on the full sample.
+        // The pruned map is used to build the blocks below and persists across setRows rebuilds, so the block
+        // structure is identical across subsamples (as required by the class contract).
+        Map<Integer, List<Integer>> embeddingMap = adaptiveBasisSelection
+                ? Embedding.pruneUninformativeBasisColumns(dataSet, embeddedData.embedding(),
+                this.embeddedDataSetFull.existsMissingValue()
+                        ? new CorrelationMatrix(new TestwiseCovariance(this.embeddedDataSetFull.getDoubleData())
+                        .pairwiseCovarianceMatrix(this.embeddedDataSetFull.getVariables()))
+                        : new CorrelationMatrix(this.embeddedDataSetFull))
+                : embeddedData.embedding();
+
         // blocks: one per ORIGINAL variable, in the same order
         this.blocks = new ArrayList<>(dataSet.getNumColumns());
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            this.blocks.add(embeddedData.embedding().get(i));
+            this.blocks.add(embeddingMap.get(i));
         }
 
         // Default: all rows
         this.rows = null;
         this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
 
         // Delegate CI testing to IndTestBlocks over the full embedded data
         this.blocksTest = new IndTestBlocksWilkes(
-                new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
-        this.blocksTest.setEffectiveSampleSize(-1);
+                new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables), this.missingSpec);
+        applyEffectiveSampleSize();
     }
 
     // ====== IndependenceTest API ======
@@ -175,6 +270,14 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, new HashSet<>(z))) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    (DataSet) getData(), variables, null,
+//                    x, y, new ArrayList<>(z),
+//                    new IndependenceFact(x, y, z),
+//                    alpha);
+//        }
+
         // Delegate to the block test to get the p-value, then apply this class's alpha.
         IndependenceResult r = this.blocksTest.checkIndependence(x, y, z);
         double p = r.getPValue();
@@ -236,7 +339,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
         // Build the BFIT test bound to this dataset
-        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, truncationLimit, basisType);
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, truncationLimit, basisType, adaptiveBasisSelection);
 
         // Resolve nodes and run the marginal test
         Node X = ds.getVariable("X");
@@ -247,7 +350,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // Clamp for numeric robustness
         if (!Double.isFinite(p)) return 1.0;
-        return Math.max(0.0, Math.min(p, 1.0));
+        return TMath.max(0.0, TMath.min(p, 1.0));
     }
 
     // --- helper: build a 2-column continuous DataSet (rows = samples) ---
@@ -271,8 +374,8 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
             for (int i = 0; i < n; i++) yj[i] = Y[i][j];
             double pj = computePValue(x, yj);
             if (Double.isNaN(pj)) continue;
-            double pc = Math.max(pj, 1e-300); // avoid log(0)
-            stat += -2.0 * Math.log(pc);
+            double pc = TMath.max(pj, 1e-300); // avoid log(0)
+            stat += -2.0 * TMath.log(pc);
             k++;
         }
         if (k == 0) return 1.0;
@@ -285,7 +388,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         double p = 1.0 - cdf;
         if (!Double.isFinite(p)) return 1.0;
         if (p < 0.0) return 0.0;
-        return Math.min(p, 1.0);
+        return TMath.min(p, 1.0);
     }
 
     /**
@@ -326,12 +429,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         if (rows == null) {
             this.rows = null;
             this.sampleSize = dataSet.getNumRows();
-            setEffectiveSampleSize(-1);
 
             // Rebuild delegate on the full embedded data
             this.blocksTest = new IndTestBlocksWilkes(
-                    new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
-            this.blocksTest.setEffectiveSampleSize(-1);
+                    new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables), this.missingSpec);
+            applyEffectiveSampleSize();
             return;
         }
 
@@ -349,15 +451,14 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         this.rows = new ArrayList<>(rows);
         this.sampleSize = rows.size();
-        setEffectiveSampleSize(-1);
 
         // Build an embedded DataSet with only the selected rows
         DataSet subEmbedded = subsetRows(embeddedDataSetFull, this.rows);
 
         // Rebuild delegate on the subsampled embedded data
         this.blocksTest = new IndTestBlocksWilkes(
-                new BlockSpec(subEmbedded, this.blocks, this.variables));
-        this.blocksTest.setEffectiveSampleSize(-1);
+                new BlockSpec(subEmbedded, this.blocks, this.variables), this.missingSpec);
+        applyEffectiveSampleSize();
     }
 
     /**
@@ -394,8 +495,68 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         return this.nEff;
     }
 
+    /**
+     * Sets the effective sample size. The value is remembered and survives subsequent
+     * {@code setRows} calls.
+     * <p>
+     * Changes from the pre-2026-8 implementation: previously, {@code setRows} reset the
+     * effective sample size to the row count when it rebuilt the internal delegate, so a
+     * caller-set value was silently discarded by any tool that subsamples or shuffles rows --
+     * in particular the Markov Checker, which calls {@code setRows} on every run (even with
+     * resample fraction 1). The requested value is now stored and re-applied whenever the row
+     * set changes. Under a proper row subset, the applied effective sample size is rescaled
+     * proportionally: if the caller declares that the full data of N rows carry nEff
+     * independent observations' worth of information, a subset of m rows is treated as
+     * carrying nEff * m / N (floored at 1). Passing a negative value restores the default
+     * (effective sample size = current row count).
+     *
+     * @param nEff the effective sample size, or a negative value for the default.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        this.userNEff = nEff < 0 ? -1 : nEff;
+        applyEffectiveSampleSize();
+    }
+
+    /**
+     * Applies the remembered effective-sample-size request to the current row set and forwards
+     * the result to the delegate, which performs the actual rank and p-value computations.
+     * (The delegate is null only during construction; the constructor calls this method after
+     * creating the delegate.)
+     */
+    private void applyEffectiveSampleSize() {
+        int applied;
+
+        // A caller's value wins; failing that, under EM, the spec's effective-sample-size mode.
+        int requested = this.userNEff >= 0 ? this.userNEff : this.emNEff;
+
+        if (requested < 0) {
+            applied = -1; // default: delegate uses its own row count
+            this.nEff = this.sampleSize;
+        } else if (this.rows == null) {
+            applied = requested;
+            this.nEff = applied;
+        } else {
+            // Proportional rescaling under a row subset; see setEffectiveSampleSize.
+            int total = this.dataSet.getNumRows();
+            applied = TMath.max(1, (int) TMath.round(
+                    requested * (double) this.sampleSize / (double) total));
+            this.nEff = applied;
+        }
+
+        if (this.blocksTest != null) {
+            this.blocksTest.setEffectiveSampleSize(applied);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test uses the rows complete on the
+     * embedded columns of x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

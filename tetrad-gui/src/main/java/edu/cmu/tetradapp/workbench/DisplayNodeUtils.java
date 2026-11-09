@@ -23,90 +23,143 @@ package edu.cmu.tetradapp.workbench;
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Apr 1, 2006 Time: 5:19:32 PM To change this template use File |
- * Settings | File Templates.
+ * Shared constants and painting for graph node display components. Colors and the font are delegated to
+ * {@link WorkbenchStyle} so they follow the active Look &amp; Feel; the getters are kept for existing callers.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class DisplayNodeUtils {
+
+    /**
+     * Constructs a new DisplayNodeUtils. All members are static.
+     */
+    public DisplayNodeUtils() {
+    }
+
     // Note that this component must be a JComponent, since non-rectangular
-// shapes are used for some extensions.
-    private static final Color NODE_FILL_COLOR = new Color(148, 198, 226);
-    private static final Color NODE_EDGE_COLOR = new Color(146, 154, 166);
-    private static final Color NODE_SELECTED_FILL_COLOR = new Color(244, 219, 110);
-    private static final Color NODE_SELECTED_EDGE_COLOR = new Color(215, 193, 97);
-    private static final Color NODE_TEXT_COLOR = new Color(0, 1, 53);
+    // shapes are used for some extensions.
 
-
-    private static final Font FONT = new Font("Dialog", Font.BOLD, 12);
     private static final int PIXEL_GAP = 7;
 
     /**
-     * <p>getNodeFillColor.</p>
+     * The fill color of an unselected measured node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the fill color.
      */
     public static Color getNodeFillColor() {
-        return DisplayNodeUtils.NODE_FILL_COLOR;
+        return WorkbenchStyle.measuredFillOpaque();
     }
 
     /**
-     * <p>getNodeEdgeColor.</p>
+     * The border color of an unselected node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the border color.
      */
     public static Color getNodeEdgeColor() {
-        return DisplayNodeUtils.NODE_EDGE_COLOR;
+        return WorkbenchStyle.nodeBorder();
     }
 
     /**
-     * <p>getNodeSelectedFillColor.</p>
+     * The fill color of a selected measured node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the fill color.
      */
     public static Color getNodeSelectedFillColor() {
-        return DisplayNodeUtils.NODE_SELECTED_FILL_COLOR;
+        return WorkbenchStyle.selectedFill(WorkbenchStyle.measuredFill());
     }
 
     /**
-     * <p>getNodeSelectedEdgeColor.</p>
+     * The border color of a selected node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the border color.
      */
     public static Color getNodeSelectedEdgeColor() {
-        return DisplayNodeUtils.NODE_SELECTED_EDGE_COLOR;
+        return WorkbenchStyle.selectedBorder();
     }
 
     /**
-     * <p>getNodeTextColor.</p>
+     * The color of node name text.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the text color.
      */
     public static Color getNodeTextColor() {
-        return DisplayNodeUtils.NODE_TEXT_COLOR;
+        return WorkbenchStyle.nodeText();
     }
 
     /**
-     * <p>getFont.</p>
+     * The font for node names.
      *
-     * @return a {@link java.awt.Font} object
+     * @return the font.
      */
     public static Font getFont() {
-        return DisplayNodeUtils.FONT;
+        return WorkbenchStyle.nodeFont();
     }
 
     /**
-     * <p>getPixelGap.</p>
+     * The vertical padding above and below node text.
      *
-     * @return a int
+     * @return the gap in pixels.
      */
     public static int getPixelGap() {
         return DisplayNodeUtils.PIXEL_GAP;
     }
+
+    /**
+     * The given base font, scaled by the zoom factor of the display node the given component sits in, or the base
+     * font itself when the component is not in a display node or the workbench is unzoomed. Display comps size and
+     * paint themselves with this, so that their text follows the workbench's zoom.
+     *
+     * @param component the display comp.
+     * @param base      the font at a zoom of 1.
+     * @return the font to size and paint with.
+     */
+    static Font scaledFont(Component component, Font base) {
+        double scale = DisplayNodeUtils.scaleOf(component);
+        return scale == 1.0 ? base : base.deriveFont((float) (base.getSize2D() * scale));
+    }
+
+    /**
+     * The zoom factor of the display node the given component sits in, or 1 when the component is not in a
+     * display node. Display comps scale their fixed paddings and minimum sizes by this, so a node's box tracks
+     * its text in both directions instead of bottoming out at the unzoomed minimum.
+     *
+     * @param component the display comp.
+     * @return the scale; always positive.
+     */
+    static double scaleOf(Component component) {
+        return component != null && component.getParent() instanceof DisplayNode d ? d.getScale() : 1.0;
+    }
+
+    /**
+     * Paints a node: fills the shape, draws its border (accented and heavier when selected), and centers the name
+     * in it. The caller is responsible for rendering hints.
+     *
+     * @param g2       the graphics to paint on.
+     * @param shape    the node outline, in component coordinates.
+     * @param name     the node name; may be null.
+     * @param size     the node size.
+     * @param fill     the unselected fill color.
+     * @param selected whether the node is selected.
+     * @param font     the font for the name; null means the unzoomed node font.
+     */
+    static void paintNode(Graphics2D g2, Shape shape, String name, Dimension size, Color fill, boolean selected,
+                          Font font) {
+        if (name == null) name = "";
+
+        g2.setColor(WorkbenchStyle.translucentFill(selected ? WorkbenchStyle.selectedFill(fill) : fill));
+        g2.fill(shape);
+
+        g2.setStroke(new BasicStroke(selected ? 2f : 1f));
+        g2.setColor(selected ? WorkbenchStyle.selectedBorder() : WorkbenchStyle.nodeBorder());
+        g2.draw(shape);
+
+        if (font == null) font = WorkbenchStyle.nodeFont();
+        FontMetrics fm = g2.getFontMetrics(font);
+        int x = (size.width - fm.stringWidth(name)) / 2;
+        int y = (size.height - fm.getHeight()) / 2 + fm.getAscent();
+        g2.setFont(font);
+        g2.setColor(WorkbenchStyle.nodeText());
+        g2.drawString(name, x, y);
+    }
 }
-
-
-
-
-

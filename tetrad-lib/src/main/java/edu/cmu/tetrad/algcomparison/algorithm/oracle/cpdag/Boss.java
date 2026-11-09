@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -34,6 +34,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -56,7 +57,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, HasKnowledge,
+public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
@@ -102,7 +103,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataModel.getName() != null) {
                 timeSeries.setName(dataModel.getName());
             }
@@ -116,6 +117,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         boss.setUseBes(parameters.getBoolean(Params.USE_BES));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        boss.setUseIlsRestarts(parameters.getBoolean(Params.USE_ILS_RESTARTS));
         boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -175,6 +177,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
+        params.add(Params.USE_ILS_RESTARTS);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);

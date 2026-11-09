@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 
+import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -68,7 +69,11 @@ public class TestParallel {
                         Graph graph = RandomGraph.randomGraph(10, 0, 10, 100, 100, 100, false);
                         SemPm pm = new SemPm(graph);
                         SemIm im = new SemIm(pm);
-                        var data = im.simulateData(1000, false);
+                        try {
+                            var data = im.simulateData(1000, false);
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
 
                         count.incrementAndGet();
 

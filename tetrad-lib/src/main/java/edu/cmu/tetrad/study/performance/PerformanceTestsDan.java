@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.FgesFci;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -37,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,7 +186,12 @@ public class PerformanceTestsDan {
             _vars_temp = _vars_temp.replace("X", "");
             out2.println(_vars_temp);
 
-            DataSet fullData = im.simulateData(numCases, false);
+            DataSet fullData = null;
+            try {
+                fullData = im.simulateData(numCases, false);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
 
             DataSet data = DataTransforms.restrictToMeasured(fullData);
 
@@ -196,14 +202,14 @@ public class PerformanceTestsDan {
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 
-            FgesFci fgesFci = new FgesFci(independenceTestGFci, scoreGfci);
-            fgesFci.setVerbose(false);
-            fgesFci.setMaxDegree(depth);
-            fgesFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+            Gfci gfci = new Gfci(independenceTestGFci, scoreGfci);
+            gfci.setVerbose(false);
+            gfci.setMaxDegree(depth);
+            gfci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
 //            fgesFci.setPossibleDsepSearchDone(true);
-            fgesFci.setCompleteRuleSetUsed(true);
+            gfci.setCompleteRuleSetUsed(true);
 
-            Graph pag = fgesFci.search();
+            Graph pag = gfci.search();
 
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);
@@ -253,7 +259,7 @@ public class PerformanceTestsDan {
                 if (edge == null) {
                     out.print(0 + "\t");
                 } else {
-                    Endpoint ej = edge.getEndpoint(var);
+                    Endpoint ej = edge.getProximalEndpoint(var);
                     if (ej == Endpoint.TAIL) {
                         out.print(3 + "\t");
                     } else if (ej == Endpoint.ARROW) {

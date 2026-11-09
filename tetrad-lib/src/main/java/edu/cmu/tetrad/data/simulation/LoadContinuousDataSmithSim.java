@@ -129,7 +129,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
 
-                LayoutUtil.defaultLayout(this.graph);
+                LayoutUtil.defaultLayoutConditional(this.graph);
 
                 break;
             }

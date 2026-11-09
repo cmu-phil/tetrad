@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -34,8 +34,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -44,6 +44,12 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class GraphUtils {
+
+    /**
+     * Constructs a new GraphUtils. All methods are static.
+     */
+    public GraphUtils() {
+    }
     /**
      * <p>makeRandomGraph.</p>
      *
@@ -65,22 +71,23 @@ public class GraphUtils {
         int randomGraphMaxDegree = parameters.getInt("randomGraphMaxDegree", 6);
         boolean graphChooseFixed = parameters.getBoolean("graphChooseFixed", false);
         int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
-        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
-        int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
+        int numSharedParents = parameters.getInt("mimicNumSharedParents", 0);
+         int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
         int measurementModelDegree = parameters.getInt("mimNumChildrenPerLatents", 3);
         String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs");
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
+        int numStructuralEdges = parameters.getInt("mimicNumStructuralEdges", 5);
         double alpha = parameters.getDouble("scaleFreeAlpha", 0.2);
         double beta = parameters.getDouble("scaleFreeBeta", 0.6);
         double deltaIn = parameters.getDouble("scaleFreeDeltaIn", 0.2);
         double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        String type = parameters.getString("randomGraphType", "Dag");
+        String randomGraphType = Preferences.userNodeForPackage(GraphUtils.class).get("randomGraphType", "Dag");
 
-        return switch (type) {
+        return switch (randomGraphType) {
             case "Dag" -> RandomGraph.randomGraph(
                     newGraphNumMeasuredNodes,
                     newGraphNumLatents,
@@ -96,12 +103,22 @@ public class GraphUtils {
                         numLatentMeasuredImpureParents,
                         numMeasuredMeasuredImpureParents,
                         numMeasuredMeasuredImpureAssociations,
-                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1],
-                        new Random());
+                        RandomMim.LatentLinkMode.values()[metaEdgeConnectionType - 1]);
+            }
+            case "Mimic" -> {
+                List<RandomMimic.MimicGroupSpec> specs = RandomMimic.parseMimicGroupSpecs(
+                        parameters.getString("mimicGroupSpecs"));
+                yield RandomMimic.constructRandomMimic(
+                        specs,
+                        numStructuralEdges,
+                        numSharedParents,
+                        numLatentMeasuredImpureParents,
+                        numMeasuredMeasuredImpureParents,
+                        numMeasuredMeasuredImpureAssociations);
             }
             case "ScaleFree" -> GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
                     newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
-            default -> throw new IllegalStateException("Unrecognized graph type: " + type);
+            default -> throw new IllegalStateException("Unrecognized graph type: " + randomGraphType);
         };
     }
 
@@ -111,6 +128,13 @@ public class GraphUtils {
                 alpha, beta, deltaIn, deltaOut);
     }
 
+    /**
+     * Returns a "Check Graph Type" menu with items, with Alt+1 through Alt+5 accelerators, that check whether the
+     * workbench graph is a DAG, CPDAG, PDAG, MAG or PAG.
+     *
+     * @param workbench the workbench whose graph is checked.
+     * @return the menu.
+     */
     public static @NotNull JMenu getCheckGraphMenu(GraphWorkbench workbench) {
         JMenu checkGraph = new JMenu("Check Graph Type");
         JMenuItem checkGraphForDag = new JMenuItem(new CheckGraphFoDagAction(workbench));
@@ -142,6 +166,13 @@ public class GraphUtils {
         return checkGraph;
     }
 
+    /**
+     * Returns a "Highlight" menu with actions that select edges of various types, edges in triangles, cliques and
+     * cycles, and latent or measured nodes in the workbench.
+     *
+     * @param workbench the workbench in which the selections are made.
+     * @return the menu.
+     */
     public static @NotNull JMenu getHighlightMenu(GraphWorkbench workbench) {
         JMenu highlightMenu = new JMenu("Highlight");
         highlightMenu.add(new SelectDirectedAction(workbench));
@@ -154,6 +185,7 @@ public class GraphUtils {
         highlightMenu.add(new SelectTrianglesAction(workbench));
         highlightMenu.add(new SelectCliquesAction(workbench));
         highlightMenu.add(new SelectEdgesInCyclicPaths(workbench));
+        highlightMenu.add(new SelectTwoCyclesAction(workbench));
         highlightMenu.add(new SelectEdgesInAlmostCyclicPaths(workbench));
         highlightMenu.addSeparator();
         ;
@@ -197,7 +229,8 @@ public class GraphUtils {
     /**
      * Adds graph manipulation items to the given graph menu.
      *
-     * @param graph the graph menu to add the items to.
+     * @param graph     the graph menu to add the items to.
+     * @param workbench the workbench whose graph the items manipulate.
      */
     public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
 
@@ -315,6 +348,13 @@ public class GraphUtils {
         }
     }
 
+    /**
+     * Returns a "PAG Edge Specialization Markups" menu with an action that toggles the PAG edge specialization markups
+     * in the workbench and an item that shows instructions for them.
+     *
+     * @param workbench the workbench in which the markups are shown.
+     * @return the menu.
+     */
     public static @NotNull JMenu addPagEdgeSpecializationsItems(GraphWorkbench workbench) {
         JMenu pagEdgeSpecializations = new JMenu("PAG Edge Specialization Markups");
         pagEdgeSpecializations.add(new PagEdgeSpecialization(workbench));

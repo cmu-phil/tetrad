@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.TabularComparison;
 
@@ -34,10 +35,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Displays data objects and allows users to edit these objects as well as load and save them.
@@ -46,7 +49,7 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class DataEditor extends JPanel implements KnowledgeEditable,
-        PropertyChangeListener {
+        PropertyChangeListener, ISelectedModel {
 
     /**
      * The parameters for the data editor.
@@ -56,7 +59,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     /**
      * The data wrapper being displayed.
      */
-    private DataWrapper dataWrapper;
+    private DataWrapper dataWrapper = new DataWrapper(new Parameters());
 
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
@@ -67,6 +70,39 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * True if menus should be shown.
      */
     private boolean showMenus = true;
+
+    /**
+     * Models currently displayed in the tabbed pane, in tab order. This is the source of truth for
+     * getSelectedDataModel().
+     */
+    private final java.util.List<DataModel> displayedModels = new java.util.ArrayList<>();
+
+    /**
+     * True once the tab selection listener has been installed; avoids stacking multiple change listeners across
+     * resets.
+     */
+    private boolean selectionListenerInstalled = false;
+
+    /**
+     * Listens for the wrapper's data model list being replaced by a background process (Causal Unmix, say) so the
+     * display can refresh immediately instead of requiring the editor to be closed and reopened. The event may arrive
+     * on a background thread, so the refresh is posted to the event dispatch thread.
+     */
+    private final PropertyChangeListener wrapperDataListener = evt -> {
+        if ("dataModelList".equals(evt.getPropertyName())) {
+            SwingUtilities.invokeLater(this::reset);
+        }
+    };
+
+    /**
+     * True once the wrapper listener has been installed; avoids stacking the wrapper listener across addNotify calls.
+     */
+    private boolean wrapperListenerInstalled = false;
+
+    /**
+     * True while a table is being redrawn for a display option only, so that the redraw is not taken for an edit.
+     */
+    private boolean displayOnlyTableChange = false;
 
     //==========================CONSTRUCTORS===============================//
 
@@ -85,6 +121,19 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     public DataEditor(int tabPlacement) {
         this.tabbedPane = new JTabbedPane(tabPlacement);
         this.parameters = new Parameters();
+    }
+
+    /**
+     * Constructs a data editor with the given tab placement, optionally hiding the menus.
+     *
+     * @param tabPlacement the tab placement for the tabbed pane
+     * @param showMenus    true if menus should be shown
+     */
+    public DataEditor(int tabPlacement, boolean showMenus) {
+        this.tabbedPane = new JTabbedPane(tabPlacement);
+        this.tabbedPane.setPreferredSize(new Dimension(1000, 800));
+        this.parameters = new Parameters();
+        this.showMenus = showMenus;
     }
 
     /**
@@ -186,23 +235,107 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     menu.show(DataEditor.this, point.x, point.y);
 
                     close.addActionListener(e1 -> {
+                        // closeTab() reports the change itself if a tab was actually closed.
                         closeTab();
                         DataEditor.this.grabFocus();
-                        firePropertyChange("modelChanged", null, null);
                     });
-                } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    DataModel selectedModel = getSelectedDataModel();
-                    getDataWrapper().getDataModelList().setSelectedModel(selectedModel);
-
-                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
     }
 
-    //==========================PUBLIC METHODS=============================//
+    /**
+     * Installs the wrapper data listener when this editor is added to a window, and refreshes if the wrapper's list
+     * changed between construction and display (a background process may have finished in that window).
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
 
-    //=============================PRIVATE METHODS======================//
+        if (!this.wrapperListenerInstalled) {
+            this.dataWrapper.addPropertyChangeListener(this.wrapperDataListener);
+            this.wrapperListenerInstalled = true;
+        }
+
+        // Only editors already populated from a wrapper are refreshed here; editors built with the no-wrapper
+        // constructors are populated later by an explicit reset(...) call and are left alone.
+        if (!this.displayedModels.isEmpty()
+            && !new ArrayList<DataModel>(this.dataWrapper.getDataModelList()).equals(this.displayedModels)) {
+            reset();
+        }
+    }
+
+    /**
+     * Uninstalls the wrapper data listener when this editor is removed from its window, so closed editors are not
+     * retained by the wrapper.
+     */
+    @Override
+    public void removeNotify() {
+        if (this.wrapperListenerInstalled) {
+            this.dataWrapper.removePropertyChangeListener(this.wrapperDataListener);
+            this.wrapperListenerInstalled = false;
+        }
+
+        super.removeNotify();
+    }
+
+    private void rebuildTabsFrom(DataModelList list, DataModel selectedModel) {
+        tabbedPane.removeAll();
+        ArrowKeyNavigation.install(tabbedPane);
+        displayedModels.clear();
+
+        int selectedIndex = -1;
+
+        for (int i = 0; i < list.size(); i++) {
+            DataModel dm = list.get(i);
+            displayedModels.add(dm);
+
+            String name = dm.getName();
+            if (name == null) {
+                name = "" + (i + 1);
+            }
+
+            tabbedPane.addTab(name, dataDisplay(dm));
+            if (dm == selectedModel) {
+                selectedIndex = i;
+            }
+        }
+
+        // With many data sets (e.g. one per subject from Split Data) wrapped tabs stack into rows and crowd out
+        // the table; a scrolling tab strip keeps the layout usable.
+        tabbedPane.setTabLayoutPolicy(tabbedPane.getTabCount() > 8
+                ? JTabbedPane.SCROLL_TAB_LAYOUT : JTabbedPane.WRAP_TAB_LAYOUT);
+
+        if (tabbedPane.getTabCount() > 0) {
+            if (selectedIndex < 0) {
+                selectedIndex = 0;
+                list.setSelectedModel(list.get(0));
+            }
+            tabbedPane.setSelectedIndex(selectedIndex);
+        }
+
+        updateTabbedPanePreferredSize();
+    }
+
+    private void ensureSelectionListener() {
+        if (selectionListenerInstalled) return;
+
+        tabbedPane.addChangeListener(e -> {
+            DataModel m = getSelectedDataModel();
+            if (m != null) {
+                dataWrapper.getDataModelList().setSelectedModel(m);
+            }
+
+            updateTabbedPanePreferredSize();
+            revalidate();
+            repaint();
+
+            firePropertyChange("modelChanged", null, null);
+        });
+
+        selectionListenerInstalled = true;
+    }
+
     private static void removeEmptyModels(DataModelList dataModelList) {
         for (int i = dataModelList.size() - 1; i >= 0; i--) {
             DataModel dataModel = dataModelList.get(i);
@@ -233,93 +366,46 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @param model - The model, must not be null
      */
     public void replace(DataModel model) {
-        if (model == null) {
-            throw new NullPointerException("The given model must not be null");
-        }
+        if (model == null) throw new NullPointerException("The given model must not be null");
 
-        this.tabbedPane.removeAll();
-        setPreferredSize(new Dimension(600, 400));
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.clear();
 
-        // now rebuild
-        if (model instanceof DataModelList) {
-            dataModelList.addAll((DataModelList) model);
-        } else {
-            dataModelList.add(model);
-        }
+        if (model instanceof DataModelList) dataModelList.addAll((DataModelList) model);
+        else dataModelList.add(model);
+
+        removeEmptyModels(dataModelList);
 
         removeAll();
+        rebuildTabsFrom(dataModelList, dataModelList.getSelectedModel());
+        ensureSelectionListener();
 
-        if (model instanceof DataModelList) {
-            for (int i = 0; i < ((DataModelList) model).size(); i++) {
-                DataModel _model = ((DataModelList) model).get(i);
-                this.tabbedPane.addTab(DataEditor.tabName(_model, 1), dataDisplay(_model));
-            }
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
 
-            add(this.tabbedPane, BorderLayout.CENTER);
+        revalidate();
+        repaint();
 
-            if (this.showMenus) {
-                add(menuBar(), BorderLayout.NORTH);
-            }
-        } else {
-            this.tabbedPane.addTab(DataEditor.tabName(model, 1), dataDisplay(model));
-            add(this.tabbedPane, BorderLayout.CENTER);
-
-            if (this.showMenus) {
-                add(menuBar(), BorderLayout.NORTH);
-            }
-
-            validate();
-        }
-
-        this.dataWrapper.setDataModelList(dataModelList);
+        dataWrapper.setDataModelList(dataModelList);
     }
 
     /**
      * Sets this editor to display contents of the given data model wrapper.
      */
     public void reset() {
-        tabbedPane().removeAll();
-        setPreferredSize(new Dimension(600, 400));
-
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         DataModel selectedModel = dataModelList.getSelectedModel();
 
         removeAll();
-        DataEditor.removeEmptyModels(dataModelList);
+        removeEmptyModels(dataModelList);
 
-        int selectedIndex = -1;
+        rebuildTabsFrom(dataModelList, selectedModel);
+        ensureSelectionListener();
 
-        for (int i = 0; i < dataModelList.size(); i++) {
-            DataModel dataModel = dataModelList.get(i);
-            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
-                    dataDisplay(dataModel));
-            if (selectedModel == dataModel) {
-                selectedIndex = i;
-            }
-        }
-
-        tabbedPane().setSelectedIndex(selectedIndex);
-
-        tabbedPane().addChangeListener(e -> {
-            DataModel selectedModel1 = getSelectedDataModel();
-
-            if (selectedModel1 == null) {
-                return;
-            }
-
-            getDataWrapper().getDataModelList().setSelectedModel(
-                    selectedModel1);
-        });
-
-        add(tabbedPane(), BorderLayout.CENTER);
-
-        if (this.showMenus) {
-            add(menuBar(), BorderLayout.NORTH);
-        }
-
-        validate();
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
+        revalidate();
+        repaint();
     }
 
     /**
@@ -328,29 +414,20 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @param extraModels a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public void reset(DataModelList extraModels) {
-        tabbedPane().removeAll();
-        setPreferredSize(new Dimension(600, 400));
+        tabbedPane.removeAll();
 
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.addAll(extraModels);
 
         removeAll();
-        tabbedPane().removeAll();
-        DataEditor.removeEmptyModels(dataModelList);
+        removeEmptyModels(dataModelList);
 
-        int tabIndex = 0;
+        // preserve whatever was selected (if any)
+        rebuildTabsFrom(dataModelList, dataModelList.getSelectedModel());
+        ensureSelectionListener();
 
-        for (DataModel dataModel : dataModelList) {
-            tabbedPane().addTab(DataEditor.tabName(dataModel, ++tabIndex),
-                    dataDisplay(dataModel));
-        }
-
-        add(tabbedPane(), BorderLayout.CENTER);
-
-        if (this.showMenus) {
-            add(menuBar(), BorderLayout.NORTH);
-        }
-
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
         validate();
 
         firePropertyChange("modelChanged", null, null);
@@ -362,32 +439,25 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public void reset(DataModel dataModel) {
-        tabbedPane().removeAll();
-        setPreferredSize(new Dimension(600, 400));
+        tabbedPane.removeAll();
 
-        DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        DataModelList dataModelList = dataWrapper.getDataModelList();
         dataModelList.clear();
         dataModelList.add(dataModel);
 
-        DataEditor.removeEmptyModels(dataModelList);
-        tabbedPane().removeAll();
+        removeAll();
+        removeEmptyModels(dataModelList);
 
-        for (int i = 0; i < dataModelList.size(); i++) {
-            Object _dataModel = dataModelList.get(i);
-            tabbedPane().addTab(DataEditor.tabName(dataModel, i + 1),
-                    dataDisplay(_dataModel));
-        }
+        rebuildTabsFrom(dataModelList, dataModel);
+        ensureSelectionListener();
 
-        add(tabbedPane(), BorderLayout.CENTER);
-
-        if (this.showMenus) {
-            add(menuBar(), BorderLayout.NORTH);
-        }
-
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
         validate();
 
         firePropertyChange("modelChanged", null, null);
     }
+
 
     /**
      * <p>getSelectedDataModel.</p>
@@ -395,21 +465,38 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * @return the data sets that's currently in front.
      */
     public DataModel getSelectedDataModel() {
-        Component selectedComponent = tabbedPane().getSelectedComponent();
-        DataModelContainer scrollPane = (DataModelContainer) selectedComponent;
+        int idx = tabbedPane.getSelectedIndex();
+        if (idx < 0) return null;
+        if (idx >= displayedModels.size()) return null;
 
-        if (scrollPane == null) {
-            return null;
+        // For a tabular tab, return the dataset the table displays. dataDisplay() shows a copy of the wrapper's
+        // model, and syncDisplayedModelsToWrapper() writes that copy back into the wrapper on every table event,
+        // so the displayed copy is the live object. The entry in displayedModels is the pre-copy original: it is
+        // superseded in the wrapper by the first sync, and an in-place edit made to it (e.g. by the Data Audit's
+        // removal controls) is neither shown in the table nor seen downstream.
+        JTable table = getSelectedJTable();
+        if (table instanceof TabularDataJTable tabular) return tabular.getDataSet();
+
+        return displayedModels.get(idx);
+    }
+
+    /**
+     * Refreshes the selected tab after its dataset (as returned by {@link #getSelectedDataModel()}) was edited in
+     * place by another component, such as the Data Audit's recode and removal controls. Fires a structure change on
+     * the table model, which rebuilds the columns and, through the model listener installed in dataDisplay(),
+     * writes the displayed dataset back to the wrapper and fires modelChanged. No-op for non-tabular tabs.
+     */
+    public void refreshSelectedDisplay() {
+        JTable table = getSelectedJTable();
+        if (table instanceof TabularDataJTable tabular) {
+            ((javax.swing.table.AbstractTableModel) tabular.getModel()).fireTableStructureChanged();
         }
-
-        return scrollPane.getDataModel();
     }
 
     /**
      * <p>selectFirstTab.</p>
      */
     public void selectFirstTab() {
-//        tabbedPane().setSelectedIndex(tabbedPane().getTabCount() - 1);
         tabbedPane().setSelectedIndex(0);
         DataModel selectedModel = getSelectedDataModel();
 
@@ -479,6 +566,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     private JTable getSelectedJTable() {
         Object display = tabbedPane().getSelectedComponent();
 
+        if (display == null && getNumJTables() > 0) {
+            display = tabbedPane().getComponentAt(0);
+            tabbedPane.setSelectedIndex(0);
+        }
+
         if (display instanceof DataDisplay) {
             return ((DataDisplay) display).getDataDisplayJTable();
         } else if (display instanceof CovMatrixDisplay) {
@@ -525,8 +617,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
         JMenu editMenu = new JMenu("Edit");
 
-        JMenuItem clearCells = new JMenuItem("Clear Cells");
-        JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
+//        JMenuItem clearCells = new JMenuItem("Clear Cells");
+//        JMenuItem deleteSelectedRowsOrColumns = new JMenuItem("Delete Selected Rows or Columns");
         JMenuItem deleteNamedColumns = new JMenuItem("Delete named columns");
         JMenuItem selectNamedColumns = new JMenuItem("Select named columns");
         JMenuItem copyCells = new JMenuItem("Copy Cells");
@@ -534,22 +626,24 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenuItem pasteCells = new JMenuItem("Paste Cells");
         JMenuItem setToMissingCells = new JMenuItem("Set Constants Col To Missing");
 
-        clearCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK));
-        deleteSelectedRowsOrColumns.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK));
-        copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-        cutCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
-        pasteCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+//        clearCells.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK));
+//        deleteSelectedRowsOrColumns.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK));
 
-        clearCells.addActionListener(e -> {
-            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
-            assert table != null;
-            table.clearSelected();
-        });
+        int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        cutCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, menuMask));
+        pasteCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, menuMask));
+
+//        clearCells.addActionListener(e -> {
+//            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
+//            assert table != null;
+//            table.clearSelected();
+//            syncDisplayedModelsToWrapper();
+//            firePropertyChange("modelChanged", null, null);
+//        });
 
         ActionListener deleteSelectedRowsOrColumnsActionListener = e -> {
             JTable table = getSelectedJTable();
@@ -565,9 +659,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 covTable.deleteSelected();
             }
 
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
-        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
+//        deleteSelectedRowsOrColumns.addActionListener(deleteSelectedRowsOrColumnsActionListener);
 
         ActionListener removeNamedColumnsActionListener = e -> {
             String variables = JOptionPane.showInputDialog(JOptionUtils.getCenteringFrame(),
@@ -598,6 +694,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         ActionListener selectNamedColumnsActionListener = e -> {
@@ -630,6 +729,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     model.fireTableDataChanged();
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         };
 
         deleteNamedColumns.addActionListener(removeNamedColumnsActionListener);
@@ -692,6 +794,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     model.fireTableDataChanged();
                 }
             }
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
         });
 
         JCheckBoxMenuItem categoryNames
@@ -707,11 +812,19 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             TabularDataJTable tableTabular
                     = (TabularDataJTable) selectedJTable1;
             JCheckBoxMenuItem source = (JCheckBoxMenuItem) e.getSource();
-            tableTabular.setShowCategoryNames(source.isSelected());
+
+            // Display only: redraws the cells without changing the data.
+            this.displayOnlyTableChange = true;
+
+            try {
+                tableTabular.setShowCategoryNames(source.isSelected());
+            } finally {
+                this.displayOnlyTableChange = false;
+            }
         });
 
-        editMenu.add(clearCells);
-        editMenu.add(deleteSelectedRowsOrColumns);
+//        editMenu.add(clearCells);
+//        editMenu.add(deleteSelectedRowsOrColumns);
         editMenu.add(deleteNamedColumns);
         editMenu.add(selectNamedColumns);
         editMenu.add(copyCells);
@@ -722,76 +835,245 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         editMenu.add(setToMissingCells);
 
         menuBar.add(editMenu);
-//        menuBar.add(new Knowledge2Menu(this));
 
         JMenu tools = new JMenu("Tools");
         menuBar.add(tools);
 
-        tools.add(new PlotMatrixAction(this));
+        tools.add(new DataAuditAction(this));
+        tools.add(new NonlinearityChecksAction(this));
         tools.add(new DescriptiveStatsAction(this));
+        tools.add(new PlotMatrixAction(this));
         tools.add(new QQPlotAction(this));
+        tools.add(new CheckIndependenceFacts(this));
+        tools.add(new CalibrationCalculatorAction(this));
+
+        JMenuItem addBlockId = new JMenuItem("Add Block ID Column...");
+        tools.add(addBlockId);
+        addBlockId.addActionListener(e -> addBlockIdColumn());
+
+        JMenuItem centerWithin = new JMenuItem("Center Within Blocks...");
+        tools.add(centerWithin);
+        centerWithin.addActionListener(e -> centerWithinBlocks());
 
         return menuBar;
     }
 
-    private void closeTab() {
-        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                "Closing this tab will remove the data it contains. Continue?",
-                "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE);
+    /**
+     * Appends a discrete block-ID column to the selected tabular data set by run-length encoding over
+     * user-chosen key columns: a new block starts at each row where any key column's value changes from the
+     * previous row. Recovers repeated-measures block structure from files sorted by configuration (Airfoil's
+     * geometry columns; the analogue of TOWN in the corrected Boston Housing data), for use as the data audit's
+     * serial grouping variable. See {@link DataTransforms#appendBlockIdColumn(DataSet, List, String)}.
+     */
+    private void addBlockIdColumn() {
+        JTable jTable = getSelectedJTable();
 
-        if (ret == JOptionPane.OK_OPTION) {
-            DataModel dataModel = getSelectedDataModel();
-            setPreferredSize(new Dimension(600, 400));
-            DataModelList dataModelList = this.dataWrapper.getDataModelList();
-            dataModelList.remove(dataModel);
-            this.dataWrapper.setDataModel(dataModelList);
-            this.tabbedPane.removeAll();
-
-            for (int i = 0; i < dataModelList.size(); i++) {
-                Object _dataModel = dataModelList.get(i);
-                JComponent display = dataDisplay(_dataModel);
-                tabbedPane().addTab(DataEditor.tabName(_dataModel, i + 1), display);
-            }
-
-            tabbedPane().addPropertyChangeListener(propertyChangeEvent -> {
-                if ("proposedVariableNameChange".equals(propertyChangeEvent.getPropertyName())) {
-                    String newName = (String) propertyChangeEvent.getNewValue();
-
-                    // Have to make sure none of the data sets already has the new name...
-                    for (int i = 0; i < tabbedPane().getTabCount(); i++) {
-                        DataModel model = DataEditor.this.dataWrapper.getDataModelList().get(i);
-
-                        for (Node node : model.getVariables()) {
-                            if (newName.equals(node.getName())) {
-                                throw new IllegalArgumentException(model.getName() + " already has that variable name.");
-                            }
-                        }
-                    }
-                } else if ("variableNameChange".equals(propertyChangeEvent.getPropertyName())) {
-                    String oldName = (String) propertyChangeEvent.getOldValue();
-                    String newName = (String) propertyChangeEvent.getNewValue();
-
-                    for (int i = 0; i < tabbedPane().getTabCount(); i++) {
-                        DataModel model = DataEditor.this.dataWrapper.getDataModelList().get(i);
-
-                        for (Node node : model.getVariables()) {
-                            if (oldName.equals(node.getName())) {
-                                node.setName(newName);
-                            }
-                        }
-                    }
-                }
-            });
-
-            add(tabbedPane(), BorderLayout.CENTER);
-
-            if (this.showMenus) {
-                add(menuBar(), BorderLayout.NORTH);
-            }
-
-            validate();
+        if (!(jTable instanceof TabularDataJTable tableTabular)) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The selected tab does not contain tabular data.");
+            return;
         }
+
+        DataSet dataSet = tableTabular.getDataSet();
+
+        JList<String> list = new JList<>(dataSet.getVariableNames().toArray(new String[0]));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setVisibleRowCount(12);
+
+        JTextField nameField = new JTextField("CONFIG", 12);
+
+        Box panel = Box.createVerticalBox();
+        JLabel label = new JLabel("<html>Select the key columns whose joint value defines a block.<br>"
+                + "A new block starts at each row where any key column changes<br>"
+                + "from the previous row (run-length encoding in file order).<br><br>"
+                + "The appended column is bookkeeping: exclude it from searches.<br>"
+                + "It can be selected as the Data Audit's serial grouping variable<br>"
+                + "to recompute the serial dependence check with per-block centering.</html>");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(label);
+        panel.add(Box.createVerticalStrut(8));
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(scroll);
+        panel.add(Box.createVerticalStrut(8));
+        Box nameRow = Box.createHorizontalBox();
+        nameRow.add(new JLabel("New column name: "));
+        nameRow.add(nameField);
+        nameRow.add(Box.createHorizontalGlue());
+        nameRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(nameRow);
+
+        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(), panel,
+                "Add Block ID Column", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (ret != JOptionPane.OK_OPTION) return;
+
+        try {
+            int numBlocks = DataTransforms.appendBlockIdColumn(dataSet,
+                    list.getSelectedValuesList(), nameField.getText().trim());
+
+            TabularDataTable model = (TabularDataTable) jTable.getModel();
+            model.fireTableStructureChanged();
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Added '" + nameField.getText().trim() + "' with " + numBlocks + " blocks.");
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage(),
+                    "Cannot add column", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Appends within-block centered ("fixed effects") copies of the selected tabular data set's continuous
+     * columns, for a user-chosen discrete block column and suffix. Centering on the block removes all block-level
+     * variation, including unobserved block-level confounding, so searches on the centered columns estimate
+     * within-block structure only. Block-constant columns are skipped. See
+     * {@link DataTransforms#appendWithinBlockCenteredColumns(DataSet, String, String)}.
+     */
+    private void centerWithinBlocks() {
+        JTable jTable = getSelectedJTable();
+
+        if (!(jTable instanceof TabularDataJTable tableTabular)) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The selected tab does not contain tabular data.");
+            return;
+        }
+
+        DataSet dataSet = tableTabular.getDataSet();
+
+        java.util.List<String> discreteNames = dataSet.getVariables().stream()
+                .filter(v -> v instanceof DiscreteVariable)
+                .map(Node::getName).toList();
+
+        if (discreteNames.isEmpty()) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The data set has no discrete column to use as the block column.");
+            return;
+        }
+
+        JComboBox<String> blockCombo = new JComboBox<>(discreteNames.toArray(new String[0]));
+        JTextField suffixField = new JTextField("_w", 8);
+
+        Box panel = Box.createVerticalBox();
+        JLabel label = new JLabel("<html>Appends centered copies of the continuous columns: each value minus its<br>"
+                + "within-block mean (the \"fixed effects\" / within transformation). This removes<br>"
+                + "ALL block-level variation, including unobserved block-level confounding, so<br>"
+                + "searches on the centered columns estimate within-block structure only.<br><br>"
+                + "Block-constant columns are skipped (centered, they would be zero). Use this<br>"
+                + "for multilevel data where blocks are nuisance (subjects, towns, batches),<br>"
+                + "not for designed sweeps whose meaningful variables are block-constant.</html>");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(label);
+        panel.add(Box.createVerticalStrut(8));
+        Box row1 = Box.createHorizontalBox();
+        row1.add(new JLabel("Block column: "));
+        row1.add(blockCombo);
+        row1.add(Box.createHorizontalGlue());
+        row1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(row1);
+        panel.add(Box.createVerticalStrut(6));
+        Box row2 = Box.createHorizontalBox();
+        row2.add(new JLabel("Suffix for new columns: "));
+        row2.add(suffixField);
+        row2.add(Box.createHorizontalGlue());
+        row2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(row2);
+
+        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(), panel,
+                "Center Within Blocks", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (ret != JOptionPane.OK_OPTION) return;
+
+        try {
+            java.util.List<String> before = new java.util.ArrayList<>(dataSet.getVariableNames());
+            java.util.List<String> appended = DataTransforms.appendWithinBlockCenteredColumns(dataSet,
+                    (String) blockCombo.getSelectedItem(), suffixField.getText().trim());
+
+            java.util.List<String> skipped = new java.util.ArrayList<>();
+            String suffix = suffixField.getText().trim();
+            for (String name : before) {
+                if (dataSet.getVariable(name) instanceof ContinuousVariable
+                        && !appended.contains(name + suffix)) {
+                    skipped.add(name);
+                }
+            }
+
+            TabularDataTable model = (TabularDataTable) jTable.getModel();
+            model.fireTableStructureChanged();
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Appended " + appended.size() + " centered column(s): " + String.join(", ", appended)
+                            + (skipped.isEmpty() ? ""
+                            : ".\nSkipped (block-constant): " + String.join(", ", skipped) + "."));
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage(),
+                    "Cannot center within blocks", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void closeTab() {
+        int ret = JOptionPane.showConfirmDialog(
+                JOptionUtils.centeringComp(),
+                "Closing this tab will remove the data it contains. Continue?",
+                "Confirm",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (ret != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        DataModel toRemove = getSelectedDataModel();
+        if (toRemove == null) {
+            return;
+        }
+
+        // ---- update the underlying model list first ----
+        DataModelList dataModelList = dataWrapper.getDataModelList();
+        dataModelList.remove(toRemove);
+
+        // If nothing left, do nothing (or you could add a new empty DataSet here if desired).
+        if (dataModelList.isEmpty()) {
+            // Keep UI consistent.
+            tabbedPane.removeAll();
+            displayedModels.clear();
+            removeAll();
+            add(tabbedPane, BorderLayout.CENTER);
+            if (showMenus) add(menuBar(), BorderLayout.NORTH);
+            revalidate();
+            repaint();
+            firePropertyChange("modelChanged", null, null);
+            return;
+        }
+
+        // Maintain a sane selected model in the wrapper list.
+        // Prefer the list's existing selected model if it still exists; else pick first.
+        DataModel selected = dataModelList.getSelectedModel();
+        if (selected == null || !dataModelList.contains(selected)) {
+            selected = dataModelList.get(0);
+            dataModelList.setSelectedModel(selected);
+        }
+
+        // Persist back to wrapper (safe even if it already references the same list).
+        dataWrapper.setDataModelList(dataModelList);
+
+        // ---- rebuild UI from the single source of truth ----
+        removeAll();
+        rebuildTabsFrom(dataModelList, selected);
+        ensureSelectionListener();
+
+        add(tabbedPane, BorderLayout.CENTER);
+        if (showMenus) add(menuBar(), BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+
+        firePropertyChange("modelChanged", null, null);
     }
 
     /**
@@ -799,8 +1081,47 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     private JComponent dataDisplay(Object model) {
         if (model instanceof DataSet) {
-            DataDisplay dataDisplay = new DataDisplay((DataSet) model);
+            DataDisplay dataDisplay = new DataDisplay(((DataSet) model).copy());
             dataDisplay.addPropertyChangeListener(this);
+
+            JTable table = dataDisplay.getDataDisplayJTable();
+            if (table != null) {
+                table.getModel().addTableModelListener(e -> {
+                    if (this.displayOnlyTableChange) {
+                        return;
+                    }
+
+                    syncDisplayedModelsToWrapper();
+                    firePropertyChange("modelChanged", null, null);
+                });
+
+                // Also sync when the set of selected variables changes, since that updates
+                // DataSet.selection but does not fire a tableChanged event. Clicking around in
+                // the cells moves the column selection without selecting any variable, which is
+                // not a change to the model. The check is deferred so that the table has
+                // finished updating DataSet.selection for this event.
+                if (table instanceof TabularDataJTable tabular) {
+                    AtomicReference<List<Node>> lastSelected
+                            = new AtomicReference<>(selectedVariables(tabular.getDataSet()));
+
+                    table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+                        if (e.getValueIsAdjusting()) {
+                            return;
+                        }
+
+                        SwingUtilities.invokeLater(() -> {
+                            List<Node> selected = selectedVariables(tabular.getDataSet());
+
+                            if (!selected.equals(lastSelected.get())) {
+                                lastSelected.set(selected);
+                                syncDisplayedModelsToWrapper();
+                                firePropertyChange("modelChanged", null, null);
+                            }
+                        });
+                    });
+                }
+            }
+
             return dataDisplay;
         } else if (model instanceof ICovarianceMatrix) {
             CovMatrixDisplay covMatrixDisplay = new CovMatrixDisplay((ICovarianceMatrix) model);
@@ -811,6 +1132,18 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");
         }
+    }
+
+    private static List<Node> selectedVariables(DataSet dataSet) {
+        List<Node> selected = new ArrayList<>();
+
+        for (Node variable : dataSet.getVariables()) {
+            if (dataSet.isSelected(variable)) {
+                selected.add(variable);
+            }
+        }
+
+        return selected;
     }
 
     private JTabbedPane tabbedPane() {
@@ -833,6 +1166,52 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    private void updateTabbedPanePreferredSize() {
+        Component selected = this.tabbedPane.getSelectedComponent();
+
+        if (selected == null && this.tabbedPane.getTabCount() > 0) {
+            selected = this.tabbedPane.getComponentAt(0);
+        }
+
+        Dimension d;
+
+        if (selected != null) {
+            d = selected.getPreferredSize();
+        } else {
+            d = new Dimension(800, 800);
+        }
+
+        this.tabbedPane.setPreferredSize(new Dimension(
+                Math.max(800, d.width),
+                Math.max(600, d.height)
+        ));
+    }
+
+    private void syncDisplayedModelsToWrapper() {
+        DataModelList dataModelList = dataWrapper.getDataModelList();
+
+        // Remember which tab is currently selected by index.
+        int selectedIndex = tabbedPane.getSelectedIndex();
+
+        dataModelList.clear();
+
+        for (int i = 0; i < getNumJTables(); i++) {
+            JTable jTable = getJTableAt(i);
+            if (jTable instanceof TabularDataJTable tableTabular) {
+                dataModelList.add(tableTabular.getDataSet());
+            }
+            // CovMatrix and TimeSeries are not copied in dataDisplay(), so they
+            // are already the upstream object — no sync needed for them.
+        }
+
+        // Restore the selected model in the wrapper to match the selected tab.
+        if (selectedIndex >= 0 && selectedIndex < dataModelList.size()) {
+            dataModelList.setSelectedModel(dataModelList.get(selectedIndex));
+        }
+
+        dataWrapper.setDataModelList(dataModelList);
     }
 }
 

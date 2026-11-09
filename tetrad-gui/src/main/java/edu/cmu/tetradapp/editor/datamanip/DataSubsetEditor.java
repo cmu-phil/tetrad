@@ -3,9 +3,14 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.ui.DualListDragAndDrop;
+import edu.cmu.tetradapp.model.datamanip.DataSubsetter;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.*;
@@ -17,7 +22,10 @@ import java.util.stream.Collectors;
  * <p>
  * Features:
  * <ul>
- *   <li>Two-list variable selector (available vs. selected).</li>
+ *   <li>Two-list variable selector (available vs. selected). All variables start in the Selected list, so
+ *       subsetting by dropping a few variables is a one-step removal.</li>
+ *   <li>Sort button (below the lists) to sort both lists A–Z or restore both to dataset order; membership is
+ *       unchanged, but the Selected list's order is the column order of the created subset.</li>
  *   <li>Row selection via comma-separated ranges (1-based),
  *       e.g. {@code "1-100, 150, 200-250"}.</li>
  *   <li>Sampling modes: use as-is, shuffle, subsample, or bootstrap.</li>
@@ -30,24 +38,39 @@ import java.util.stream.Collectors;
  */
 public class DataSubsetEditor extends JPanel {
 
+    /** The data set from which the subset is taken. */
     private final DataSet sourceDataSet;
 
     // Variable selection models and lists.
+    /** The model of variables available but not selected. */
     private final DefaultListModel<Node> availableModel = new DefaultListModel<>();
+    /** The model of variables selected for the subset. */
     private final DefaultListModel<Node> selectedModel = new DefaultListModel<>();
+    /** The list of variables available but not selected. */
     private final JList<Node> availableList = new JList<>(availableModel);
+    /** The list of variables selected for the subset, in output order. */
     private final JList<Node> selectedList = new JList<>(selectedModel);
 
     // Row & sampling controls.
+    /** The specification of rows to include. */
     private final JTextField rowSpecField = new JTextField();
-    private final JComboBox<SamplingMode> samplingModeCombo =
-            new JComboBox<>(SamplingMode.values());
+    /** The condition rows must satisfy to be included. */
+    private final JTextField conditionField = new JTextField();
+    /** Shows how many rows match the condition. */
+    private final JLabel conditionCountLabel = new JLabel(" ");
+    /** The sampling mode used to choose or resample rows. */
+    private final JComboBox<DataSubsetter.SamplingMode> samplingModeCombo =
+            new JComboBox<>(DataSubsetter.SamplingMode.values());
+    /** The sample size used for resampling. */
     private final JSpinner sampleSizeSpinner =
             new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+    /** The random seed used for sampling. */
     private final JTextField seedField = new IntTextField(40, 6);
+    /** The variables in their original data set order, used to sort variable lists. */
     private final List<Node> originalVarOrder;
 
     // Button to paste variable names.
+    /** Button for pasting a list of variable names to select. */
     private final JButton pasteVarListButton = new JButton("Paste...");
 
     /**
@@ -74,11 +97,18 @@ public class DataSubsetEditor extends JPanel {
     // GUI construction
     // ------------------------------------------------------------------------
 
+    /**
+     * Populates the variable lists. All variables start in the Selected list, in dataset order. This is a deliberate
+     * design decision: the dominant use of this editor is to drop a small number of variables (e.g., ones flagged by
+     * the data audit) while keeping the rest, and starting with everything selected makes that a one-step removal
+     * rather than requiring the user to first move all variables across. Subsetting down to a small keep-list is
+     * still one step via the "&lt;&lt;" button followed by selection or Paste.
+     */
     private void initVariableModels() {
         List<Node> variables = sourceDataSet.getVariables();
 
         for (Node v : variables) {
-            availableModel.addElement(v);
+            selectedModel.addElement(v);
         }
     }
 
@@ -86,56 +116,73 @@ public class DataSubsetEditor extends JPanel {
         Box popupBox = Box.createHorizontalBox();
         JButton sortButton = new JButton("Sort");
         sortButton.setFocusable(false);
-        JPopupMenu popup = buildAvailablePopupMenu();
+        JPopupMenu popup = buildSortPopupMenu();
         sortButton.addActionListener(e ->
                 popup.show(sortButton, 0, sortButton.getHeight()));
+        popupBox.add(Box.createHorizontalGlue());
         popupBox.add(sortButton);
+        popupBox.add(Box.createHorizontalGlue());
         return popupBox;
     }
 
-    private JPopupMenu buildAvailablePopupMenu() {
+    private JPopupMenu buildSortPopupMenu() {
         JPopupMenu menu = new JPopupMenu();
 
-        JMenuItem sortItem = new JMenuItem("Sort A–Z");
-        sortItem.addActionListener(e -> sortAvailableAlphabetically());
+        JMenuItem sortItem = new JMenuItem("Sort A–Z (both lists)");
+        sortItem.addActionListener(e -> sortBothAlphabetically());
         menu.add(sortItem);
 
-        JMenuItem restoreItem = new JMenuItem("Restore dataset order");
-        restoreItem.addActionListener(e -> restoreAvailableOriginalOrder());
+        JMenuItem restoreItem = new JMenuItem("Restore dataset order (both lists)");
+        restoreItem.addActionListener(e -> restoreBothOriginalOrder());
         menu.add(restoreItem);
 
         return menu;
     }
 
-    private void sortAvailableAlphabetically() {
-        // Extract current available nodes into a list
-        List<Node> avail = new ArrayList<>();
-        for (int i = 0; i < availableModel.size(); i++) {
-            avail.add(availableModel.get(i));
-        }
-
-        // Sort by name
-        avail.sort(Comparator.comparing(Node::getName, String.CASE_INSENSITIVE_ORDER));
-
-        // Rebuild the model
-        availableModel.clear();
-        for (Node v : avail) {
-            availableModel.addElement(v);
-        }
+    /**
+     * Sorts both the Available and Selected lists alphabetically by variable name, case-insensitively. Membership is
+     * unchanged: no variable moves between lists. Note that the order of the Selected list is the column order of the
+     * created subset, so sorting reorders the output columns.
+     */
+    void sortBothAlphabetically() {
+        Comparator<Node> byName = Comparator.comparing(Node::getName, String.CASE_INSENSITIVE_ORDER);
+        reorderModel(availableModel, byName);
+        reorderModel(selectedModel, byName);
     }
 
-    private void restoreAvailableOriginalOrder() {
-        // Selected nodes should stay selected; we only reorder what's in Available.
-        Set<Node> selectedNodes = new LinkedHashSet<>();
-        for (int i = 0; i < selectedModel.size(); i++) {
-            selectedNodes.add(selectedModel.get(i));
+    /**
+     * Restores both the Available and Selected lists to the original dataset variable order. Membership is unchanged:
+     * no variable moves between lists. Note that the order of the Selected list is the column order of the created
+     * subset, so restoring reorders the output columns.
+     */
+    void restoreBothOriginalOrder() {
+        Map<Node, Integer> index = new HashMap<>();
+
+        for (int i = 0; i < originalVarOrder.size(); i++) {
+            index.put(originalVarOrder.get(i), i);
         }
 
-        availableModel.clear();
-        for (Node v : originalVarOrder) {
-            if (!selectedNodes.contains(v)) {
-                availableModel.addElement(v);
-            }
+        Comparator<Node> byDatasetOrder =
+                Comparator.comparingInt(v -> index.getOrDefault(v, Integer.MAX_VALUE));
+        reorderModel(availableModel, byDatasetOrder);
+        reorderModel(selectedModel, byDatasetOrder);
+    }
+
+    /**
+     * Reorders the contents of the given list model by the given comparator, in place.
+     */
+    private static void reorderModel(DefaultListModel<Node> model, Comparator<Node> order) {
+        List<Node> items = new ArrayList<>();
+
+        for (int i = 0; i < model.size(); i++) {
+            items.add(model.get(i));
+        }
+
+        items.sort(order);
+        model.clear();
+
+        for (Node v : items) {
+            model.addElement(v);
         }
     }
 
@@ -187,6 +234,12 @@ public class DataSubsetEditor extends JPanel {
 
         pasteVarListButton.addActionListener(e -> showPasteVariableListDialog());
 
+        // Dragging does what the arrows do: drop on the other list to move, drop on the same list to reorder, which
+        // in the Selected list sets the column order of the subset.
+        DualListDragAndDrop.install(availableList, selectedList, null);
+        availableList.setToolTipText("Select variables and press > or drag them to the other list.");
+        selectedList.setToolTipText("Drag to reorder, or drag to the other list to remove. Order is column order.");
+
         buttonPanel.add(Box.createVerticalGlue());
         buttonPanel.add(center(addButton));
         buttonPanel.add(Box.createVerticalStrut(5));
@@ -205,15 +258,14 @@ public class DataSubsetEditor extends JPanel {
 
         Box centerPanel = Box.createHorizontalBox();
 
-        Box available = Box.createVerticalBox();
-        available.add(availableScroll);
-        available.add(buildSortPopup());
-
-        centerPanel.add(available);
+        centerPanel.add(availableScroll);
         centerPanel.add(buttonPanel);
         centerPanel.add(selectedScroll);
 
         availablePanel.add(centerPanel, BorderLayout.CENTER);
+
+        // Sort/restore acts on both lists, so it sits below the whole two-list panel rather than under one list.
+        availablePanel.add(buildSortPopup(), BorderLayout.SOUTH);
 
         return availablePanel;
     }
@@ -234,8 +286,36 @@ public class DataSubsetEditor extends JPanel {
         JLabel rowSpecLabel = new JLabel("Rows:");
         rowSpecField.setToolTipText("Comma-separated ranges, e.g. 1-100, 150, 200-250; blank = all rows");
 
+        JLabel conditionLabel = new JLabel("Conditions:");
+        conditionField.setToolTipText(
+                "<html>Restrict to rows satisfying all conditions, joined by 'and'.<br>"
+                        + "A = cat1&nbsp;&nbsp;A != cat1&nbsp;&nbsp;A in {cat1, cat2}&nbsp;&nbsp;A not in {cat1}<br>"
+                        + "X = 1&nbsp;&nbsp;X &lt; 1&nbsp;&nbsp;X &lt;= 1&nbsp;&nbsp;X &gt; 1&nbsp;&nbsp;X &gt;= 1<br>"
+                        + "X in (1, 2)&nbsp;&nbsp;X in [1, 2]&nbsp;&nbsp;X not in (1, 2]<br>"
+                        + "Quote names or values containing spaces. Blank = no conditions.</html>");
+
         JLabel modeLabel = new JLabel("Sampling mode:");
         samplingModeCombo.addActionListener(e -> updateSamplingControls());
+
+        DocumentListener countUpdater = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateConditionCount();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateConditionCount();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateConditionCount();
+            }
+        };
+        conditionField.getDocument().addDocumentListener(countUpdater);
+        rowSpecField.getDocument().addDocumentListener(countUpdater);
+        updateConditionCount();
 
         JLabel sampleSizeLabel = new JLabel("Sample size:");
         JLabel seedLabel = new JLabel("Seed:");
@@ -255,35 +335,55 @@ public class DataSubsetEditor extends JPanel {
         c.weightx = 1.0;
         panel.add(rowSpecField, c);
 
-        // Row 1: sampling mode
+        // Row 1: conditions
         c.gridx = 0;
         c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0;
-        panel.add(modeLabel, c);
+        panel.add(conditionLabel, c);
         c.gridx = 1;
         c.gridy = 1;
         c.anchor = GridBagConstraints.WEST;
-        panel.add(samplingModeCombo, c);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        panel.add(conditionField, c);
+        c.gridx = 2;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        panel.add(conditionCountLabel, c);
 
-        // Row 2: sample size
+        // Row 2: sampling mode
         c.gridx = 0;
         c.gridy = 2;
         c.anchor = GridBagConstraints.EAST;
-        panel.add(sampleSizeLabel, c);
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        panel.add(modeLabel, c);
         c.gridx = 1;
         c.gridy = 2;
         c.anchor = GridBagConstraints.WEST;
-        panel.add(sampleSizeSpinner, c);
+        panel.add(samplingModeCombo, c);
 
-        // Row 3: seed
+        // Row 3: sample size
         c.gridx = 0;
         c.gridy = 3;
         c.anchor = GridBagConstraints.EAST;
-        panel.add(seedLabel, c);
+        panel.add(sampleSizeLabel, c);
         c.gridx = 1;
         c.gridy = 3;
+        c.anchor = GridBagConstraints.WEST;
+        panel.add(sampleSizeSpinner, c);
+
+        // Row 4: seed
+        c.gridx = 0;
+        c.gridy = 4;
+        c.anchor = GridBagConstraints.EAST;
+        panel.add(seedLabel, c);
+        c.gridx = 1;
+        c.gridy = 4;
         c.anchor = GridBagConstraints.WEST;
         panel.add(seedField, c);
 
@@ -296,8 +396,8 @@ public class DataSubsetEditor extends JPanel {
     }
 
     private void updateSamplingControls() {
-        SamplingMode mode = (SamplingMode) samplingModeCombo.getSelectedItem();
-        boolean needsSize = (mode == SamplingMode.SUBSAMPLE || mode == SamplingMode.BOOTSTRAP);
+        DataSubsetter.SamplingMode mode = (DataSubsetter.SamplingMode) samplingModeCombo.getSelectedItem();
+        boolean needsSize = (mode == DataSubsetter.SamplingMode.SUBSAMPLE || mode == DataSubsetter.SamplingMode.BOOTSTRAP);
 
         sampleSizeSpinner.setEnabled(needsSize);
         if (!needsSize) {
@@ -353,7 +453,7 @@ public class DataSubsetEditor extends JPanel {
                 model.add(index - 1, n);
             }
         }
-        list.setSelectedIndices(Arrays.stream(indices).map(i -> Math.max(i - 1, 0)).toArray());
+        list.setSelectedIndices(Arrays.stream(indices).map(i -> TMath.max(i - 1, 0)).toArray());
     }
 
     private void moveSelectedDown(JList<Node> list, DefaultListModel<Node> model) {
@@ -464,122 +564,22 @@ public class DataSubsetEditor extends JPanel {
     }
 
     // ------------------------------------------------------------------------
-    // Row spec parsing and sampling
+    // Row count feedback (parsing and subsetting live in DataSubsetter)
     // ------------------------------------------------------------------------
 
     /**
-     * Parse the row specification (1-based ranges) into a sorted, duplicate-free list of 0-based row indices.
-     * <p>
-     * If the spec is blank, returns all rows [0..numRows-1].
-     * <p>
-     * Throws IllegalArgumentException if the spec is invalid.
+     * Updates the label beside the condition field with the number of rows surviving the row
+     * specification and the conditions, or with a short indication that the specification does not
+     * yet parse.
      */
-    private List<Integer> parseRowSpec(String spec, int numRows) {
-        if (spec == null || spec.trim().isEmpty()) {
-            List<Integer> all = new ArrayList<>(numRows);
-            for (int i = 0; i < numRows; i++) {
-                all.add(i);
-            }
-            return all;
-        }
-
-        Set<Integer> indices = new TreeSet<>(); // sorted, deduped
-
-        String[] parts = spec.split(",");
-        for (String part : parts) {
-            String p = part.trim();
-            if (p.isEmpty()) continue;
-
-            if (p.contains("-")) {
-                String[] ab = p.split("-");
-                if (ab.length != 2) {
-                    throw new IllegalArgumentException("Invalid range: \"" + p + "\"");
-                }
-                String aStr = ab[0].trim();
-                String bStr = ab[1].trim();
-                if (aStr.isEmpty() || bStr.isEmpty()) {
-                    throw new IllegalArgumentException("Invalid range: \"" + p + "\"");
-                }
-
-                int a = Integer.parseInt(aStr);
-                int b = Integer.parseInt(bStr);
-                if (a < 1 || b < 1 || a > b || b > numRows) {
-                    throw new IllegalArgumentException("Row range out of bounds: \"" + p + "\"");
-                }
-
-                for (int r = a; r <= b; r++) {
-                    indices.add(r - 1); // convert to 0-based
-                }
-            } else {
-                int r = Integer.parseInt(p);
-                if (r < 1 || r > numRows) {
-                    throw new IllegalArgumentException("Row index out of bounds: " + r);
-                }
-                indices.add(r - 1);
-            }
-        }
-
-        return new ArrayList<>(indices);
-    }
-
-    private List<Integer> applySampling(List<Integer> baseRows) {
-        SamplingMode mode = (SamplingMode) samplingModeCombo.getSelectedItem();
-        if (mode == null) {
-            mode = SamplingMode.USE_AS_IS;
-        }
-
-        int n = baseRows.size();
-        if (n == 0) {
-            return baseRows;
-        }
-
-        int sampleSize = (Integer) sampleSizeSpinner.getValue();
-        if (sampleSize <= 0) {
-            sampleSize = n;
-        }
-
-        Long seed = null;
-        String seedText = seedField.getText();
-        if (seedText != null && !seedText.trim().isEmpty()) {
-            try {
-                seed = Long.parseLong(seedText.trim());
-            } catch (NumberFormatException ignored) {
-                // If seed is invalid, just ignore and use default randomness.
-            }
-        }
-        Random random = (seed == null) ? new Random() : new Random(seed);
-
-        switch (mode) {
-            case USE_AS_IS:
-                return new ArrayList<>(baseRows);
-
-            case SHUFFLE: {
-                List<Integer> shuffled = new ArrayList<>(baseRows);
-                Collections.shuffle(shuffled, random);
-                return shuffled;
-            }
-
-            case SUBSAMPLE: {
-                // Subsample without replacement.
-                if (sampleSize > n) {
-                    sampleSize = n;
-                }
-                List<Integer> temp = new ArrayList<>(baseRows);
-                Collections.shuffle(temp, random);
-                return new ArrayList<>(temp.subList(0, sampleSize));
-            }
-
-            case BOOTSTRAP: {
-                List<Integer> boot = new ArrayList<>(sampleSize);
-                for (int i = 0; i < sampleSize; i++) {
-                    int idx = random.nextInt(n);
-                    boot.add(baseRows.get(idx));
-                }
-                return boot;
-            }
-
-            default:
-                return new ArrayList<>(baseRows);
+    private void updateConditionCount() {
+        try {
+            int[] counts = DataSubsetter.countRows(sourceDataSet, rowSpecField.getText(), conditionField.getText());
+            conditionCountLabel.setText(counts[0] + " of " + counts[1] + " rows");
+            conditionCountLabel.setToolTipText(null);
+        } catch (IllegalArgumentException e) {
+            conditionCountLabel.setText("\u2014");
+            conditionCountLabel.setToolTipText(e.getMessage());
         }
     }
 
@@ -588,25 +588,31 @@ public class DataSubsetEditor extends JPanel {
     // ------------------------------------------------------------------------
 
     /**
+     * Returns the current editor settings as a {@link DataSubsetter.Spec}. This is what {@code DataSubsetModel}
+     * stores and later re-applies to whatever data set is upstream at propagation time.
+     *
+     * @return the spec.
+     */
+    public DataSubsetter.Spec getSpec() {
+        return new DataSubsetter.Spec(getSelectedVariableNames(), getRowSpec(), getConditionSpec(),
+                getSamplingMode(), getSampleSize(), getSeedText());
+    }
+
+    /**
      * Returns a new DataSet that is a subset / resample of the sourceDataSet, according to the current editor
-     * settings.
+     * settings. Delegates to {@link DataSubsetter#subset(DataSet, DataSubsetter.Spec)}.
+     * <p>
+     * An invalid row specification is reported in a dialog and then tolerated by falling back to all rows. An
+     * invalid condition is NOT tolerated and propagates as an {@link IllegalArgumentException}: falling back to all
+     * rows there would silently analyze the whole data set while the user believed it had been restricted.
+     *
+     * @return the subset.
      */
     public DataSet createSubset() {
-        // 1. Determine selected variables.
-        List<Node> selectedVars = new ArrayList<>();
-        for (int i = 0; i < selectedModel.size(); i++) {
-            selectedVars.add(selectedModel.get(i));
-        }
+        DataSubsetter.Spec spec = getSpec();
 
-        if (selectedVars.isEmpty()) {
-            // If nothing selected, default to all variables.
-            selectedVars.addAll(sourceDataSet.getVariables());
-        }
-
-        // 2. Determine row indices (0-based), including sampling.
-        List<Integer> baseRows;
         try {
-            baseRows = parseRowSpec(rowSpecField.getText(), sourceDataSet.getNumRows());
+            DataSubsetter.parseRowSpec(spec.rowSpec(), sourceDataSet.getNumRows());
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp(),
@@ -614,18 +620,11 @@ public class DataSubsetEditor extends JPanel {
                     "Row specification error",
                     JOptionPane.ERROR_MESSAGE
             );
-            // Fallback: all rows, no sampling.
-            baseRows = new ArrayList<>();
-            for (int i = 0; i < sourceDataSet.getNumRows(); i++) {
-                baseRows.add(i);
-            }
+            spec = new DataSubsetter.Spec(spec.selectedVarNames(), "", spec.conditionSpec(),
+                    spec.samplingMode(), spec.sampleSize(), spec.seedText());
         }
 
-        List<Integer> finalRows = applySampling(baseRows);
-
-        // 3. Create the subset DataSet.
-        DataSet columnSubset = sourceDataSet.subsetColumns(selectedVars);
-        return columnSubset.subsetRows(finalRows);
+        return DataSubsetter.subset(sourceDataSet, spec);
     }
 
     // ------------------------------------------------------------------------
@@ -655,12 +654,31 @@ public class DataSubsetEditor extends JPanel {
     }
 
     /**
+     * The raw condition specification string, e.g. "A = cat1 and X in (1, 2]".
+     *
+     * @return The condition specification string
+     */
+    public String getConditionSpec() {
+        return conditionField.getText();
+    }
+
+    /**
+     * Sets the condition specification string.
+     *
+     * @param spec The condition specification string
+     */
+    public void setConditionSpec(String spec) {
+        conditionField.setText(spec == null ? "" : spec);
+        updateConditionCount();
+    }
+
+    /**
      * The currently selected sampling mode.
      *
      * @return The sampling mode
      */
-    public SamplingMode getSamplingMode() {
-        return (SamplingMode) samplingModeCombo.getSelectedItem();
+    public DataSubsetter.SamplingMode getSamplingMode() {
+        return (DataSubsetter.SamplingMode) samplingModeCombo.getSelectedItem();
     }
 
     /**
@@ -699,7 +717,7 @@ public class DataSubsetEditor extends JPanel {
     public void applyState(
             java.util.List<String> selectedVarNames,
             String rowSpec,
-            SamplingMode samplingMode,
+            DataSubsetter.SamplingMode samplingMode,
             Integer sampleSize,
             String seedText) {
 
@@ -754,58 +772,4 @@ public class DataSubsetEditor extends JPanel {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // Sampling mode enum
-    // ------------------------------------------------------------------------
-
-    /**
-     * Sampling modes for subset creation.
-     */
-    public enum SamplingMode {
-
-        /**
-         * Sampling mode that uses rows as they are without applying any modifications.
-         */
-        USE_AS_IS("Use rows as-is"),
-
-        /**
-         * Sampling mode that randomizes the order of rows.
-         */
-        SHUFFLE("Shuffle rows"),
-
-        /**
-         * Represents a sampling mode that selects a subset of data without replacement.
-         * This means each selected element is unique and will not appear more than once
-         * in the sampled subset.
-         */
-        SUBSAMPLE("Subsample (without replacement)"),
-
-        /**
-         * Sampling mode that selects a subset of data with replacement.
-         * This means elements can be selected multiple times, potentially leading to duplicates
-         * in the sampled subset.
-         */
-        BOOTSTRAP("Bootstrap (with replacement)");
-
-        private final String label;
-
-        /**
-         * Constructs a SamplingMode with the specified label.
-         *
-         * @param label the string label representing this sampling mode.
-         */
-        SamplingMode(String label) {
-            this.label = label;
-        }
-
-        /**
-         * Returns the string representation of this sampling mode.
-         *
-         * @return the string label associated with this sampling mode.
-         */
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
 }

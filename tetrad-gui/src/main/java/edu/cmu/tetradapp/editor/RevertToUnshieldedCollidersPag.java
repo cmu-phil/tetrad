@@ -64,7 +64,7 @@ public class RevertToUnshieldedCollidersPag extends AbstractAction implements Cl
      * @param e the action event
      */
     public void actionPerformed(ActionEvent e) {
-        this.workbench.deselectAll();
+//        this.workbench.deselectAll();
         Graph graph = this.workbench.getGraph();
 
         if (graph == null) {

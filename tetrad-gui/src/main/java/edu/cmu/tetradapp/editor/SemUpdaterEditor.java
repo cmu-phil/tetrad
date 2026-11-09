@@ -211,7 +211,7 @@ public class SemUpdaterEditor extends JPanel {
                         this.semImEditor.getTabSelectionIndex(),
                         this.semImEditor.getMatrixSelection());
             });
-            checkbox.setBackground(Color.WHITE);
+//            checkbox.setBackground(Color.WHITE);
             checkbox.setBorder(null);
             c.add(checkbox);
             c.setMaximumSize(new Dimension(1000, 30));

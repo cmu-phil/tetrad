@@ -109,14 +109,14 @@ public final class GraspFci extends StarFci {
         this.independenceTest = test;
     }
 
-    public @NotNull Graph getMarkovCpdag() throws InterruptedException {
+    @Override
+    public @NotNull Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
 
         // Run GRaSP to get a CPDAG.
         Grasp alg = new Grasp(independenceTest, score);
-        alg.setSeed(seed);
         alg.setOrdered(ordered);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -125,7 +125,7 @@ public final class GraspFci extends StarFci {
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(isVerbose());
+        alg.setVerbose(verbose);
         alg.setKnowledge(getKnowledge());
 
         List<Node> variables = this.score.getVariables();

@@ -38,7 +38,7 @@ import java.util.List;
  * @author kaalpurush
  * @version $Id: $Id
  */
-public class RequiredGraphModel extends KnowledgeBoxModel {
+public class RequiredGraphModel extends KnowledgeBoxModel implements KnowledgeSourceGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -272,6 +272,32 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      */
     public Graph getResultGraph() {
         return this.resultGraph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Graph getKnowledgeSourceGraph() {
+        return this.resultGraph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getKnowledgeSourceDescription() {
+        return "Knowledge was made from the parent graph, drawn below. Every directed edge "
+               + "X --> Y in this graph is required. Undirected edges are required in both "
+               + "directions. (Variables whose names start with E_ are skipped.)";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getKnowledgeSourceTabTitle() {
+        return "Parent Graph";
     }
 }
 

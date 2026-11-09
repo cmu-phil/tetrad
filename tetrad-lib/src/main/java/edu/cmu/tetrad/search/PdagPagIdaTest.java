@@ -7,6 +7,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -67,7 +68,12 @@ public class PdagPagIdaTest {
         im.setEdgeCoef(X, Y, 1.0);
         im.setEdgeCoef(Y, Z, 0.5);   // true total effect X→Z is 0.5
 
-        DataSet data = im.simulateData(5000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(5000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         // ---------- 2. PAG handed to PagIda: X o-o Y o-o Z ----------
         Graph pag = new EdgeListGraph(Arrays.asList(X, Y, Z));

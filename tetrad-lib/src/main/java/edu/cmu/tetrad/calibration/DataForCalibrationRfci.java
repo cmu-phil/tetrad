@@ -24,13 +24,13 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.BossFci;
+import edu.cmu.tetrad.search.Bfci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -150,11 +150,11 @@ public class DataForCalibrationRfci {
             return;
         }
         String ConfigString = String.valueOf(
-                FastMath.random());
+                TMath.random());
         System.out.println(ConfigString + ": Started!");
 
 
-        int LV = (int) FastMath.floor(numLatentConfounders * numVars);
+        int LV = (int) TMath.floor(numLatentConfounders * numVars);
         System.out.println("LV: " + LV);
         Graph dag = DFC.makeDAG(numVars, edgesPerNode, LV);
 
@@ -197,7 +197,7 @@ public class DataForCalibrationRfci {
 
         System.out.println("Starting search with all data");
 
-        BossFci fci = new BossFci(test, score);
+        Bfci fci = new Bfci(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);

@@ -25,9 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
 
@@ -224,7 +222,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
-        Collections.sort(zList);
+        zList.sort(NaturalSort.naturalComparator());
 
         List<Integer> rows = this.rows == null ? allRows : this.rows;
 
@@ -385,7 +383,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = this.nEff * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.nEff * TMath.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);

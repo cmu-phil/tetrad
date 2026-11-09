@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.util.Matrix;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
@@ -111,7 +111,7 @@ public class SemStdErrorEstimator {
 
                 v = secondPartialDerivative(fcn, i, j, params, delta);
 
-                if (FastMath.abs(v) < 1e-7) {
+                if (TMath.abs(v) < 1e-7) {
                     v = 0;
                 }
 
@@ -143,7 +143,7 @@ public class SemStdErrorEstimator {
             //Hence the standard errors of the freeParameters are the square roots of the
             //diagonal elements of the inverse of the information matrix.
             for (int i = 0; i < n; i++) {
-                double v = FastMath.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
+                double v = TMath.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
 
                 if (v == 0) {
                     System.out.println("v = " + 0 + " hessInv(i, i) = " + hessInv.get(i, i));

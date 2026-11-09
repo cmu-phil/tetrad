@@ -73,8 +73,8 @@ public final class SepsetMap implements TetradSerializable {
      * @param map A given sepset map.
      */
     public SepsetMap(SepsetMap map) {
-        this.sepsets = new HashMap<>(map.sepsets);
-        this.pValues = new HashMap<>(map.pValues);
+        this.sepsets = new ConcurrentHashMap<>(map.sepsets);
+        this.pValues = new ConcurrentHashMap<>(map.pValues);
     }
 
     /**
@@ -232,6 +232,14 @@ public final class SepsetMap implements TetradSerializable {
      */
     public Set<Set<Node>> keySet() {
         return this.sepsets.keySet();
+    }
+
+    /**
+     * Clears all entries from the internal sepset mapping.
+     * This method removes all previously stored sepset associations.
+     */
+    public void clear() {
+        this.sepsets.clear();
     }
 }
 

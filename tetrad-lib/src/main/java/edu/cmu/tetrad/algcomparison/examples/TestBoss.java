@@ -32,6 +32,8 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * Test the degenerate Gaussian score.
  *
@@ -67,8 +69,8 @@ public class TestBoss {
         parameters.set(Params.COEF_HIGH, 1);
         parameters.set(Params.VAR_LOW, 1);
         parameters.set(Params.VAR_HIGH, 3);
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 1);
-        parameters.set(Params.SIMULATION_PARAM1, 1);
+        parameters.set(Params.USE_DATA_ORDER, false);
+        parameters.set(Params.NOISE_EXPRESSION, "Exp(1)");
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
@@ -103,6 +105,10 @@ public class TestBoss {
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

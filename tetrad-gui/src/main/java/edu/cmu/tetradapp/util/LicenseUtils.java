@@ -30,6 +30,12 @@ import edu.cmu.tetrad.util.Version;
  * @version $Id: $Id
  */
 public final class LicenseUtils {
+
+    /**
+     * Constructs a new LicenseUtils. All methods are static.
+     */
+    public LicenseUtils() {
+    }
     /**
      * <p>copyright.</p>
      *

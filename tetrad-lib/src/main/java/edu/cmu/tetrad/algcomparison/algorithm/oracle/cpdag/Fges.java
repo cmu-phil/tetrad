@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -54,7 +54,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesScoreWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -93,7 +93,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -161,7 +161,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.VERBOSE);
 
         return parameters;

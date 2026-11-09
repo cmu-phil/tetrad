@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * <p>NbFunctionSV class.</p>
@@ -59,7 +59,7 @@ public class NbFunctionSV extends AbstractNbComponent {
         //System.out.println("Sum = " + sum);
         //if(inhibitExcite[0] > 0)
         double v = getParents()[0].getValue();
-        setValue(getFactor() * FastMath.pow(v, getPower()));
+        setValue(getFactor() * TMath.pow(v, getPower()));
     }
 }
 

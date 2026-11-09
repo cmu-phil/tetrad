@@ -20,9 +20,17 @@
 
 package edu.pitt.dbmi.data.reader.metadata;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectWriter;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;  // unchanged
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,10 +57,10 @@ public class MetadataFileWriter implements MetadataWriter {
      *
      * @param metadata The metadata.
      * @return The metadata as a string.
-     * @throws JsonProcessingException if an error occurs while processing the JSON.
+     * @throws JacksonException if an error occurs while processing the JSON.
      */
     @Override
-    public String writeAsString(Metadata metadata) throws JsonProcessingException {
+    public String writeAsString(Metadata metadata) throws JacksonException {
         return new ObjectMapper()
                 .writer()
                 .withDefaultPrettyPrinter()

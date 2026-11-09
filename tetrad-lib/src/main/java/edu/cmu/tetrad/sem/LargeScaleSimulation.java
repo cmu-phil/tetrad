@@ -33,7 +33,7 @@ import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -41,8 +41,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with large numbers of variables and sample
@@ -701,7 +701,7 @@ public final class LargeScaleSimulation {
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
-        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
+        int tier_diff = TMath.max(indx_tier, indy_tier) - TMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List<String> tier_x = knowledge.getTier(indx_tier);

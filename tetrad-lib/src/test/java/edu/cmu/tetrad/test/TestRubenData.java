@@ -47,6 +47,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -156,7 +157,11 @@ public class TestRubenData {
 
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
-        comparison.compareFromSimulations("erich_out", simulations, algorithms, statistics, parameters);
+        try {
+            comparison.compareFromSimulations("erich_out", simulations, algorithms, statistics, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void test3() {

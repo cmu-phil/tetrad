@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -380,6 +381,7 @@ public final class SemGraphEditor extends JPanel
             }
 
             JComboBox<Integer> comboBox = new JComboBox(models.toArray());
+            ArrowKeyNavigation.install(this, comboBox);
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(semGraphWrapper.getModelIndex());
@@ -484,6 +486,7 @@ public final class SemGraphEditor extends JPanel
         graph.add(graphProperties);
         graph.add(pathsAction);
         graph.add(new UnderliningsAction(getWorkbench()));
+        graph.add(new FindVariableAction(getWorkbench()));
         graph.addSeparator();
 
         JMenuItem errorTerms = new JMenuItem();
@@ -503,7 +506,10 @@ public final class SemGraphEditor extends JPanel
                 menuItem.setText("Hide Error Terms");
                 getSemGraph().setShowErrorTerms(true);
             }
+
+            getWorkbench().setGraph(getSemGraph());
         });
+
 
         graph.add(errorTerms);
         graph.addSeparator();

@@ -24,7 +24,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
@@ -51,11 +52,14 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RFCI-BSC",
         command = "rfci-bsc",
-        algoType = AlgType.forbid_latent_common_causes,
+        // RFCI-BSC is an RFCI variant and returns PAGs, so it is latent-tolerant: in the Search box it is offered
+        // under "Yes, possibly" for the latent-confounder question, not under "No" (causal sufficiency).
+        algoType = AlgType.allow_latent_common_causes,
         dataType = DataType.Discrete
 )
 @Experimental
-public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge {
+@Bootstrapping
+public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;

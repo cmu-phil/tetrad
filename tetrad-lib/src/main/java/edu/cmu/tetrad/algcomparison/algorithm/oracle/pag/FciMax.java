@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,6 +33,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -42,20 +45,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI-Max algorithm.
+ * FCI-Max. This is FCI with the first collider orientation rule (R0) replaced by the PC-Max orientation: for each
+ * unshielded triple X *-* Z *-* Y with X and Y nonadjacent, the sepset S maximizing the p-value of the fact X _||_ Y |
+ * S is selected, and Z is oriented as a collider just in case Z is not in that S.
+ * <p>
+ * This is a thin wrapper over {@link edu.cmu.tetrad.search.Fci} with the R0 collider rule pinned to
+ * {@code ColliderRule.MAX_P}; the collider orientation style is therefore deliberately not offered as a parameter
+ * here. The equivalent search can also be had from the FCI box by setting the collider orientation style to Max-P.
+ * This class is retained under its own name because FCI-Max is a published algorithm, and because sessions saved by
+ * Tetrad 7.6.10 and earlier refer to it by this class name.
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see edu.cmu.tetrad.search.Fci
+ * @see Fci
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI-Max",
         command = "fci-max",
-        algoType = AlgType.allow_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.All
 )
-@Deprecated(since = "7.9", forRemoval = true)
 @Bootstrapping
-public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
+public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -71,13 +84,13 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for FciMax.</p>
+     * Constructor.
      */
     public FciMax() {
     }
 
     /**
-     * <p>Constructor for FciMax.</p>
+     * Constructor.
      *
      * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      */
@@ -86,20 +99,20 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Runs a search algorithm to discover the causal graph structure.
+     * Runs the search.
      *
-     * @param dataModel  the data set on which the search algorithm will be performed
+     * @param dataModel  the data model containing the dataset
      * @param parameters the parameters for the search algorithm
-     * @return the discovered causal graph structure
+     * @return the resulting PAG
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -107,23 +120,47 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
+        IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test = new CachingIndependenceTest(test);
+
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
+
+        // FCI-Max is FCI with the PC-Max R0 rule, decided triple by triple, as in PcMax.
+        search.setR0ColliderRule(edu.cmu.tetrad.search.Fci.ColliderRule.MAX_P);
+        search.setMaxPGlobalOrder(false);
+        search.setMaxPDepthStratified(false);
+
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setPossibleDsepSearchDone(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
-        return search.search();
+        Graph graph;
+        double fdrQ = parameters.getDouble(Params.FDR_Q);
+
+        if (fdrQ == 0.0) {
+            graph = search.search();
+        } else {
+            boolean negativelyCorrelated = true;
+            boolean verbose = parameters.getBoolean(Params.VERBOSE);
+            double alpha = parameters.getDouble(Params.ALPHA);
+            graph = IndTestFdrWrapper.doFdrLoop(search, negativelyCorrelated, alpha, fdrQ, verbose);
+        }
+
+        return graph;
     }
 
     /**
-     * Returns the comparison graph transformed from the true directed graph.
+     * Returns the comparison graph based on the true directed graph, if there is one.
      *
      * @param graph The true directed graph, if there is one.
-     * @return The comparison graph transformed from the true directed graph.
+     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -132,18 +169,19 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Returns a description of the algorithm.
+     * Returns a short, one-line description of this algorithm.
      *
-     * @return a String representing the description of the algorithm.
+     * @return The description of the algorithm.
      */
+    @Override
     public String getDescription() {
-        return "FCI-Max (Fast Causal Inference Max P-value) using " + this.test.getDescription();
+        return "FCI-Max (Fast Causal Inference with Max-P collider orientation) using " + this.test.getDescription();
     }
 
     /**
      * Returns the data type that the search requires, whether continuous, discrete, or mixed.
      *
-     * @return the data type required for the search
+     * @return The data type required by the search algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -151,21 +189,24 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Returns the list of parameters used by the method. The parameters are returned as a List of Strings.
+     * Retrieves the list of parameters used by this algorithm.
      *
-     * @return a List of Strings representing the parameters used by the method.
+     * @return The list of parameters used by this algorithm.
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-
         parameters.add(Params.DEPTH);
+        parameters.add(Params.STABLE_FAS);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
-        parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.DO_POSSIBLE_DSEP);
+        parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.FDR_Q);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
         parameters.add(Params.GUARANTEE_PAG);
-//        parameters.add(Params.PC_HEURISTIC);
+
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
 
         parameters.add(Params.VERBOSE);
 
@@ -173,9 +214,9 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Retrieves the knowledge associated with the algorithm.
+     * Retrieves the knowledge object.
      *
-     * @return the knowledge object associated with the algorithm
+     * @return The knowledge object.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -183,9 +224,9 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Sets the knowledge associated with the algorithm.
+     * Sets the knowledge object for this method.
      *
-     * @param knowledge the knowledge object to be set
+     * @param knowledge The knowledge object to set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -193,9 +234,9 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Retrieves the IndependenceWrapper associated with the algorithm.
+     * Retrieves the {@link IndependenceWrapper} object associated with this method.
      *
-     * @return the IndependenceWrapper object associated with the algorithm
+     * @return The IndependenceWrapper object associated with this method.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -203,13 +244,12 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
     }
 
     /**
-     * Sets the independence wrapper for the algorithm.
+     * Sets the IndependenceWrapper object associated with this method.
      *
-     * @param test the independence wrapper
+     * @param test the independence wrapper to set
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 }
-

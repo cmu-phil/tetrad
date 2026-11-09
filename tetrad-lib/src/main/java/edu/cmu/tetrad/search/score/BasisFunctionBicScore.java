@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,17 +21,22 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.log;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
@@ -62,6 +67,18 @@ public class BasisFunctionBicScore implements Score {
      */
     private final SemBicScore bic;
     /**
+     * The truncation limit the embedding was built with, kept so the null of the per-pair LRT can be re-estimated
+     * from the raw data by permutation without holding the embedded data in memory.
+     */
+    private final int truncationLimit;
+    /**
+     * Whether continuous variables were rank-transformed to [-1, 1] before the Legendre embedding. When true the
+     * null of the per-pair LRT is chi-square on its nominal degrees of freedom and the exact penalty-discount
+     * calibration applies; when false it has a power-law tail and must be estimated by permutation. See
+     * {@link Embedding#RANK_TRANSFORM}.
+     */
+    private final boolean rankTransform;
+    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -82,18 +99,123 @@ public class BasisFunctionBicScore implements Score {
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda) {
+        this(dataSet, truncationLimit, lambda, false);
+    }
+
+    /**
+     * Constructs a BasisFunctionBicScore object with the specified parameters.
+     *
+     * @param dataSet                the data set on which the score is to be calculated.
+     * @param truncationLimit        the truncation limit of the basis.
+     * @param lambda                 Singularity lambda
+     * @param adaptiveBasisSelection if true, basis columns beyond the linear term that fail a BIC-crossing screen
+     *                               against every other variable's embedded block are dropped from the embedding
+     *                               before scoring, so that the effective truncation is chosen by the data and the
+     *                               score converges as the truncation limit is raised past the data-supported order.
+     *                               The screen is computed once from the full-sample embedded correlation matrix,
+     *                               independently of any graph, so the pruned embedding is a single fixed embedding
+     *                               and score equivalence is preserved.
+     * @see Embedding#pruneUninformativeBasisColumns(DataSet, Map, edu.cmu.tetrad.data.ICovarianceMatrix)
+     * @see StatUtils#basisFunctionValue(int, int, double)
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection) {
+        this(dataSet, truncationLimit, lambda, adaptiveBasisSelection, false);
+    }
+
+    /**
+     * As {@link #BasisFunctionBicScore(DataSet, int, double, boolean)}, with the option to rank-transform continuous
+     * variables to [-1, 1] before the Legendre embedding. See {@link Embedding#RANK_TRANSFORM} for why this is
+     * recommended: it gives the score's LRT an exact chi-square null and removes leverage-driven spurious edges,
+     * at the cost of modeling the copula rather than the joint distribution with its marginals.
+     *
+     * @param dataSet                the data
+     * @param truncationLimit        the truncation limit of the basis
+     * @param lambda                 the singularity lambda
+     * @param adaptiveBasisSelection see the four-argument constructor
+     * @param rankTransform          if true, rank-transform continuous variables before embedding
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection,
+                                 boolean rankTransform) {
+        this(dataSet, truncationLimit, lambda, adaptiveBasisSelection, rankTransform, null);
+    }
+
+    /**
+     * As {@link #BasisFunctionBicScore(DataSet, int, double, boolean, boolean)}, with an explicit missing-data
+     * specification. On a data set with missing values the supported policies are LISTWISE and TESTWISE. Under
+     * TESTWISE the embedding carries NaN in every derived column of a variable wherever that variable is missing,
+     * and the underlying {@link SemBicScore} computes each family's covariance over the rows complete on that
+     * family's embedded columns (from the raw embedded columns rather than the correlation matrix; the two differ
+     * only by a per-column scale, which contributes the same constant to every parent set of a node and so leaves
+     * all score comparisons unchanged). With adaptive basis selection, the screen is computed from
+     * pairwise-deletion correlations. A null spec on missing data is treated as FAIL.
+     *
+     * @param dataSet                the data
+     * @param truncationLimit        the truncation limit of the basis
+     * @param lambda                 the singularity lambda
+     * @param adaptiveBasisSelection see the four-argument constructor
+     * @param rankTransform          if true, rank-transform continuous variables before embedding
+     * @param spec                   the missing-data specification, or null
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection,
+                                 boolean rankTransform, MissingDataSpec spec) {
+        // Held before deletion and embedding: the effective sample size is a fact about the raw variables.
+        // MIN_PAIRWISE is invariant under embedding -- a missing source entry becomes NaN in every derived column
+        // of that variable, so the minimum over embedded-column pairs equals the minimum over variable pairs --
+        // but MEAN_PAIRWISE is not, since averaging over embedded pairs would weight each variable by the width
+        // of its embedding block. Computing both on the raw data keeps the two modes meaning what they say.
+        DataSet rawData = dataSet;
+
+        // Decided before the deletion gate, which rejects EM_COVARIANCE outright: under EM no rows are deleted,
+        // so the gate is bypassed with a null spec and the estimate is taken of the embedded matrix below.
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
+                               && dataSet.existsMissingValue();
+
+        if (!emCovariance) {
+            dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBicScore");
+        }
+
         this.variables = dataSet.getVariables();
+        this.truncationLimit = truncationLimit;
+        this.rankTransform = rankTransform;
 
         // Using the Legendre basis.
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1
-        );
-        this.embedding = result.embedding();
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1,
+                rankTransform ? Embedding.RANK_TRANSFORM : 1);
         DataSet embeddedData = result.embeddedData();
 
-        // We will zero out the correlations that are very close to zero.
-        CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
+        boolean testwise = embeddedData.existsMissingValue() && !emCovariance;
 
-        this.bic = new SemBicScore(correlationMatrix);
+        // We will zero out the correlations that are very close to zero. Under test-wise deletion the
+        // pairwise-deletion correlation matrix is used for screening only.
+        ICovarianceMatrix correlationMatrix = testwise
+                ? new CorrelationMatrix(new TestwiseCovariance(embeddedData.getDoubleData())
+                .pairwiseCovarianceMatrix(embeddedData.getVariables()))
+                : new CorrelationMatrix(embeddedData);
+
+        // With adaptive basis selection, higher-order basis columns that cannot produce a BIC-positive pairwise
+        // association with any other variable's block are dropped from the embedding. The correlation matrix and
+        // the underlying SemBicScore are left at full size; the pruned columns are simply never referenced.
+        this.embedding = adaptiveBasisSelection
+                ? Embedding.pruneUninformativeBasisColumns(dataSet, result.embedding(), correlationMatrix)
+                : result.embedding();
+
+        // EM_COVARIANCE estimates the covariance of the *embedded* matrix under the same jointly-Gaussian working
+        // model this score already assumes for its basis columns, and so uses every row for every family rather
+        // than each family's complete rows. Unlike the degenerate-Gaussian one-hot case, the basis columns of a
+        // continuous variable satisfy exact deterministic relations -- the quadratic column is the square of the
+        // linear one -- and EM filling them in as jointly Gaussian produces second moments that need not be
+        // consistent with any univariate distribution. Impute-then-embed avoids that violation exactly, at the
+        // cost of needing multiple imputation to avoid understating uncertainty, which makes it a search wrapper
+        // rather than a score; see ImputationSearch. This path is offered for comparison, not as the default.
+        if (emCovariance) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(embeddedData, spec);
+            this.bic = new SemBicScore(estimated);
+        } else if (testwise) {
+            this.bic = new SemBicScore(embeddedData, true, MissingDataSpec.testwise());
+        } else {
+            this.bic = new SemBicScore(correlationMatrix);
+        }
         this.bic.setPenaltyDiscount(penaltyDiscount);
         this.bic.setLambda(lambda);
 
@@ -103,8 +225,113 @@ public class BasisFunctionBicScore implements Score {
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);
 
+        // Under test-wise deletion the penalty already scales with each family's own row count, but the
+        // likelihood term is multiplied by nEff, which defaults to the full row count. Crediting the fit with N
+        // rows' worth of information while charging the penalty for the family's actual rows biases every score
+        // toward more edges. An ESS mode other than FULL_N discounts the likelihood to match. Only under
+        // TESTWISE: LISTWISE has already reduced the data to complete cases.
+        if (testwise || emCovariance) {
+            this.bic.setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(rawData, spec));
+        }
     }
-    
+
+    /**
+     * Constructs a BasisFunctionBicScore that scores against an externally supplied embedding - a map from
+     * variable index to the embedded columns to use for that variable. The correlation matrix and the underlying
+     * SemBicScore are built at full size from this data set's own embedding, exactly as in the other constructors;
+     * the supplied map only controls which columns are referenced. This is how a multi-data-set algorithm aiming
+     * at a single common model (e.g. IMaGES) shares one basis-column decision across all of its data sets, so
+     * that every data set scores the identical parameterization: with per-data-set adaptive selection, different
+     * data sets can keep different columns, and the summed score then compares models whose effective embeddings
+     * differ across data sets.
+     *
+     * <p>The supplied embedding must be consistent with this data set's own (unpruned) embedding layout: same
+     * variable keys, and for each variable a subsequence of its unpruned columns. This holds automatically when
+     * the map is derived (e.g. by union) from per-data-set decisions over data sets with the same variables,
+     * types, and categories, as {@code Embedding.getEmbeddedData} lays such data sets out identically.
+     *
+     * @param dataSet         the data set on which the score is to be calculated. Must not be null.
+     * @param truncationLimit the truncation limit of the basis. Must be a positive integer.
+     * @param lambda          Singularity lambda. Must be non-negative.
+     * @param embedding       the embedding (variable index to embedded columns) to score against. Must not be null.
+     * @param rankTransform   whether to apply a rank t     ransformation to the unit interval.
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda,
+                                 Map<Integer, List<Integer>> embedding, boolean rankTransform) {
+        this.variables = dataSet.getVariables();
+        this.truncationLimit = truncationLimit;
+        this.rankTransform = rankTransform;
+
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1,
+                rankTransform ? Embedding.RANK_TRANSFORM : 1);
+        DataSet embeddedData = result.embeddedData();
+
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
+
+        // Validate consistency with this data set's own layout.
+        Map<Integer, List<Integer>> own = result.embedding();
+        if (!own.keySet().equals(embedding.keySet())) {
+            throw new IllegalArgumentException("Supplied embedding has different variable keys than this data "
+                    + "set's embedding.");
+        }
+        for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
+            if (!own.get(e.getKey()).containsAll(e.getValue())) {
+                throw new IllegalArgumentException("Supplied embedding references columns not present in this "
+                        + "data set's embedding for variable index " + e.getKey() + ".");
+            }
+        }
+
+        this.embedding = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
+            this.embedding.put(e.getKey(), new ArrayList<>(e.getValue()));
+        }
+
+        this.bic = new SemBicScore(correlationMatrix);
+        this.bic.setPenaltyDiscount(penaltyDiscount);
+        this.bic.setLambda(lambda);
+        this.bic.setStructurePrior(0);
+    }
+
+    /**
+     * Computes the adaptive basis-column decision for a single data set: the embedding that
+     * {@code new BasisFunctionBicScore(dataSet, truncationLimit, lambda, true)} would score against. Exposed so
+     * that multi-data-set callers can combine per-data-set decisions (e.g. by union) into one common embedding.
+     *
+     * @param dataSet         the data set.
+     * @param truncationLimit the truncation limit of the basis.
+     * @return the pruned embedding for this data set.
+     */
+    public static Map<Integer, List<Integer>> adaptivePrunedEmbedding(DataSet dataSet, int truncationLimit) {
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(result.embeddedData());
+        return Embedding.pruneUninformativeBasisColumns(dataSet, result.embedding(), correlationMatrix);
+    }
+
+    /**
+     * Computes the unpruned embedding layout for a single data set, for callers that need to combine or
+     * validate basis-column decisions across data sets.
+     *
+     * @param dataSet         the data set.
+     * @param truncationLimit the truncation limit of the basis.
+     * @return the full (unpruned) embedding for this data set.
+     */
+    public static Map<Integer, List<Integer>> fullEmbedding(DataSet dataSet, int truncationLimit) {
+        return Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1).embedding();
+    }
+
+    /**
+     * Returns a copy of the embedding this score is scoring against (variable index to embedded columns).
+     *
+     * @return a copy of the embedding.
+     */
+    public Map<Integer, List<Integer>> getEmbedding() {
+        Map<Integer, List<Integer>> copy = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> e : this.embedding.entrySet()) {
+            copy.put(e.getKey(), new ArrayList<>(e.getValue()));
+        }
+        return copy;
+    }
+
     /**
      * Calculates the local score for a given node and its parent nodes.
      *
@@ -114,9 +341,22 @@ public class BasisFunctionBicScore implements Score {
      */
     public double localScore(int i, int... parents) {
 
-        // Note that this needs to be the sum of the individual BIC scores, not a BIC score calculated from
-        // the sums of the likelihoods and degrees of freedom. A test case to try is with nonlinear variables
-        // embedded as Legendre polynomials. jdramsey 2025-2-13
+        // Chain-rule decomposition over the embedded components of X = <X1, ..., Xp>:
+        //
+        //   BIC(X | Z) = BIC(X1 | Z) + BIC(X2 | Z, X1) + ... + BIC(Xp | Z, X1, ..., X{p-1}).
+        //
+        // Each component is conditioned on the earlier components of its own block, so the
+        // summed log-likelihoods telescope to the joint Gaussian log-likelihood of the whole
+        // embedded block given the parents' blocks. This is what makes the score a
+        // (penalized) joint likelihood and hence score-equivalent: all DAGs in a Markov
+        // equivalence class receive the same total score.
+        //
+        // Changes from the pre-2026-8 implementation: the conditioning step (B.add below) had
+        // been commented out, so each component was scored against the parents' blocks only,
+        // treating the components as conditionally independent given the parents. Since the
+        // components are deterministic transforms of a single variable, their residuals given
+        // the parents are generally correlated, and that diagonal-residual sum is not a joint
+        // likelihood and is not score-equivalent across Markov-equivalent DAGs.
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
 
         if (doOneEquationOnly) {
@@ -142,7 +382,7 @@ public class BasisFunctionBicScore implements Score {
             sumLik += result.lik();
             sumDof += result.dof();
 
-//            B.add(i_);
+            B.add(i_);
         }
 
         return 2 * sumLik - penaltyDiscount * sumDof * log(getSampleSize());
@@ -193,6 +433,58 @@ public class BasisFunctionBicScore implements Score {
     }
 
     /**
+     * The number of embedded components per variable, in variable order: the basis-function count for a continuous
+     * variable, the number of categories minus one for a discrete one (after any adaptive pruning). Adding a parent
+     * x to y costs size[y] * size[x] degrees of freedom, so this is the input
+     * {@link PenaltyDiscountCalibration#pairDofHistogram(int[])} needs to calibrate the penalty discount for this
+     * score.
+     *
+     * @return One entry per variable.
+     */
+    public int[] embeddingBlockSizes() {
+        int[] sizes = new int[this.variables.size()];
+        for (int i = 0; i < sizes.length; i++) {
+            sizes[i] = Math.max(1, this.embedding.get(i).size());
+        }
+        return sizes;
+    }
+
+    /**
+     * Estimates, by permutation on the raw data, the null distribution of this score's gain for adding one parent,
+     * per degrees-of-freedom class. Re-embeds the data with this score's truncation limit and restricts to the
+     * columns this score actually uses (after any adaptive pruning), so the statistic is the one the search sees.
+     *
+     * <p>Use the result with {@link PenaltyDiscountCalibration#penaltyDiscountForFalseDiscoveryRateFitted} rather
+     * than the exact chi-square version: the embedded components of a variable are not jointly Gaussian, so the
+     * LRT's null has the chi-square mean but roughly double the variance, and a chi-square calibration sets the
+     * penalty discount far too low for this score.</p>
+     *
+     * @param rawData         The data this score was built from.
+     * @param samplesPerClass Null draws per df class; a few hundred is plenty.
+     * @param seed            Seed for reproducible calibration.
+     * @return Map from df to fitted null.
+     */
+    public Map<Integer, PenaltyDiscountCalibration.NullFit> fitNullsByPermutation(DataSet rawData, int samplesPerClass,
+                                                                                  long seed) {
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(rawData, this.truncationLimit, 1,
+                this.rankTransform ? Embedding.RANK_TRANSFORM : 1);
+        DataSet embedded = result.embeddedData();
+        int n = embedded.getNumRows(), total = embedded.getNumColumns();
+        double[][] columns = new double[total][n];
+        for (int j = 0; j < total; j++) {
+            for (int i = 0; i < n; i++) columns[j][i] = embedded.getDouble(i, j);
+        }
+        List<int[]> blocks = new ArrayList<>();
+        for (int v = 0; v < this.variables.size(); v++) {
+            List<Integer> cols = this.embedding.get(v);
+            int[] b = new int[cols.size()];
+            for (int j = 0; j < b.length; j++) b[j] = cols.get(j);
+            blocks.add(b);
+        }
+        return PenaltyDiscountCalibration.fitNullsByPermutation(columns, blocks, samplesPerClass, seed);
+    }
+
+    /**
      * Retrieves the maximum degree from the underlying BIC score component.
      *
      * @return the maximum degree as an integer.
@@ -214,6 +506,15 @@ public class BasisFunctionBicScore implements Score {
     }
 
     /**
+     * The penalty discount in use, which may have been set automatically by the algcomparison wrapper.
+     *
+     * @return c.
+     */
+    public double getPenaltyDiscount() {
+        return this.penaltyDiscount;
+    }
+
+    /**
      * Sets the penalty discount value, which is used to adjust the penalty term in the BIC score calculation.
      *
      * @param penaltyDiscount The multiplier on the penalty term for this score.
@@ -221,6 +522,15 @@ public class BasisFunctionBicScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * Whether continuous variables were rank-transformed before embedding.
+     *
+     * @return true if so.
+     */
+    public boolean isRankTransform() {
+        return this.rankTransform;
     }
 
     /**
@@ -232,5 +542,15 @@ public class BasisFunctionBicScore implements Score {
     public void setDoOneEquationOnly(boolean doOneEquationOnly) {
         this.doOneEquationOnly = doOneEquationOnly;
     }
-}
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each family is scored on the rows complete on
+     * that family's embedded columns.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+}

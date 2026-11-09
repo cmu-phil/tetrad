@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -57,6 +58,13 @@ import java.util.concurrent.*;
  * @see Ida
  */
 public class Cstar {
+
+    /**
+     * Versioned prefix for the per-subsample effects cache files. Legacy "effects." files hold signed minimum
+     * effects (possibly computed from invalid parent sets under the old parent-set checks); this code writes and
+     * reuses only minimum-absolute-effect caches. Bump the version if the cache semantics change again.
+     */
+    private static final String EFFECTS_PREFIX = "effects.minabs-v1.";
 
     /**
      * The type of CPDAG algorithm to use.
@@ -178,14 +186,15 @@ public class Cstar {
     }
 
     /**
-     * Calculates the PCER (Per Comparison Error Rate) based on the given parameters. See Meinhausen and Buhlman.
+     * Calculates the PCER (Per Comparison Error Rate) based on the given parameters. See Meinhausen and Buhlmann (2010).
      *
-     * @param pi The pi value.
-     * @param q  The q value.
-     * @param p  The p value.
-     * @return The calculated PCER value.
+     * @param pi The stability (selection probability).
+     * @param q  The expected number of false positives (top bracket size).
+     * @param p  The total number of possible causes.
+     * @return The calculated PCER bound.
      */
     private static double pcer(double pi, double q, double p) {
+        if (pi <= 0.5) return 1.0;
         return (1.0 / ((2. * pi - 1.))) * ((q * q) / (p * p));
     }
 
@@ -202,14 +211,14 @@ public class Cstar {
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
      *
-     * @param dataSet         The full datasets to search over.
-     * @param possibleCauses  A set of variables in the datasets over which to search.
-     * @param possibleEffects The effect variables.
+     * @param dataSet         The full dataset to search over.
+     * @param possibleCauses  A set of variables in the dataset over which to search (predictors X).
+     * @param possibleEffects The effect variables (targets Y).
      * @param path            A path where interim results are to be stored. If null, interim results will not be
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
-     * @param topBracket      a int
-     * @return a {@link java.util.LinkedList} object
+     * @param topBracket      The expected number of false positives (q).
+     * @return A list of records, one for each subsample (though normally one would aggregate these).
      * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, int topBracket, String path) {
@@ -327,10 +336,13 @@ public class Cstar {
                     Graph cpdag;
                     double[][] effects;
 
-                    if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, "effects." + (this.subsample + 1) + ".txt").exists()) {
+                    // The effects cache prefix is versioned: legacy "effects.*" files contain signed
+                    // minima (possibly computed from invalid parent sets) and cannot be repaired by
+                    // taking absolute values, so they must not be reused here.
+                    if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, EFFECTS_PREFIX + (this.subsample + 1) + ".txt").exists()) {
                         TetradLogger.getInstance().log("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
                         cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
-                        effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
+                        effects = loadMatrix(new File(origDir, EFFECTS_PREFIX + (this.subsample + 1) + ".txt"));
                     } else {
                         TetradLogger.getInstance().log("Sampling data for index " + (this.subsample + 1));
 
@@ -366,7 +378,7 @@ public class Cstar {
 
                         TetradLogger.getInstance().log("Running IDA for index " + (this.subsample + 1));
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
-                            Map<Node, Double> minEffects = ida.calculateMinimumTotalEffectsOnY(this.possibleEffects.get(e));
+                            Map<Node, Double> minEffects = ida.calculateMinimumAbsoluteTotalEffectsOnY(this.possibleEffects.get(e));
 
                             for (int c = 0; c < this.possibleCauses.size(); c++) {
                                 final Double _e = minEffects.get(this.possibleCauses.get(c));
@@ -376,7 +388,7 @@ public class Cstar {
                     }
 
                     TetradLogger.getInstance().log("Saving CPDAG and effects for index " + (this.subsample + 1));
-                    saveMatrix(effects, new File(newDir, "effects." + (this.subsample + 1) + ".txt"));
+                    saveMatrix(effects, new File(newDir, EFFECTS_PREFIX + (this.subsample + 1) + ".txt"));
 
                     try {
                         GraphSaveLoadUtils.saveGraph(cpdag, new File(newDir, "cpdag." + (this.subsample + 1) + ".txt"), false);
@@ -717,6 +729,7 @@ public class Cstar {
      */
     private Graph getPatternPcStable(DataSet sample) throws InterruptedException {
         IndependenceTest test = this.test.getTest(sample, parameters);
+        test = new CachedIndependenceQueries(test);
         test.setVerbose(false);
         Pc pc = new Pc(test);
         pc.setFasStable(true);

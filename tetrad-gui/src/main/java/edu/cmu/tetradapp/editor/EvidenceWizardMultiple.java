@@ -22,13 +22,14 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.Evidence;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -163,7 +164,7 @@ class EvidenceWizardMultiple extends JPanel {
 
             for (int j = 0; j < bayesPm.getNumCategories(selectedNode); j++) {
                 double prob = getUpdaterWrapper().getBayesUpdater().getMarginal(nodeIndex, j);
-                double logOdds = FastMath.log(prob / (1. - prob));
+                double logOdds = TMath.log(prob / (1. - prob));
 
                 marginalsArea.append("Category " +
                                      bayesPm.getCategory(selectedNode, j) + ": p = " +
@@ -207,7 +208,7 @@ class EvidenceWizardMultiple extends JPanel {
         for (int row = 0; row < numRows; row++) {
             int[] values = getCategories(row, dims);
             double prob = getUpdaterWrapper().getBayesUpdater().getJointMarginal(variables, values);
-            double logOdds = FastMath.log(prob / (1. - prob));
+            double logOdds = TMath.log(prob / (1. - prob));
 
             marginalsArea.append("\n");
 
@@ -248,6 +249,10 @@ class EvidenceWizardMultiple extends JPanel {
      */
     public JTextArea getTextArea() {
         return this.textArea;
+    }
+
+    public Evidence getCurrentEvidence() {
+        return evidenceEditor.getEvidence();
     }
 }
 

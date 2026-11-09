@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.is;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.special.Gamma;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -355,7 +356,7 @@ public class IsBDeuScore2 implements IsScore {
      * @return the maximum degree as an integer.
      */
     @Override
-    public int getMaxDegree() { return (int) Math.ceil(Math.log(Math.max(2, sampleSize))); }
+    public int getMaxDegree() { return (int) TMath.ceil(TMath.log(TMath.max(2, sampleSize))); }
 
     /**
      * Determines if variable y is determined by variables z.
@@ -496,16 +497,9 @@ public class IsBDeuScore2 implements IsScore {
         List<Integer> removed = new ArrayList<>();
         for (int p : parents_pop) if (!isParents.contains(p)) removed.add(p);
 
-        if (verbose) {
-            System.out.println("node: " + nodeIndex);
-            System.out.println("parents is:   " + Arrays.toString(parents));
-            System.out.println("parents pop:  " + Arrays.toString(parents_pop));
-            System.out.println("children pop: " + Arrays.toString(children_pop));
-            System.out.println("added=" + added + ", removed=" + removed + ", reversed=" + reversed);
-        }
-        return added.size()   * Math.log(getKAddition())
-               + removed.size() * Math.log(getKDeletion())
-               + reversed.size()* Math.log(getKReorientation());
+        return added.size()   * TMath.log(getKAddition())
+               + removed.size() * TMath.log(getKDeletion())
+               + reversed.size()* TMath.log(getKReorientation());
     }
 
     private double computeRowPrior(int[] parents, int[] parent_values, int[] parents_all, Map<List<Integer>, Double> row_priors) {

@@ -50,7 +50,7 @@ public class SetupLoggingAction extends AbstractAction {
     /**
      * The component used to config logging.
      */
-    private static JComponent buildSetupLoggingComponent() {
+    static JComponent buildSetupLoggingComponent() {
 
 
         // build yes/no combo box.

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,10 +16,12 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -29,6 +31,7 @@ import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
 import org.jetbrains.annotations.NotNull;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -37,7 +40,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.io.Serial;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.prefs.Preferences;
 
@@ -78,7 +85,6 @@ public final class Tetrad implements PropertyChangeListener {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Launches Tetrad as an application. One way to launch Tetrad IV as an application is the following:&gt; 0
      * <pre>java -jar jarname.jar</pre>
      * <p>
      * where "jarname.jar" is a jar containing all the classes of Tetrad IV, properly compiled, along with all the
@@ -94,10 +100,18 @@ public final class Tetrad implements PropertyChangeListener {
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
+        // On macOS, the native application menu is named after this property; without it, when Tetrad is
+        // launched from a jar rather than from an app bundle, the menu is named after the main class. Must
+        // be set before any AWT class is initialized. Ignored on other platforms.
+        System.setProperty("apple.awt.application.name", "Tetrad");
+
         Tetrad.setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
+
+        // The layout given to graphs that arrive without positions, as last chosen in a Layout menu.
+        edu.cmu.tetradapp.workbench.LayoutUtils.applyStoredDefaultLayout();
 
         // Check if we should skip checking for the latest version
         SplashScreen.show("Loading Tetrad...", 1000);
@@ -114,11 +128,20 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private static void setLookAndFeel() {
         try {
-            String os = System.getProperties().getProperty("os.name");
-            if (os.equals("Windows XP")) {
-                UIManager.setLookAndFeel(
-                        UIManager.getSystemLookAndFeelClassName());
+//            String os = System.getProperties().getProperty("os.name");
+//            if (os.equals("Windows XP")) {
+//                UIManager.setLookAndFeel(
+//                        UIManager.getSystemLookAndFeelClassName());
+//            }
+
+            if (Preferences.userRoot().getBoolean("darkMode", false)) {
+                FlatDarkLaf.setup();
+            } else {
+                FlatLightLaf.setup();
             }
+
+            // Scale the Look and Feel's fonts to the size stored in Settings.
+            ThemeUtils.applyStoredFontScale();
         } catch (Exception e) {
             TetradLogger.getInstance().log("Couldn't set look and feel.");
         }
@@ -141,6 +164,11 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
+        // Added 2026-8-24: parameter and edge tooltips now carry a paragraph of explanation, which Swing's default
+        // 4-second dismiss delay does not allow time to read. Show them a little sooner and keep them up longer.
+        ToolTipManager.sharedInstance().setInitialDelay(400);
+        ToolTipManager.sharedInstance().setDismissDelay(60_000);
 
         // Set up the desktop.
         this.desktop = new TetradDesktop();
@@ -211,17 +239,37 @@ public final class Tetrad implements PropertyChangeListener {
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left-hand corner of the screen.
-//        frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
         frame.setPreferredSize(frame.getPreferredSize());
         frame.setLocation(frame.getLocation());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
-//        getFrame().setLocationRelativeTo(null);
 
-        // This doesn't let the user resize the main window.
-        Image image = ImageUtils.getImage(this, "tyler16.png");
-        getFrame().setIconImage(image);
+        // Multi-resolution application icon; the windowing system picks the best
+        // size for title bars, task bars, Alt-Tab switchers, and the like.
+        List<Image> icons = new ArrayList<>();
+        for (int size : new int[]{16, 32, 128, 512}) {
+            icons.add(ImageUtils.getImage(this, "tyler" + size + ".png"));
+        }
+        getFrame().setIconImages(icons);
+
+        // On macOS, frame icons are ignored; the Dock icon must be set through the
+        // Taskbar API, or the generic Java icon is shown. The light-mode icon is
+        // used regardless of look and feel, since the Dock background is the
+        // user's desktop, not the application theme.
+        if (Taskbar.isTaskbarSupported()) {
+            Taskbar taskbar = Taskbar.getTaskbar();
+            if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                try {
+                    URL dockIconUrl = Tetrad.class.getResource("/docs/images/tyler512.png");
+                    if (dockIconUrl != null) {
+                        taskbar.setIconImage(ImageIO.read(dockIconUrl));
+                    }
+                } catch (IOException | UnsupportedOperationException | SecurityException e) {
+                    // Not fatal; the default icon is kept.
+                }
+            }
+        }
 
         // Add an initial session editor to the desktop. Must be done
         // from here, not in the constructor of TetradDesktop.
@@ -232,6 +280,8 @@ public final class Tetrad implements PropertyChangeListener {
         getFrame().addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // exitApplication disposes the frame itself when the quit goes ahead; on Cancel Quit the window
+                // stays.
                 exitApplication();
             }
         });
@@ -259,27 +309,23 @@ public final class Tetrad implements PropertyChangeListener {
 
             try {
                 desktop.setQuitHandler((e2, response) -> {
-                    int result = JOptionPane.showConfirmDialog(null,
-                            "Are you sure you want to quit? Any unsaved work will be lost.",
-                            "Confirm Quit", JOptionPane.YES_NO_OPTION);
-                    if (result == JOptionPane.YES_OPTION) {
+                    if (exitApplication()) {
                         response.performQuit();
                     } else {
                         response.cancelQuit();
                     }
                 });
             } catch (Exception e) {
-                TetradLogger.getInstance().log("Could not set quit handler on this platform..");
+                TetradLogger.getInstance().warn("Could not set quit handler on this platform..");
             }
         }
     }
 
-    // Exits the application gracefully.
-    private void exitApplication() {
-        boolean succeeded = getDesktop().closeAllSessions();
-
-        if (!succeeded) {
-            return;
+    // Exits the application gracefully, after asking about each session with unsaved changes. Returns false, leaving
+    // everything open, if the user cancels the quit.
+    private boolean exitApplication() {
+        if (!getDesktop().closeAllSessions()) {
+            return false;
         }
 
         getFrame().setVisible(false);
@@ -291,6 +337,8 @@ public final class Tetrad implements PropertyChangeListener {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        return true;
     }
 
     private JFrame getFrame() {

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,7 +20,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import java.util.Random;
+import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.function.Function;
 
 /**
@@ -42,29 +43,20 @@ public class MultiLayerPerceptronFunction1D {
      * @param hiddenDimension Number of neurons in the hidden layer.
      * @param inputScale      Scaling factor for the input to create bumpiness.
      * @param activation      Activation function (e.g., Math::sin or Math::tanh).
-     * @param seed            Random seed for reproducibility.
      */
-    public MultiLayerPerceptronFunction1D(int hiddenDimension, double inputScale, Function<Double, Double> activation, long seed) {
-        Random random;
-
-        if (seed == -1L) {
-            random = new Random();
-        } else {
-            random = new Random(seed);
-        }
-
+    public MultiLayerPerceptronFunction1D(int hiddenDimension, double inputScale, Function<Double, Double> activation) {
         this.W1 = new double[hiddenDimension][1];
         this.b1 = new double[hiddenDimension];
         this.W2 = new double[hiddenDimension];
-        this.b2 = random.nextDouble() * 2 - 1; // Random value in [-1, 1]
+        this.b2 = RandomUtil.getInstance().nextDouble() * 2 - 1; // Random value in [-1, 1]
         this.activation = activation;
         this.inputScale = inputScale;
 
         // Initialize weights and biases randomly
         for (int i = 0; i < hiddenDimension; i++) {
-            this.W1[i][0] = random.nextGaussian(); // Gaussian weights
-            this.b1[i] = random.nextGaussian();   // Gaussian biases
-            this.W2[i] = random.nextGaussian();   // Gaussian weights
+            this.W1[i][0] = RandomUtil.getInstance().nextGaussian(); // Gaussian weights
+            this.b1[i] = RandomUtil.getInstance().nextGaussian();   // Gaussian biases
+            this.W2[i] = RandomUtil.getInstance().nextGaussian();   // Gaussian weights
         }
     }
 
@@ -78,9 +70,7 @@ public class MultiLayerPerceptronFunction1D {
         // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
         MultiLayerPerceptronFunction1D randomFunction = new MultiLayerPerceptronFunction1D(
                 20, // Number of hidden neurons
-                10.0, Math::sin, // Activation function
-                // Input scale for bumpiness
-                42 // Random seed
+                10.0, Math::sin // Activation function
         );
 
         // Evaluate and print the random function for some inputs

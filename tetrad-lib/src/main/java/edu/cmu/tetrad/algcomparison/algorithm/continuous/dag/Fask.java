@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -35,6 +35,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -50,9 +52,9 @@ import static edu.cmu.tetrad.util.Params.*;
         name = "FASK",
         command = "fask",
         algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
+        dataType = {DataType.Continuous, DataType.Mixed}
 )
-public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesScoreWrapper,
+public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;
@@ -94,8 +96,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @param dataModel  the data model to run the search on
      * @param parameters the parameters for the search
      * @return the resulting graph from the search
-     * @throws IllegalStateException    if the data model is not a DataSet or if there are missing values
-     * @throws IllegalArgumentException if there are missing values in the data set
+     * @throws IllegalStateException    if the data model is not a DataSet
      * @throws InterruptedException     if any
      */
     @Override
@@ -104,13 +105,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             throw new IllegalStateException("Expecting a dataset.");
         }
 
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                if (Double.isNaN(dataSet.getDouble(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
-                }
-            }
-        }
+        // Missing values are allowed: the score handles them by its missing-data policy for the adjacency
+        // phase, and the pairwise orientation and two-cycle statistics use pairwise/testwise deletion.
 
         edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 
@@ -131,14 +127,28 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         fask.setDepth(parameters.getInt(DEPTH));
-        fask.setAlpha(parameters.getDouble(ALPHA));
+        fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
         fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
-        edu.cmu.tetrad.search.Fask.setDelta(parameters.getDouble(FASK_DELTA));
         fask.setUseFasAdjacencies(true);
+        fask.setUseBossAdjacencies(parameters.getBoolean(USE_BOSS_ADJACENCIES));
         fask.setUseSkewAdjacencies(true);
 
         if (algorithm != null) {
-            fask.setExternalGraph(algorithm.search(dataSet, parameters));
+            Graph external = algorithm.search(dataSet, parameters);
+            fask.setExternalGraph(external);
+
+            boolean useOrientations = parameters.getBoolean(Params.FASK_POOL_EXTERNAL_ORIENTATIONS);
+            fask.setUseExternalOrientations(useOrientations);
+            fask.setOverrideBootstraps(parameters.getInt(Params.FASK_OVERRIDE_BOOTSTRAPS));
+            fask.setOverrideBlockLength(parameters.getInt(Params.FASK_OVERRIDE_BLOCK_LENGTH));
+
+            if (external != null) {
+                TetradLogger.getInstance().log("FASK: external graph received ("
+                        + external.getNumNodes() + " nodes, " + external.getNumEdges()
+                        + " edges); its adjacencies will be used"
+                        + (useOrientations ? ", with its compelled orientations as defaults."
+                        : "; its orientations will be ignored."));
+            }
         }
 
         fask.setKnowledge(this.knowledge);
@@ -193,9 +203,12 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         parameters.add(DEPTH);
         parameters.add(SKEW_EDGE_THRESHOLD);
-        parameters.add(ALPHA);
-        parameters.add(FASK_DELTA);
+        parameters.add(TWO_CYCLE_ALPHA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
+        parameters.add(USE_BOSS_ADJACENCIES);
+        parameters.add(FASK_POOL_EXTERNAL_ORIENTATIONS);
+        parameters.add(FASK_OVERRIDE_BOOTSTRAPS);
+        parameters.add(FASK_OVERRIDE_BLOCK_LENGTH);
 
         return parameters;
     }

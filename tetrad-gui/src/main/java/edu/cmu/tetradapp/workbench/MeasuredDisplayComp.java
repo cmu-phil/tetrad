@@ -25,32 +25,37 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * The display component for measured nodes--an opaque rounded rectangle.
+ * The display component for a measured-variable node in a graph workbench: a rounded rectangle in a light blue tint
+ * with the variable name centered in it. Colors and font come from {@link WorkbenchStyle}, so the node follows the
+ * active Look &amp; Feel.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class MeasuredDisplayComp extends JComponent implements DisplayComp {
 
+    private static final int ARC = 8;
+
     /**
-     * True iff this display node is selected.
+     * Whether this node display is selected.
      */
     private boolean selected;
 
     /**
-     * <p>Constructor for MeasuredDisplayComp.</p>
+     * Constructs a measured node display with the given name.
      *
-     * @param name a {@link java.lang.String} object
+     * @param name the node name.
      */
     public MeasuredDisplayComp(String name) {
-        setBackground(DisplayNodeUtils.getNodeFillColor());
-        setFont(DisplayNodeUtils.getFont());
+        setOpaque(false);
+        setFont(WorkbenchStyle.nodeFont());
         setName(name);
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
@@ -59,52 +64,43 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
-    /**
-     * @return the shape of the component.
-     */
     private Shape getShape() {
-        return new RoundRectangle2D.Double(0, 0, getPreferredSize().width - 1,
-                getPreferredSize().height - 1, 4, 3);
+        Dimension d = getPreferredSize();
+        return new RoundRectangle2D.Double(0.5, 0.5, d.width - 1, d.height - 1, ARC, ARC);
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Paints the component.
      */
+    @Override
     public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        int width = getPreferredSize().width;
-        int stringWidth = fm.stringWidth(getName());
-        int stringX = (width - stringWidth) / 2;
-        int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
-
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
-                DisplayNodeUtils.getNodeFillColor());
-        g2.fill(getShape());
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() :
-                DisplayNodeUtils.getNodeEdgeColor());
-        g2.draw(getShape());
-        g2.setColor(DisplayNodeUtils.getNodeTextColor());
-        g2.setFont(DisplayNodeUtils.getFont());
-        g2.drawString(getName(), stringX, stringY);
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            DisplayNodeUtils.paintNode(g2, getShape(), getName(), getPreferredSize(),
+                    WorkbenchStyle.measuredFill(), isSelected(),
+                    DisplayNodeUtils.scaledFont(this, WorkbenchStyle.nodeFont()));
+        } finally {
+            g2.dispose();
+        }
     }
 
     /**
-     * Calculates the size of the component based on its name.
-     *
-     * @return a {@link java.awt.Dimension} object
+     * {@inheritDoc}
      */
+    @Override
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        double scale = DisplayNodeUtils.scaleOf(this);
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.scaledFont(this, WorkbenchStyle.nodeFont()));
         int width = fm.stringWidth(getName()) + fm.getMaxAdvance();
-        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
-        width = (width < 60) ? 60 : width;
+        int height = 2 * (int) Math.round(DisplayNodeUtils.getPixelGap() * scale) + fm.getAscent()
+                + (int) Math.round(3 * scale);
+        width = Math.max(width, (int) Math.round(60 * scale));
         return new Dimension(width, height);
     }
 
@@ -115,12 +111,8 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
 }
-
-
-
-
-

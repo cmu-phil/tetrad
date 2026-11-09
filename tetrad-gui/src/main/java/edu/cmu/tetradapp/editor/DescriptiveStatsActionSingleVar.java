@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -109,7 +111,7 @@ class DescriptiveStatsActionSingleVar extends AbstractAction {
         JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
                 selected, editorPanel.precomputeCovariances), 20, 65);
         display.setEditable(false);
-        display.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        display.setFont(ThemeUtils.monospaced(12));
         editorPanel.addPropertyChangeListener(new DescriptiveStatsListener(display));
 
         Box box = Box.createHorizontalBox();

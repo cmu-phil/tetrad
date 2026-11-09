@@ -27,29 +27,28 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
- * Displays a Q-Q plot for a random variable.
- * <p>
- * A lot of the code borrows heavily from HistogramAction
- *
- * @author Michael Freenor
+ * Displays a plot matrix for a random variable.
  */
-
 class PlotMatrixAction extends AbstractAction {
-
 
     /**
      * The data editor that action is attached to.
      */
-    private final DataEditor dataEditor;
+    private final ISelectedModel dataEditor;
 
 
     /**
-     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that It's attached to.
+     * Constructs the <code>PlotMatrixAction</code> given the <code>DataEditor</code> that It's attached to.
      *
      * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
-    public PlotMatrixAction(DataEditor editor) {
+    public PlotMatrixAction(ISelectedModel editor) {
         super("Plot Matrix...");
+
+        if (!(editor instanceof JComponent)) {
+            throw new IllegalArgumentException("Editor must be a JComponent");
+        }
+
         this.dataEditor = editor;
     }
 
@@ -57,15 +56,28 @@ class PlotMatrixAction extends AbstractAction {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
-        if (dataSet == null || dataSet.getNumColumns() == 0) {
-            JOptionPane.showMessageDialog(findOwner(), "Cannot display a scatter plot for an empty data set.");
+        Object model = this.dataEditor.getSelectedDataModel();
+
+        if (!(model instanceof DataSet dataSet)) {
+            String kind = (model == null) ? "nothing" : model.getClass().getSimpleName();
+            JOptionPane.showMessageDialog(
+                    findOwner(),
+                    "Plot Matrix requires a DataSet (tabular data).\nSelected: " + kind
+            );
+            return;
+        }
+
+        if (dataSet.getNumColumns() == 0) {
+            JOptionPane.showMessageDialog(findOwner(),
+                    "Cannot display a plot matrix for an empty data set.");
             return;
         }
 
         JPanel panel = new PlotMatrix(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Plot Matrix", "Save", true, this.dataEditor);
+        EditorWindow editorWindow = new EditorWindow(panel, DataWindowTitles.of("Plot Matrix", dataSet), null, false,
+                (JComponent) this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -76,7 +88,7 @@ class PlotMatrixAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, this.dataEditor);
+                JFrame.class, (JComponent) this.dataEditor);
     }
 }
 

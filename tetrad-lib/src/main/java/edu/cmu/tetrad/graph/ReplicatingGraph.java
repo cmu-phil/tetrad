@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.graph;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -129,13 +130,20 @@ public class ReplicatingGraph extends EdgeListGraph {
         // Add requested edge first
         boolean changed = super.addEdge(e);
 
-        // Then mirror across policy
+        // Then mirror across policy. Mirroring is at the level of PRESENCE: a mirror is added
+        // only if its node pair is not already adjacent. (Endpoint marks are not mirrored, so
+        // homologs may legitimately carry different marks; adding a mark-templated copy on top
+        // of an existing differently-marked edge would create a double edge.)
         try {
             IN_REPLICATION.set(Boolean.TRUE);
             for (Edge m : policy.mirrorsFor(this, e)) {
-                if (!m.equals(e)) {
-                    super.addEdge(m);
+                if (m.equals(e)) {
+                    continue;
                 }
+                if (!super.getEdges(m.getNode1(), m.getNode2()).isEmpty()) {
+                    continue;
+                }
+                super.addEdge(m);
             }
         } finally {
             IN_REPLICATION.set(Boolean.FALSE);
@@ -158,12 +166,19 @@ public class ReplicatingGraph extends EdgeListGraph {
         // Remove requested edge first
         boolean changed = super.removeEdge(e);
 
-        // Then remove mirrored counterparts
+        // Then remove mirrored counterparts. Removal is at the level of the node PAIR, not
+        // edge equality: endpoint marks are not mirrored, so a homolog's marks may have
+        // drifted from the template's, and an equality-based removal would silently miss it --
+        // leaving stranded edges at slices the search never removes directly (in particular
+        // the deepest lag tier, whose separators lie outside the window).
         try {
             IN_REPLICATION.set(Boolean.TRUE);
             for (Edge m : policy.mirrorsFor(this, e)) {
-                if (!m.equals(e)) {
-                    super.removeEdge(m);
+                if (m.equals(e)) {
+                    continue;
+                }
+                for (Edge actual : new ArrayList<>(super.getEdges(m.getNode1(), m.getNode2()))) {
+                    super.removeEdge(actual);
                 }
             }
         } finally {
@@ -185,49 +200,6 @@ public class ReplicatingGraph extends EdgeListGraph {
         Edge e = getEdge(a, b);
         if (e == null) return false;
         return removeEdge(e);
-    }
-
-    /**
-     * Mirrors endpoint changes across all policy-mirrored edges. This keeps algorithms that orient by setEndpoint()
-     * fully SVAR-aware without needing a custom endpoint strategy.
-     *
-     * @param from the node from which the edge originates
-     * @param to   the node to which the edge points
-     * @return true if the endpoint was successfully set and the graph was modified, false otherwise
-     */
-    @Override
-    public synchronized boolean setEndpoint(Node from, Node to, Endpoint ep)
-            throws IllegalArgumentException {
-        if (Boolean.TRUE.equals(IN_REPLICATION.get())) {
-            return super.setEndpoint(from, to, ep);
-        }
-
-        // First orient the requested endpoint.
-        boolean ok = super.setEndpoint(from, to, ep);
-
-        // Mirror endpoint to all existing mirrored edges (do not create new ones here).
-        try {
-            IN_REPLICATION.set(Boolean.TRUE);
-
-            Edge seed = getEdge(from, to);
-            if (seed == null) return ok; // nothing to mirror
-
-            for (Edge m : policy.mirrorsFor(this, seed)) {
-                if (m.equals(seed)) continue;
-
-                Node m1 = m.getNode1();
-                Node m2 = m.getNode2();
-                Edge existing = getEdge(m1, m2);
-                if (existing != null) {
-                    // We only set the endpoint at 'm2' (analogous to 'to') to 'ep',
-                    // retaining the proximal endpoint at 'm1' as-is.
-                    super.setEndpoint(m1, m2, ep);
-                }
-            }
-        } finally {
-            IN_REPLICATION.set(Boolean.FALSE);
-        }
-        return ok;
     }
 
     /**

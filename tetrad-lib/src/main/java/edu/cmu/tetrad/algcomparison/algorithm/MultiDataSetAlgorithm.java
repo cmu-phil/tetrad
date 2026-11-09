@@ -52,12 +52,5 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * @param score The wrapper
      */
     void setScoreWrapper(ScoreWrapper score);
-
-    /**
-     * Sets a test wrapper if not null.
-     *
-     * @param test The wrapper
-     */
-    void setIndTestWrapper(IndependenceWrapper test);
 }
 

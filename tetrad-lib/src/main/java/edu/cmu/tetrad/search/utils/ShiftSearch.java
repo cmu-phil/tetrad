@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -91,7 +91,7 @@ public class ShiftSearch {
         while ((choice = generator.next()) != null) {
             shifts = new int[nodes.size()];
 
-            double zSize = FastMath.pow(getMaxShift(), choice.length);
+            double zSize = TMath.pow(getMaxShift(), choice.length);
             int iIndex = this.dataSets.get(0).getVariables().indexOf(this.dataSets.get(0).getVariable("I"));
 
             for (int z = 0; z < zSize; z++) {

@@ -27,7 +27,8 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -96,15 +97,9 @@ public class PossibleDsepFci {
             Set<Node> condSet = getSepset(this.test, x, y);
 
             if (condSet != null) {
-                for (Node n : condSet) {
-                    if (!(this.graph.getAdjacentNodes(n).contains(x) || this.graph.getAdjacentNodes(n).contains(y))) {
-                        System.out.println("Not adjacent");
-                    }
-                }
-
                 this.graph.removeEdge(x, y);
                 this.sepset.set(x, y, condSet);
-                System.out.println("Removed " + x + "--- " + y + " sepset = " + condSet);
+                TetradLogger.getInstance().log("Removed " + x + "--- " + y + " sepset = " + condSet);
             }
 
         }
@@ -198,7 +193,7 @@ public class PossibleDsepFci {
 
         int _depth = getDepth() == -1 ? 1000 : getDepth();
 
-        for (int d = 0; d <= FastMath.min(_depth, possParents.size()); d++) {
+        for (int d = 0; d <= TMath.min(_depth, possParents.size()); d++) {
             ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
             int[] choice;
 
@@ -221,7 +216,7 @@ public class PossibleDsepFci {
 
         _depth = getDepth() == -1 ? 1000 : getDepth();
 
-        for (int d = 0; d <= FastMath.min(_depth, possParents.size()); d++) {
+        for (int d = 0; d <= TMath.min(_depth, possParents.size()); d++) {
             ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
             int[] choice;
 

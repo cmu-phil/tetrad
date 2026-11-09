@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -68,10 +69,16 @@ public class BayesEstimatorEditor extends JPanel {
     private BayesEstimatorEditorWizard wizard;
 
     /**
+     * The workbench showing now; replaced whenever the display is rebuilt.
+     */
+    private GraphWorkbench workbench;
+
+    /**
      * Constructs a new instantiated model editor from a Bayes IM.
      *
      * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param parameters the parameters for the estimation
      */
     public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet, Parameters parameters) {
         this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm), parameters));
@@ -93,35 +100,38 @@ public class BayesEstimatorEditor extends JPanel {
         resetBayesImEditor();
 
         add(this.targetPanel, BorderLayout.CENTER);
+
+        Box plotBar = Box.createHorizontalBox();
+        plotBar.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        plotBar.add(Box.createHorizontalGlue());
+        plotBar.add(PlotMatrixForSelected.button(() -> this.workbench, this.wrapper::getDataSet,
+                this.wrapper::getDataModels));
+        add(plotBar, BorderLayout.SOUTH);
+
         validate();
 
+        // One IM was estimated per data set; the shared chooser says which one is shown and handed downstream,
+        // and lets another be chosen. It opens on the model's current index. If the data sets cannot be matched
+        // to the estimates one for one, the entries are numbered only.
         if (this.wrapper.getNumModels() > 1) {
-            JComboBox<Integer> comp = new JComboBox<>();
+            java.util.List<? extends DataModel> models = this.wrapper.getDataModels();
 
-            for (int i = 0; i < this.wrapper.getNumModels(); i++) {
-                comp.addItem(i + 1);
+            if (models == null || models.size() != this.wrapper.getNumModels()) {
+                models = java.util.Arrays.asList(new DataModel[this.wrapper.getNumModels()]);
             }
 
-            comp.addActionListener(e -> {
-                Object selectedItem = comp.getSelectedItem();
-
-                if (selectedItem instanceof Integer) {
-                    BayesEstimatorEditor.this.wrapper.setModelIndex((Integer) selectedItem - 1);
-                    resetBayesImEditor();
-                    validate();
-                }
+            Box b = DataSetChooser.create(models, this.wrapper.getModelIndex(), index -> {
+                this.wrapper.setModelIndex(index);
+                resetBayesImEditor();
+                validate();
+                firePropertyChange("modelChanged", null, null);
             });
 
-            comp.setMaximumSize(comp.getPreferredSize());
-
-            Box b = Box.createHorizontalBox();
-            b.add(new JLabel("Using model"));
-            b.add(comp);
-            b.add(new JLabel("from "));
-            b.add(new JLabel(this.wrapper.getName()));
-            b.add(Box.createHorizontalGlue());
-
-            add(b, BorderLayout.NORTH);
+            if (b != null) {
+                b.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+                b.add(Box.createHorizontalGlue());
+                add(b, BorderLayout.NORTH);
+            }
         }
     }
 
@@ -153,6 +163,7 @@ public class BayesEstimatorEditor extends JPanel {
         Graph graph = bayesPm.getDag();
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
+        this.workbench = workbench;
         this.wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
         this.wizard.enableEditing(false);
 
@@ -182,6 +193,8 @@ public class BayesEstimatorEditor extends JPanel {
 
         JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
+        modelParametersText.setEditable(false);
+        modelParametersText.setMargin(new Insets(8, 8, 8, 8));
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);
@@ -192,7 +205,6 @@ public class BayesEstimatorEditor extends JPanel {
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
 
-        setLayout(new BorderLayout());
         panel.add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Editor");
@@ -213,8 +225,10 @@ public class BayesEstimatorEditor extends JPanel {
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
 
+        this.targetPanel.removeAll();
         this.targetPanel.add(panel, BorderLayout.CENTER);
-        validate();
+        this.targetPanel.revalidate();
+        this.targetPanel.repaint();
     }
 }
 

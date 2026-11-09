@@ -76,7 +76,7 @@ public class PvalueUniformityUnderNull implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
         markovCheck.generateResults(true, true);
         return markovCheck.getKsPValue(true);
     }

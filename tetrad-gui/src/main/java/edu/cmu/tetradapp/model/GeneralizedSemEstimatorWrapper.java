@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -51,7 +53,18 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     /**
      * The data model.
      */
-    private final DataSet data;
+    private DataSet data;
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor; null in sessions saved before this field
+     * existed.
+     */
+    private List<DataSet> dataSets;
+
+    /**
+     * The index in dataSets of the data set the current estimate is from.
+     */
+    private int dataIndex = 0;
 
     /**
      * The name of the model.
@@ -79,8 +92,29 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     //==============================CONSTRUCTORS==========================//
 
+    /**
+     * Constructs a new GeneralizedSemEstimatorWrapper that estimates the given generalized SEM PM using the data from
+     * the given simulation.
+     *
+     * @param semPm      the generalized SEM PM wrapper
+     * @param simulation the simulation supplying the data
+     * @param parameters the parameters
+     */
     public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, Simulation simulation, Parameters parameters) {
         this(semPm, new DataWrapper(simulation, parameters));
+    }
+
+    /**
+     * Estimates from a Graph (or Search) box directly, building the generalized SEM PM from the graph as the PM
+     * box would (linear, Gaussian). The graph must have every edge directed or bidirected.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param parameters  the parameters (unused).
+     */
+    public GeneralizedSemEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(new GeneralizedSemPmWrapper(EstimatorGraphs.semGraph(graphSource, "The generalized SEM estimator")),
+                dataWrapper);
     }
 
     /**
@@ -96,8 +130,60 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
         this.semPm = semPm.getSemPm();
         this.data = (DataSet) data.getSelectedDataModel();
+        this.dataSets = tabularDataSets(data);
+        this.dataIndex = Math.max(0, this.dataSets.indexOf(this.data));
 
         execute();
+    }
+
+    /**
+     * The tabular data sets of a data box, in order.
+     */
+    private static List<DataSet> tabularDataSets(DataWrapper dataWrapper) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel model : dataWrapper.getDataModelList()) {
+            if (model instanceof DataSet dataSet) dataSets.add(dataSet);
+        }
+
+        return dataSets;
+    }
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor.
+     *
+     * @return the data sets; empty if unknown (a session saved before the choice existed)
+     */
+    public List<DataSet> getDataSets() {
+        return this.dataSets == null ? new ArrayList<>() : this.dataSets;
+    }
+
+    /**
+     * The index, in getDataSets(), of the data set the current estimate is from.
+     *
+     * @return the index
+     */
+    public int getDataIndex() {
+        return this.dataIndex;
+    }
+
+    /**
+     * Re-estimates on another of the parent's data sets, replacing the current estimate. If the estimation fails,
+     * the current estimate and index are left as they were and the exception is passed on.
+     *
+     * @param index the index, in getDataSets(), of the data set to estimate on
+     */
+    public void setDataIndex(int index) {
+        if (index < 0 || index >= getDataSets().size()) {
+            throw new IllegalArgumentException("No data set at index " + index + ".");
+        }
+
+        GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
+        GeneralizedSemIm im = estimator.estimate(this.semPm, this.dataSets.get(index));
+        this.estIm = im;
+        this.report = estimator.getReport();
+        this.data = this.dataSets.get(index);
+        this.dataIndex = index;
     }
 
     /**

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -37,12 +37,11 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.util.ExperimentalToggle;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -58,10 +57,9 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.function.Function;
-import java.util.prefs.Preferences;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
+import static edu.cmu.tetrad.util.StatUtils.fdrCutoff;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
@@ -76,7 +74,6 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
  */
 public class MarkovCheckEditor extends JPanel {
 
-    private static boolean flipEscapes = true;
     /**
      * The model for the Markov check.
      */
@@ -94,9 +91,13 @@ public class MarkovCheckEditor extends JPanel {
      */
     private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
     /**
+     * Local switch for listing experimental tests in this editor. Added 2026-8-24.
+     */
+    private final ExperimentalToggle experimentalToggle = new ExperimentalToggle(this::refreshTestList);
+    /**
      * The combo box for the conditioning set type.
      */
-    private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
+    private final JComboBox<ConditioningSetType> conditioningSetTypeJComboBox = new JComboBox<>();
     /**
      * The label for the test.
      */
@@ -115,18 +116,27 @@ public class MarkovCheckEditor extends JPanel {
     private final DoubleTextField fraction;
     /**
      * A JCheckBox field in the MarkovCheckEditor class that allows the user to specify whether extraneous variables
-     * should be removed in the analysis. This option helps in simplifying the dataset by excluding irrelevant or
-     * redundant variables, thereby potentially improving the accuracy and performance of the model under
-     * consideration.
+     * should be removed in the analysis.
      */
     private final JCheckBox removeExtraneousVariables;
     /**
-     * A checkbox component in the user interface of the MarkovCheckEditor that enables the user to toggle the inclusion
-     * or exclusion of the dependent distribution in the analysis. The state of this checkbox influences whether certain
-     * dependent test models or data distributions are considered during the processing and testing of statistical
-     * independence within the application.
+     * Checkbox enabling per-fact effective sample sizes computed from block structure (see
+     * edu.cmu.tetrad.search.utils.PerFactEss). Added 2026-8-30.
      */
-    private final JCheckBox checkDependentDistribution;
+    private final JCheckBox perFactEssCheckBox = new JCheckBox("Per-Fact ESS");
+    /**
+     * Opens the chooser for the block-defining columns used by per-fact ESS.
+     */
+    private final JButton essBlocksButton = new JButton("Blocks...");
+    /**
+     * The block-defining columns for per-fact ESS.
+     */
+    private final java.util.List<String> essBlockColumns = new java.util.ArrayList<>();
+//    /**
+//     * A checkbox component that enables the user to toggle the inclusion or exclusion of the dependent distribution
+//     * in the analysis.
+//     */
+//    private final JCheckBox checkDependentDistribution;
     /**
      * Whether verbose output should be printed to the log and console.
      */
@@ -136,21 +146,11 @@ public class MarkovCheckEditor extends JPanel {
      */
     boolean updatingTestModels = true;
     /**
-     * A constant key used for storing or accessing the preference
-     * related to the Markov Checker Independence Test. This key
-     * serves as an identifier for the specific preference within
-     * the application's configuration or storage system.
-     */
-    private static final String PREF_KEY_TEST = "markovCheckerIndependenceTest";
-    /**
      * The JTable variable containing the independent table.
      */
     private JTable tableIndep;
     /**
-     * Represents a private JTable variable named tableDep. This variable is an instance of the JTable class and is used
-     * as a table component in the MarkovCheckEditor class.
-     *
-     * @see MarkovCheckEditor
+     * Represents a private JTable variable named tableDep.
      */
     private JTable tableDep;
     /**
@@ -202,6 +202,14 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JLabel fisherCombinedLabelIndep;
     /**
+     * The label for the FDR p-value cutoff.
+     */
+    private JLabel fdrCutoffLabelDep;
+    /**
+     * The label for the FDR p-value cutoff.
+     */
+    private JLabel fdrCutoffLabelIndep;
+    /**
      * Sort direction.
      */
     private int sortDir;
@@ -221,15 +229,6 @@ public class MarkovCheckEditor extends JPanel {
      * The histogram panel.
      */
     private JPanel histogramPanelDep;
-    /**
-     * A checkbox for the independence tab to flip escapes for some regexes.
-     */
-    private JCheckBox flipEscapesIndep;
-    /**
-     * A checkbox for the dependence tab to flip escapes for some regexes.
-     */
-    private JCheckBox flipEscapesDep;
-
 
     /**
      * Constructs a new editor for the given model.
@@ -243,93 +242,21 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-        conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
-//        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
-        conditioningSetTypeJComboBox.addItem("Parents(X)");
-        conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
-        conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
-        conditioningSetTypeJComboBox.addItem("Recursive M-Sep Conditioning Set");
-        conditioningSetTypeJComboBox.addItem("Conditioning on Noncolliders Only");
-        conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
+        for (ConditioningSetType type : ConditioningSetType.values()) {
+            conditioningSetTypeJComboBox.addItem(type);
+        }
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
-            Object selectedItem = conditioningSetTypeJComboBox.getSelectedItem();
-            switch ((String) Objects.requireNonNull(selectedItem)) {
-                case "Parents(X)":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Parents(X)");
-                    }
-
-                    break;
-                case "Parents(X) and Neighbors(X)":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.PARENTS_AND_NEIGHBORS);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Parents(X) and Neighbors(X)");
-                    }
-
-                    break;
-                case "Ordered Local Markov MAG":
-//                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
-//
-//                    if (model.getMarkovCheck() != null) {
-//                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov");
-//                    }
-//
-//                    break;
-//                case "Ordered Local Markov MAG":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov MAG");
-                    }
-
-                    break;
-                case "MarkovBlanket(X)":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "MarkovBlanket(X)");
-                    }
-
-                    break;
-                case "Recursive M-Sep Conditioning Set":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.RECURSIVE_MSEP);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Recursive M-Sep Conditioning Set");
-                    }
-
-                    break;
-                case "Conditioning on Noncolliders Only":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.NONCOLLIDERS_ONLY);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Conditioning on Noncolliders Only");
-                    }
-
-                    break;
-                case "All Subsets (Global Markov)":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
-
-                    if (model.getMarkovCheck() != null) {
-                        Preferences.userRoot().put("markovCheckerConditioningSetType", "All Subsets (Global Markov)");
-                    }
-
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown conditioning set type: "
-                                                       + selectedItem);
-            }
+            ConditioningSetType selectedItem = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
+            model.getMarkovCheck().setSetType(selectedItem);
+            model.setConditioningSetType(selectedItem);
 
             class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
                     if (model.getMarkovCheck().getSetType() == ConditioningSetType.GLOBAL_MARKOV && model.getVars().size() > 12) {
                         int ret = JOptionPane.showOptionDialog(MarkovCheckEditor.this,
                                 "The all subsets option is exponential and can become extremely slow beyond 12"
-                                + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
+                                        + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null
                         );
 
@@ -352,7 +279,6 @@ public class MarkovCheckEditor extends JPanel {
 
         indTestJComboBox.addActionListener(e -> {
             class MyWatchedProcess extends WatchedProcess {
-
                 public void watch() {
                     setTest();
                 }
@@ -363,7 +289,18 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Ordered Local Markov MAG"));
+//        ConditioningSetType saved = model.getMarkovCheck().getSetType(); // reads from model, not MarkovCheck
+
+        ConditioningSetType saved = model.getConditioningSetType();
+        conditioningSetTypeJComboBox.setSelectedItem(
+                saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+        // Sync both MarkovCheck and model field to the resolved selection
+        ConditioningSetType resolved = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
+        model.getMarkovCheck().setSetType(resolved);
+        model.setConditioningSetType(resolved);
+
+        conditioningSetTypeJComboBox.setSelectedItem(
+                saved != null ? saved : ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
@@ -400,19 +337,18 @@ public class MarkovCheckEditor extends JPanel {
 
         if (!missingVars.isEmpty()) {
             throw new IllegalArgumentException("At least these variables in the DAG are missing from the data:"
-                                               + "\n    " + missingVars);
+                    + "\n    " + missingVars);
         }
 
         model.setVars(graph.getNodeNames());
 
         JButton params = new JButton("Params");
-//        JButton sample = new JButton("Sample");
         JButton sample = new JButton("Run");
         JButton addSample = new JButton("Add Sample");
 
         if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable
-            && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
-            this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 1.0), 4, new DecimalFormat("0.0###"));
+                && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
+            this.fraction = new DoubleTextField(model.getFractionSample(), 4, new DecimalFormat("0.0###"));
             this.fraction.setEditable(true);
         } else {
             this.fraction = new DoubleTextField(1.0, 4, new DecimalFormat("0.0###"));
@@ -420,10 +356,10 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         JLabel fractionSampleLabel;
-        if (!(model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable)) {
+        if (!(model.getMarkovCheck().getIndependenceTest().canBeSubsampled())) {
             fractionSampleLabel = new JLabel("(Test cannot be subsampled)");
         } else if (model.getMarkovCheck().getIndependenceTest().getData() != null
-                   && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
+                && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
             fractionSampleLabel = new JLabel("Fraction Sample:");
         } else {
             fractionSampleLabel = new JLabel("(Not tabular data)");
@@ -447,7 +383,7 @@ public class MarkovCheckEditor extends JPanel {
             if (value < 0.0 || value > 1.0) {
                 return oldValue;
             } else {
-                Preferences.userRoot().put("FractionSample", value + "");
+                model.setFractionSample(value);
                 return value;
             }
         });
@@ -465,8 +401,8 @@ public class MarkovCheckEditor extends JPanel {
 
         removeExtraneousVariables = new JCheckBox("Smallest Subset Yielding M-Separation");
         removeExtraneousVariables.setSelected(false);
-        checkDependentDistribution = new JCheckBox("Check Dependent Distribution");
-        checkDependentDistribution.setSelected(false);
+//        checkDependentDistribution = new JCheckBox("Check Dependent Distribution");
+//        checkDependentDistribution.setSelected(false);
 
         verbose = new JCheckBox("Verbose");
         verbose.setSelected(false);
@@ -474,6 +410,12 @@ public class MarkovCheckEditor extends JPanel {
         verbose.addActionListener(e -> {
             model.setVerbose(verbose.isSelected());
         });
+
+        perFactEssCheckBox.setToolTipText(
+                "Test each implied fact at a block-based effective sample size (choose block "
+                + "columns with Blocks...). Corrects anti-conservative dependence judgments "
+                + "under block-structured serial dependence.");
+        essBlocksButton.addActionListener(e -> chooseEssBlockColumns());
 
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
@@ -487,15 +429,15 @@ public class MarkovCheckEditor extends JPanel {
         // In a change listener:
         pane.addChangeListener(e -> {
             String v = (pane.getSelectedIndex() == 1) ? "dep" : "indep";
-            Preferences.userRoot().put("markovCheckerTab", v);
+            model.setSelectedTab(v);
         });
 
         pane.addTab("Check Markov", indep);
-        pane.addTab("Check Dependent Distribution", dep);
+//        pane.addTab("Check Dependent Distribution", dep);
         pane.addTab("Help", new PaddingPanel(scroll));
 
-        // After creating the tabbedPane
-        String savedTab = Preferences.userRoot().get("markovCheckerTab", "indep");
+        // Restore saved tab from model
+        String savedTab = model.getSelectedTab();
         pane.setSelectedIndex("dep".equals(savedTab) ? 1 : 0);
 
         new WatchedProcess() {
@@ -505,8 +447,22 @@ public class MarkovCheckEditor extends JPanel {
             }
         };
 
-        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, checkDependentDistribution,
-                verbose, fractionSampleLabel);
+        // Says which data set the tables are computed from, and lets the user change it, when the data box
+        // holds more than one. Null (nothing shown) when there is only one.
+        Box dataChooser = DataSetChooser.create(model.getDataModels(), model.getDataIndex(), index -> {
+            DataType before = getDataType();
+            model.setDataIndex(index);
+
+            // The tests on offer depend on the kind of data. Left alone when the kind is unchanged, since
+            // rebuilding the list resets the test through the combo box's listener.
+            if (getDataType() != before) refreshTestList();
+
+            // Rebuilds the test on the chosen data set, then reruns the check from scratch.
+            refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, true);
+        });
+
+        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables,
+                verbose, fractionSampleLabel, dataChooser);
     }
 
     /**
@@ -517,7 +473,7 @@ public class MarkovCheckEditor extends JPanel {
     @NotNull
     public static String getHelpMessage() {
         return """
-                This tool lets one plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)â
+                This tool lets one plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)â
                 
                 Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.
                 
@@ -525,7 +481,7 @@ public class MarkovCheckEditor extends JPanel {
                 
                 If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
                 
-                To make it especially clear, we give two statistics in the interface. The first is the fraction of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the userâs preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
+                To make it especially clear, we give two statistics in the interface. The first is the fraction of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the userâs preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
                 `
                 If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
                 
@@ -551,6 +507,8 @@ public class MarkovCheckEditor extends JPanel {
         Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
         histogram.setNumBins(10);
         HistogramPanel view = new HistogramPanel(histogram, true);
+        view.setXAxisBounds(0.0, 1.0, true);  // <-- force [0,1], ignore outside
+
 
         Color fillColor = new Color(113, 165, 210);
         view.setBarColor(fillColor);
@@ -558,83 +516,6 @@ public class MarkovCheckEditor extends JPanel {
         view.setMinimumSize(new Dimension(300, 200));
         view.setMaximumSize(new Dimension(300, 200));
         return view;
-    }
-
-    @NotNull
-    private static DocumentListener getFilterListener(JTextField filterText, TableRowSorter<AbstractTableModel> sorter) {
-        return new DocumentListener() {
-
-            /**
-             * Filters the table based on the text in the text field.
-             */
-            private void filter() {
-                String text = filterText.getText();
-                if (text.trim().isEmpty()) {
-                    sorter.setRowFilter(null);
-                } else {
-                    String[] textParts = text.split(";+");
-                    List<RowFilter<Object, Object>> filters = new ArrayList<>(textParts.length);
-                    for (String part : textParts) {
-                        try {
-
-                            String trim = part.trim();
-
-                            if (isFlipEscapes()) {
-                                // Swap escapes for parentheses and pipes
-                                trim = trim.replace("\\(", "<+++<");
-                                trim = trim.replace("\\)", ">+++>");
-                                trim = trim.replace("\\|", "|+++|");
-                                trim = trim.replace("(", "\\(");
-                                trim = trim.replace(")", "\\)");
-                                trim = trim.replace("|", "\\|");
-                                trim = trim.replace("<+++<", "(");
-                                trim = trim.replace(">+++>", ")");
-                                trim = trim.replace("|+++|", "|");
-                            }
-
-                            filters.add(RowFilter.regexFilter(trim));
-                        } catch (PatternSyntaxException e) {
-                            // ignore
-                        }
-                    }
-                    sorter.setRowFilter(RowFilter.orFilter(filters));
-                }
-            }
-
-            /**
-             * Inserts text into the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Removes text from the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                filter();
-            }
-
-            /**
-             * Changes text in the text field.
-             *
-             * @param e the document event.
-             */
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                // this method won't be called for plain text fields
-            }
-        };
-    }
-
-    private static boolean isFlipEscapes() {
-        return flipEscapes;
     }
 
     /**
@@ -721,7 +602,15 @@ public class MarkovCheckEditor extends JPanel {
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            if (!paramDesc.getAllowedValues().isEmpty()) {
+                // A String parameter with a declared set of legal values (e.g., the missing-data policy) gets
+                // a dropdown, as in the search editor's parameter panel, rather than a free text field whose
+                // typed value only commits on Enter or focus change.
+                component = ParameterComponents.getStringSelectionBox(parameter, parameters,
+                        (String) defaultValue, paramDesc.getAllowedValues());
+            } else {
+                component = getStringField(parameter, parameters, (String) defaultValue);
+            }
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
@@ -742,13 +631,6 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Returns a DoubleTextField with specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the DoubleTextField.
-     * @param lowerBound   The lower bound for valid values.
-     * @param upperBound   The upper bound for valid values.
-     * @return A DoubleTextField with the specified parameters.
      */
     private static DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                                   double defaultValue, double lowerBound, double upperBound) {
@@ -757,13 +639,6 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Returns an IntTextField with the specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the IntTextField.
-     * @param lowerBound   The lower bound for valid values.
-     * @param upperBound   The upper bound for valid values.
-     * @return An IntTextField with the specified parameters.
      */
     private static IntTextField getIntTextField(String parameter, Parameters parameters,
                                                 int defaultValue, double lowerBound, double upperBound) {
@@ -772,13 +647,6 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Returns a LongTextField object with the specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the LongTextField.
-     * @param lowerBound   The lower bound for valid values.
-     * @param upperBound   The upper bound for valid values.
-     * @return A LongTextField object with the specified parameters.
      */
     private static LongTextField getLongTextField(String parameter, Parameters parameters,
                                                   long defaultValue, long lowerBound, long upperBound) {
@@ -811,10 +679,6 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Creates a boolean selection box with Yes and No radio buttons.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the boolean parameter
      */
     private static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
@@ -822,25 +686,21 @@ public class MarkovCheckEditor extends JPanel {
         JRadioButton yesButton = new JRadioButton("Yes");
         JRadioButton noButton = new JRadioButton("No");
 
-        // Button group to ensure only one option can be selected
         ButtonGroup selectionBtnGrp = new ButtonGroup();
         selectionBtnGrp.add(yesButton);
         selectionBtnGrp.add(noButton);
 
         boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
-        // Set default selection
         if (aBoolean) {
             yesButton.setSelected(true);
         } else {
             noButton.setSelected(true);
         }
 
-        // Add to containing box
         selectionBox.add(yesButton);
         selectionBox.add(noButton);
 
-        // Event listener
         yesButton.addActionListener((e) -> {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
@@ -848,7 +708,6 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        // Event listener
         noButton.addActionListener((e) -> {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
@@ -861,20 +720,91 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Returns a StringTextField object with the specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the StringTextField.
-     * @return A StringTextField object with the specified parameters.
      */
     private static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         return PathsAction.getStringField(parameter, parameters, defaultValue);
     }
 
+    /**
+     * Opens a multi-select chooser over the data columns for the per-fact ESS block-defining
+     * variables.
+     */
+    private void chooseEssBlockColumns() {
+        DataModel dataModel = model.getDataModel();
+        if (!(dataModel instanceof DataSet dataSet)) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Per-fact ESS requires tabular data.", "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        java.util.List<String> names = dataSet.getVariableNames();
+        JList<String> list = new JList<>(names.toArray(new String[0]));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        for (int i = 0; i < names.size(); i++) {
+            if (essBlockColumns.contains(names.get(i))) list.addSelectionInterval(i, i);
+        }
+
+        int option = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                new JScrollPane(list),
+                "Blocks are the distinct joint values of the selected columns",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (option == JOptionPane.OK_OPTION) {
+            essBlockColumns.clear();
+            essBlockColumns.addAll(list.getSelectedValuesList());
+            showEssBlockSummary(JOptionUtils.centeringComp(), dataSet, essBlockColumns);
+        }
+    }
+
+    /**
+     * Summarizes the block structure implied by the selected columns: the number of blocks and
+     * the median block size, with warnings when the blocks are nearly singletons (per-fact ESS
+     * will have little effect) or very few (ICC estimates unstable). Added 2026-8-30.
+     */
+    static void showEssBlockSummary(java.awt.Component parent, edu.cmu.tetrad.data.DataSet dataSet,
+                                            java.util.List<String> columns) {
+        if (columns.isEmpty()) {
+            JOptionPane.showMessageDialog(parent, "No block columns selected; per-fact ESS will not be applied.",
+                    "Per-Fact ESS Blocks", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int[] ids = edu.cmu.tetrad.search.utils.PerFactEss.blockIds(dataSet, columns);
+        int k = edu.cmu.tetrad.search.utils.PerFactEss.numBlocks(ids);
+        int n = dataSet.getNumRows();
+
+        int[] counts = new int[k];
+        for (int id : ids) counts[id]++;
+        java.util.Arrays.sort(counts);
+        double median = (k % 2 == 1) ? counts[k / 2] : 0.5 * (counts[k / 2 - 1] + counts[k / 2]);
+
+        String msg = k + " blocks; median block size " + (median == Math.rint(median)
+                ? String.valueOf((int) median) : String.valueOf(median)) + " (n = " + n + ").";
+        int type = JOptionPane.INFORMATION_MESSAGE;
+
+        if (k > n / 2) {
+            msg += "\n\nWarning: the blocks are nearly singletons, so per-fact ESS will have little "
+                    + "effect. If that is not intended, a within-block-varying column may have been "
+                    + "included by mistake.";
+            type = JOptionPane.WARNING_MESSAGE;
+        } else if (k < 10) {
+            msg += "\n\nWarning: very few blocks; ICC estimates and block-level effective sample "
+                    + "sizes will be unstable.";
+            type = JOptionPane.WARNING_MESSAGE;
+        }
+
+        JOptionPane.showMessageDialog(parent, msg, "Per-Fact ESS Blocks", type);
+    }
+
+
     private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
                                 JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables,
-                                JCheckBox checkDependentDistribution, JCheckBox verbose,
-                                JLabel fractionSampleLabel) {
+                                JCheckBox verbose,
+                                JLabel fractionSampleLabel, Box dataChooser) {
+        // A row of its own above the others; an empty, zero-height box when there is nothing to choose.
+        Box dataRow = dataChooser != null ? dataChooser : Box.createHorizontalBox();
+        int dataRowGap = dataChooser != null ? 6 : 0;
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -882,6 +812,7 @@ public class MarkovCheckEditor extends JPanel {
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(pane)
+                                .addComponent(dataRow, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                 .addGroup(layout.createSequentialGroup()
@@ -890,19 +821,20 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(perFactEssCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(essBlocksButton)
                                                 )
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(testLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(experimentalToggle)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(params)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(resample)
-//                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-//                                                        .addComponent(addSample)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(fractionSampleLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -911,27 +843,31 @@ public class MarkovCheckEditor extends JPanel {
                         .addContainerGap())
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(testLabel)
-                                .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(params)
-                                .addComponent(resample)
-//                                .addComponent(addSample)
-                                .addComponent(fractionSampleLabel)
-                                .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(conditioningSetsLabel)
-                                .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        )
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(dataRow, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(dataRowGap)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(testLabel)
+                                        .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(experimentalToggle)
+                                        .addComponent(params)
+                                        .addComponent(resample)
+                                        .addComponent(fractionSampleLabel)
+                                        .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(conditioningSetsLabel)
+                                                .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//                                .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(perFactEssCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(essBlocksButton)
+                                )
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                                .addContainerGap())
         );
     }
 
@@ -941,7 +877,33 @@ public class MarkovCheckEditor extends JPanel {
         new WatchedProcess() {
             @Override
             public void watch() {
-                setTest();
+                try {
+                    setTest();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Error creating independence test: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    throw new RuntimeException(e);
+                }
+
+                if (model.getMarkovCheck().getIndependenceTest() instanceof PendingIndependenceTest pending) {
+                    // The chosen test could not be constructed (e.g., missing values with no missing-data
+                    // policy chosen), so there is nothing to run; state the reason rather than failing deep
+                    // inside the check.
+                    //
+                    // The dialog MUST be queued with invokeLater rather than shown from this WatchedProcess
+                    // thread. This guard runs at the very start of watch(), so a dialog shown directly from
+                    // here races with the (already queued, not yet dispatched) setVisible of WatchedProcess's
+                    // modal Stop dialog; if this dialog wins the race, the Stop dialog then opens on top,
+                    // modally blocks this dialog's OK button, and is never disposed because watch() is
+                    // blocked waiting for that OK -- a deadlock observed in practice. Queuing restores a safe
+                    // order: the Stop dialog's setVisible was queued before this thread started, so it is
+                    // dispatched first, this dialog then opens above it as the newest modal dialog and stays
+                    // clickable, and watch() returns at once so the Stop dialog is disposed.
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            pending.getMessage() + "\n\nParameters for the chosen test (including the "
+                            + "missing-data policy) can be set using the Params button.",
+                            "Independence Test Not Configured", JOptionPane.WARNING_MESSAGE));
+                    return;
+                }
 
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
@@ -949,19 +911,77 @@ public class MarkovCheckEditor extends JPanel {
                 model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
                 model.getMarkovCheck().setFractionResample(fraction.getValue());
-                model.getMarkovCheck().generateResults(true, clear);
 
-                if (checkDependentDistribution.isSelected()) {
-                    if (clear) {
-                        model.getMarkovCheck().generateResults(true, true);
-                        model.getMarkovCheck().generateResults(false, false);
+                try {
+                    if (perFactEssCheckBox.isSelected()) {
+                        if (essBlockColumns.isEmpty()) {
+                            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                                    "Per-fact ESS is checked, but no block columns are chosen; "
+                                    + "choose them with Blocks... Proceeding without per-fact ESS.",
+                                    "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+                            model.getMarkovCheck().setPerFactEss(false);
+                        } else {
+                            model.getMarkovCheck().setEssBlockColumns(essBlockColumns);
+                            model.getMarkovCheck().setPerFactEss(true);
+                        }
                     } else {
-                        model.getMarkovCheck().generateResults(true, false);
-                        model.getMarkovCheck().generateResults(false, false);
+                        model.getMarkovCheck().setPerFactEss(false);
                     }
-                } else {
-                    model.getMarkovCheck().generateResults(true, clear);
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            ex.getMessage() + " Proceeding without per-fact ESS.",
+                            "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+                    perFactEssCheckBox.setSelected(false);
                 }
+
+                try {
+                    model.getMarkovCheck().generateResults(true, clear);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "Error generating results: "
+                            + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    throw new RuntimeException(e);
+                }
+
+                // An empty implied-fact set means there was nothing to check at all -- most often an empty
+                // or near-empty graph was connected by mistake. Without this notice the run just leaves the
+                // tables blank. Queued to the EDT, not shown from this WatchedProcess thread, for the
+                // modality reasons documented at the pending-test guard above.
+                if (model.getMarkovCheck().getImpliedFactCount() == 0) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "This graph implies no independence facts to check under the chosen conditioning"
+                            + " set type, so there is nothing to test. (Is the graph empty, or nearly so?)",
+                            "No Implied Facts", JOptionPane.INFORMATION_MESSAGE));
+                    // Fall through so the (empty) tables still refresh, clearing any rows from an earlier
+                    // run under a different conditioning set type.
+                }
+
+                // Facts whose test threw are skipped inside the check; without this notice, a run over data
+                // the chosen test cannot handle (e.g., too few usable rows after deletion of missing values)
+                // shows empty or thinned tables with no explanation. Queued to the EDT, not shown from this
+                // WatchedProcess thread, for the modality reasons documented at the pending-test guard above.
+                int failures = model.getMarkovCheck().getTestFailureCount();
+
+                if (failures > 0) {
+                    boolean empty = model.getResults(true).isEmpty();
+                    String example = model.getMarkovCheck().getTestFailureExample();
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            failures + " implied fact(s) could not be tested with the chosen test and settings"
+                            + " and were skipped" + (empty ? ", so the tables are empty" : "") + "."
+                            + (example == null ? "" : "\n\nFirst error: " + example),
+                            "Some Facts Could Not Be Tested", JOptionPane.WARNING_MESSAGE));
+                }
+
+//                if (checkDependentDistribution.isSelected()) {
+//                    if (clear) {
+//                        model.getMarkovCheck().generateResults(true, true);
+////                        model.getMarkovCheck().generateResults(false, false);
+//                    } else {
+//                        model.getMarkovCheck().generateResults(true, false);
+////                        model.getMarkovCheck().generateResults(false, false);
+//                    }
+//                } else {
+//                model.getMarkovCheck().generateResults(true, clear);
+//                }
 
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
@@ -981,38 +1001,70 @@ public class MarkovCheckEditor extends JPanel {
         if (clazz != null) {
             try {
                 independenceWrapper =
-                        clazz.getDeclaredConstructor(new Class[0]).newInstance();
-                independenceTest =
-                        independenceWrapper.getTest(model.getDataModel(),
-                                model.getParameters());
+                        clazz.getDeclaredConstructor().newInstance();
+
+                try {
+                    independenceTest =
+                            independenceWrapper.getTest(model.getDataModel(),
+                                    model.getParameters());
+                } catch (IllegalArgumentException e) {
+                    // The test could not be constructed for this data with the current parameters--typically
+                    // because the data contain missing values and no missing-data policy has been chosen yet
+                    // (see MissingDataUtils.gate). Just opening the editor should not throw, so install a
+                    // placeholder test that lets the editor open, tell the user what needs to be set, and let
+                    // them fix it in the Params dialog; setTest() runs again when that dialog closes.
+                    independenceTest = new PendingIndependenceTest(independenceWrapper.getDescription(),
+                            e.getMessage(), model.getDataModel());
+                }
+
                 model.setIndependenceTest(independenceTest);
+
+                // Reflect an unconfigurable test passively in the editor. A modal dialog must not be
+                // shown from here: setTest runs both directly from the constructor and inside
+                // WatchedProcess threads, and a queued modal dialog interleaves with WatchedProcess's
+                // own modal "Stop Process" dialogs in a way that can wedge the whole UI (verified
+                // empirically). The Run action's guard shows the full message instead.
+                boolean pending = independenceTest instanceof PendingIndependenceTest;
+                String pendingMessage = pending
+                        ? ((PendingIndependenceTest) independenceTest).getMessage() : null;
+
+                SwingUtilities.invokeLater(() -> {
+                    markovTestLabel.setForeground(pending
+                            ? Color.RED.darker() : UIManager.getColor("Label.foreground"));
+                    markovTestLabel.setToolTipText(pending
+                            ? "<html>" + pendingMessage.replace("\n", "<br>") + "</html>" : null);
+                });
+
+                if (this.fraction != null) {
+                    boolean subsampleable = independenceTest instanceof RowsSettable
+                            && independenceTest.getData() instanceof DataSet;
+                    this.fraction.setEditable(subsampleable);
+                }
                 markovTestLabel.setText(
                         model.getMarkovCheck().getIndependenceTest().toString());
 
-                // NEW: remember the chosen test class
-                Preferences.userRoot().put(
-                        PREF_KEY_TEST,
-                        clazz.getName()
-                );
+                // Remember the chosen test class in the model
+                model.setIndependenceTestClass(clazz.getName());
 
                 invalidate();
                 repaint();
             } catch (InstantiationException | IllegalAccessException
                      | InvocationTargetException | NoSuchMethodException e1) {
-                TetradLogger.getInstance().log("Error: " + e1.getMessage());
+                TetradLogger.getInstance().warn("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }
     }
 
+
     private JPanel buildGuiIndep() {
         Box tableBox = Box.createVerticalBox();
 
-        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+        ConditioningSetType setType = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
 
-        Box b =  Box.createHorizontalBox();
+        Box b = Box.createHorizontalBox();
         b.add(Box.createHorizontalGlue());
         b.add(conditioningLabelIndep);
         b.add(Box.createHorizontalGlue());
@@ -1087,14 +1139,11 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) {
-                    return Number.class;
-                }
-                if (columnIndex == 1) {
-                    return String.class;
-                } else {
-                    return Number.class;
-                }
+                if (columnIndex == 0) return Integer.class;
+                if (columnIndex == 1) return String.class;
+                if (columnIndex == 2) return String.class;
+                if (columnIndex == 3) return Double.class;
+                return Object.class;
             }
         };
 
@@ -1115,7 +1164,7 @@ public class MarkovCheckEditor extends JPanel {
         tableIndep.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         tableIndep.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
 
-        tableIndep.getColumnModel().getColumn(2).setPreferredWidth(120); // "P-value or Bump"
+        tableIndep.getColumnModel().getColumn(2).setPreferredWidth(120);
 
         JTableHeader header = tableIndep.getTableHeader();
 
@@ -1130,14 +1179,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        flipEscapesIndep = new JCheckBox("Flip escapes ()|");
-        flipEscapesIndep.setSelected(flipEscapes);
-        flipEscapesIndep.addActionListener(e -> {
-            flipEscapes = flipEscapesIndep.isSelected();
-            flipEscapesDep.setSelected(isFlipEscapes());
-        });
-
-        addFilterPanel(model, tableModelIndep, tableIndep, tableBox, flipEscapesIndep);
+        addFilterPanel(model, tableModelIndep, tableIndep, tableBox);
 
         Box b10 = Box.createHorizontalBox();
         b10.add(Box.createHorizontalGlue());
@@ -1149,7 +1191,6 @@ public class MarkovCheckEditor extends JPanel {
         b10.add(label1);
         b10.add(Box.createHorizontalGlue());
 
-        // Setup a Timer to call update every 5 seconds
         javax.swing.Timer timer = new javax.swing.Timer(1000,
                 e -> label1.setText("# independencies = " + model.getResults(true).size()));
         timer.start();
@@ -1162,12 +1203,10 @@ public class MarkovCheckEditor extends JPanel {
 
         Box a4a = Box.createHorizontalBox();
         JLabel summaryTitle = new JLabel("Uniformity of p-values under H0");
-//        summaryTitle.setFont(summaryTitle.getFont().deriveFont(Font.BOLD));
         a4a.add(Box.createHorizontalGlue());
         a4a.add(summaryTitle);
         a4a.add(Box.createHorizontalGlue());
         a4.add(a4a);
-
 
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
@@ -1176,8 +1215,8 @@ public class MarkovCheckEditor extends JPanel {
 
         histogramPanelIndep.setToolTipText(
                 "Histogram of p-values for implied independencies; " +
-                "if the graph is Markov and the test is calibrated, " +
-                "these should be roughly uniform."
+                        "if the graph is Markov and the test is calibrated, " +
+                        "these should be roughly uniform."
         );
 
         a4.add(histogramPanelIndep);
@@ -1207,6 +1246,11 @@ public class MarkovCheckEditor extends JPanel {
         a10.add(fisherCombinedLabelIndep);
         a4.add(a10);
 
+        Box a11 = Box.createHorizontalBox();
+        a11.add(Box.createHorizontalGlue());
+        a11.add(fdrCutoffLabelIndep);
+        a4.add(a11);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -1214,75 +1258,58 @@ public class MarkovCheckEditor extends JPanel {
         return checkMarkovPanel;
     }
 
-    private void addFilterPanel(MarkovCheckIndTestModel model, AbstractTableModel tableModel, JTable table,
-                                Box panel, JCheckBox flipEscapes) {
+    private void addFilterPanel(MarkovCheckIndTestModel model,
+                                AbstractTableModel tableModel,
+                                JTable table,
+                                Box panel) {
+
         TableRowSorter<AbstractTableModel> sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
 
         Box nodeSelectionBox = Box.createHorizontalBox();
-        nodeSelectionBox.add(new JLabel("Node Selection:"));
+        nodeSelectionBox.add(new JLabel("Node Selection: "));
+
         JComboBox<String> nodeSelection = new JComboBox<>();
         nodeSelection.addItem("All");
 
-        List<String> names = new ArrayList<>();
+        List<String> names = model.getGraph().getNodes().stream()
+                .map(Node::getName)
+                .sorted()
+                .toList();
 
-        for (Node node : model.getGraph().getNodes()) {
-            names.add(node.getName());
-        }
-
-        names.sort((o1, o2) -> {
-            String[] split1 = o1.split("(?<=\\D)(?=\\d)");
-            String[] split2 = o2.split("(?<=\\D)(?=\\d)");
-
-            boolean o1HasIntegerSuffix = split1.length == 2 && split1[1].matches("\\d+");
-            boolean o2HasIntegerSuffix = split2.length == 2 && split2[1].matches("\\d+");
-
-            if (o1HasIntegerSuffix && o2HasIntegerSuffix) {
-                String prefix1 = split1[0];
-                String prefix2 = split2[0];
-
-                if (prefix1.equals(prefix2)) {
-                    return Integer.compare(Integer.parseInt(split1[1]), Integer.parseInt(split2[1]));
-                } else {
-                    return prefix1.compareTo(prefix2);
-                }
-            } else if (o1HasIntegerSuffix) {
-                return -1;
-            } else if (o2HasIntegerSuffix) {
-                return 1;
-            } else {
-                return o1.compareTo(o2);
-            }
-        });
-
-
-        for (String name : names) {
-            nodeSelection.addItem(name);
-        }
+        for (String name : names) nodeSelection.addItem(name);
 
         nodeSelection.addActionListener(e -> {
             String selectedNode = (String) nodeSelection.getSelectedItem();
-            if ("All".equals(selectedNode)) {
+            if (selectedNode == null || "All".equals(selectedNode)) {
                 sorter.setRowFilter(null);
             } else {
-                String a = selectedNode;
-                String regex = String.format("(\\(%s,)|(, %s \\|)|(, %s\\)^)", a, a, a);
-                sorter.setRowFilter(RowFilter.regexFilter(regex));
+                final String needle = selectedNode;
+
+                sorter.setRowFilter(new RowFilter<>() {
+                    @Override
+                    public boolean include(Entry<? extends AbstractTableModel, ? extends Integer> entry) {
+                        Object v = entry.getValue(1);
+                        if (v == null) return false;
+                        String s = v.toString();
+
+                        return s.contains("(" + needle + ",")
+                                || s.contains(", " + needle + " |")
+                                || s.contains(", " + needle + ")")
+                                || s.contains("| " + needle + ",")
+                                || s.contains("| " + needle + ")");
+                    }
+                });
             }
+
+            updateTables(model, tableIndep, tableDep);
         });
+
+        nodeSelection.setMinimumSize(new Dimension(100, 20));
+        nodeSelection.setMaximumSize(new Dimension(300, 20));
 
         nodeSelectionBox.add(nodeSelection);
         nodeSelectionBox.add(Box.createHorizontalGlue());
-
-
-        // Create the text field
-        JLabel regexLabel = new JLabel("Regexes (semicolon separated):");
-        JTextField filterText = new JTextField(15);
-        filterText.setMaximumSize(new Dimension(600, 20));
-        regexLabel.setLabelFor(filterText);
-
-        // Create a listener for the text field that will update the table's row sort
-        filterText.getDocument().addDocumentListener(getFilterListener(filterText, sorter));
 
         sorter.addRowSorterListener(e -> {
             if (e.getType() == RowSorterEvent.Type.SORTED) {
@@ -1294,16 +1321,13 @@ public class MarkovCheckEditor extends JPanel {
         scroll.setPreferredSize(new Dimension(850, 400));
         scroll.setMaximumSize(new Dimension(850, 400));
 
-        Box filterBox = Box.createHorizontalBox();
-        filterBox.add(nodeSelectionBox);
-        panel.add(filterBox);
+        panel.add(nodeSelectionBox);
         panel.add(scroll);
     }
 
     private void updateTables(MarkovCheckIndTestModel model, JTable tableIndep, JTable tableDep) {
 
         {
-
             SwingUtilities.invokeLater(() -> {
 
                 List<IndependenceResult> results = model.getResults(true);
@@ -1340,6 +1364,10 @@ public class MarkovCheckEditor extends JPanel {
 
                 fisherCombinedLabelIndep.setText(
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
+                );
+
+                fdrCutoffLabelIndep.setText(
+                        "FDR p-value cutoff = " + nf.format(fdrCutoff(visiblePairs))
                 );
 
                 histogramPanelIndep.removeAll();
@@ -1388,6 +1416,10 @@ public class MarkovCheckEditor extends JPanel {
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
+                fdrCutoffLabelDep.setText(
+                        "FDR p-value cutoff = " + nf.format(fdrCutoff(visiblePairs))
+                );
+
                 histogramPanelDep.removeAll();
                 histogramPanelDep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                 histogramPanelDep.validate();
@@ -1396,15 +1428,13 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 
-    // Parameter panel code from Kevin Bui.
-
     /**
      * Performs the action of opening a session from a file.
      */
     private JPanel buildGuiDep() {
         Box tableBox = Box.createVerticalBox();
 
-        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+        ConditioningSetType setType = (ConditioningSetType) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
         tableBox.add(conditioningLabelDep, BorderLayout.NORTH);
@@ -1470,7 +1500,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
 
                 if (columnIndex == 3) {
-                    return nf.format(result.getPValue());
+                    return result.getPValue();   // raw double, not nf.format(...)
                 }
 
                 return null;
@@ -1504,7 +1534,7 @@ public class MarkovCheckEditor extends JPanel {
         tableDep.getColumnModel().getColumn(3).setPreferredWidth(100);
         tableDep.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         tableDep.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
-        tableDep.getColumnModel().getColumn(2).setPreferredWidth(120); // "P-value or Bump"
+        tableDep.getColumnModel().getColumn(2).setPreferredWidth(120);
 
         JTableHeader header = tableDep.getTableHeader();
 
@@ -1519,14 +1549,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-        flipEscapesDep = new JCheckBox("Flip escapes ()|");
-        flipEscapesDep.setSelected(flipEscapes);
-        flipEscapesDep.addActionListener(e -> {
-            flipEscapes = flipEscapesDep.isSelected();
-            flipEscapesDep.setSelected(isFlipEscapes());
-        });
-
-        addFilterPanel(model, tableModelDep, tableDep, tableBox, flipEscapesDep);
+        addFilterPanel(model, tableModelDep, tableDep, tableBox);
 
         Box b10 = Box.createHorizontalBox();
         b10.add(Box.createHorizontalGlue());
@@ -1538,7 +1561,6 @@ public class MarkovCheckEditor extends JPanel {
         b10.add(label1);
         b10.add(Box.createHorizontalGlue());
 
-        // Setup a Timer to call update every 5 seconds
         javax.swing.Timer timer = new javax.swing.Timer(1000,
                 e -> label1.setText("# Dependencies = " + model.getResults(false).size()));
         timer.start();
@@ -1577,7 +1599,12 @@ public class MarkovCheckEditor extends JPanel {
         Box a10 = Box.createHorizontalBox();
         a10.add(Box.createHorizontalGlue());
         a10.add(fisherCombinedPLabelDep);
-        a4.add(a9);
+        a4.add(a10);
+
+        Box a11 = Box.createHorizontalBox();
+        a11.add(Box.createHorizontalGlue());
+        a11.add(fdrCutoffLabelDep);
+        a4.add(a11);
 
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
@@ -1611,13 +1638,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     /**
-     * Sets the text of various JLabels in the class. This method initializes the JLabels if they are null and sets the
-     * text of each JLabel based on the corresponding values in the MarkovCheck object.
-     * <p>
-     * The method sets the text for the following JLabels: - ksLabelIndep - ksLabelDep - binomialPLabelIndep -
-     * binomialPLabelDep - andersonDarlingA2LabelIndep - andersonDarlingA2LabelDep - andersonDarlingPLabelIndep -
-     * andersonDarlingPLabelDep - fractionDepLabelIndep - fractionDepLabelDep - conditioningLabelIndep -
-     * conditioningLabelDep
+     * Sets the text of various JLabels in the class.
      */
     private void setLabelTexts() {
         if (ksLabelIndep == null) {
@@ -1661,49 +1682,85 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         ksLabelIndep.setText("P-value of KS Uniformity Test = "
-                             + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
+                + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(true)))));
         ksLabelDep.setText("P-value of KS Uniformity Test = "
-                           + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
+                + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
 
         andersonDarlingPLabelIndep.setText("P-value of the Anderson-Darling test = "
-                                           + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
         andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
-                                         + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
-        fisherCombinedLabelIndep.setText("Fisher combined p= "
-                                         + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(true))
+        fisherCombinedLabelIndep.setText("Fisher combined p = "
+                + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(true))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFisherCombinedP(true)))));
         fisherCombinedPLabelDep.setText("Fisher combined p = "
-                                        + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(false))
+                + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(false))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFisherCombinedP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
-                                    + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(true))
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue_(true)))));
         binomialPLabelDep.setText("P-value of Binomial Test = "
-                                  + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(false))
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue_(false)))));
         fractionDepLabelIndep.setText("Fraction dependent = "
-                                      + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
+                + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(true)))));
         fractionDepLabelDep.setText("Fraction dependent = "
-                                    + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
+                + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
 
+        if (fdrCutoffLabelIndep == null) {
+            fdrCutoffLabelIndep = new JLabel();
+        }
+
+        if (fdrCutoffLabelDep == null) {
+            fdrCutoffLabelDep = new JLabel();
+        }
+
+        double fdrCutoffIndep = fdrCutoff(model.getMarkovCheck().getResults(true));
+        double fdrCutoffDep = fdrCutoff(model.getMarkovCheck().getResults(false));
+
+        fdrCutoffLabelIndep.setText("FDR p-value cutoff = "
+                + ((Double.isNaN(fdrCutoffIndep)
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(fdrCutoffIndep))));
+        fdrCutoffLabelDep.setText("FDR p-value cutoff = "
+                + ((Double.isNaN(fdrCutoffDep)
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(fdrCutoffDep))));
+
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
+    }
+
+    /**
+     * Returns the FDR p-value cutoff for the given results at the alpha level of the model's independence test, or NaN
+     * if the test does not support an alpha level or the cutoff cannot be computed.
+     *
+     * @param results The results whose p-values are to be used.
+     * @return The FDR p-value cutoff, or NaN.
+     */
+    private double fdrCutoff(List<IndependenceResult> results) {
+        try {
+            double alpha = model.getMarkovCheck().getIndependenceTest().getAlpha();
+            return model.getMarkovCheck().getFdrCutoff(alpha, results, false);
+        } catch (Exception e) {
+            return Double.NaN;
+        }
     }
 
     private int getLastSortCol() {
@@ -1766,9 +1823,6 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Returns the data type of the data set.
-     *
-     * @return the data type of the data set as a DataType enum object: Continuous, Discrete, Mixed, Covariance, or null
-     * if the data set does not match any of the types.
      */
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
@@ -1787,35 +1841,33 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     /**
-     * Refreshes the test list in the GUI. Retrieves the data type of the data set. Removes all items from the test
-     * combo box. Retrieves the independence test models for the given data type. Adds the independence test models to
-     * the test combo box. Disables the test combo box if there are no items. Selects the default model for the data
-     * type.
+     * Refreshes the test list in the GUI.
      */
     private void refreshTestList() {
         DataType dataType = getDataType();
 
         this.indTestJComboBox.removeAllItems();
 
-        List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
+        IndependenceTestModels registry = IndependenceTestModels.getInstance(experimentalToggle.includeExperimental());
+        List<IndependenceTestModel> models = registry.getModels(dataType);
 
-        for (IndependenceTestModel model : models) {
-            this.indTestJComboBox.addItem(model);
+        for (IndependenceTestModel m : models) {
+            if (m.getName().equals("Probabilistic Test")) continue;
+            if (m.getName().equals("Blocks-Test-TS (Trek separation)")) continue;
+            this.indTestJComboBox.addItem(m);
         }
 
         this.updatingTestModels = false;
         this.indTestJComboBox.setEnabled(this.indTestJComboBox.getItemCount() > 0);
 
-        // Try to restore the last-used test from preferences
-        String savedClassName =
-                Preferences.userRoot().get(PREF_KEY_TEST, null);
+        // Try to restore the last-used test class from the model
+        String savedClassName = model.getIndependenceTestClass();
 
         IndependenceTestModel toSelect = null;
 
         if (savedClassName != null) {
             for (IndependenceTestModel m : models) {
-                if (m.getIndependenceTest().clazz().getName()
-                        .equals(savedClassName)) {
+                if (m.getIndependenceTest().clazz().getName().equals(savedClassName)) {
                     toSelect = m;
                     break;
                 }
@@ -1824,8 +1876,7 @@ public class MarkovCheckEditor extends JPanel {
 
         // Fallback to the default model for this data type
         if (toSelect == null) {
-            toSelect = IndependenceTestModels.getInstance()
-                    .getDefaultModel(dataType);
+            toSelect = registry.getDefaultModel(dataType);
         }
 
         indTestJComboBox.setSelectedItem(toSelect);
@@ -1836,61 +1887,12 @@ public class MarkovCheckEditor extends JPanel {
      */
     static class Renderer extends DefaultTableCellRenderer {
 
-        /**
-         * The private variable `table` is an instance of the JTable class.
-         * <p>
-         * This variable represents a table component that displays data in a tabular form. It is typically used to
-         * display data from a data source, such as a database or an array.
-         * <p>
-         * The JTable class provides methods for manipulating the table data, formatting the table appearance, and
-         * handling user interactions.
-         * <p>
-         * The JTable component is usually added to a container, such as a JFrame or a JPanel, to be displayed in a
-         * graphical user interface.
-         */
         private JTable table;
-
-        /**
-         * This private variable represents whether a cell is selected in a JTable.
-         * <p>
-         * The JTable is a component that displays data in a tabular form. It is used to display data from a data
-         * source, such as a database or an array. The Renderer class is a custom renderer for the cells of the JTable,
-         * and this variable is used to determine if a cell is selected.
-         * <p>
-         * When a cell is selected, the selected variable is set to true. Otherwise, it is set to false.
-         * <p>
-         * The selected variable is used in the setValue method of the Renderer class to set the foreground and
-         * background colors of the cell based on its selection state.
-         * <p>
-         * This variable is primarily used internally within the Renderer class and should not be accessed or modified
-         * directly.
-         *
-         * @see Renderer
-         */
         private boolean selected;
 
-        /**
-         * Custom renderer for the cells of a JTable.
-         * <p>
-         * The Renderer class is a custom renderer for the cells of a JTable component. It is used to control the
-         * appearance of the cells in the table.
-         */
         public Renderer() {
         }
 
-        /**
-         * Sets the value for the cell.
-         * <p>
-         * This method is used to set the value of a cell in a JTable component. The value can be any object, but it
-         * will be converted to a string representation before being displayed in the cell.
-         * <p>
-         * If the value is null, the text value of the cell will be set to an empty string.
-         * <p>
-         * The appearance of the cell's foreground and background colors will also be updated based on its selection
-         * state.
-         *
-         * @param value the string value for this cell; if value is null, it sets the text value to an empty string
-         */
         public void setValue(Object value) {
             if (value == null) return;
 
@@ -1898,24 +1900,17 @@ public class MarkovCheckEditor extends JPanel {
                 setForeground(table.getSelectionForeground());
                 setBackground(table.getSelectionBackground());
             } else {
-                this.setForeground(table.getForeground());
-                this.setBackground(table.getBackground());
+                setForeground(table.getForeground());
+                setBackground(table.getBackground());
             }
 
-            this.setText(value.toString());
+            if (value instanceof Double d) {
+                setText(NumberFormatUtil.getInstance().getNumberFormat().format(d));
+            } else {
+                setText(value.toString());
+            }
         }
 
-        /**
-         * Returns the component used for rendering the cell at the specified row and column in the table.
-         *
-         * @param table      the <code>JTable</code> that is asking the renderer to draw; can be <code>null</code>
-         * @param value      the value of the cell to be rendered
-         * @param isSelected true if the cell is selected; otherwise false
-         * @param hasFocus   true if the cell has focus; otherwise false
-         * @param row        the row index of the cell being rendered
-         * @param column     the column index of the cell being rendered
-         * @return the component used for rendering the cell
-         */
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             this.table = table;
@@ -1924,5 +1919,3 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 }
-
-

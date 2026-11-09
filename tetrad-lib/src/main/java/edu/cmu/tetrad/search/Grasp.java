@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -40,7 +40,7 @@ import static java.util.Collections.shuffle;
 
 /**
  * Implements the GRaSP algorithms, which uses a certain procedure to search in the space of permutations of variables
- * for ones that imply CPDAGs that are especially close to the CPDAG of the true model. The reference is here:
+ * for ones that imply PDAGs that are especially close to the PDAG of the true model. The reference is here:
  * <p>
  * Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
  * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
@@ -137,10 +137,6 @@ public class Grasp {
      * Whether to allow internal randomness in the algorithm.
      */
     private boolean allowInternalRandomness = false;
-    /**
-     * Represents the seed used for random number generation or shuffling.
-     */
-    private long seed = -1;
     private boolean replicatingGraph = false;
 
     /**
@@ -180,42 +176,30 @@ public class Grasp {
     }
 
     /**
-     * Returns the graph implied by the discovered permutation.
-     *
-     * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
-     * @return This graph.
-     */
-//    @NotNull
-//    public Graph getGraph(boolean cpDag) {
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        return this.scorer.getGraph(cpDag);
-//    }
-
-    /**
-     * Retrieves a graph based on specified parameters.
-     *
-     * @param cpDag True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned.
-     *              If false, a DAG (Directed Acyclic Graph) will be returned.
-     * @return A non-null Graph object, either a CPDAG or DAG depending on the input parameter.
-     */
-    public @NotNull Graph getGraph(boolean cpDag) {
-        return getGraph(cpDag, /*replicating*/ false);
-    }
-
-    /**
      * Returns the graph based on the specified parameters. If the parameter `replicating` is true,
      * a replicating graph is returned; otherwise, a regular graph is returned.
      *
-     * @param cpDag      True if a CPDAG (Completed Partially Directed Acyclic Graph) should be returned,
-     *                   false if a DAG (Directed Acyclic Graph) should be returned.
-     * @param replicating True if a replicating graph, which applies a lag replication policy,
-     *                    should be returned.
-     * @return The generated graph, either a CPDAG or DAG, wrapped in a replicating graph
-     *         if `replicating` is true.
+     * @param cpdag True if a PDAG (Completed Partially Directed Acyclic Graph) should be returned,
+     *             false if a DAG (Directed Acyclic Graph) should be returned.
+     * @return The generated graph, either a PDAG or DAG, wrapped in a replicating graph
+     * if `replicating` is true.
      */
-    public Graph getGraph(boolean cpDag, boolean replicating) {
-        Graph g = this.scorer.getGraph(cpDag);
-        return new ReplicatingGraph(g, new LagReplicationPolicy());
+    public Graph getGraph(boolean cpdag) {
+        Graph g = this.scorer.getGraph(false);
+
+        if (this.replicatingGraph) {
+            g = GraphUtils.getReplicatingGraph(g);
+            g = new EdgeListGraph(g);
+        }
+
+        if (cpdag) {
+            MeekRules rules = new MeekRules();
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(g);
+        }
+
+        return g;
     }
 
     private List<Node> getVariables(IndependenceTest test, Score score) {
@@ -235,10 +219,6 @@ public class Grasp {
      * @throws InterruptedException if any
      */
     public List<Node> bestOrder(@NotNull List<Node> order) throws InterruptedException {
-        if (seed != -1) {
-            RandomUtil.getInstance().setSeed(seed);
-        }
-
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
@@ -455,6 +435,25 @@ public class Grasp {
             }
         }
 
+        // Tier consistency: a node in a later tier may not precede a node in an earlier tier. Change from the
+        // pre-2026 implementation: previously only required edges were checked here, so tiered knowledge did not
+        // constrain the DFS at all -- the initial order was made tier-consistent by makeValidKnowledgeOrder, but
+        // graspDfs was then free to tuck across tiers. Because the scorer blocks knowledge-forbidden parents, a
+        // tier-violating order projects to an artificially sparse (non-Markov) DAG; under test-based scoring
+        // (e.g., oracle runs with GraphScore/MsepTest, where the objective is edge count) such orders can WIN,
+        // e.g. returning an empty graph for X1 --> X2 under tiers {0: X1, 1: X2}. This check restores the
+        // documented contract that the procedure is carried out tier by tier, matching PermutationSearch/BOSS.
+        for (int i = 0; i < order.size(); i++) {
+            int ti = this.knowledge.isInWhichTier(order.get(i));
+            if (ti < 0) continue;
+            for (int j = 0; j < i; j++) {
+                int tj = this.knowledge.isInWhichTier(order.get(j));
+                if (tj > ti) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -498,9 +497,9 @@ public class Grasp {
 
         if (this.verbose) {
             TetradLogger.getInstance().log("# Edges = " + scorer.getNumEdges()
-                                           + " Score = " + scorer.score()
-                                           + " (GRaSP)"
-                                           + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+                    + " Score = " + scorer.score()
+                    + " (GRaSP)"
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
@@ -626,8 +625,8 @@ public class Grasp {
                 double sNew = scorer.score();
                 if (sNew > sOld) {
                     if (verbose) {
-                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
-                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                        TetradLogger.getInstance().log(String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
+                                scorer.getNumEdges(), sNew - sOld, tucks, tuck));
                     }
                     return;
                 }
@@ -650,15 +649,6 @@ public class Grasp {
                 scorer.goToBookmark(currentDepth);
             }
         }
-    }
-
-    /**
-     * Sets the seed for random number generation.
-     *
-     * @param seed The seed to set.
-     */
-    public void setSeed(long seed) {
-        this.seed = seed;
     }
 
     /**

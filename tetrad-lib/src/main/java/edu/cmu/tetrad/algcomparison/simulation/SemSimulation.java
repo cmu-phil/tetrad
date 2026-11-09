@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -28,19 +28,25 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This class represents a Simulation using Structural Equation Modeling (SEM).
+ * <p>
+ * This simulation is the Linear Gaussian SEM: exogenous noises are always Gaussian, and the engine-level switch
+ * for custom (non-Gaussian) noise is not exposed as a parameter and is overridden at simulation time. For
+ * linear SEMs with non-Gaussian exogenous noise, use {@link NonGaussianSemSimulation}.
  */
 public class SemSimulation implements Simulation {
     @Serial
@@ -134,7 +140,7 @@ public class SemSimulation implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }
@@ -149,7 +155,9 @@ public class SemSimulation implements Simulation {
             dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
         }
 
-        dataSet = DataTransforms.restrictToMeasured(dataSet);
+        if (!parameters.getBoolean(Params.SAVE_LATENT_VARS)) {
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
+        }
 
         return dataSet;
     }
@@ -166,6 +174,11 @@ public class SemSimulation implements Simulation {
             RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
         }
 
+        // This simulation type fixes the exogenous noise family, so the engine-level switch is set here
+        // rather than exposed as a parameter: 1 (Gaussian) for this class, 2 (the customNoiseExpression
+        // distribution) for NonGaussianSemSimulation.
+        parameters.set(Params.CUSTOM_NOISE_OPTION, noiseOption());
+
         Graph graph = this.randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
@@ -177,18 +190,25 @@ public class SemSimulation implements Simulation {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
-//            SemPm pm = this.pm;
             SemIm im = this.im;
+            SemIm.Result result = null;
 
-//            if (this.pm == null) {
-//                pm = new SemPm(graph);
-//            }
-
-//            if (this.semIm == null) {
-//                semIm = new SemIm(pm, parameters);
-//            }
-
-            SemIm.Result result = SemIm.simulatePossibleShrinkage(parameters, graph);
+            if (this.im != null) {
+                // simulate directly from the stored IM
+                DataSet dataSet = null;
+                try {
+                    dataSet = this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                result = new SemIm.Result(IndTestFisherZ.ShrinkageMode.NONE, dataSet, dataSet.getNumRows(), this.im);
+            } else {
+                try {
+                    result = SemIm.simulatePossibleShrinkage(parameters, graph);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
             DataSet dataSet = result.dataSet();// simulate(semIm, parameters);
 
@@ -205,7 +225,7 @@ public class SemSimulation implements Simulation {
 
             this.graphs.add(graph);
             this.ims.add(im);
-            this.dataSets.add(DataTransforms.restrictToMeasured(dataSet));
+            this.dataSets.add(dataSet);
         }
     }
 
@@ -267,7 +287,7 @@ public class SemSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Linear SEM simulation using " + this.randomGraph.getDescription();
+        return "Linear Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -276,7 +296,27 @@ public class SemSimulation implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Linear SEM Simulation";
+        return "Linear Gaussian SEM Simulation";
+    }
+
+    /**
+     * The exogenous noise family this simulation forces, in the sense of Params.CUSTOM_NOISE_OPTION: 1 =
+     * Gaussian noises with variances drawn in [varLow, varHigh]; 2 = independent draws from the
+     * customNoiseExpression distribution.
+     *
+     * @return the forced noise option.
+     */
+    protected int noiseOption() {
+        return 1;
+    }
+
+    /**
+     * Returns the random graph this simulation draws its graphs from.
+     *
+     * @return the random graph.
+     */
+    protected RandomGraph getRandomGraph() {
+        return this.randomGraph;
     }
 
     /**
@@ -294,6 +334,12 @@ public class SemSimulation implements Simulation {
 
         if (this.im == null) {
             parameters.addAll(SemIm.getParameterNames());
+
+            // The noise family is fixed by the simulation type (see noiseOption()), so the engine-level
+            // switch and the custom expression are not user options here. NonGaussianSemSimulation adds
+            // the expression back.
+            parameters.remove(Params.CUSTOM_NOISE_OPTION);
+            parameters.remove(Params.CUSTOM_NOISE_EXPRESSION);
         }
 
         parameters.add(Params.MEASUREMENT_VARIANCE);
@@ -304,9 +350,6 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.SIMULATION_ERROR_TYPE);
-        parameters.add(Params.SIMULATION_PARAM1);
-        parameters.add(Params.SIMULATION_PARAM2);
         parameters.add(Params.SEED);
 
         return parameters;
@@ -320,17 +363,6 @@ public class SemSimulation implements Simulation {
     @Override
     public Class<? extends Simulation> getSimulationClass() {
         return getClass();
-    }
-
-    /**
-     * Simulates a data set based on the given SemIm and Parameters.
-     *
-     * @param im         the SemIm object used for simulation
-     * @param parameters the parameters to use in the simulation
-     * @return a DataSet object representing the simulated data
-     */
-    private DataSet simulate(SemIm im, Parameters parameters) {
-        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 }
 

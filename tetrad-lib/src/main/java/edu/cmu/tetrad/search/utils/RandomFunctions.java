@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -20,13 +20,14 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * A utility class for generating and evaluating random mathematical functions, including polynomials, Fourier series,
@@ -34,8 +35,6 @@ import java.util.Random;
  * properties such as scaling and ensuring the function passes through the origin.
  */
 public class RandomFunctions {
-
-    private static final Random RANDOM = new Random();
 
     private RandomFunctions() {
         throw new IllegalStateException("Utility class");
@@ -56,11 +55,11 @@ public class RandomFunctions {
     public static double randomPolynomial(double x, int degree, double scale, boolean passThroughOrigin) {
         double[] coefficients = new double[degree + 1];
         for (int i = 0; i < coefficients.length; i++) {
-            coefficients[i] = (passThroughOrigin && i == 0) ? 0 : scale * (2 * RANDOM.nextDouble() - 1);
+            coefficients[i] = (passThroughOrigin && i == 0) ? 0 : scale * (2 * RandomUtil.getInstance().nextDouble() - 1);
         }
         double result = 0;
         for (int i = 0; i < coefficients.length; i++) {
-            result += coefficients[i] * Math.pow(x, i);
+            result += coefficients[i] * TMath.pow(x, i);
         }
         return result;
     }
@@ -81,15 +80,15 @@ public class RandomFunctions {
         double[] a = new double[numTerms];
         double[] b = new double[numTerms];
         for (int i = 0; i < numTerms; i++) {
-            a[i] = scale * (2 * RANDOM.nextDouble() - 1);
-            b[i] = scale * (2 * RANDOM.nextDouble() - 1);
+            a[i] = scale * (2 * RandomUtil.getInstance().nextDouble() - 1);
+            b[i] = scale * (2 * RandomUtil.getInstance().nextDouble() - 1);
         }
         if (passThroughOrigin) {
             b[0] = 0; // Adjust to pass through origin
         }
         double result = 0;
         for (int k = 1; k <= numTerms; k++) {
-            result += a[k - 1] * Math.cos(k * x) + b[k - 1] * Math.sin(k * x);
+            result += a[k - 1] * TMath.cos(k * x) + b[k - 1] * TMath.sin(k * x);
         }
         return result;
     }
@@ -111,8 +110,8 @@ public class RandomFunctions {
         double[] yPoints = new double[numPoints];
 
         for (int i = 0; i < numPoints; i++) {
-            xPoints[i] = min + (max - min) * RANDOM.nextDouble();
-            yPoints[i] = 2 * (RANDOM.nextDouble() - 0.5); // Random values in [-1, 1]
+            xPoints[i] = min + (max - min) * RandomUtil.getInstance().nextDouble();
+            yPoints[i] = 2 * (RandomUtil.getInstance().nextDouble() - 0.5); // Random values in [-1, 1]
         }
 
         if (passThroughOrigin) {
@@ -151,18 +150,18 @@ public class RandomFunctions {
         double[] amplitudes = new double[numCenters];
 
         for (int i = 0; i < numCenters; i++) {
-            centers[i] = min + (max - min) * RANDOM.nextDouble();
-            amplitudes[i] = 2 * (RANDOM.nextDouble() - 0.5); // Random values in [-1, 1]
+            centers[i] = min + (max - min) * RandomUtil.getInstance().nextDouble();
+            amplitudes[i] = 2 * (RandomUtil.getInstance().nextDouble() - 0.5); // Random values in [-1, 1]
         }
 
         double fAtZero = 0;
         for (int i = 0; i < numCenters; i++) {
-            fAtZero += amplitudes[i] * Math.exp(-Math.pow(centers[i], 2) / (2 * Math.pow(sigma, 2)));
+            fAtZero += amplitudes[i] * TMath.exp(-TMath.pow(centers[i], 2) / (2 * TMath.pow(sigma, 2)));
         }
 
         double result = 0;
         for (int i = 0; i < numCenters; i++) {
-            result += amplitudes[i] * Math.exp(-Math.pow(x - centers[i], 2) / (2 * Math.pow(sigma, 2)));
+            result += amplitudes[i] * TMath.exp(-TMath.pow(x - centers[i], 2) / (2 * TMath.pow(sigma, 2)));
         }
 
         if (passThroughOrigin) {
@@ -183,7 +182,7 @@ public class RandomFunctions {
      * @return the computed RBF kernel value as a double.
      */
     private static double rbfKernel(double x1, double x2, double lengthScale) {
-        return Math.exp(-Math.pow(x1 - x2, 2) / (2 * Math.pow(lengthScale, 2)));
+        return TMath.exp(-TMath.pow(x1 - x2, 2) / (2 * TMath.pow(lengthScale, 2)));
     }
 
     /**
@@ -266,10 +265,10 @@ public class RandomFunctions {
         if (passThroughOrigin) {
             // Find the index of the closest value to 0
             int closestIndex = 0;
-            double minDistance = Math.abs(x[0]);
+            double minDistance = TMath.abs(x[0]);
             for (int i = 1; i < n; i++) {
-                if (Math.abs(x[i]) < minDistance) {
-                    minDistance = Math.abs(x[i]);
+                if (TMath.abs(x[i]) < minDistance) {
+                    minDistance = TMath.abs(x[i]);
                     closestIndex = i;
                 }
             }

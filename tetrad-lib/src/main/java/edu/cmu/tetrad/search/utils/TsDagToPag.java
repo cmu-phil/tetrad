@@ -183,29 +183,30 @@ public final class TsDagToPag {
         TetradLogger.getInstance().log("Starting DAG to PAG_of_the_true_DAG.");
         //        System.out.println("Knowledge is = " + knowledge);
         if (this.verbose) {
-            System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
+            TetradLogger.getInstance().log("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
         Graph graph = calcAdjacencyGraph(new HashSet<>());
 
         if (this.verbose) {
-            System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
+            TetradLogger.getInstance().log("DAG to PAG_of_the_true_DAG: Starting collider orientation");
         }
 
         orientUnshieldedColliders(graph, this.dag);
 
         if (this.verbose) {
-            System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
+            TetradLogger.getInstance().log("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.finalOrientation(graph);
 
         if (this.verbose) {
-            System.out.println("Finishing final orientation");
+            TetradLogger.getInstance().log("Finishing final orientation");
         }
 
         return graph;
@@ -376,7 +377,7 @@ public final class TsDagToPag {
                     if (found) {
 
                         if (this.verbose) {
-                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
+                            TetradLogger.getInstance().log("Orienting collider " + a + "*->" + b + "<-*" + c);
                         }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -407,9 +408,9 @@ public final class TsDagToPag {
 
             if (this.verbose) {
                 if (!found && defCollider) {
-                    System.out.println("FOUND COLLIDER FCI");
+                    TetradLogger.getInstance().log("FOUND COLLIDER FCI");
                 } else if (found && !defCollider) {
-                    System.out.println("DIDN'T FIND COLLIDER FCI");
+                    TetradLogger.getInstance().log("DIDN'T FIND COLLIDER FCI");
                 }
             }
         }

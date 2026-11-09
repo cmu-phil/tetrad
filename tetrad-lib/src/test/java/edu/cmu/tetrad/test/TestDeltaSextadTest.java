@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +54,12 @@ public class TestDeltaSextadTest {
     @Test
     public void testBollenExample1() {
         SemIm sem = getSem1();
-        DataSet data = sem.simulateData(3000, false);
+        DataSet data = null;
+        try {
+            data = sem.simulateData(3000, false);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Node> variables = data.getVariables();
 
@@ -213,7 +219,12 @@ public class TestDeltaSextadTest {
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = null;
+        try {
+            data = im.simulateData(1000, false);
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
 
         List<Integer> indices = new ArrayList<>();
         indices.add(0);

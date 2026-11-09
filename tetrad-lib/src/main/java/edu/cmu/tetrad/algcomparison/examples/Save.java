@@ -27,6 +27,8 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.text.ParseException;
+
 /**
  * An example script to save out data files and graphs from a simulation.
  *
@@ -64,7 +66,11 @@ public class Save {
         Comparison comparison = new Comparison();
         comparison.setSaveData(true);
         comparison.setSaveGraphs(true);
-        comparison.saveToFiles("comparison", simulation, parameters);
+        try {
+            comparison.saveToFiles("comparison", simulation, parameters);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

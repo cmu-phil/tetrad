@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -134,11 +135,11 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
             ++current;
 
-            if (current == max) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "There are no more variables.");
-            }
+//            if (current == max) {
+//                JOptionPane.showMessageDialog(
+//                        this,
+//                        "There are no more variables.");
+//            }
 
             int set = (current < max) ? current : 0;
 
@@ -161,12 +162,12 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
     private JComboBox<Node> createVarNamesComboBox(DirichletBayesIm bayesIm) {
         JComboBox<Node> varNameComboBox = new JComboBox<>();
-        varNameComboBox.setBackground(Color.white);
+//        varNameComboBox.setBackground(Color.white);
 
         Graph graph = bayesIm.getBayesPm().getDag();
 
         List<Node> nodes = new ArrayList<>(graph.getNodes());
-        Collections.sort(nodes);
+        nodes.sort(NaturalSort.naturalComparator());
         nodes.forEach(varNameComboBox::addItem);
 
         if (varNameComboBox.getItemCount() > 0) {

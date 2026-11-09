@@ -29,8 +29,8 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static edu.cmu.tetrad.util.TMath.abs;
+import static edu.cmu.tetrad.util.TMath.tanh;
 
 /**
  * Difference between the true and estiamted BIC scores.

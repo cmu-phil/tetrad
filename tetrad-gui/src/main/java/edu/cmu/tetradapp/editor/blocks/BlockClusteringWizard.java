@@ -22,13 +22,12 @@ package edu.cmu.tetradapp.editor.blocks;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.*;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
@@ -57,23 +56,43 @@ public class BlockClusteringWizard extends JPanel {
     private static final List<String> TESTS_NONE = List.of();                       // TSC
     // private static final String TEST_ARK = "ARK"; // commented out per instruction
     // ---- UI ----
+    /** The card layout switching between the wizard pages. */
     private final CardLayout cards = new CardLayout();
+    /** The panel holding the wizard pages. */
     private final JPanel cardPanel = new JPanel(cards);
+    /** The result page, showing the discovered blocks in the block editor. */
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
+    /** Selects the clustering algorithm. */
     private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "FOFC", "FTFC", "GFFC", "BPC"});
 
     // Put near your fields
+    /** Selects the tetrad (rank) test used by the clustering algorithm. */
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
+    /** Runs the clustering search. */
     private final JButton btnSearch = new JButton("Search");
+    /** Shows the status of the search. */
     private final JLabel status = new JLabel("Ready.");
+    /** The editor for viewing and editing the discovered blocks. */
     private final BlockSpecEditorPanel editorPanel;
     // ---- State ----
+    /** The data set to cluster. */
     private final DataSet dataSet;
+    /**
+     * All tabular data sets in the parent data box, the selected one among them. With several (for example, several
+     * imputations of one data set with missing values), the poolImputations parameter is offered, and when it is on
+     * the clustering algorithm runs on their averaged covariance matrix.
+     */
+    private final List<DataSet> dataSets;
+    /** Listeners notified when a block spec is produced or edited. */
     private final java.util.List<BlockSpecListener> specListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** The parameters for the clustering algorithm and test. */
     private final Parameters parameters;
+    /** The panel showing the parameters for the selected algorithm. */
     private final JPanel parameterBox = new JPanel(new BorderLayout());
+    /** The names of the parameters shown for the selected algorithm. */
     private final Set<String> paramList = new HashSet<>();
+    /** A map from latent names to their true children, used to give estimated clusters good names. */
     private final Map<String, List<String>> trueClusters;
 
     /**
@@ -91,8 +110,29 @@ public class BlockClusteringWizard extends JPanel {
      */
     public BlockClusteringWizard(DataSet dataSet, String alg, String test, String blockText,
                                  Map<String, List<String>> trueClusters, Parameters parameters) {
+        this(dataSet, List.of(dataSet), alg, test, blockText, trueClusters, parameters);
+    }
+
+    /**
+     * Constructs a new BlockClusteringWizard over a data set selected from a list of data sets. With several data
+     * sets (for example, several imputations of one data set with missing values), the poolImputations parameter is
+     * offered, and when it is on the clustering algorithm runs on their averaged covariance matrix; the resulting
+     * blocks are anchored to the selected data set.
+     *
+     * @param dataSet      The selected data set, which anchors the resulting blocks. Cannot be null.
+     * @param dataSets     All tabular data sets in the parent data box, the selected one among them.
+     * @param alg          The name of the selected algorithm for clustering.
+     * @param test         The name of the selected dependency test.
+     * @param blockText    The text representing the initial block structure or specification.
+     * @param trueClusters A map from latent names to true children of latents, to be used to help give estimated
+     *                     clusters good names.
+     * @param parameters   The parameters required for the selected clustering algorithm and test.
+     */
+    public BlockClusteringWizard(DataSet dataSet, List<DataSet> dataSets, String alg, String test, String blockText,
+                                 Map<String, List<String>> trueClusters, Parameters parameters) {
         super(new BorderLayout(8, 8));
         this.dataSet = Objects.requireNonNull(dataSet);
+        this.dataSets = dataSets == null || dataSets.isEmpty() ? List.of(dataSet) : List.copyOf(dataSets);
         this.parameters = parameters;
         this.trueClusters = trueClusters;
 
@@ -212,15 +252,14 @@ public class BlockClusteringWizard extends JPanel {
         // Allocate data box
         VerticalDoubleDataBox box = new VerticalDoubleDataBox(n, p);
 
-        Random rnd = new Random(42);
-        double sdLatent = Math.sqrt(latentVar);
-        double sdNoiseIndicator = Math.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
+        double sdLatent = TMath.sqrt(latentVar);
+        double sdNoiseIndicator = TMath.sqrt(1.0 - loading * loading); // ensure Var(X) â 1
 
         for (int t = 0; t < n; t++) {
             // Latent disturbances (std normal scaled)
-            double e1 = sdLatent * rnd.nextGaussian();
-            double e2 = sdLatent * rnd.nextGaussian();
-            double e3 = sdLatent * rnd.nextGaussian();
+            double e1 = sdLatent * RandomUtil.getInstance().nextGaussian();
+            double e2 = sdLatent * RandomUtil.getInstance().nextGaussian();
+            double e3 = sdLatent * RandomUtil.getInstance().nextGaussian();
 
             // Latents (structural)
             double L1 = e1;
@@ -230,15 +269,15 @@ public class BlockClusteringWizard extends JPanel {
             // Indicators: m each
             int col = 0;
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L1 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L1 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L2 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L2 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
             for (int j = 0; j < m; j++, col++) {
-                double x = loading * L3 + sdNoiseIndicator * rnd.nextGaussian();
+                double x = loading * L3 + sdNoiseIndicator * RandomUtil.getInstance().nextGaussian();
                 box.set(t, col, x);
             }
         }
@@ -329,7 +368,9 @@ public class BlockClusteringWizard extends JPanel {
                 }
 
 //                btnSearch.setEnabled(false);
-                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "") + " â¦");
+                status.setText("Searching with " + alg + (testName != null ? (" + " + testName) : "")
+                        + (poolingRequested()
+                        ? " on the pooled covariance of " + dataSets.size() + " data sets" : ""));
 
                 int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
                 ess = ess == -1 ? dataSet.getNumRows() : ess;
@@ -370,12 +411,37 @@ public class BlockClusteringWizard extends JPanel {
         setParamList();
 
         int _singletonPolicy = parameters.getInt(Params.TSC_SINGLETON_POLICY);
-        SingleClusterPolicy policy = SingleClusterPolicy.values()[_singletonPolicy - 1];
+        SingletonClusterPolicy policy = SingletonClusterPolicy.values()[_singletonPolicy - 1];
+
+        // With poolImputations on and several data sets present (imputations of one data set), the algorithm runs
+        // on their averaged covariance matrix; the blocks are anchored to the selected data set either way. In the
+        // pooled run, if the effective-sample-size parameter is left at -1 (automatic), the effective sample size
+        // is estimated from the imputations' disagreement rather than taken to be the full row count, which would
+        // treat the pooled covariance as if the data had been complete.
+        CovarianceMatrix pooled = poolingRequested() ? BlocksUtil.pooledCovariance(dataSets) : null;
+
+        int rawEss = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
+        int essForUse = ess;
+        int tscEss = rawEss;
+
+        if (pooled != null && rawEss == -1) {
+            int autoEss = BlocksUtil.pooledEffectiveSampleSize(dataSets);
+            essForUse = autoEss;
+            tscEss = autoEss;
+            status.setText(status.getText() + "; effective sample size estimated at " + autoEss
+                    + " of " + dataSet.getNumRows() + " rows");
+            TetradLogger.getInstance().log("Effective sample size for the pooled run, estimated from the "
+                    + "disagreement among the imputations: " + autoEss + " of " + dataSet.getNumRows()
+                    + " rows. Set the effectiveSampleSize parameter to override.");
+        }
+
+        final int essArg = essForUse;
+        final int tscEssArg = tscEss;
 
         return switch (alg) {
             case "TSC" -> {
-                yield BlockDiscoverers.tsc(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE),
+                yield BlockDiscoverers.tsc(dataSet, pooled, parameters.getDouble(Params.ALPHA),
+                        tscEssArg,
                         parameters.getDouble(Params.REGULARIZATION_LAMBDA),
                         parameters.getInt(Params.MAX_RANK),
                         policy,
@@ -384,26 +450,37 @@ public class BlockClusteringWizard extends JPanel {
                 );
             }
             case "FOFC" -> {
-                yield BlockDiscoverers.fofc(dataSet, parameters.getDouble(Params.ALPHA),
-                        parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE), policy,
-                        parameters.getBoolean(Params.VERBOSE)
+                yield BlockDiscoverers.fofc(dataSet, pooled, parameters.getDouble(Params.ALPHA),
+                        tscEssArg, policy,
+                        parameters.getBoolean(Params.VERBOSE),
+                        parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)
+                                ? StratifiedRankTests.resolveDomainColumn(dataSet,
+                                parameters.getString(Params.DOMAIN_COLUMN, "domain"))
+                                : null
                 );
             }
             case "BPC" -> {
-                yield BlockDiscoverers.bpc(dataSet, parameters.getDouble(Params.ALPHA),
-                        ess, policy, parameters.getBoolean(Params.VERBOSE));
+                yield BlockDiscoverers.bpc(dataSet, pooled, parameters.getDouble(Params.ALPHA),
+                        essArg, policy, parameters.getBoolean(Params.VERBOSE));
             }
             case "FTFC" -> {
-                yield BlockDiscoverers.ftfc(dataSet, parameters.getDouble(Params.ALPHA), ess, policy,
+                yield BlockDiscoverers.ftfc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,
                         parameters.getBoolean(Params.VERBOSE));
             }
             case "GFFC" -> {
-                yield BlockDiscoverers.gffc(dataSet, parameters.getDouble(Params.ALPHA), ess,
+                yield BlockDiscoverers.gffc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg,
                         parameters.getInt(Params.MAX_RANK), policy,
                         parameters.getBoolean(Params.VERBOSE));
             }
             default -> throw new IllegalArgumentException("Unknown algorithm: " + alg);
         };
+    }
+
+    /**
+     * True when there are several data sets and the user asked to pool them as imputations.
+     */
+    private boolean poolingRequested() {
+        return dataSets.size() > 1 && parameters.getBoolean(Params.POOL_IMPUTATIONS, false);
     }
 
     private void setParamList() {
@@ -422,11 +499,23 @@ public class BlockClusteringWizard extends JPanel {
                 paramList.add(Params.ALPHA);
                 paramList.add(Params.MAX_RANK);
             }
+            case "FOFC" -> {
+                paramList.add(Params.ALPHA);
+                paramList.add(Params.STRATIFY_BY_DOMAIN);
+                paramList.add(Params.DOMAIN_COLUMN);
+            }
             default -> paramList.add(Params.ALPHA);
         }
 
         paramList.add(Params.EFFECTIVE_SAMPLE_SIZE);
         paramList.add(Params.TSC_SINGLETON_POLICY);
+
+        // Offered only when the data box holds several data sets--typically several imputations of one data set
+        // with missing values. When on, the algorithm runs on the averaged covariance matrix of the data sets.
+        if (dataSets != null && dataSets.size() > 1) {
+            paramList.add(Params.POOL_IMPUTATIONS);
+        }
+
         paramList.add(Params.VERBOSE);
     }
 

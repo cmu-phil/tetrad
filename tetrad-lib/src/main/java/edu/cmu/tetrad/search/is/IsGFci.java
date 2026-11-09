@@ -122,6 +122,7 @@ public final class IsGFci implements IGraphSearch {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxPathLength);
         fciOrient.finalOrientation(graph);
 
@@ -414,7 +415,7 @@ public final class IsGFci implements IGraphSearch {
             if (instVar == null) {
                 throw new IllegalArgumentException("Instance dataset is missing variable: " + name);
             }
-            cols[i] = instance.getColumn(instVar);
+            cols[i] = instance.getColumnIndex(instVar);
         }
 
         DataSet reordered = instance.subsetColumns(cols);

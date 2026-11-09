@@ -79,7 +79,7 @@ public final class IndependenceResult implements TetradSerializable {
      *               is based on a score.
      * @see IndependenceFact
      */
-    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue, double score) {
+    public  IndependenceResult(IndependenceFact fact, boolean indep, double pValue, double score) {
         this(fact, indep, pValue, score, true);
     }
 

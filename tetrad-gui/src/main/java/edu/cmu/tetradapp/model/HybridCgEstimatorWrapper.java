@@ -25,7 +25,10 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance;
 import edu.cmu.tetrad.hybridcg.HybridCgEstimator;
+import edu.cmu.tetrad.hybridcg.HybridCgPruneReport;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -61,22 +64,61 @@ import java.util.*;
  *   <li>{@code hybridcg.defaultRangeHigh} (double, default 1.0)</li>
  * </ul>
  */
-public class HybridCgEstimatorWrapper implements SessionModel {
+public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
 
     @Serial
     private static final long serialVersionUID = 42L;
 
+    /**
+     * The data wrapper supplying the data sets to estimate from.
+     */
     private final DataWrapper dataWrapper;
+    /**
+     * The parameters for estimation.
+     */
     private final Parameters parameters;
 
+    /**
+     * The estimated Hybrid CG IMs, one per data set.
+     */
     private final List<HybridCgIm> hybridIms = new ArrayList<>();
+    /**
+     * The Hybrid CG PM wrapper that was estimated.
+     */
     private final HybridCgPmWrapper pmWrapper;
+    /**
+     * The currently selected estimated IM.
+     */
     private HybridCgIm hybridIm;
+    /**
+     * The data set corresponding to the currently selected IM.
+     */
     private DataSet dataSet;
 
+    /**
+     * The name of this session model.
+     */
     private String name = "Hybrid CG Estimator";
+    /**
+     * The number of estimated models.
+     */
     private int numModels = 0;
+    /**
+     * The index of the currently selected model.
+     */
     private int modelIndex = 0;
+
+    /**
+     * The most recent prune proposal, whether or not it was applied; persisted so a saved session reopens with it.
+     * Null until a proposal has been made.
+     */
+    private HybridCgPruneReport pruneReport;
+
+    /**
+     * The pruned graph currently applied, or null if the estimator is on the input graph. Persisted; the IMs are
+     * serialized already re-estimated on it.
+     */
+    private Graph prunedGraph;
 
     // ============================== CONSTRUCTORS ==============================
 
@@ -94,6 +136,19 @@ public class HybridCgEstimatorWrapper implements SessionModel {
                                     HybridCgPmWrapper pmWrapper,
                                     Parameters parameters) {
         this(new DataWrapper(simulation, parameters), pmWrapper, parameters);
+    }
+
+    /**
+     * Estimates from a Graph (or Search) box directly, building the Hybrid CG PM from the DAG with the variable
+     * types and categories taken from the data, as the Hybrid CG PM box would. The graph must be a DAG.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param parameters  the parameters.
+     */
+    public HybridCgEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(dataWrapper, new HybridCgPmWrapper(EstimatorGraphs.dag(graphSource, "The Hybrid CG estimator"),
+                EstimatorGraphs.dataSet(dataWrapper, "The Hybrid CG estimator"), parameters), parameters);
     }
 
     /**
@@ -172,7 +227,15 @@ public class HybridCgEstimatorWrapper implements SessionModel {
 
     /** Defensive PM copy so per-dataset cutpoints (set during estimation) don’t mutate the original PM. */
     private static HybridCgPm copyPmForEstimation(HybridCgPm pm) {
-        Graph g = pm.getGraph();
+        return copyPmForEstimation(pm, pm.getGraph());
+    }
+
+    /**
+     * As {@link #copyPmForEstimation(HybridCgPm)}, over the given graph, which may have fewer edges than the
+     * source's (a pruned graph). Typing, categories, and node order come from the source PM; cutpoints are carried
+     * over where the receiving child's continuous-parent set allows.
+     */
+    private static HybridCgPm copyPmForEstimation(HybridCgPm pm, Graph g) {
         List<Node> order = List.of(pm.getNodes());
 
         Map<Node, Boolean> isDisc = new LinkedHashMap<>();
@@ -256,6 +319,132 @@ public class HybridCgEstimatorWrapper implements SessionModel {
      */
     public Graph getGraph() {
         return this.hybridIm != null ? this.hybridIm.getPm().getGraph() : null;
+    }
+
+    // ============================ SIGNIFICANCE AND PRUNING ====================
+
+    /**
+     * Per-edge LRT significance for the current model against the current dataset, using this wrapper's
+     * {@code hybridcg.shareVariance} setting. Computed on demand; see
+     * {@link HybridCgEdgeSignificance#compute(HybridCgPm, DataSet, boolean)} for the test and its stated
+     * approximations.
+     *
+     * @return map from each edge of the current model's graph to its significance result
+     */
+    public Map<Edge, HybridCgEdgeSignificance.Result> edgeSignificance() {
+        return HybridCgEdgeSignificance.compute(this.hybridIm.getPm(), this.dataSet,
+                this.parameters.getBoolean("hybridcg.shareVariance", false));
+    }
+
+    /**
+     * Per-stratum OLS t-test p-values for the linear coefficients of continuous children in the current model, for
+     * table display; see {@link HybridCgEdgeSignificance#coefficientPValues}.
+     *
+     * @return the p-value array, indexed [node][stratum row][continuous-parent order index]
+     */
+    public double[][][] coefficientPValues() {
+        return HybridCgEdgeSignificance.coefficientPValues(this.hybridIm, this.dataSet);
+    }
+
+    /**
+     * Proposes a backward-elimination prune of the current model's graph at the given level, computed on the
+     * currently selected dataset; see {@link HybridCgEdgeSignificance#backwardPrune} for the elimination rule and
+     * its caveats. The proposal is stored (and persisted with the session) but nothing is modified until
+     * {@link #applyPrune()}.
+     *
+     * @param alpha the significance level for the per-edge LRT
+     * @return the proposal
+     */
+    public HybridCgPruneReport proposePrune(double alpha) {
+        this.pruneReport = HybridCgEdgeSignificance.backwardPrune(this.hybridIm.getPm(), this.dataSet, alpha,
+                this.parameters.getBoolean("hybridcg.shareVariance", false));
+        return this.pruneReport;
+    }
+
+    /**
+     * Adopts the stored prune proposal: every dataset's IM is re-estimated on the proposal's pruned graph, and
+     * {@link #getGraph()} subsequently returns that graph. The upstream PM wrapper is not modified, so the input
+     * graph remains recoverable via {@link #getInputGraph()} and {@link #revertPrune()}.
+     * <p>
+     * Note for multi-dataset use: the proposal was computed on the currently selected dataset only, but the pruned
+     * structure is applied to every dataset's re-estimate, since this wrapper shares one structure across its
+     * datasets by design.
+     *
+     * @throws IllegalStateException if no proposal has been made
+     */
+    public void applyPrune() {
+        if (this.pruneReport == null) {
+            throw new IllegalStateException("No prune proposal to apply; call proposePrune(alpha) first.");
+        }
+        reestimateOn(this.pruneReport.getPrunedGraph());
+        this.prunedGraph = this.pruneReport.getPrunedGraph();
+        TetradLogger.getInstance().log("Applied Hybrid CG prune; re-estimated on the pruned graph.");
+        TetradLogger.getInstance().log(this.pruneReport.toString());
+    }
+
+    /**
+     * Re-estimates every dataset's IM on the input graph and clears the applied pruned graph. The stored proposal is
+     * kept for reference.
+     */
+    public void revertPrune() {
+        if (this.prunedGraph == null) return;
+        reestimateOn(getInputGraph());
+        this.prunedGraph = null;
+        TetradLogger.getInstance().log("Reverted Hybrid CG prune; re-estimated on the input graph.");
+    }
+
+    /**
+     * The input graph this estimator was constructed on, from the upstream PM wrapper, regardless of any applied
+     * prune.
+     *
+     * @return the input graph
+     */
+    public Graph getInputGraph() {
+        return this.pmWrapper.getHybridCgPm().getGraph();
+    }
+
+    /**
+     * The most recent prune proposal, applied or not, or null if none has been made.
+     *
+     * @return the proposal or null
+     */
+    public HybridCgPruneReport getPruneReport() {
+        return this.pruneReport;
+    }
+
+    /**
+     * The pruned graph currently applied, or null if the estimator is on the input graph.
+     *
+     * @return the applied pruned graph or null
+     */
+    public Graph getPrunedGraph() {
+        return this.prunedGraph;
+    }
+
+    /**
+     * Re-estimates every dataset's IM with the current parameters on the graph currently in force: the applied
+     * pruned graph if there is one, else the input graph. This is what the estimator editor's Estimate button runs,
+     * so re-estimating does not silently discard an applied prune.
+     */
+    public void reestimate() {
+        reestimateOn(this.prunedGraph != null ? this.prunedGraph : getInputGraph());
+    }
+
+    /** Re-estimates one IM per dataset over the given graph, preserving model index and selection. */
+    private void reestimateOn(Graph graph) {
+        DataModelList dml = this.dataWrapper.getDataModelList();
+        List<HybridCgIm> ims = new ArrayList<>();
+        for (DataModel dm : dml) {
+            DataSet ds = (DataSet) dm;
+            HybridCgPm pmCopy = copyPmForEstimation(this.pmWrapper.getHybridCgPm(), graph);
+            ims.add(HybridCgEstimator.estimate(pmCopy, ds, this.parameters));
+        }
+        this.hybridIms.clear();
+        this.hybridIms.addAll(ims);
+        this.numModels = ims.size();
+        if (this.modelIndex >= ims.size()) this.modelIndex = 0;
+        this.hybridIm = this.hybridIms.get(this.modelIndex);
+        this.dataSet = (DataSet) dml.get(this.modelIndex);
     }
 
     /**
@@ -342,24 +531,38 @@ public class HybridCgEstimatorWrapper implements SessionModel {
         this.dataSet = (DataSet) dml.get(modelIndex);
     }
 
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
+            TetradLogger.getInstance().warn("Failed to serialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
 
     // ============================ INTERNALS ==================================
 
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore
+     * the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
+            TetradLogger.getInstance().warn("Failed to deserialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }

@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -58,7 +58,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, HasKnowledge,
+public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -97,7 +97,7 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -109,7 +109,8 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
         edu.cmu.tetrad.search.Sp suborderSearch = new edu.cmu.tetrad.search.Sp(myScore);
         PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(this.knowledge);
-        Graph graph = permutationSearch.search();
+        permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        Graph graph = permutationSearch.search(parameters.getBoolean(Params.OUTPUT_CPDAG));
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);
 
@@ -146,7 +147,9 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, TakesSc
     @Override
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
+        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.TIME_LAG);
+        params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         return params;
     }
 

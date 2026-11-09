@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,7 +33,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -54,7 +56,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -102,7 +104,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -110,7 +112,9 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataModel, parameters));
+        IndependenceTest test1 = this.test.getTest(dataModel, parameters);
+        test1 = new CachedIndependenceQueries(test1);
+        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test1);
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
@@ -173,7 +177,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
 
         parameters.add(Params.VERBOSE);

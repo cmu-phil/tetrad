@@ -1,0 +1,32 @@
+# pke12 config: mode=magspace N=7 latent=2 observed=6 timeoutMs=-1 depth=-1 recDepth=-1 exclSel=true
+# run started Wed Aug 05 23:09:58 EDT 2026
+# VIOLATIONS: every distinct true PAG whose terminal Fcit PAG (GRaSP start,
+# oracle-driven) is NOT exactly G*.  Analysis is INLINE: each new distinct
+# PAG is run through Fcit the moment it is found, and any violation below
+# is written and flushed immediately -- tail this file to watch live.  Bucket
+# legend:
+#   EQUIVALENT_NOT_EXACT       -- Markov-equivalent to G* but not edge-identical
+#   SKELETON_MATCH_ORIENT_DIFF -- same skeleton, non-equivalent orientation error
+#   SKELETON_DIFF              -- adjacencies differ (extra = undeletable spurious,
+#                                 missing = over-deletion)
+#   ERROR                      -- Fcit threw or timed out
+
+==== pke12 SUMMARY ====
+# pke12 config: mode=magspace N=7 latent=2 observed=6 timeoutMs=-1 depth=-1 recDepth=-1 exclSel=true
+distinct true PAGs (this run's view): 13653
+PAGs analyzed (Fcit runs)        : 13653
+  skipped on exception             : 0
+stopped early (log full)           : false
+---- TERMINAL-PAG IDENTITY (Fcit from GRaSP start, oracle) ----
+EXACT (terminal PAG == G*)         : 13653
+VIOLATIONS (terminal PAG != G*)    : 0   *** clean: Fcit recovers G* on every distinct PAG ***
+  EQUIVALENT_NOT_EXACT             : 0
+  SKELETON_MATCH_ORIENT_DIFF       : 0
+  SKELETON_DIFF                    : 0
+    of which extra edges present   : 0
+    of which edges missing         : 0
+  ERROR (threw / timed out)        : 0
+---- THE ANSWER ----
+Fcit recovers G* EXACTLY on all 13653 distinct true PAGs analyzed this run at this scope (ALL PAGs on 6 observed variables).
+elapsed (enumeration+analysis)     : 299.0 min
+==== END SUMMARY ====

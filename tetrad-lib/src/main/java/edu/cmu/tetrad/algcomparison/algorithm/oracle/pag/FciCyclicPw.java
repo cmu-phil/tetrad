@@ -30,6 +30,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4Strategy;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -63,10 +66,15 @@ import java.util.Map;
  *
  * <p><b>Parameter:</b> PAIRWISE_RULE ∈ {1..5}, default 3 (RSKEW).
  * 1=FASK1, 2=FASK2, 3=RSKEW, 4=SKEW, 5=TANH.</p>
+ * <p>
+ * <b>Backward compatibility only.</b> This class is retained under its original name so that sessions
+ * saved by Tetrad 7.6.10 and earlier, which refer to it by this class name, continue to load. Its
+ * registration annotations are commented out, so it is not offered in the algorithm chooser; new work
+ * should use the current class. The implementation is unchanged, so a restored session re-runs as before.
  */
-@edu.cmu.tetrad.annotation.Algorithm(name = "FCI-CPW", command = "fci-cpw", algoType = AlgType.allow_latent_common_causes)
+//@edu.cmu.tetrad.annotation.Algorithm(name = "FCI-CPW", command = "fci-cpw", algoType = AlgType.allow_latent_common_causes)
 @Bootstrapping
-@Experimental
+//@Experimental
 public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -136,7 +144,7 @@ public class FciCyclicPw extends AbstractBootstrapAlgorithm implements Algorithm
             throw new IllegalArgumentException("FCI-CPW expects a DataSet.");
         }
         if (!dataSet.isContinuous()) {
-            throw new IllegalArgumentException("FCI-CPW currently supports linear data (skewed).");
+            throw new IllegalArgumentException("FCI-CPW currently supports linear skewed data (skewed).");
         }
 
         // Pairwise rule: default 3 (RSKEW). Read PARAM_PAIRWISE_RULE if provided.

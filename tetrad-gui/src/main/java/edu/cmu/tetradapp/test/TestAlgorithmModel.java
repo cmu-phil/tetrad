@@ -31,6 +31,12 @@ import java.util.List;
 public class TestAlgorithmModel {
 
     /**
+     * Constructs a new test instance.
+     */
+    public TestAlgorithmModel() {
+    }
+
+    /**
      * Main method.
      *
      * @param args the arguments.

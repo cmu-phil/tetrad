@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static org.apache.commons.math3.util.FastMath.min;
+import static edu.cmu.tetrad.util.TMath.min;
 
 
 /**
@@ -118,7 +118,10 @@ public class BesPermutation {
         Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
         int[] arrowIndex = new int[1];
 
-        buildIndexing(order, hashIndices);
+        // The indices are passed to the score, so they must be indices into the score's variable list, not positions
+        // in the given order. (Positions in the order were used here previously, which scored the wrong variables
+        // whenever the order differed from the score's variable order.)
+        buildIndexing(this.variables, hashIndices);
 
         reevaluateBackward(new HashSet<>(order), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
 
@@ -178,7 +181,7 @@ public class BesPermutation {
 
         int numEdges = graph.getNumEdges();
         if (numEdges % 1000 == 0 && numEdges > 0) {
-            System.out.println("Num edges (backwards) = " + numEdges);
+            TetradLogger.getInstance().log("Num edges (backwards) = " + numEdges);
         }
 
         if (verbose) {
@@ -328,7 +331,7 @@ public class BesPermutation {
 
         for (Edge edge : graph.getEdges(x)) {
             if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
         }
 
         while (!neighbors.isEmpty()) {

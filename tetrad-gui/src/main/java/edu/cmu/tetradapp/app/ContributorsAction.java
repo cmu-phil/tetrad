@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.JOptionUtils;
 
 import javax.swing.*;
@@ -65,7 +67,7 @@ final class ContributorsAction extends AbstractAction {
                      "Software Engineering Institute, a federally funded research and development center.";
 
         JTextArea textArea = new JTextArea(msg);
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        textArea.setFont(ThemeUtils.monospaced(12));
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         textArea.setEditable(false);

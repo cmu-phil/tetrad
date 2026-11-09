@@ -68,6 +68,7 @@ public class NumDirectedShouldBePartiallyDirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -75,7 +76,7 @@ public class NumDirectedShouldBePartiallyDirected implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.paths().isAncestorOf(x, y) && !trueGraph.paths().isAncestorOf(y, x) && existsLatentCommonAncestor(trueGraph, edge)) {
+                if (!dag.paths().isAncestorOf(x, y) && !dag.paths().isAncestorOf(y, x) && existsLatentCommonAncestor(dag, edge)) {
                     tp++;
                 }
             }

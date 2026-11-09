@@ -27,6 +27,8 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.ConditionalGaussianLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.special.Gamma;
@@ -45,11 +47,22 @@ import java.util.*;
  * - setRows(...) now respects the provided argument (no random subsampling).
  * - Row restriction is intersected with testwise deletion for the specific (x, y | z) variables.
  * - Caches are cleared when row restrictions or discretization knobs change.
+ * <p>
+ * Effective sample size (added 2026-8-25). When an effective sample size nEff is set (see
+ * {@link #setEffectiveSampleSize(int)}), the likelihood-ratio statistic 2 * (l1 - l0) is scaled by r = nEff / N,
+ * where N is the number of rows in the dataset, before being referred to the chi-square distribution. The
+ * degrees of freedom are unchanged. Since the log-likelihoods are row sums, this is the statistic that nEff
+ * independent rows would have produced. The value is relative to the full dataset: if {@link #setRows(List)}
+ * restricts the test to m rows, or testwise deletion drops rows for a particular (x, y | z), the test behaves as if
+ * it had r * m independent rows, so a subsample or resample inherits the same per-row information content rather
+ * than the full nEff. (This differs from {@link IndTestDegenerateGaussianLrt}, which resets nEff to the actual row
+ * count on setRows, and from {@link IndTestFisherZ}, which keeps the absolute nEff regardless of setRows.) With
+ * nEff unset, r = 1 and the test is unchanged from the previous implementation.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSettable {
+public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSettable, EffectiveSampleSizeSettable {
 
     /** The data set. */
     private final DataSet data;
@@ -80,6 +93,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
 
     /** The most recent p-value. */
     private double pValue;
+
+    // Effective sample size relative to the full dataset, or -1 to use the actual row count. See class Javadoc.
+    private int nEff = -1;
 
     /**
      * Constructor.
@@ -131,18 +147,38 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         this.likelihood.setMinSampleSizePerCell(this.minSampleSizePerCell);
 
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         List<Node> allVars = new ArrayList<>(z.size() + 2);
         allVars.addAll(z);
         allVars.add(x);
         allVars.add(y);
 
-        // Apply row restriction + testwise deletion (for these vars) and pass to likelihood.
-        this.likelihood.setRows(getRows(allVars, this.nodesHash));
+        // Row restriction + testwise deletion (for these vars). Rows are passed explicitly to the
+        // likelihood-ratio call below rather than via likelihood.setRows: checkIndependence runs
+        // concurrently under the parallelized Markov checker and parallel constraint-based
+        // searches, and setRows mutated state shared by all threads, silently mixing supports
+        // whenever testwise deletion made them differ (i.e., under missing data). Changed 2026-8-12.
+        List<Integer> testRows = getRows(allVars, this.nodesHash);
 
-        int _x = this.nodesHash.get(x);
-        int _y = this.nodesHash.get(y);
+        // Changes from the pre-2026-8 computation: for a mixed pair, the CONTINUOUS member is
+        // always the modeled target, regardless of argument order. Modeling the discrete member
+        // as the target sends continuous CONDITIONING variables through the discretize path, and
+        // coarsening a conditioning variable destroys a true null (x _||_ y | z does not imply
+        // x _||_ y | discretize(z)): in the calibration harness, Markov-check facts of the form
+        // disc _||_ cont | cont, disc were rejected at 44-52% (n = 1500, nominal 5%) under the
+        // old orientation and at ~5% under this one. This also makes mixed-pair tests symmetric
+        // in argument order. For pairs where both members are discrete and the conditioning set
+        // contains continuous variables, the discretize caveat remains: coarsened conditioning
+        // can reject a true null in principle, and no orientation avoids it in the CG family.
+        Node target = y, other = x;
+        if (x instanceof ContinuousVariable && y instanceof DiscreteVariable) {
+            target = x;
+            other = y;
+        }
+
+        int _x = this.nodesHash.get(other);
+        int _y = this.nodesHash.get(target);
 
         int[] list0 = new int[z.size()];
         int[] list1 = new int[z.size() + 1];
@@ -155,50 +191,41 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
             list1[i + 1] = __z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret0 = likelihood.getLikelihood(_y, list0);
-        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list1);
+        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(_y, list0, list1, testRows);
 
-        double lik_diff = ret0.getLik() - ret1.getLik();
-        double dof_diff = ret1.getDof() - ret0.getDof();
+        double lik_diff = ret.getLik();
+        int dof_diff = ret.getDof();
 
         double pValue;
 
         if (Double.isNaN(lik_diff)) {
-            throw new RuntimeException("Undefined likelihood encountered for test: "
-                                       + LogUtilsSearch.independenceFact(x, y, _z));
+            // No evaluable common support (every eligibility cell was too small or degenerate),
+            // or a residual numerical breakdown past the degeneracy screen. Before 2026-8-12
+            // this threw, which aborted entire bootstrap searches whenever one resample produced
+            // a degenerate cell; a defined answer is required for search robustness. No
+            // estimable evidence against independence on the evaluable support: p = 1, matching
+            // the dof_diff <= 0 convention below.
+            pValue = 1.0;
         } else {
-            double x1 = -2 * lik_diff;
-            ChiSquaredDistribution chisq = new ChiSquaredDistribution(dof_diff);
+            // Changes from the pre-2026-8 computation: the statistic now comes from
+            // ConditionalGaussianLikelihood.getLikelihoodRatio, which fits both models on a
+            // COMMON row support with dof counted over observed cells (see its Javadoc for the
+            // calibration failures this repairs). dof_diff <= 0 means the larger model added
+            // nothing estimable on the common support (e.g., x constant there): no evidence
+            // against independence, p = 1. x1 <= 0 covers roundoff on a true nested ratio. The
+            // upper tail uses regularizedGammaQ for numerical stability.
+            // Effective-sample-size scaling of the row-sum statistic (r = 1 when nEff is unset).
+            double x1 = 2 * lik_diff * effectiveSampleSizeRatio();
 
-            if (Double.isInfinite(x1)) {
-                pValue = 0.0;
-            } else if (x1 == 0.0) {
+            if (dof_diff <= 0) {
                 pValue = 1.0;
+            } else if (x1 <= 0.0) {
+                pValue = 1.0;
+            } else if (Double.isInfinite(x1)) {
+                pValue = 0.0;
             } else {
-                pValue = 1.0 - chisq.cumulativeProbability(x1);
+                pValue = Gamma.regularizedGammaQ(0.5 * dof_diff, 0.5 * x1);
             }
-
-//            if (dof_diff <= 0) {
-//                throw new IllegalStateException("Non-positive dof in CG-LRT: dof_diff=" + dof_diff
-//                                                + " for " + LogUtilsSearch.independenceFact(x, y, _z));
-//            }
-//
-//            if (x1 <= 0.0) {
-//                // Covers x1 == 0 and tiny negative values from roundoff.
-//                pValue = 1.0;
-//            } else if (Double.isInfinite(x1)) {
-//                pValue = 0.0;
-//            } else {
-//                // Stable upper-tail probability: P(ChiSq_{dof} >= x1)
-//                double a = 0.5 * dof_diff;
-//                double xx = 0.5 * x1;
-//                pValue = Gamma.regularizedGammaQ(a, xx);
-//            }
-//
-//            // Optional: if you want to avoid exact 0/1 in histograms due to numeric extremes:
-//            final double EPS = 1e-16; // or 1e-12 if you want a more visible effect
-//            if (pValue < EPS) pValue = EPS;
-//            else if (pValue > 1.0 - EPS) pValue = 1.0 - EPS;
         }
 
         this.pValue = pValue;
@@ -317,6 +344,42 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
     }
 
     /**
+     * Returns the effective sample size: the value set via {@link #setEffectiveSampleSize(int)}, or, if none has
+     * been set, the number of rows currently in use (the restriction from {@link #setRows(List)} if any, otherwise
+     * the full dataset).
+     *
+     * @return the effective sample size
+     */
+    @Override
+    public int getEffectiveSampleSize() {
+        if (this.nEff >= 0) return this.nEff;
+        return this.rows != null ? this.rows.size() : this.data.getNumRows();
+    }
+
+    /**
+     * Sets the effective sample size, interpreted relative to the full dataset, or -1 (any negative value) to use
+     * the actual number of rows. A value of 0 is treated as unset. See the class Javadoc for the interaction with
+     * setRows and testwise deletion.
+     *
+     * <p>Configuration mutator: do not call concurrently with running tests.
+     *
+     * @param nEff the effective sample size, or a nonpositive value to use the actual number of rows
+     */
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff <= 0 ? -1 : nEff;
+    }
+
+    /**
+     * The ratio nEff / N applied to the likelihood-ratio statistic; 1 when unset.
+     */
+    private double effectiveSampleSizeRatio() {
+        if (this.nEff < 0) return 1.0;
+        int n = this.data.getNumRows();
+        return n == 0 ? 1.0 : this.nEff / (double) n;
+    }
+
+    /**
      * Returns a list of row indices eligible for this test:
      *   (user-specified subset OR all rows) intersected with rows that have no missingness
      *   in the specific variables involved in this test (testwise deletion).
@@ -394,5 +457,17 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         }
 
         this.rows = copy;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Each likelihood-ratio calculation uses the rows complete on the variables involved in that calculation (the candidate rows are intersected with the rows having no missingness on those variables), i.e., test-wise deletion, unbiased only under MCAR.
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
     }
 }

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
 import edu.cmu.tetradapp.workbench.PointPair;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,30 +89,55 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     private static final int FORBIDDEN_BY_GROUPS = 7;
 
     /**
+     * The default color for explicitly forbidden edges, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_FORBIDDEN_EXPLICITLY_COLOR = Color.MAGENTA.darker().darker();
+
+    /**
+     * The default color for edges forbidden by groups, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_FORBIDDEN_BY_GROUPS_COLOR = Color.MAGENTA.brighter();
+
+    /**
+     * The default color for edges required by groups, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_REQUIRED_BY_GROUPS_COLOR = Color.GREEN.brighter();
+
+    /**
+     * The default color for edges forbidden by tiers, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_FORBIDDEN_BY_TIERS_COLOR = Color.LIGHT_GRAY;
+
+    /**
+     * The default color for explicitly required edges, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_REQUIRED_COLOR = Color.GREEN.darker();
+
+    /**
      * The color that forbidden edges are drawn in.
      */
-    private final Color forbiddenExplicitlyColor = Color.MAGENTA.darker().darker();
+    private final Color forbiddenExplicitlyColor = DEFAULT_FORBIDDEN_EXPLICITLY_COLOR;
 
     /**
      * The color for forbidden group edges.
      */
-    private final Color forbiddenGroupsColor = Color.MAGENTA.brighter();
+    private final Color forbiddenGroupsColor = DEFAULT_FORBIDDEN_BY_GROUPS_COLOR;
 
     /**
      * The color for required group edges.
      */
-    private final Color requiredGroupsColor = Color.GREEN.brighter();
+    private final Color requiredGroupsColor = DEFAULT_REQUIRED_BY_GROUPS_COLOR;
 
 
     /**
      * The color that forbidden edges are drawn in.
      */
-    private final Color forbiddenByTiersColor = Color.LIGHT_GRAY;
+    private final Color forbiddenByTiersColor = DEFAULT_FORBIDDEN_BY_TIERS_COLOR;
 
     /**
      * The color that required edges are drawn in.
      */
-    private final Color requiredColor = Color.GREEN.darker();
+    private final Color requiredColor = DEFAULT_REQUIRED_COLOR;
 
     /**
      * The color that selected edges will be drawn in.
@@ -323,7 +348,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
         d = (p1.x - p2.x) * (p1.x - p2.x);
         d += (p1.y - p2.y) * (p1.y - p2.y);
-        d = FastMath.sqrt(d);
+        d = TMath.sqrt(d);
 
         return d;
     }
@@ -334,8 +359,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     private static void drawArrowEndpoint(Point from, Point to, Graphics g) {
         double a = to.x - from.x;
         double b = from.y - to.y;
-        double theta = FastMath.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
+        double theta = TMath.atan2(b, a);
+        int itheta = (int) ((theta * 360.0) / (2.0 * TMath.PI) + 180);
 
         g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
     }
@@ -349,10 +374,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         final int diameter = 13;
         double a = to.x - from.x;
         double b = from.y - to.y;
-        double theta = FastMath.atan2(b, a);
-        //        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
-        int xminus = (int) (FastMath.cos(theta) * diameter / 2);
-        int yplus = (int) (FastMath.sin(theta) * diameter / 2);
+        double theta = TMath.atan2(b, a);
+        //        int itheta = (int) ((theta * 360.0) / (2.0 * TMath.PI) + 180);
+        int xminus = (int) (TMath.cos(theta) * diameter / 2);
+        int yplus = (int) (TMath.sin(theta) * diameter / 2);
 
         g.fillOval(to.x - xminus - diameter / 2, to.y + yplus - diameter / 2,
                 diameter, diameter);
@@ -381,7 +406,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
         final int d = 7;    // halfwidth of the sleeve.
 
-        if (FastMath.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
+        if (TMath.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
             return KnowledgeDisplayEdge.getHorizSleeve(pp);
         }
 
@@ -396,7 +421,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         double sx, sy;
 
         sx = (double) (d * d) / (1.0 + (qx * qx) / (qy * qy));
-        sx = FastMath.pow(sx, 0.5);
+        sx = TMath.pow(sx, 0.5);
         sy = -(qx / qy) * sx;
         sx += (double) pp.getFrom().x + 1.0;
         sy += (double) pp.getFrom().y + 1.0;
@@ -728,10 +753,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         Point c2 = new Point((int) (r2.x + r2.width / 2.0),
                 (int) (r2.y + r2.height / 2.0));
 
-        double angle = FastMath.atan2(c1.y - c2.y, c1.x - c2.x);
-        angle += FastMath.PI / 2;
-        Point d = new Point((int) (this.offset * FastMath.cos(angle)),
-                (int) (this.offset * FastMath.sin(angle)));
+        double angle = TMath.atan2(c1.y - c2.y, c1.x - c2.x);
+        angle += TMath.PI / 2;
+        Point d = new Point((int) (this.offset * TMath.cos(angle)),
+                (int) (this.offset * TMath.sin(angle)));
         c1.translate(d.x, d.y);
         c2.translate(d.x, d.y);
 
@@ -883,10 +908,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
                 Point c2 = new Point((int) (r2.x + r2.width / 2.0),
                         (int) (r2.y + r2.height / 2.0));
 
-                double angle = FastMath.atan2(c1.y - c2.y, c1.x - c2.x);
-                angle += FastMath.PI / 2;
-                Point d = new Point((int) (this.offset * FastMath.cos(angle)),
-                        (int) (this.offset * FastMath.sin(angle)));
+                double angle = TMath.atan2(c1.y - c2.y, c1.x - c2.x);
+                angle += TMath.PI / 2;
+                Point d = new Point((int) (this.offset * TMath.cos(angle)),
+                        (int) (this.offset * TMath.sin(angle)));
 
                 r1.translate(d.x, d.y);
                 r2.translate(d.x, d.y);

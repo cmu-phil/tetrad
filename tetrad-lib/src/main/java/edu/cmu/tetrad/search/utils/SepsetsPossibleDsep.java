@@ -27,7 +27,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -184,7 +185,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
         int _depth = this.depth == -1 ? 1000 : this.depth;
-        _depth = FastMath.min(_depth, possibleDsep.size());
+        _depth = TMath.min(_depth, possibleDsep.size());
 
         SublistGenerator cg = new SublistGenerator(possibleDsep.size(), _depth);
         int[] choice;
@@ -208,7 +209,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
             //  if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
             boolean flagForbid = false;
             for (Node j : condSet) {
-                if (this.knowledge.isInWhichTier(j) > FastMath.max(this.knowledge.isInWhichTier(node1), this.knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
+                if (this.knowledge.isInWhichTier(j) > TMath.max(this.knowledge.isInWhichTier(node1), this.knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
 //                        if (knowledge.isForbidden(j.getName(), node1.getName()) && knowledge.isForbidden(j.getName(), node2.getName())) {
                     flagForbid = true;
                     break;
@@ -231,7 +232,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         List<Node> msep = this.graph.paths().possibleDsep(x, maxPossibleDsepPathLength);
 
         if (this.verbose) {
-            System.out.println("Possible-D-Sep(" + x + ") = " + msep);
+            TetradLogger.getInstance().log("Possible-D-Sep(" + x + ") = " + msep);
         }
 
         return msep;

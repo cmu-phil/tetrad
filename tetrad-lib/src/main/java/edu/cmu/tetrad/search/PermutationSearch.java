@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,14 +16,12 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphFactoryUtil;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -110,7 +108,9 @@ public class PermutationSearch {
         Map<Node, Integer> index = new HashMap<>();
 
         int i = 0;
-        for (Node node : this.variables) {
+        for (Node _node : this.variables) {
+            Node node = score.getVariable(_node.getName());
+
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
             this.order.add(node);
@@ -171,29 +171,39 @@ public class PermutationSearch {
      * @param nodes      The list of nodes to include in the graph.
      * @param parents    A map specifying the parents for each node. Each key is a node, and its value is the set of parent nodes.
      * @param knowledge  The knowledge object, if any, to guide the orientation of edges in the graph.
-     * @param cpDag      A flag indicating whether a CPDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
+     * @param cpdag      A flag indicating whether a CPDAG (partially directed acyclic graph) is desired. If false, a DAG (directed acyclic graph) is constructed.
      * @param replicating A flag indicating whether graph replication is enabled, allowing mirrored changes in replicated graphs.
      * @return The constructed graph, which may be a DAG or CPDAG depending on the value of the cpDag flag.
      */
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,
-                                 boolean cpDag,
+                                 boolean cpdag,
                                  boolean replicating) {
-        Graph graph = GraphFactoryUtil.newGraph(nodes, replicating);
+        Graph graph = new EdgeListGraph(nodes);
 
-        // materialize edges (ReplicatingGraph will mirror on add)
         for (Node child : nodes) {
             for (Node par : parents.get(child)) {
                 graph.addDirectedEdge(par, child);
             }
         }
 
-        if (cpDag) {
+        if (cpdag) {
             MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
             if (knowledge != null) rules.setKnowledge(knowledge);
             rules.setVerbose(false);
-            rules.orientImplied(graph); // setEndpoint/edge ops mirror automatically if replicating
+            rules.orientImplied(graph);
+        }
+
+        if (replicating) {
+            graph = GraphUtils.getReplicatingGraph(graph);
+        } else if (cpdag) {
+            MeekRules rules = new MeekRules();
+            rules.setRevertToUnshieldedColliders(true);
+            if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
+            rules.orientImplied(graph);
         }
 
         return graph;
@@ -242,6 +252,11 @@ public class PermutationSearch {
             for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
                 prefix = new ArrayList<>(this.order);
                 List<String> tier = this.knowledge.getTier(i);
+
+                // Skip empty tiers (e.g., an unused tier 0 when the user numbers tiers from 1);
+                // otherwise an empty suborder is passed to the suborder search, which is wasted
+                // work and can trigger spurious iteration-cap warnings.
+                if (tier.isEmpty()) continue;
 
                 for (Node node : order) {
                     String name = node.getName();

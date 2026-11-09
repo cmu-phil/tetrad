@@ -21,6 +21,10 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -28,6 +32,7 @@ import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 import edu.cmu.tetrad.search.test.RowsSettable;
 
@@ -110,8 +115,11 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
     private final SimpleMatrix embeddedMatrix;
 
     // These now depend on the current row subset (or all rows if rows == null)
-    private SimpleMatrix covarianceMatrix;
+    private SimpleMatrix covarianceMatrix;       // null under test-wise deletion
     private int sampleSize;
+
+    // Per-test covariance over complete rows; null unless the data has missing values (test-wise mode)
+    private final TestwiseCovariance testwise;
 
     // Optional row subset (null = use all rows)
     private List<Integer> rows = null;
@@ -144,6 +152,23 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
      * @param lambda          Singularity lambda
      */
     public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit, double lambda) {
+        this(dataSet, truncationLimit, lambda, null);
+    }
+
+    /**
+     * Constructs the test with an explicit missing-data specification. On a data set with missing values the
+     * supported policies are LISTWISE and TESTWISE. Under TESTWISE the embedding carries NaN in every derived
+     * column of a variable wherever that variable is missing, and each test computes the covariance of the embedded
+     * columns of x, y, and z over the rows complete on all of them, using the number of such rows as the sample
+     * size of the likelihood ratio statistic. A null spec on missing data is treated as FAIL.
+     *
+     * @param dataSet         The data being analyzed.
+     * @param truncationLimit The truncation limit of the basis.
+     * @param lambda          The singularity lambda.
+     * @param spec            The missing-data specification, or null.
+     */
+    public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit, double lambda, MissingDataSpec spec) {
+        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "IndTestBasisFunctionLrt");
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -178,7 +203,14 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         // Default: use all rows
         this.rows = null;
         this.sampleSize = dataSet.getNumRows();
-        this.covarianceMatrix = DataUtils.cov(this.embeddedMatrix);
+
+        if (embeddedData.embeddedData().existsMissingValue()) {
+            this.testwise = new TestwiseCovariance(embeddedData.embeddedData().getDoubleData());
+            this.covarianceMatrix = null;
+        } else {
+            this.testwise = null;
+            this.covarianceMatrix = DataUtils.cov(this.embeddedMatrix);
+        }
     }
 
     /**
@@ -265,11 +297,33 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
 
         // Compute variance estimates
         double eps = 1e-20;
-        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices, covarianceMatrix, lambda));
-        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices), covarianceMatrix, lambda));
+        double sigma0_sq;
+        double sigma1_sq;
+        double n;
+
+        if (this.testwise == null) {
+            sigma0_sq = TMath.max(eps, computeResidualVariance(xIndices, zIndices, covarianceMatrix, lambda));
+            sigma1_sq = TMath.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices), covarianceMatrix, lambda));
+            n = sampleSize;
+        } else {
+            // Test-wise: covariance of all embedded columns of x, y, z over the rows complete on them (within the
+            // current row subset, if any), with indices remapped into that family covariance.
+            int[] all = concatArrays(concatArrays(xIndices, yIndices), zIndices);
+            TestwiseCovariance.Family fam = this.testwise.family(all, this.rows);
+            if (fam.n() < 3) return 1.0;
+
+            SimpleMatrix famCov = new SimpleMatrix(fam.cov().toArray());
+            int[] xPos = positions(0, xIndices.length);
+            int[] yPos = positions(xIndices.length, yIndices.length);
+            int[] zPos = positions(xIndices.length + yIndices.length, zIndices.length);
+
+            sigma0_sq = TMath.max(eps, computeResidualVariance(xPos, zPos, famCov, lambda));
+            sigma1_sq = TMath.max(eps, computeResidualVariance(xPos, concatArrays(yPos, zPos), famCov, lambda));
+            n = fam.n();
+        }
 
         // Log-likelihood ratio statistic
-        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+        double LR_stat = n * TMath.log(sigma0_sq / sigma1_sq);
 
         // Degrees of freedom is the number of additional basis columns in Y
         int df = yIndices.length;
@@ -278,6 +332,12 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         // Compute p-value
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(LR_stat);
+    }
+
+    private static int[] positions(int start, int length) {
+        int[] pos = new int[length];
+        for (int i = 0; i < length; i++) pos[i] = start + i;
+        return pos;
     }
 
     @Override
@@ -305,7 +365,21 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
     /**
      * Tests for the conditional independence of two nodes given a set of conditioning nodes.
      */
+//    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        double pValue = getPValue(x, y, z);
+//        boolean independent = pValue > alpha;
+//        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+//    }
+
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+//        if (DiscreteIndependenceUtils.isAllDiscrete(x, y, z)) {
+//            return DiscreteIndependenceUtils.conditionalChiSquare(
+//                    dataSet, variables, rows,
+//                    x, y, z != null ? new ArrayList<>(z) : new ArrayList<>(),
+//                    new IndependenceFact(x, y, z != null ? z : new HashSet<>()),
+//                    alpha);
+//        }
+
         double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
@@ -396,7 +470,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
             this.rows = null;
             this.sampleSize = dataSet.getNumRows();
             // Revert to covariance over all rows
-            this.covarianceMatrix = DataUtils.cov(this.embeddedMatrix);
+            if (this.testwise == null) this.covarianceMatrix = DataUtils.cov(this.embeddedMatrix);
             return;
         }
 
@@ -415,6 +489,9 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         this.rows = rows;
         this.sampleSize = rows.size();
 
+        // Under test-wise deletion each test selects its own complete rows within this subset.
+        if (this.testwise != null) return;
+
         // Build an embedded submatrix for the selected rows
         int m = rows.size();
         int d = embeddedMatrix.getNumCols();
@@ -430,5 +507,15 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         // Covariance over the subsample’s embedded data
         this.covarianceMatrix = DataUtils.cov(sub);
     }
-}
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test uses the rows complete on the
+     * embedded columns of x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+}

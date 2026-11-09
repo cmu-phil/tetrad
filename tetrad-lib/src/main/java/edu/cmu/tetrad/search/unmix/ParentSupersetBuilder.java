@@ -23,6 +23,8 @@ package edu.cmu.tetrad.search.unmix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 import java.util.function.Function;
@@ -70,15 +72,15 @@ public final class ParentSupersetBuilder {
             for (int k = 0; k < p; k++)
                 if (k != j) {
                     double s = switch (cfg.scoreType) {
-                        case PEARSON -> Math.abs(pearson(column(X, k), y));
-                        case SPEARMAN -> Math.abs(spearman(column(X, k), y));
-                        case KENDALL -> Math.abs(kendallTau(column(X, k), y));
+                        case PEARSON -> TMath.abs(pearson(column(X, k), y));
+                        case SPEARMAN -> TMath.abs(spearman(column(X, k), y));
+                        case KENDALL -> TMath.abs(kendallTau(column(X, k), y));
                     };
                     scores[k] = s;
                 }
 
             // take topM indices by score
-            int m = Math.min(cfg.topM, Math.max(0, p - 1));
+            int m = TMath.min(cfg.topM, TMath.max(0, p - 1));
             List<Integer> idxs = argTopK(scores, m, j);
             List<Node> cand = idxs.stream().map(vars::get).collect(Collectors.toList());
             superset.put(target, cand);
@@ -86,11 +88,10 @@ public final class ParentSupersetBuilder {
 
         // 2) Optional: union with shallow-search parents on bagged subsamples
         if (cfg.useBagging && cfg.shallowSearch != null && cfg.bags > 0 && cfg.bagFraction > 0.0) {
-            Random rnd = new Random(cfg.seed);
             int n = data.getNumRows();
-            int m = Math.max(1, (int) Math.round(cfg.bagFraction * n));
+            int m = TMath.max(1, (int) TMath.round(cfg.bagFraction * n));
             for (int b = 0; b < cfg.bags; b++) {
-                List<Integer> rows = sampleWithoutReplacement(n, m, rnd);
+                List<Integer> rows = sampleWithoutReplacement(n, m);
                 int[] rowArray = rows.stream().mapToInt(Integer::intValue).toArray();
                 DataSet sub = data.subsetRows(rowArray);
                 Graph G = cfg.shallowSearch.apply(sub);
@@ -127,7 +128,7 @@ public final class ParentSupersetBuilder {
         PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingDouble(a -> a[1]));
         for (int i = 0; i < s.length; i++) {
             if (i == skipIdx) continue;
-            int scoreScaled = (int) Math.round(s[i] * 1_000_000.0);
+            int scoreScaled = (int) TMath.round(s[i] * 1_000_000.0);
             if (pq.size() < k) {
                 pq.offer(new int[]{i, scoreScaled});
             } else if (scoreScaled > pq.peek()[1]) {
@@ -141,11 +142,11 @@ public final class ParentSupersetBuilder {
         return idxs;
     }
 
-    private static List<Integer> sampleWithoutReplacement(int n, int m, Random rnd) {
+    private static List<Integer> sampleWithoutReplacement(int n, int m) {
         int[] arr = new int[n];
         for (int i = 0; i < n; i++) arr[i] = i;
         for (int i = 0; i < m; i++) {
-            int j = i + rnd.nextInt(n - i);
+            int j = i + RandomUtil.getInstance().nextInt(n - i);
             int tmp = arr[i];
             arr[i] = arr[j];
             arr[j] = tmp;
@@ -169,7 +170,7 @@ public final class ParentSupersetBuilder {
         double cov = sxy - sx * sy / n;
         double vx = sxx - sx * sx / n;
         double vy = syy - sy * sy / n;
-        double den = Math.sqrt(Math.max(vx, 0.0) * Math.max(vy, 0.0));
+        double den = TMath.sqrt(TMath.max(vx, 0.0) * TMath.max(vy, 0.0));
         return den > 0 ? cov / den : 0.0;
     }
 

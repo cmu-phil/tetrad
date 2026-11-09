@@ -128,7 +128,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphSaveLoadUtils.loadGraphTxt(file);
 
-            LayoutUtil.defaultLayout(this.graph);
+            LayoutUtil.defaultLayoutConditional(this.graph);
         }
 
         if (parameters.get(Params.NUM_RUNS) != null) {

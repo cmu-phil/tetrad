@@ -22,15 +22,12 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
 
@@ -48,7 +45,6 @@ public final class Fci implements IGraphSearch {
     // Existing fields (unchanged)
     // -------------------------
     private final List<Node> variables = new ArrayList<>();
-    private final TetradLogger logger = TetradLogger.getInstance();
     private IndependenceTest test;
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
@@ -79,7 +75,7 @@ public final class Fci implements IGraphSearch {
      */
     public Fci(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
-        this.test = new CachingIndependenceTest(test);
+        this.test = test;
         this.variables.addAll(test.getVariables());
     }
 
@@ -158,7 +154,7 @@ public final class Fci implements IGraphSearch {
      *               default to 0.0.
      */
     public void setMaxPMargin(double margin) {
-        this.maxPMargin = Math.max(0.0, margin);
+        this.maxPMargin = TMath.max(0.0, margin);
     }
 
     /**
@@ -370,6 +366,7 @@ public final class Fci implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setVerbose(verbose);
@@ -377,17 +374,22 @@ public final class Fci implements IGraphSearch {
         orientR0(pag, this.sepsets);
 
         if (this.doPossibleDsep) {
-            TetradLogger.getInstance().log("Doing possible dsep search.");
+            if (verbose) TetradLogger.getInstance().log("Doing possible-dsep.");
 
             for (Edge edge : new ArrayList<>(pag.getEdges())) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                if (knowledge.isRequired(x.getName(), y.getName()) || knowledge.isRequired(y.getName(), x.getName())) {
+                    continue;
+                }
+
                 Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
                 d.remove(x);
                 d.remove(y);
+                removeLaterTierVariables(d, x, y);
                 if (test.checkIndependence(x, y, d).isIndependent()) {
-                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                    if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                     pag.removeEdge(x, y);
                 }
 
@@ -395,8 +397,9 @@ public final class Fci implements IGraphSearch {
                     d = new HashSet<>(pag.paths().possibleDsep(y, 3));
                     d.remove(x);
                     d.remove(y);
+                    removeLaterTierVariables(d, x, y);
                     if (test.checkIndependence(x, y, d).isIndependent()) {
-                        TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                        if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                         pag.removeEdge(x, y);
                     }
                 }
@@ -419,8 +422,11 @@ public final class Fci implements IGraphSearch {
         if (verbose) TetradLogger.getInstance().log("Finished final FCI orientation.");
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(), excludeSelectionBias);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE);
         }
+
+//        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
 
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
@@ -474,6 +480,13 @@ public final class Fci implements IGraphSearch {
             return;
         }
 
+        // Published CFCI marks the triples its subsets disagree about as ambiguous. R0 may be applied twice (once
+        // before and once after the possible-d-sep step), so clear any marks from the earlier pass first rather than
+        // accumulating stale ones. These marks are metadata only: FciOrient does not consult them.
+        if (r0ColliderRule == ColliderRule.CONSERVATIVE) {
+            pag.setAmbiguousTriples(new HashSet<>());
+        }
+
         for (TripleLocal t : triples) {
             if (pag.isParentOf(t.x, t.z) && pag.isParentOf(t.y, t.z)) continue; // collider already
 
@@ -491,8 +504,12 @@ public final class Fci implements IGraphSearch {
                 GraphUtils.orientCollider(pag, t.x, t.z, t.y);
                 if (verbose)
                     TetradLogger.getInstance().log("[R0-" + r0ColliderRule + "] " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
+            } else if (r0ColliderRule == ColliderRule.CONSERVATIVE && out == ColliderOutcome.AMBIGUOUS) {
+                pag.addAmbiguousTriple(t.x, t.z, t.y);
+                if (verbose)
+                    TetradLogger.getInstance().log("[R0-CONSERVATIVE] Ambiguous: " + t.x.getName() + " *-* " + t.z.getName() + " *-* " + t.y.getName());
             }
-            // DEPENDENT/NO_SEPSET/AMBIGUOUS -> leave as circles at z
+            // DEPENDENT/NO_SEPSET -> leave as circles at z
         }
     }
 
@@ -589,8 +606,8 @@ public final class Fci implements IGraphSearch {
 
         double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
         for (SepCandidate c : indep) {
-            if (c.S.contains(t.z)) bestIncl = Math.max(bestIncl, c.p);
-            else bestExcl = Math.max(bestExcl, c.p);
+            if (c.S.contains(t.z)) bestIncl = TMath.max(bestIncl, c.p);
+            else bestExcl = TMath.max(bestExcl, c.p);
         }
         boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
         boolean hasIncl = bestIncl > Double.NEGATIVE_INFINITY;
@@ -605,7 +622,7 @@ public final class Fci implements IGraphSearch {
                 return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
             }
             if (logMaxPTies && ties.size() > 1) debugPrintMaxPTies(t, bestP, ties);
-            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, Math.max(bestExcl, bestIncl), ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, TMath.max(bestExcl, bestIncl), ties.isEmpty() ? Collections.emptySet() : ties.get(0).S);
         } else if (hasExcl) {
             Set<Node> bestS = firstTieMatchingContainsZ(ties, t.z, false);
             return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
@@ -642,9 +659,9 @@ public final class Fci implements IGraphSearch {
         adjy.sort(Comparator.comparing(Node::getName));
 
         final int depthCap = (depth < 0) ? Integer.MAX_VALUE : depth;
-        int maxAdj = Math.max(adjx.size(), adjy.size());
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
 
-        for (int d = 0; d <= Math.min(depthCap, maxAdj); d++) {
+        for (int d = 0; d <= TMath.min(depthCap, maxAdj); d++) {
             for (List adj : new List[]{adjx, adjy}) {
                 if (d > adj.size()) continue;
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
@@ -666,6 +683,29 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     // Utility helpers
     // -------------------------
+    /**
+     * Removes from the candidate conditioning set every variable that tier knowledge places in a strictly later tier
+     * than both x and y. Tier knowledge forbids every later-to-earlier edge, so a variable in a later tier than both x
+     * and y cannot be an ancestor of either; if x and y are d-separated by any set at all, they are d-separated by a
+     * set of non-descendants (e.g., by the parents of one of them), which contains no such variable. Restricting
+     * possible-dsep tests to knowledge-admissible sets therefore preserves correctness while preventing spurious
+     * finite-sample edge removals conditioned on later-tier variables that no admissible separating set would contain.
+     *
+     * @param d The candidate conditioning set; modified in place.
+     * @param x The first endpoint of the edge under test.
+     * @param y The second endpoint of the edge under test.
+     */
+    private void removeLaterTierVariables(Set<Node> d, Node x, Node y) {
+        if (knowledge == null || knowledge.getNumTiers() == 0) return;
+
+        int tx = knowledge.isInWhichTier(x);
+        int ty = knowledge.isInWhichTier(y);
+        if (tx < 0 || ty < 0) return;
+
+        int later = Math.max(tx, ty);
+        d.removeIf(z -> knowledge.isInWhichTier(z) > later);
+    }
+
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
         if (!FciOrient.isArrowheadAllowed(x, z, g, knowledge) || !FciOrient.isArrowheadAllowed(y, z, g, knowledge))
@@ -682,13 +722,13 @@ public final class Fci implements IGraphSearch {
 
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return String.join("\u0001", names);
     }
 
     private String stringifySet(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        Collections.sort(names);
+        names.sort(NaturalSort.naturalComparator());
         return "{" + String.join(",", names) + "}";
     }
 

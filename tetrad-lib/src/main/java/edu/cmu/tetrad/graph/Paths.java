@@ -22,7 +22,6 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.RecursiveAdjustment;
-import edu.cmu.tetrad.search.RecursiveAdjustmentMultiple;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -39,6 +38,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeoutException;
 
 /**
  * <p>Paths class.</p>
@@ -119,12 +119,12 @@ public class Paths implements TetradSerializable {
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
      *
-     * @param pi                 The list of nodes.
-     * @param p                  The index.
-     * @param g                  The graph.
-     * @param verbose            Whether to print verbose output.
+     * @param pi                   The list of nodes.
+     * @param p                    The index.
+     * @param g                    The graph.
+     * @param verbose              Whether to print verbose output.
      * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     *                             treated as X-&gt;L&lt;-Y.
      * @return The parents, as a Pair object (parents + score).
      */
     public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean excludeSelectionBias) {
@@ -159,6 +159,7 @@ public class Paths implements TetradSerializable {
      */
     public List<Node> getValidOrder(List<Node> initialOrder, boolean forward) {
         List<Node> _initialOrder = new ArrayList<>(initialOrder);
+
         Graph _graph = new EdgeListGraph(this.graph);
 
         if (forward) Collections.reverse(_initialOrder);
@@ -259,7 +260,7 @@ public class Paths implements TetradSerializable {
 
         for (Edge edge : graph.getEdges(x)) {
             if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
         }
 
         while (!neighbors.isEmpty()) {
@@ -275,7 +276,7 @@ public class Paths implements TetradSerializable {
 
         for (Edge edge : graph.getEdges(x)) {
 //            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getEndpoint(x) == Endpoint.TAIL) {
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) {
                 return true;
 //                neighbors.add(edge.getDistalNode(x));
             }
@@ -298,33 +299,125 @@ public class Paths implements TetradSerializable {
         return GraphUtils.isDag(graph);
     }
 
+//    /**
+//     * Checks if the current graph is a legal CPDAG (completed partially directed acyclic graph).
+//     *
+//     * @return true if the graph is a legal CPDAG, false otherwise.
+//     */
+//    public synchronized boolean isLegalCpdag() {
+//
+//        // jdramsey 2024-2-17
+//        //
+//        // This is the idea I had for checking whether a graph is a CPDAG. What do you think?
+//        //
+//        // I'm using Bryan's method, validOrder, which repeatedly looks for a valid sink in the graph (no children,
+//        // neighbors forming a clique) and removes it, then reports the removed nodes in reverse order.
+//        //
+//        // Bryan gave this example: G = {X1-->X2, X2---X3, X3<--X4}. validOrder gets π = [X1, X2, X4, X3]. (This is
+//        // a malformed "valid order," but it's what the algorithm says.) This makes sense because according to
+//        // the valid order method, X3 is a valid sink (only X2 is a neighbor, so the neighbors form a clique),
+//        // and the rest follows. So now you're in a situation where you're using d-separation on G, but it's not
+//        // even a CPDAG. This is interesting to think about, just as an exercise in using the d-separation algorithm
+//        // on a malformed graph. What happens is you end up with an extra adjacency in the induced DAG because
+//        // there is no collider on the path X2--X3<-X4, and you only get to condition on the prefix of X2, which
+//        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G can't be a CPDAG.
+//        // But we need a test of CPDAG that can handle graphs like G; I had to think about it.
+//        //
+//        // So let validOrder be this method. Let DAG(π, dsep) be the Raskutti-Uhler method of forming a DAG given
+//        // permutation π and a d-separation relation dsep, taking G as the "true graph" (possibly malformed) yielding
+//        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(G') for DAG G' be the MEC graph for G'.
+//        //
+//        // I propose that if the validOrder method throws an exception because it can't find a valid sink, then G is
+//        // not a CPDAG, since all CPDAGs have valid sinks, and any CPDAG with valid sinks removed in series also has
+//        // a valid sink. If validOrder returns an order, then I look to see whether G = CPDAG(DAG(validOrder(G)))
+//        // and return that judgment.
+//        //
+//        // I think I can prove that this works.
+//        //
+//        // Theorem 1: If validOrder(G) throws an exception, then G is not a CPDAG.
+//        //
+//        // Proof. We know the contrapositive. That is, we know that if G is a CPDAG, a valid order exists, so
+//        // validOrder in that case will not throw an exception.
+//        //
+//        // Theorem 2: For permutation π, DAG(π, dsep) always returns a DAG in cases where a valid order for G exists,
+//        // no matter the d-separation relation dsep (even based on possibly malformed information).
+//        //
+//        // Proof. DAG(π, dsep) always chooses parents for a variable x from prefix(x, π), so the method will always
+//        // return a DAG.
+//        //
+//        // Theorem 3: When validOrder(G) returns an order π, G is a CPDAG if and only if G = CPDAG(DAG(π, dsep(G))),
+//        // where dsep(G) is the usual d-separation algorithm applied to (possibly malformed) G.
+//        //
+//        // Proof. Let π = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
+//        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(π, dsep(G))). So,
+//        // let G not be a CPDAG and assume G = CPDAG(DAG(π, dsep(G))). But then G is, in fact, a CPDAG by construction
+//        // since DAG(π, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
+//        // G != CPDAG(DAG(π, dsep(G))), which proves the theorem.
+//        //
+//        // In any case, I can't get this method to fail, and it's easy to implement, given the other stuff we already
+//        // have implemented in Tetrad.
+//
+//        Graph g = this.graph;
+//
+//        for (Edge e : g.getEdges()) {
+//            if (!(Edges.isDirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+//                return false;
+//            }
+//        }
+//
+//        List<Node> pi = new ArrayList<>(g.getNodes());
+//
+//        try {
+//            g.paths().makeValidOrder(pi);
+//            Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
+//            return g.equals(cpdag);
+//        } catch (Exception e) {
+//            // There was no valid sink.
+//            if (false) {
+//                TetradLogger.getInstance().log(e.getMessage());
+//            }
+//            return false;
+//        }
+//    }
+
     /**
-     * Checks if the current graph is a legal CPDAG (completed partially directed acyclic graph).
+     * Checks whether the given graph is a CPDAG (Completed Partially Directed Acyclic Graph).
+     * This method performs the following validation steps:
+     * <p>
+     * 1. Ensures all edges in the graph are either directed or undirected.
+     * 2. Validates whether a valid elimination order exists for the graph.
+     * 3. Compares the input graph to the CPDAG derived from the DAG of the graph
+     * using the valid elimination order and a d-separation algorithm.
+     * <p>
+     * If the graph passes all the checks, it is deemed to be a CPDAG. Otherwise,
+     * the method surfaces specific violations with helpful details for debugging.
      *
-     * @return true if the graph is a legal CPDAG, false otherwise.
+     * @return A {@code CpdagCheckResult} object indicating whether the input graph
+     * is a legal CPDAG. If the graph is not a CPDAG, the result will include
+     * the corresponding violation and relevant details.
      */
-    public synchronized boolean isLegalCpdag() {
+    public synchronized CpdagCheckResult checkLegalCpdag() {
 
         // jdramsey 2024-2-17
         //
-        // This is this idea I had for checking whether a graph is a CPDAG. What do you think?
+        // This is the idea I had for checking whether a graph is a CPDAG. What do you think?
         //
         // I'm using Bryan's method, validOrder, which repeatedly looks for a valid sink in the graph (no children,
         // neighbors forming a clique) and removes it, then reports the removed nodes in reverse order.
         //
-        // Bryan gave this example: G = âX1-->X2,X2---X3,X3<--X4â. validOrder gets Ï = [X1, X2, X4, X3]. (This is
-        // a malformed âvalid order,â but itâs what the algorithm says.) This makes sense because according to
+        // Bryan gave this example: G = {X1-->X2, X2---X3, X3<--X4}. validOrder gets π = [X1, X2, X4, X3]. (This is
+        // a malformed "valid order," but it's what the algorithm says.) This makes sense because according to
         // the valid order method, X3 is a valid sink (only X2 is a neighbor, so the neighbors form a clique),
-        // and the rest follows. So now youâre in a situation where youâre using d-separation on G, but itâs not
+        // and the rest follows. So now you're in a situation where you're using d-separation on G, but it's not
         // even a CPDAG. This is interesting to think about, just as an exercise in using the d-separation algorithm
         // on a malformed graph. What happens is you end up with an extra adjacency in the induced DAG because
         // there is no collider on the path X2--X3<-X4, and you only get to condition on the prefix of X2, which
-        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G canât be a CPDAG.
+        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G can't be a CPDAG.
         // But we need a test of CPDAG that can handle graphs like G; I had to think about it.
         //
-        // So let validOrder be this method. Let DAG(Ï, dsep) be the Raskutti-Uhler method of forming a DAG given
-        // permutation Ï and a d-separation relation dsep, taking G as the âtrue graphâ (possibly malformed) yielding
-        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(Gâ) for DAG Gâ be the MEC graph for Gâ.
+        // So let validOrder be this method. Let DAG(π, dsep) be the Raskutti-Uhler method of forming a DAG given
+        // permutation π and a d-separation relation dsep, taking G as the "true graph" (possibly malformed) yielding
+        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(G') for DAG G' be the MEC graph for G'.
         //
         // I propose that if the validOrder method throws an exception because it can't find a valid sink, then G is
         // not a CPDAG, since all CPDAGs have valid sinks, and any CPDAG with valid sinks removed in series also has
@@ -338,43 +431,76 @@ public class Paths implements TetradSerializable {
         // Proof. We know the contrapositive. That is, we know that if G is a CPDAG, a valid order exists, so
         // validOrder in that case will not throw an exception.
         //
-        // Theorem 2: For permutation Ï, DAG(Ï, dsep) always returns a DAG in cases where a valid order for G exists,
+        // Theorem 2: For permutation π, DAG(π, dsep) always returns a DAG in cases where a valid order for G exists,
         // no matter the d-separation relation dsep (even based on possibly malformed information).
         //
-        // Proof. DAG(Ï, dsep) always choos  es parents for a variable x from prefix(x, Ï), so the method will always
+        // Proof. DAG(π, dsep) always chooses parents for a variable x from prefix(x, π), so the method will always
         // return a DAG.
         //
-        // Theorem 3: When validOrder(G) returns an order Ï, G is a CPDAG if and only if G = CPDAG(DAG(Ï, dsep(G))),
+        // Theorem 3: When validOrder(G) returns an order π, G is a CPDAG if and only if G = CPDAG(DAG(π, dsep(G))),
         // where dsep(G) is the usual d-separation algorithm applied to (possibly malformed) G.
         //
-        // Proof. Let Ï = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
-        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(Ï, dsep(G))). So,
-        // let G not be a CPDAG and assume G = CPDAG(DAG(Ï, dsep(G))). But then G is, in fact, a CPDAG by construction
-        // since DAG(Ï, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
-        // G != CPDAG(DAG(Ï, dsepG))), which proves the theorem.
+        // Proof. Let π = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
+        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(π, dsep(G))). So,
+        // let G not be a CPDAG and assume G = CPDAG(DAG(π, dsep(G))). But then G is, in fact, a CPDAG by construction
+        // since DAG(π, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
+        // G != CPDAG(DAG(π, dsep(G))), which proves the theorem.
         //
         // In any case, I can't get this method to fail, and it's easy to implement, given the other stuff we already
         // have implemented in Tetrad.
 
         Graph g = this.graph;
 
+        // Check 1: all edges must be directed or undirected
         for (Edge e : g.getEdges()) {
             if (!(Edges.isDirectedEdge(e) || Edges.isUndirectedEdge(e))) {
-                return false;
+                return CpdagCheckResult.illegal(
+                        CpdagViolation.ILLEGAL_EDGE_TYPE,
+                        "Offending edge: " + e + " (type: " + e.getEndpoint1() + "-" + e.getEndpoint2() + ")"
+                );
             }
         }
 
+        // Check 2: a valid elimination order must exist
         List<Node> pi = new ArrayList<>(g.getNodes());
-
         try {
             g.paths().makeValidOrder(pi);
-            Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
-            return g.equals(cpdag);
         } catch (Exception e) {
-            // There was no valid sink.
-            TetradLogger.getInstance().log(e.getMessage());
-            return false;
+            return CpdagCheckResult.illegal(
+                    CpdagViolation.NO_VALID_SINK,
+                    e.getMessage()
+            );
         }
+
+        // Check 3: G must equal CPDAG(DAG(π, dsep(G)))
+        Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
+        if (!g.equals(cpdag)) {
+            // Surface the specific edge differences to help the caller debug
+            Set<Edge> missingInG = new HashSet<>(cpdag.getEdges());
+            missingInG.removeAll(g.getEdges());
+
+            Set<Edge> extraInG = new HashSet<>(g.getEdges());
+            extraInG.removeAll(cpdag.getEdges());
+
+            String detail = String.format(
+                    "Edge diff — edges in CPDAG not in G: %s; edges in G not in CPDAG: %s",
+                    missingInG.isEmpty() ? "none" : missingInG,
+                    extraInG.isEmpty() ? "none" : extraInG
+            );
+            return CpdagCheckResult.illegal(CpdagViolation.NOT_EQUAL_TO_CPDAG, detail);
+        }
+
+        return CpdagCheckResult.legal();
+    }
+
+    /**
+     * Determines whether the current structure is a legal completed partially directed acyclic graph (CPDAG).
+     * This method synchronizes the check to ensure thread-safe operations.
+     *
+     * @return true if the current structure is a legal CPDAG; false otherwise.
+     */
+    public synchronized boolean isLegalCpdag() {
+        return checkLegalCpdag().isLegal();
     }
 
     /**
@@ -403,7 +529,7 @@ public class Paths implements TetradSerializable {
             return cpdag.equals(GraphTransforms.dagToCpdag(g));
         } catch (Exception e) {
             // There was no valid sink.
-            TetradLogger.getInstance().log(e.getMessage());
+//            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }
@@ -448,18 +574,19 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        return PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection));
+        return legalMag.isLegalMag();
     }
 
     /**
      * Checks if the given Directed Acyclic Graph (DAG) is a Legal Partial Ancestral Graph (PAG).
      *
      * @return true if the graph is a Legal PAG, false otherwise
+     * @throws RuntimeException if the check times out or there is an error in the check
      */
-    public boolean isLegalPag() {
+    public boolean isLegalPag() throws RuntimeException {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return PagLegalityCheck.isLegalPag(graph, new HashSet<>(selection), 20 /* second timeout*/).isLegalPag();
     }
 
     /**
@@ -620,6 +747,40 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Amenable paths for MAGs: potentially directed paths from node1 to node2 whose first
+     * edge is directed out of node1 AND visible (Zhang 2008; required for adjustment
+     * amenability in MAGs per Perkovic et al. 2018). An invisible directed edge in a MAG
+     * is compatible with latent confounding, so it cannot anchor an amenable path.
+     *
+     * @param node1        the source node
+     * @param node2        the target node
+     * @param maxLength    maximum path length, or -1 for unbounded
+     * @param forceVisible nodes b for which a directed edge node1 -&gt; b should be treated
+     *                     as visible by fiat (e.g., from background knowledge); may be empty
+     * @return the set of amenable paths
+     */
+    public Set<List<Node>> getAmenablePathsMag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+        boolean hasForcing = (forceVisible != null && !forceVisible.isEmpty());
+
+        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+            Node a = path.getFirst();
+            Node b = path.get(1);
+
+            Edge edge = graph.getEdge(a, b);
+            boolean directedOut = edge != null && edge.pointsTowards(b);
+            boolean okStart = directedOut
+                    && (defVisiblePag(a, b) || (hasForcing && forceVisible.contains(b)));
+
+            if (!okStart) {
+                amenablePaths.remove(path);
+            }
+        }
+
+        return amenablePaths;
+    }
+
+    /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
      * These are potentially directed paths that start with a visible edge out of node1. This is the option
      * used by Refinement-based PAG IDA (rPAG-IDA).
@@ -662,8 +823,13 @@ public class Paths implements TetradSerializable {
             if (!canBeOutOfA) {
                 okStart = false;
             } else if (!hasForcing) {
-                // No refinement choice supplied: allow any first step that *could* be oriented out of X.
-                okStart = true;
+                // No refinement supplied: enforce Def. 2 of Perkovic et al.
+                // (JMLR 2018) strictly -- an amenable path must start with a
+                // VISIBLE directed edge out of node1. The old okStart = true
+                // made amenability vacuous: a pd path's first edge trivially
+                // "could be" oriented out of node1, so amenable == pd always
+                // and no PAG was ever judged non-amenable.
+                okStart = alreadyStrictAmenable;
             } else {
                 // Refinement choice supplied: only allow the chosen outgoing neighbors,
                 // plus anything already strictly amenable.
@@ -731,12 +897,12 @@ public class Paths implements TetradSerializable {
      * Finds all paths between two nodes within a given maximum length, considering optional condition set and selection
      * bias.
      *
-     * @param node1              the starting node
-     * @param node2              the target node
-     * @param maxLength          the maximum length of each path
-     * @param conditionSet       a set of nodes that need to be included in the path (optional)
+     * @param node1                the starting node
+     * @param node2                the target node
+     * @param maxLength            the maximum length of each path
+     * @param conditionSet         a set of nodes that need to be included in the path (optional)
      * @param excludeSelectionBias if true, undirected edges are interpreted as selection bias; otherwise, as directed
-     *                           edges in one direction or the other.
+     *                             edges in one direction or the other.
      * @return a set of paths between node1 and node2 that satisfy the conditions
      */
     public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet, boolean excludeSelectionBias) {
@@ -748,12 +914,12 @@ public class Paths implements TetradSerializable {
     /**
      * Finds all paths between two nodes satisfying certain conditions.
      *
-     * @param node1              the starting node
-     * @param node2              the ending node
-     * @param minLength          the minimum length of paths to consider
-     * @param maxLength          the maximum length of paths to consider
-     * @param conditionSet       a set of nodes that must be present in the paths
-     * @param ancestors          a map representing the ancestry relationships of nodes
+     * @param node1                the starting node
+     * @param node2                the ending node
+     * @param minLength            the minimum length of paths to consider
+     * @param maxLength            the maximum length of paths to consider
+     * @param conditionSet         a set of nodes that must be present in the paths
+     * @param ancestors            a map representing the ancestry relationships of nodes
      * @param excludeSelectionBias true if selection bias is allowed, false otherwise
      * @return a set of lists representing all paths between node1 and node2
      */
@@ -766,9 +932,9 @@ public class Paths implements TetradSerializable {
     /**
      * Generates all paths out of a given node within a specified maximum length and conditional set.
      *
-     * @param node1              The starting node.
-     * @param maxLength          The maximum length of each path.
-     * @param conditionSet       The set of nodes that must be present in each path.
+     * @param node1                The starting node.
+     * @param maxLength            The maximum length of each path.
+     * @param conditionSet         The set of nodes that must be present in each path.
      * @param excludeSelectionBias Determines whether to allow selection bias when choosing the next node to visit.
      * @return A set containing all generated paths as lists of nodes.
      */
@@ -1004,10 +1170,6 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
-
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
-
     /**
      * Finds all possible treks between two nodes, including bidirectional treks.
      *
@@ -1081,6 +1243,10 @@ public class Paths implements TetradSerializable {
 
         path.removeLast();
     }
+
+
+    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
+    // length at most 'bound'. Cycle checker in other words.
 
     /**
      * Returns the Markov Blanket of a given node in the graph.
@@ -1347,7 +1513,7 @@ public class Paths implements TetradSerializable {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = e1.getEndpoint(b) == Endpoint.ARROW && e2.getEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
@@ -1362,7 +1528,7 @@ public class Paths implements TetradSerializable {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
-        boolean collider = e1.getEndpoint(b) == Endpoint.ARROW && e2.getEndpoint(b) == Endpoint.ARROW;
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
         boolean ancestor = false;
 
@@ -1697,7 +1863,7 @@ public class Paths implements TetradSerializable {
      */
     public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
 
-        // Removing the second argument y to bring this in line with CPS 2001 p. 188.
+        // Removing the second argument y to bring this in line with CPS 2000 p. 188.
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -1771,10 +1937,7 @@ public class Paths implements TetradSerializable {
         msep.remove(x);
 
         List<Node> _msep = new ArrayList<>(msep);
-
-        Collections.sort(_msep);
-        Collections.reverse(_msep);
-
+        _msep.sort(NaturalSort.naturalComparator());
         return _msep;
 
     }
@@ -1919,11 +2082,11 @@ public class Paths implements TetradSerializable {
     /**
      * Finds a sepset for x and y, if there is one; otherwise, returns null.
      *
-     * @param x                  The first node.
-     * @param y                  The second node.
+     * @param x                    The first node.
+     * @param y                    The second node.
      * @param excludeSelectionBias Whether to allow selection bias.
-     * @param test               The independence test to use.
-     * @param depth              The maximum depth to search for a sepset.
+     * @param test                 The independence test to use.
+     * @param depth                The maximum depth to search for a sepset.
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
     public Set<Node> getSepset(Node x, Node y, boolean excludeSelectionBias, IndependenceTest test, int depth) {
@@ -1939,9 +2102,15 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
      * @throws InterruptedException if any.
+     * @throws TimeoutException     if the operation times out
      */
-    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) throws InterruptedException {
-        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength)
+            throws InterruptedException, TimeoutException {
+//        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength,
+//                );System.currentTimeMillis() + 5000L
+        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                graph, x, y, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true, System.currentTimeMillis() + 5000L).blockingSet();
+
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {
@@ -1951,10 +2120,6 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
-    /*======================================================================
-     * 1.  PUBLIC ENTRY POINT
-     *====================================================================*/
-
     private boolean separates(Node x, Node y, boolean excludeSelectionBias, Set<Node> combination) {
         if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
             return !isMConnectedTo(x, y, combination, excludeSelectionBias);
@@ -1963,18 +2128,14 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    /*======================================================================
-     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
-     *====================================================================*/
-
     /**
      * Determmines whether x and y are d-connected given z.
      *
-     * @param x                  a {@link Node} object
-     * @param y                  a {@link Node} object
-     * @param z                  a {@link Set} object
+     * @param x                    a {@link Node} object
+     * @param y                    a {@link Node} object
+     * @param z                    a {@link Set} object
      * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     *                             treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean excludeSelectionBias) {
@@ -2046,7 +2207,7 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!excludeSelectionBias && edge1.getEndpoint(b) == Endpoint.ARROW) {
+                    if (!excludeSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
                         if (Edges.isUndirectedEdge(edge2)) {
                             edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                         } else if (Edges.isNondirectedEdge(edge2)) {
@@ -2065,6 +2226,121 @@ public class Paths implements TetradSerializable {
         }
 
         return false;
+    }
+
+    /*======================================================================
+     * 1.  PUBLIC ENTRY POINT
+     *====================================================================*/
+
+    /**
+     * Checks if the given path is an m-connecting path.
+     *
+     * @param path                 The path to check.
+     * @param conditioningSet      The set of nodes to check reachability against.
+     * @param excludeSelectionBias If true, selection bias is excluded; undirected edges
+     *                             should NOT be interpreted as potential selection edges.
+     *                             If false, selection bias is allowed and undirected edges
+     *                             may represent selection effects (PAG semantics).
+     * @return true if the path is m-connecting; false otherwise.
+     */
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean excludeSelectionBias) {
+
+        boolean selectionBiasAllowed = !excludeSelectionBias;
+
+        if (path.size() - 1 <= 1) return true;
+
+        Edge edge1, edge2;
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            edge1 = edge2;
+            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
+            Node b = path.get(i + 1);
+
+            // Adjustment for interpreting Y--Z differently depending on selection bias
+            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+
+                // Case 1: selection bias is NOT allowed (CPDAG-like semantics)
+                // Y--Z should be interpreted as Y->Z so reachability is conservative.
+                if (!selectionBiasAllowed && Edges.isUndirectedEdge(edge2)) {
+                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                }
+
+                // Case 2: selection bias IS allowed (PAG semantics)
+                // Y o-o Z or Y -- Z may represent selection bias; interpret as partially oriented.
+                else if (selectionBiasAllowed && Edges.isNondirectedEdge(edge2)) {
+                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                }
+            }
+
+            if (!reachable(edge1, edge2, path.get(i), conditioningSet)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /*======================================================================
+     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
+     *====================================================================*/
+
+    /**
+     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
+     *
+     * @param path                 The path to check.
+     * @param conditioningSet      The set of nodes to check reachability against.
+     * @param excludeSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @param ancestors            The ancestors of each node in the graph.
+     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
+     */
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean excludeSelectionBias) {
+        Edge edge1, edge2;
+
+        Set<Node> pathSet = new HashSet<>();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            Node node = path.get(i);
+
+            if (pathSet.contains(node)) {
+                return false;
+            } else {
+                pathSet.add(node);
+            }
+        }
+
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
+
+        for (int i = 0; i < path.size() - 2; i++) {
+            edge1 = edge2;
+            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
+            Node b = path.get(i + 1);
+
+            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
+            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
+            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
+            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
+            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
+            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
+            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
+            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
+            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
+            // algorithm can eventually find any colliders along the path that may be implied.
+            // jdramsey 2024-04-14
+            if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                if (!excludeSelectionBias && Edges.isUndirectedEdge(edge2)) {
+                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                } else if (excludeSelectionBias && Edges.isNondirectedEdge(edge2)) {
+                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                }
+            }
+
+            if (!reachable(edge1, edge2, path.get(i), conditioningSet, ancestors)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /* ------------------------------------------------------------------ */
@@ -2115,113 +2391,6 @@ public class Paths implements TetradSerializable {
 //
 //        return true;
 //    }
-
-    /**
-     * Checks if the given path is an m-connecting path.
-     *
-     * @param path                 The path to check.
-     * @param conditioningSet      The set of nodes to check reachability against.
-     * @param excludeSelectionBias If true, selection bias is excluded; undirected edges
-     *                             should NOT be interpreted as potential selection edges.
-     *                             If false, selection bias is allowed and undirected edges
-     *                             may represent selection effects (PAG semantics).
-     * @return true if the path is m-connecting; false otherwise.
-     */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean excludeSelectionBias) {
-
-        boolean selectionBiasAllowed = !excludeSelectionBias;
-
-        if (path.size() - 1 <= 1) return true;
-
-        Edge edge1, edge2;
-        edge2 = graph.getEdge(path.getFirst(), path.get(1));
-
-        for (int i = 0; i < path.size() - 2; i++) {
-            edge1 = edge2;
-            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
-            Node b = path.get(i + 1);
-
-            // Adjustment for interpreting Y--Z differently depending on selection bias
-            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
-
-                // Case 1: selection bias is NOT allowed (CPDAG-like semantics)
-                // Y--Z should be interpreted as Y->Z so reachability is conservative.
-                if (!selectionBiasAllowed && Edges.isUndirectedEdge(edge2)) {
-                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                }
-
-                // Case 2: selection bias IS allowed (PAG semantics)
-                // Y o-o Z or Y -- Z may represent selection bias; interpret as partially oriented.
-                else if (selectionBiasAllowed && Edges.isNondirectedEdge(edge2)) {
-                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                }
-            }
-
-            if (!reachable(edge1, edge2, path.get(i), conditioningSet)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
-     *
-     * @param path               The path to check.
-     * @param conditioningSet    The set of nodes to check reachability against.
-     * @param excludeSelectionBias Determines if selection bias is allowed in the m-connection procedure.
-     * @param ancestors          The ancestors of each node in the graph.
-     * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
-     */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean excludeSelectionBias) {
-        Edge edge1, edge2;
-
-        Set<Node> pathSet = new HashSet<>();
-
-        for (int i = 0; i < path.size() - 1; i++) {
-            Node node = path.get(i);
-
-            if (pathSet.contains(node)) {
-                return false;
-            } else {
-                pathSet.add(node);
-            }
-        }
-
-        edge2 = graph.getEdge(path.getFirst(), path.get(1));
-
-        for (int i = 0; i < path.size() - 2; i++) {
-            edge1 = edge2;
-            edge2 = graph.getEdge(path.get(i + 1), path.get(i + 2));
-            Node b = path.get(i + 1);
-
-            // If in a CPDAG we have X->Y--Z<-W, reachability can't determine that the path should be
-            // blocked now matter which way Y--Z is oriented, so we need to make a choice. Choosing Y->Z
-            // works for cyclic directed graphs and for PAGs except where X->Y with no circle at X,
-            // in which case Y--Z should be interpreted as selection bias. This is a limitation of the
-            // reachability algorithm here. The problem is that Y--Z is interpreted differently for CPDAGs
-            // than for PAGs, and we are trying to make an m-connection procedure that works for both.
-            // Simply knowing whether selection bias is being allowed is sufficient to make the right choice.
-            // A similar problem can occur in a PAG; we deal with that as well. The idea is to make
-            // "virtual edges" that are directed in the direction of the arrow, so that the reachability
-            // algorithm can eventually find any colliders along the path that may be implied.
-            // jdramsey 2024-04-14
-            if (edge1.getEndpoint(b) == Endpoint.ARROW) {
-                if (!excludeSelectionBias && Edges.isUndirectedEdge(edge2)) {
-                    edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                } else if (excludeSelectionBias && Edges.isNondirectedEdge(edge2)) {
-                    edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                }
-            }
-
-            if (!reachable(edge1, edge2, path.get(i), conditioningSet, ancestors)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Detemrmines whether x and y are d-connected given z.
@@ -2303,13 +2472,13 @@ public class Paths implements TetradSerializable {
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
                     if (isPag) {
-                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
+                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
                             if (Edges.isNondirectedEdge(edge2)) {
                                 edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                             }
                         }
                     } else {
-                        if (edge1.getEndpoint(b) == Endpoint.ARROW) {
+                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
                             if (Edges.isNondirectedEdge(edge2)) {
                                 edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                             }
@@ -2397,7 +2566,7 @@ public class Paths implements TetradSerializable {
     {
         /* (i) Interior-vertex parent-of-B condition */
         if (prev != null && !cur.equals(targetA)          // interior only
-            && !graph.isParentOf(cur, B)) {
+                && !graph.isParentOf(cur, B)) {
             return false;                                 // violates clause
         }
 
@@ -2428,7 +2597,7 @@ public class Paths implements TetradSerializable {
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
             if (existsDirectedPath(node, node)) {
-                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
+//                TetradLogger.getInstance().log("Cycle found at node " + node.getName() + ".");
                 return true;
             }
         }
@@ -2440,9 +2609,20 @@ public class Paths implements TetradSerializable {
      *
      * @param node1 the starting node of the path
      * @param node2 the target node of the path
-     * @return true if a directed path exists from node1 to node2, false otherwise
+     * @return true if a directed path exists from node1 to node2, false otherwise; also false if either node has no
+     * same-named node in this graph.
      */
     public boolean existsDirectedPath(Node node1, Node node2) {
+        // Edge traversal below compares nodes by identity, so map the arguments onto this graph's own node
+        // objects first. Otherwise a node taken from another graph (an estimated graph that was not aligned with
+        // replaceNodes, say) silently yields false.
+        node1 = graph.getNode(node1.getName());
+        node2 = graph.getNode(node2.getName());
+
+        if (node1 == null || node2 == null) {
+            return false;
+        }
+
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
@@ -2588,7 +2768,6 @@ public class Paths implements TetradSerializable {
      */
     public boolean isAncestorOf(Node node1, Node node2) {
         return graph.isAncestorOf(node1, node2);
-//        return node1 == node2 || existsDirectedPath(node1, node2);
     }
 
     /**
@@ -2674,19 +2853,17 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if two nodes are M-separated.
      *
-     * @param node1              The first node.
-     * @param node2              The second node.
-     * @param z                  The set of nodes to be excluded from the path.
-     * @param ancestors          A map containing the ancestors of each node.
+     * @param node1                The first node.
+     * @param node2                The second node.
+     * @param z                    The set of nodes to be excluded from the path.
+     * @param ancestors            A map containing the ancestors of each node.
      * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     *                             treated as X-&gt;L&lt;-Y.
      * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean excludeSelectionBias) {
         return !isMConnectedTo(node1, node2, z, ancestors, excludeSelectionBias);
     }
-
-// --- Public API: Recursive (mask-based) adjustment ---
 
     /**
      * Checks if a potentially directed path exists between the given node and any of the nodes in the provided set.
@@ -2738,6 +2915,8 @@ public class Paths implements TetradSerializable {
         Edge edge = edges.iterator().next();
         return edge.pointsTowards(node2);
     }
+
+// --- Public API: Recursive (mask-based) adjustment ---
 
     /**
      * Checks if the edge between two nodes in the graph is undirected.
@@ -2813,7 +2992,7 @@ public class Paths implements TetradSerializable {
         RecursiveAdjustment.ColliderPolicy _colliderPolicy = RecursiveAdjustment.ColliderPolicy.valueOf(colliderPolicy);
 
         RecursiveAdjustment recursiveAdjustment = new RecursiveAdjustment(graph)
-                .setUseHenckelPruning(henckelPruning).setRaMode(RecursiveAdjustment.RaMode.O_COMPATIBLE);
+                .setUseHenckelPruning(henckelPruning);
         return recursiveAdjustment.adjustmentSets(X, Y, graphType, maxNumSets, maxRadius,
                 nearWhichEndpoint, maxPathLength, _colliderPolicy, true, Set.of(), Set.of(), Set.of());
     }
@@ -2974,8 +3153,6 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    /* ----------------- helpers ----------------- */
-
     /**
      * Writes the object to the specified ObjectOutputStream.
      *
@@ -3009,6 +3186,8 @@ public class Paths implements TetradSerializable {
             throw e;
         }
     }
+
+    /* ----------------- helpers ----------------- */
 
     /**
      * Determines whether the graph is acyclic, meaning it does not contain any directed cycles.
@@ -3060,6 +3239,106 @@ public class Paths implements TetradSerializable {
     public boolean isGraphAmenable(Node node1, Node node2, String graphType, int maxLengthAdjustment, Set<Node> forceVisibility) {
         RecursiveAdjustment ra = new RecursiveAdjustment(graph);
         return ra.isGraphAmenable(node1, node2, graphType, maxLengthAdjustment, forceVisibility);
+    }
+
+    /**
+     * Enumeration representing various violations associated with CPDAGs (Completed Partially Directed Acyclic Graphs).
+     * These violations indicate conditions under which a graph does not adhere to the properties or assumptions of a CPDAG.
+     */
+    public enum CpdagViolation {
+        /**
+         * Indicates a violation where the graph contains edges that are neither directed nor undirected.
+         * This suggests that the graph does not conform to the expected edge type constraints
+         * for a Completed Partially Directed Acyclic Graph (CPDAG).
+         */
+        ILLEGAL_EDGE_TYPE("Graph contains edges that are neither directed nor undirected"),
+        /**
+         * Indicates a violation where the graph does not contain a valid sink.
+         */
+        NO_VALID_SINK("No valid sink could be found — graph may contain a cycle or violates the elimination property"),
+        /**
+         * Indicates a violation where the graph does not equal the CPDAG of its induced DAG.
+         */
+        NOT_EQUAL_TO_CPDAG("Graph does not equal the CPDAG of its induced DAG — edge orientations are not Markov equivalent");
+
+        private final String description;
+
+        CpdagViolation(String description) {
+            this.description = description;
+        }
+
+        /**
+         * Retrieves the description of this CPDAG violation.
+         *
+         * @return the description associated with this specific CPDAG violation.
+         */
+        public String getDescription() {
+            return description;
+        }
+    }
+
+    /**
+     * Represents the result of a CPDAG legality check.
+     * <p>
+     * This class encapsulates the status of whether the CPDAG is legal or not,
+     * the specific violation if it is not legal, and an optional detailed explanation.
+     *
+     * @param isLegal   Indicates whether the CPDAG is legal.
+     *                  A value of {@code true} means the CPDAG is legal, while {@code false} means it is not.
+     * @param violation The violation encountered in the CPDAG if it is illegal.
+     *                  This value is {@code null} when {@code isLegal} is {@code true}.
+     * @param detail    Additional information providing specific details about the violation, if any.
+     *                  This value is {@code null} when {@code isLegal} is {@code true}.
+     */
+    public record CpdagCheckResult(boolean isLegal, CpdagViolation violation, String detail) {
+
+        /**
+         * Creates a {@code CpdagCheckResult} instance representing a legal CPDAG.
+         * <p>
+         * This method provides a standardized way to indicate the legality of a CPDAG
+         * when no violations or additional details exist.
+         *
+         * @return A {@code CpdagCheckResult} object with {@code isLegal} set to {@code true},
+         * and both {@code violation} and {@code detail} set to {@code null}.
+         */
+        public static CpdagCheckResult legal() {
+            return new CpdagCheckResult(true, null, null);
+        }
+
+        /**
+         * Creates an {@code CpdagCheckResult} instance indicating an illegal CPDAG.
+         * <p>
+         * This method is used when a CPDAG check fails due to a violation. It encapsulates
+         * the specific violation and an optional detailed explanation.
+         *
+         * @param violation The specific {@code CpdagViolation} encountered.
+         *                  This parameter must not be {@code null}.
+         * @param detail    Additional details about the violation, which can provide
+         *                  more context or clarification. This may be {@code null} if no
+         *                  further details are necessary.
+         * @return A {@code CpdagCheckResult} object with {@code isLegal} set to {@code false},
+         * containing the specified violation and detail.
+         */
+        public static CpdagCheckResult illegal(CpdagViolation violation, String detail) {
+            return new CpdagCheckResult(false, violation, detail);
+        }
+
+        /**
+         * Returns a string representation of the CPDAG legality check result.
+         * <p>
+         * If the CPDAG is legal, the string "Legal CPDAG" is returned.
+         * Otherwise, a string describing the violation and any additional details is returned.
+         *
+         * @return A string describing the legality of the CPDAG.
+         * For legal CPDAGs, returns "Legal CPDAG".
+         * For illegal CPDAGs, returns a description of the violation and optional details.
+         */
+        @Override
+        public String toString() {
+            if (isLegal) return "Legal CPDAG";
+            return "Not a legal CPDAG: " + violation.getDescription()
+                    + (detail != null ? " — " + detail : "");
+        }
     }
 
     // -------- Context holder --------

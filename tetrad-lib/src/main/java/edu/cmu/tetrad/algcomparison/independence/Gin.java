@@ -27,8 +27,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.IndTestGin;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -47,12 +49,12 @@ import java.util.List;
  *  - Params.GIN_RIDGE             // double, default 1e-8
  *  - Params.SEED                  // (optional; included for consistency)
  */
-@TestOfIndependence(
-        name = "GIN (Residual Independence)",
-        command = "gin-test",
-        dataType = DataType.Continuous
-)
-@General
+//@TestOfIndependence(
+//        name = "GIN (Residual Independence)",
+//        command = "gin-test",
+//        dataType = DataType.Continuous
+//)
+//@General
 public class Gin implements IndependenceWrapper {
 
     @Serial
@@ -78,6 +80,7 @@ public class Gin implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "GIN (Residual Independence)");
         DataSet data = (DataSet) dataModel;
 
         // --- Read parameters safely with sensible defaults ---
@@ -98,7 +101,7 @@ public class Gin implements IndependenceWrapper {
             test.setNumPermutations(0); // permutations not used for Pearson
         } else {
             test.setBackend(new IndTestGin.DistanceCorrTest());
-            test.setNumPermutations(Math.max(0, permutations));
+            test.setNumPermutations(TMath.max(0, permutations));
         }
 
         return test;
@@ -145,6 +148,7 @@ public class Gin implements IndependenceWrapper {
         params.add(Params.GIN_RIDGE);        // double
         // You can include Params.VERBOSE if you list it elsewhere for tests
         // params.add(Params.VERBOSE);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 

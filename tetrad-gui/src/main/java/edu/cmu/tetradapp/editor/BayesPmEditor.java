@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BayesPmWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -74,6 +75,7 @@ public class BayesPmEditor extends JPanel
 
         if (wrapper.getNumModels() > 1) {
             JComboBox<Integer> comp = new JComboBox<>();
+            ArrowKeyNavigation.install(this, comp);
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -106,8 +108,6 @@ public class BayesPmEditor extends JPanel
             throw new IllegalArgumentException("There are no nodes in that Bayes PM.");
         }
 
-        setLayout(new BorderLayout());
-
         Graph graph = this.wrapper.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.setEnableEditing(false);
@@ -139,7 +139,10 @@ public class BayesPmEditor extends JPanel
         wizard.setEditingMeasuredVariablesAllowed(true);
         this.wizard = wizard;
 
+        this.targetPanel.removeAll();
         this.targetPanel.add(panel, BorderLayout.CENTER);
+        this.targetPanel.revalidate();
+        this.targetPanel.repaint();
     }
 
     /**

@@ -81,7 +81,7 @@ public class GiveGoodLatentNamesTest {
     private static List<Integer> idxs(DataSet ds, String... varNames) {
         List<Integer> out = new ArrayList<>();
         for (String v : varNames) {
-            out.add(ds.getColumn(ds.getVariable(v)));
+            out.add(ds.getColumnIndex(ds.getVariable(v)));
         }
         return out;
     }

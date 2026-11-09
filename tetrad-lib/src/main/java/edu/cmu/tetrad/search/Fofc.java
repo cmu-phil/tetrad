@@ -26,7 +26,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -83,6 +85,11 @@ public class Fofc {
     private Set<Set<Integer>> impureTets;
     private int rMax = 2;
     private int ess;
+    /**
+     * When non-null, rank decisions are pooled over the strata of this object (domains, batches, sites) instead of
+     * being read from the single correlation matrix; see {@link #setStratifiedRankTests}.
+     */
+    private StratifiedRankTests stratifiedRankTests = null;
 
     /**
      * Constructs an instance of the Fofc class using the given dataset, significance level, and equivalent sample size.
@@ -92,13 +99,25 @@ public class Fofc {
      * @param ess The equivalent sample size to use in certain scoring or prior computations.
      */
     public Fofc(DataSet dataSet, double alpha, int ess) {
-        this.variables = dataSet.getVariables();
+        this(new CorrelationMatrix(dataSet), alpha, ess);
+    }
+
+    /**
+     * Constructs an instance of the Fofc class from a correlation matrix, for use when the correlations do not come
+     * from a single raw data set--for example, the pooled correlations of several imputations of a data set with
+     * missing values. The matrix's sample size is used as the sample size.
+     *
+     * @param correlationMatrix The correlation matrix over the variables.
+     * @param alpha The significance level for statistical calculations.
+     * @param ess The equivalent sample size to use in certain scoring or prior computations.
+     */
+    public Fofc(CorrelationMatrix correlationMatrix, double alpha, int ess) {
+        this.variables = correlationMatrix.getVariables();
         this.alpha = alpha;
-        CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
         this.S = correlationMatrix.getMatrix().getSimpleMatrix();
-        this.n = dataSet.getNumRows();
-        this.tsc = new Tsc(dataSet.getVariables(), correlationMatrix);
-        this.sampleSize = dataSet.getNumRows();
+        this.n = correlationMatrix.getSampleSize();
+        this.tsc = new Tsc(correlationMatrix.getVariables(), correlationMatrix);
+        this.sampleSize = correlationMatrix.getSampleSize();
         setRMax(rMax);
         setEss(ess);
     }
@@ -113,6 +132,21 @@ public class Fofc {
     private void setEss(int ess) {
         this.ess = ess == -1 ? this.sampleSize : ess;
         this.tsc.setEffectiveSampleSize(ess);
+    }
+
+    /**
+     * Puts the search into stratified (domain-pooled) mode, or takes it out of that mode with null. In stratified
+     * mode every rank decision, here and in the underlying TSC search, is made by pooling the Bartlett statistic
+     * over the strata of the given object -- domains, batches, sites -- instead of being read from the single
+     * correlation matrix the search was constructed with; see {@link StratifiedRankTests}. The strata must be over
+     * the same variables, in the same column order, as that matrix, and the equivalent sample size setting is
+     * ignored in this mode. Set this before calling findClusters.
+     *
+     * @param stratifiedRankTests the stratified rank test engine, or null for the ordinary single-sample behavior.
+     */
+    public void setStratifiedRankTests(StratifiedRankTests stratifiedRankTests) {
+        this.stratifiedRankTests = stratifiedRankTests;
+        this.tsc.setStratifiedRankTests(stratifiedRankTests);
     }
 
     private void setRMax(int rMax) {
@@ -170,7 +204,7 @@ public class Fofc {
         int size = rank + 1;
 
         Set<Set<Integer>> tscClusters = tsc.findClustersAtRank(variables, size, rank);
-        System.out.println("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
+//        TetradLogger.getInstance().log("TSC Clusters: " + Tsc.toNamesClusters(tscClusters, this.variables));
 
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
@@ -256,7 +290,7 @@ public class Fofc {
         List<Integer> toAdd = new ArrayList<>();
 
         // Choose subset size: if cluster is small, use the whole cluster; otherwise tadSize-1
-        final int k = Math.min(cluster.size(), tadSize - 1);
+        final int k = TMath.min(cluster.size(), tadSize - 1);
 
         // Pre-enumerate all k-subsets of the current cluster once
         List<List<Integer>> subsets = new ArrayList<>();
@@ -429,8 +463,10 @@ public class Fofc {
                 if (!inX) y[yIndex++] = v;
             }
 
-            int r = Math.min(x.length, y.length) - 1;
-            int rank = RankTests.estimateWilksRankFast(S, x, y, ess, alpha);
+            int r = TMath.min(x.length, y.length) - 1;
+            int rank = stratifiedRankTests != null
+                    ? stratifiedRankTests.estimateRank(x, y, alpha)
+                    : RankTests.estimateWilksRankFast(S, x, y, ess, alpha);
             if (rank != r) {
                 vanishCache.put(key, false);
                 return false;

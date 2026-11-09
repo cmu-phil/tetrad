@@ -64,9 +64,10 @@ public class NumPotentiallyDirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int count = 0;
 
-        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
+        Graph cpdag = GraphTransforms.dagToCpdag(dag);
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {

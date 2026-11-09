@@ -28,20 +28,15 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.PartialCorrelation;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.StrictMath.log;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
@@ -201,7 +196,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 //            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
-        double q = 0.5 * (log(1.0 + r) - FastMath.log(1.0 - r));
+        double q = 0.5 * (log(1.0 + r) - log(1.0 - r));
         double fisherZ = sqrt(n - 3 - z.size()) * abs(q);
         this.fisherZ = fisherZ;
 
@@ -224,7 +219,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     private double partialCorrelation(Node x, Node y, Set<Node> _z) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         return this.recursivePartialCorrelation.corr(x, y, z);
 
@@ -300,7 +295,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     public boolean determines(Set<Node> _z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[_z.size()];
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        z.sort(NaturalSort.naturalComparator());;
 
         for (int j = 0; j < parents.length; j++) {
             parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));

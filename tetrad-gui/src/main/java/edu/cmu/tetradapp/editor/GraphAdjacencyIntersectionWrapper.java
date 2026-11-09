@@ -73,8 +73,8 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
         return new DataWrapper(new Parameters());
     }
 
-    private void construct(GraphSource... GraphSources) {
-        for (GraphSource wrapper : GraphSources) {
+    private void construct(GraphSource... graphSources) {
+        for (GraphSource wrapper : graphSources) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
@@ -82,7 +82,7 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
 
         List<Graph> graphs = new ArrayList<>();
 
-        for (GraphSource wrapper : GraphSources) {
+        for (GraphSource wrapper : graphSources) {
             graphs.add(wrapper.getGraph());
         }
 

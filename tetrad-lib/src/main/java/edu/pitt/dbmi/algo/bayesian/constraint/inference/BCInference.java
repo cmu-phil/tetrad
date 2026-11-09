@@ -20,11 +20,11 @@
 
 package edu.pitt.dbmi.algo.bayesian.constraint.inference;
 
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.Arrays;
 
-import static org.apache.commons.math3.util.FastMath.log;
+import static edu.cmu.tetrad.util.TMath.log;
 
 /**
  * Feb 26, 2014 8:07:20 PM
@@ -194,12 +194,12 @@ public class BCInference {
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
         this.numberOfNodes--;
         double lnTermPrior_X_Y = log(p) / this.numberOfScores;  // this is equal to ln(p^(1/numberOfScores))
-        double lnTermPrior_XY = log(1 - FastMath.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
+        double lnTermPrior_XY = log(1 - TMath.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
         double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
         for (int i = 1; i <= this.numberOfScores; i++) {
             scoreAll += lnXpluslnY(lnTermPrior_X_Y + (this.scores[i][1] + this.scores[i][2]), lnTermPrior_XY + this.scores[i][3]);
         }
-        double probInd = FastMath.exp(score_X_Y - scoreAll);
+        double probInd = TMath.exp(score_X_Y - scoreAll);
 
         if (constraint == OP.independent) {
             p = probInd;  // return P(X independent Y given Z | data)
@@ -232,7 +232,7 @@ public class BCInference {
         if (lnYminusLnX < BCInference.MININUM_EXPONENT) {
             return lnX;
         } else {
-            return FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
+            return TMath.log1p(TMath.exp(lnYminusLnX)) + lnX;
         }
     }
 
@@ -350,7 +350,7 @@ public class BCInference {
                 return gammlnCore(xx);
             } else {
                 double z = 1 - xx;
-                return log(FastMath.PI * z) - gammlnCore(1 + z) - log(FastMath.sin(FastMath.PI * z));
+                return log(TMath.PI * z) - gammlnCore(1 + z) - log(TMath.sin(TMath.PI * z));
             }
         }
     }

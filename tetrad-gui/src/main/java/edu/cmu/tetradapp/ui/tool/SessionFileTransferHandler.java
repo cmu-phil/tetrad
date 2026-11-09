@@ -52,6 +52,12 @@ import java.util.prefs.Preferences;
  */
 public class SessionFileTransferHandler extends TransferHandler {
 
+    /**
+     * Constructs a new transfer handler for session files.
+     */
+    public SessionFileTransferHandler() {
+    }
+
     private static final long serialVersionUID = -6674597813640455425L;
 
     /**
@@ -145,6 +151,9 @@ public class SessionFileTransferHandler extends TransferHandler {
                     sessionWrapper.setName(name);
 
                     SessionEditor editor = new SessionEditor(name, graph);
+
+                    // The session keeps its own file, so Save and save-on-quit write it back where it came from.
+                    sessionWrapper.setSessionFile(file);
 
                     DesktopController.getInstance().addSessionEditor(editor);
                     DesktopController.getInstance().closeEmptySessions();

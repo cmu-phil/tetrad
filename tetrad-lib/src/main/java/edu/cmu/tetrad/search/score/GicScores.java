@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
@@ -28,11 +29,11 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static edu.cmu.tetrad.util.TMath.*;
 
 /**
  * Implements scores motivated by the Generalized Information Criterion (GIC) approach as given in Kim et al. (2012).
@@ -286,7 +287,7 @@ public class GicScores implements Score, EffectiveSampleSizeSettable {
      */
     @Override
     public int getMaxDegree() {
-        return (int) FastMath.ceil(log(nEff));
+        return (int) TMath.ceil(log(nEff));
     }
 
     /**
@@ -422,7 +423,16 @@ public class GicScores implements Score, EffectiveSampleSizeSettable {
          */
         GIC6
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed from a data set with missing values, each family's residual variance is computed on the
+     * rows complete on that family (SemBicScore's row-subset path; the full effective sample size is kept in the
+     * likelihood term). The score can also be built from an EM-estimated covariance matrix.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
 }
-
-
-

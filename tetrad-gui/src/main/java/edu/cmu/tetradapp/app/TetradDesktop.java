@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,19 +16,19 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.ui.tool.SessionFileTransferHandler;
 import edu.cmu.tetradapp.util.*;
-import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -40,6 +40,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.Serial;
 import java.util.*;
 import java.util.List;
@@ -101,7 +102,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         // Do Layout.
         setLayout(new BorderLayout());
-        this.desktopPane.setDesktopManager(new DefaultDesktopManager());
+//        this.desktopPane.setDesktopManager(new DefaultDesktopManager());
+        this.desktopPane.setDesktopManager(new BoundedDesktopManager());
         this.desktopPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
         this.desktopPane.addPropertyChangeListener(this);
 
@@ -175,8 +177,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // Set the "small" size of the frame so that it has sensible
         // bounds when the users unmazimizes it.
         Dimension fullSize = this.desktopPane.getSize();
-        int smallSize = FastMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
-                                                                            - TetradDesktop.MARGIN);
+        int smallSize = TMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
+                - TetradDesktop.MARGIN);
         Dimension size = new Dimension(smallSize, smallSize);
         TetradDesktop.setGoodBounds(frame, this.desktopPane, size);
         this.desktopPane.add(frame);
@@ -205,7 +207,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     public void addEditorWindow(EditorWindowIndirectRef windowRef, int layer) {
         EditorWindow window = (EditorWindow) windowRef;
 
-//	Dimension desktopSize = desktopPane.getSize();
         Dimension preferredSize = window.getPreferredSize();
 
         Component source = window.getCenteringComp();
@@ -214,7 +215,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
                 source.getLocation(), this);
 
         int x = convertedPoint.x + source.getWidth() / 2 - preferredSize.width
-                                                           / 2;
+                / 2;
         int y = convertedPoint.y - 25 + source.getHeight() / 2
                 - preferredSize.height / 2;
 
@@ -230,10 +231,10 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             y = topMargin;
         }
 
-        int height = FastMath.min(preferredSize.height, getHeight() - topMargin
-                                                        - bottomMargin);
-        int width = FastMath.min(preferredSize.width, getWidth() - leftMargin
-                                                      - rightMargin);
+        int height = TMath.min(preferredSize.height, getHeight() - topMargin
+                - bottomMargin);
+        int width = TMath.min(preferredSize.width, getWidth() - leftMargin
+                - rightMargin);
 
         if (x + width > getWidth() - rightMargin) {
             x = getWidth() - width - rightMargin;
@@ -300,12 +301,22 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         if (frames.length > 0) {
             Map<SessionEditor, JInternalFrame> framesMap = this.framesMap;
-            framesMap.keySet().removeIf(sessionEditor -> sessionEditor.getName().equals(name));
+
+            for (JInternalFrame frame : frames) {
+                SessionEditor sessionEditor = (SessionEditor) frame.getContentPane().getComponents()[0];
+
+                if (sessionEditor.getName().equals(name)) {
+                    frame.dispose();
+                    framesMap.remove(sessionEditor);
+                    break;
+                }
+            }
+//            framesMap.keySet().removeIf(sessionEditor -> sessionEditor.getName().equals(name));
         }
     }
 
     /**
-     * <p>closeEmptySessions.</p>
+     * <p>  closeEmptySessions.</p>
      */
     public void closeEmptySessions() {
         JInternalFrame[] frames = this.desktopPane.getAllFramesInLayer(0);
@@ -428,7 +439,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     public void setMainTitle(String name) {
         JFrame jFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         jFrame.setTitle(name + " - " + "Tetrad "
-                        + Version.currentViewableVersion());
+                + Version.currentViewableVersion());
     }
 
     /**
@@ -448,46 +459,104 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * Queries the user whether they would like to save their sessions.
+     * Asks the user, one session at a time, what to do with each session that has unsaved changes, then closes all
+     * sessions. Unchanged sessions are closed without asking.
+     * <p>
+     * Nothing is closed until every changed session has an answer, so Cancel Quit leaves all sessions open (any
+     * saves already made stay made, which loses nothing). Quit used to save every changed session silently, with no
+     * way to decline a save or to cancel the quit.
      *
-     * @return true if the transaction was ended successfully, false if not (that is, canceled).
+     * @return true if all sessions were closed; false if the user cancelled the quit.
      */
     public boolean closeAllSessions() {
-        while (existsSession()) {
-            SessionEditor sessionEditor = getFrontmostSessionEditor();
-            assert sessionEditor != null;
-            SessionEditorWorkbench workbench = sessionEditor
-                    .getSessionWorkbench();
-            SessionWrapper wrapper = workbench.getSessionWrapper();
+        for (JInternalFrame frame : this.desktopPane.getAllFramesInLayer(0)) {
+            Object o = frame.getContentPane().getComponents()[0];
 
-            if (!wrapper.isSessionChanged()) {
-                closeFrontmostSession();
+            if (!(o instanceof SessionEditor sessionEditor)) {
                 continue;
             }
 
-            String name = sessionEditor.getName();
+            SessionWrapper sessionWrapper = sessionEditor.getSessionWorkbench().getSessionWrapper();
 
-            int ret = JOptionPane.showConfirmDialog(
-                    JOptionUtils.centeringComp(),
-                    "Would you like to save the changes you made to " + name
-                    + "?", "Advise needed...",
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-
-            if (ret == JOptionPane.NO_OPTION) {
-                closeFrontmostSession();
+            if (!sessionWrapper.isSessionChanged()) {
                 continue;
-            } else if (ret == JOptionPane.CANCEL_OPTION) {
+            }
+
+            // The save actions work on the frontmost session, and the user should see which session is being asked
+            // about.
+            frame.moveToFront();
+
+            try {
+                frame.setSelected(true);
+            } catch (java.beans.PropertyVetoException ignored) {
+                // Selection is cosmetic here; moveToFront is what the save actions rely on.
+            }
+
+            if (!decideOnQuit(sessionEditor, sessionWrapper)) {
                 return false;
             }
+        }
 
-            SaveSessionAsAction action = new SaveSessionAsAction();
-            action.actionPerformed(new ActionEvent(this,
-                    ActionEvent.ACTION_PERFORMED, "Dummy close action"));
-
+        while (existsSession()) {
             closeFrontmostSession();
         }
 
         return true;
+    }
+
+    /**
+     * Asks what to do with one changed session on quit and does it. A save that fails, or a Save As whose file
+     * chooser is cancelled, asks again rather than treating the session as decided, so an accidental Escape in the
+     * chooser cannot discard work.
+     *
+     * @return false if the user chose to cancel the quit.
+     */
+    private boolean decideOnQuit(SessionEditor sessionEditor, SessionWrapper sessionWrapper) {
+        final String save = "Save";
+        final String saveAs = "Save As...";
+        final String dontSave = "Don't Save";
+        final String cancel = "Cancel Quit";
+
+        while (true) {
+            File sessionFile = sessionWrapper.getSessionFile();
+            boolean hasFile = sessionFile != null && !sessionWrapper.isNewSession() && sessionFile.exists();
+
+            String message = hasFile
+                    ? "Session \"" + sessionWrapper.getName() + "\" has unsaved changes.\n"
+                      + "Its file is " + sessionFile.getAbsolutePath()
+                    : "Session \"" + sessionWrapper.getName() + "\" has unsaved changes\n"
+                      + "and has not been saved to a file yet.";
+
+            Object[] options = hasFile
+                    ? new Object[]{save, saveAs, dontSave, cancel}
+                    : new Object[]{saveAs, dontSave, cancel};
+
+            int index = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), message, "Quit Tetrad",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+
+            // Closing the dialog with its window control counts as Cancel Quit, the choice that loses nothing.
+            Object choice = index < 0 ? cancel : options[index];
+            ActionEvent event = new ActionEvent(sessionEditor, ActionEvent.ACTION_PERFORMED, String.valueOf(choice));
+
+            if (choice == dontSave) {
+                return true;
+            } else if (choice == cancel) {
+                return false;
+            } else if (choice == save) {
+                // No "saved to" acknowledgment here: the prompt just named the file.
+                new SaveSessionAction(false).actionPerformed(event);
+
+                if (SaveSessionAction.saved) {
+                    return true;
+                }
+            } else {
+                new SaveSessionAsAction(false).actionPerformed(event);
+
+                if (SaveSessionAsAction.saved) {
+                    return true;
+                }
+            }
+        }
     }
 
     /**
@@ -532,7 +601,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             try {
                 TetradLogger.getInstance().setNextOutputStream();
             } catch (IllegalStateException e2) {
-                TetradLogger.getInstance().log(
+                TetradLogger.getInstance().warn(
                         "Unable to setup logging, please restart Tetrad.");
                 return;
             }
@@ -608,29 +677,16 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * @return the next available session name in the series untitled1.tet, untitled2.tet, etc.
      */
     private String getNewSessionName() {
-        final String base = "untitled";
-        final String suffix = ".tet";
-        int i = 0; // Sequence 1, 2, 3, ...
+        String sessionSaveLocation =
+                Preferences.userRoot().get("sessionSaveLocation", "");
 
-        loop:
-        while (true) {
-            i++;
+        String defaultName = "untitled";
 
-            String name = base + i + suffix;
-
-            for (SessionEditor _o : this.framesMap.keySet()) {
-                if (_o != null) {
-                    SessionEditorWorkbench workbench = _o.getSessionWorkbench();
-                    SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-
-                    if (sessionWrapper.getName().equals(name)) {
-                        continue loop;
-                    }
-                }
-            }
-
-            return name;
-        }
+        File file = EditorUtils.getNewSessionName(
+                defaultName, "tet",
+                JOptionUtils.centeringComp(), false, "Save Session As...",
+                sessionSaveLocation);
+        return file.getName();
     }
 
     private Map<SessionEditor, JInternalFrame> getFramesMap() {
@@ -646,8 +702,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // ask the user whether they way the feature etc.
         if (allowed == null) {
             final String message = "<html>Whenever Tetrad's logging features are active any generated log <br>"
-                                   + "output will be automatically display in Tetrad's log display. Would you like Tetrad<br>"
-                                   + "to continue to automatically open the log display window whenever there is logging output?</html>";
+                    + "output will be automatically display in Tetrad's log display. Would you like Tetrad<br>"
+                    + "to continue to automatically open the log display window whenever there is logging output?</html>";
             int option = JOptionPane.showConfirmDialog(this, message,
                     "Automatic Logging", JOptionPane.YES_NO_OPTION);
             if (option == JOptionPane.NO_OPTION) {
@@ -665,6 +721,23 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return allowed;
     }
 
+    // This prevents editor windows from being dragged off the top of the screen.
+    private static final class BoundedDesktopManager extends DefaultDesktopManager {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void dragFrame(JComponent f, int newX, int newY) {
+            super.dragFrame(f, newX, TMath.max(0, newY));
+        }
+
+        @Override
+        public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
+            super.setBoundsForFrame(f, newX, TMath.max(0, newY), newWidth, newHeight);
+        }
+    }
+
     /**
      * Listener for the logger that will open the display log if not already open.
      */
@@ -674,7 +747,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             TetradLoggerConfig config = evt.getTetradLoggerConfig();
             // if logging is actually turned on, then open display.
             if (TetradLogger.getInstance().isLogging() && config.active()
-                && TetradLogger.getInstance().isDisplayLogEnabled()) {
+                    && TetradLogger.getInstance().isDisplayLogEnabled()) {
                 // if the log display isn't already up, open it.
                 if (!isDisplayLogging() && allowAutomaticLogPopup()) {
                     setDisplayLogging(true);
@@ -687,6 +760,62 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
 
     }
+
+    // This makes editor windows never go our of bounds, which is draconian since they can sensibly
+    // be dragged off to the right or to the left or down. It's dragging up that's the problem, since
+    // then they cannot be dragged back into a place where the close button can be clicked.
+//    private final class BoundedDesktopManager extends DefaultDesktopManager {
+//
+//        @Serial
+//        private static final long serialVersionUID = 1L;
+//
+//        private static final int TOP_GUTTER = 0;
+//        private static final int LEFT_GUTTER = 0;
+//        private static final int RIGHT_GUTTER = 0;
+//        private static final int BOTTOM_GUTTER = 0;
+//
+//        @Override
+//        public void dragFrame(JComponent f, int newX, int newY) {
+//            Rectangle bounded = getBoundedBounds(f, newX, newY, f.getWidth(), f.getHeight());
+//            super.dragFrame(f, bounded.x, bounded.y);
+//        }
+//
+//        @Override
+//        public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
+//            Rectangle bounded = getBoundedBounds(f, newX, newY, newWidth, newHeight);
+//            super.setBoundsForFrame(f, bounded.x, bounded.y, bounded.width, bounded.height);
+//        }
+//
+//        private Rectangle getBoundedBounds(JComponent f, int x, int y, int width, int height) {
+//            Container parent = f.getParent();
+//
+//            if (parent == null) {
+//                return new Rectangle(x, y, width, height);
+//            }
+//
+//            Insets insets = parent.getInsets();
+//            int minX = insets.left + LEFT_GUTTER;
+//            int minY = insets.top + TOP_GUTTER;
+//
+//            int maxX = parent.getWidth() - insets.right - RIGHT_GUTTER - width;
+//            int maxY = parent.getHeight() - insets.bottom - BOTTOM_GUTTER - height;
+//
+//            // If the frame is larger than the desktop in a dimension, pin it to the minimum.
+//            if (maxX < minX) {
+//                x = minX;
+//            } else {
+//                x = TMath.max(minX, TMath.min(x, maxX));
+//            }
+//
+//            if (maxY < minY) {
+//                y = minY;
+//            } else {
+//                y = TMath.max(minY, TMath.min(y, maxY));
+//            }
+//
+//            return new Rectangle(x, y, width, height);
+//        }
+//    }
 
 }
 

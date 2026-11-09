@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -22,7 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,7 +33,10 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.search.test.CachingIndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -51,10 +54,11 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI",
         command = "fci",
-        algoType = AlgType.allow_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.All
 )
 @Bootstrapping
-public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -99,7 +103,7 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
             }
 
-            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -114,7 +118,10 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
+        IndependenceTest test = getIndependenceWrapper().getTest(dataModel, parameters);
+        test = new CachingIndependenceTest(test);
+
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setR0ColliderRule(colliderOrientationStyle);
@@ -189,10 +196,12 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.FDR_Q);
-        parameters.add(Params.TIME_LAG);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
-        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.GUARANTEE_PAG);
+
+        parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+
         parameters.add(Params.VERBOSE);
 
         return parameters;

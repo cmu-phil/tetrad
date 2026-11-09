@@ -26,7 +26,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -790,7 +790,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -826,7 +826,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = FastMath.min(_depth, _nodes.size());
+        _depth = TMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (Thread.currentThread().isInterrupted()) {

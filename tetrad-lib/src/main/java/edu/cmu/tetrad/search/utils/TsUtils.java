@@ -32,14 +32,11 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Contains some utilities for doing autoregression. Should probably be improved by somebody.
@@ -74,7 +71,6 @@ public class TsUtils {
         }
 
         Regression regression = new RegressionDataset(timeLags);
-//        Regression regression = new RegressionDatasetGeneralized(timeLags);
 
         Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
@@ -82,7 +78,6 @@ public class TsUtils {
             Node target = timeLags.getVariable(i);
             RegressionResult result = regression.regress(target, regressors);
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -223,7 +218,6 @@ public class TsUtils {
 
             RegressionResult result = regression.regress(target, regressors);
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -334,7 +328,6 @@ public class TsUtils {
             }
 
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -381,6 +374,21 @@ public class TsUtils {
      */
     public static DataSet createLagData(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
+
+        // Colons in the input variable names would collide with the lag suffix convention
+        // ("X:1" for X lagged once). Formerly such names either put variables in the wrong
+        // knowledge tiers or caused the lagging to be skipped silently; better to say so.
+        for (Node node : variables) {
+            if (node.getName().indexOf(':') >= 0) {
+                throw new IllegalArgumentException(
+                        "Cannot create lagged data: variable name \"" + node.getName()
+                        + "\" contains a colon. Tetrad reserves the colon in variable names"
+                        + " for lag suffixes, as in X:1 for X lagged once, so variables in"
+                        + " data to be lagged may not have colons in their names. Please"
+                        + " rename this variable.");
+            }
+        }
+
         int dataSize = variables.size();
         int laggedRows = data.getNumRows() - numLags;
         Knowledge knowledge = new Knowledge();
@@ -409,27 +417,13 @@ public class TsUtils {
                 newVariables.add(laggedNode);
                 laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
                 laggedNodes[lag][col] = laggedNode;
-//                knowledge.addToTier(numLags - lag, laggedNode.getName());
             }
         }
 
-        try {
-            for (Node node : newVariables) {
-                String varName = node.getName();
-                String tmp;
-                int lag;
-                if (varName.indexOf(':') == -1) {
-                    lag = 0;
-                    //                laglist.add(lag);
-                } else {
-                    tmp = varName.substring(varName.indexOf(':') + 1);
-                    lag = Integer.parseInt(tmp);
-                    //                laglist.add(lag);
-                }
-                knowledge.addToTier(numLags - lag, node.getName());
-            }
-        } catch (NumberFormatException e) {
-            return data;
+        // The generated names are all of the form "base" or "base:lag", with colon-free
+        // bases guaranteed by the validation above, so getLag is exact here.
+        for (Node node : newVariables) {
+            knowledge.addToTier(numLags - getLag(node.getName()), node.getName());
         }
 
         DataSet laggedData = new BoxDataSet(new DoubleDataBox(laggedRows, newVariables.size()), newVariables);
@@ -449,10 +443,166 @@ public class TsUtils {
         }
 
         knowledge.setDefaultToKnowledgeLayout(true);
-//        knowledge.setLagged(true);
         laggedData.setKnowledge(knowledge);
-//        laggedData.setName(data.getNode());
         return laggedData;
+    }
+
+    /**
+     * Creates a new time series dataset from the given one, expanding the provided within-lag
+     * Knowledge across all time lags. If the input knowledge has k non-empty tiers, the
+     * expanded knowledge will have k * (numLags + 1) tiers, with the within-lag tier
+     * structure (including forbidden/required edges and tierForbiddenWithin flags) replicated
+     * at each lag. Cross-lag temporal ordering (no edges from later time back to earlier time)
+     * is enforced automatically by the tier structure.
+     *
+     * @param data      the time series dataset
+     * @param numLags   the number of lags
+     * @param knowledge within-lag knowledge over base variable names (no lag suffix)
+     * @return the lagged dataset with expanded knowledge attached
+     */
+    public static DataSet createLagData(DataSet data, int numLags, Knowledge knowledge) {
+
+        if (knowledge == null) {
+            return createLagData(data, numLags);
+        }
+
+        // Validate that the input knowledge contains no lagged variables (no ":" suffix)
+        for (String var : knowledge.getVariables()) {
+            if (var.contains(":")) {
+                throw new IllegalArgumentException(
+                        "Input knowledge must contain only base variable names (no lag suffix), " +
+                                "but found: \"" + var + "\"");
+            }
+        }
+
+        // Build the lagged dataset without knowledge first (reuse existing logic)
+        DataSet laggedData = createLagData(data, numLags);
+
+        if (knowledge.isEmpty()) {
+            return laggedData;
+        }
+
+        // Collect non-empty tiers from the input knowledge
+        List<List<String>> nonEmptyTiers = new ArrayList<>();
+        for (int t = 0; t < knowledge.getNumTiers(); t++) {
+            List<String> tier = knowledge.getTier(t);
+            if (!tier.isEmpty()) {
+                nonEmptyTiers.add(tier);
+            }
+        }
+
+        int k = nonEmptyTiers.size();
+        if (k == 0) {
+            return laggedData;
+        }
+
+        Knowledge expandedKnowledge = new Knowledge();
+
+        // For each time lag (from numLags down to 0) and each input tier,
+        // assign variables to the correct expanded tier.
+        // Expanded tier index = (numLags - lag) * k + t
+        // This preserves the convention: earlier time = lower tier index.
+        for (int lag = numLags; lag >= 0; lag--) {
+            int lagBlock = (numLags - lag) * k;
+
+            for (int t = 0; t < k; t++) {
+                int expandedTier = lagBlock + t;
+                List<String> inputTier = nonEmptyTiers.get(t);
+
+                for (String baseVar : inputTier) {
+                    String laggedVar = (lag == 0) ? baseVar : baseVar + ":" + lag;
+                    expandedKnowledge.addToTier(expandedTier, laggedVar);
+                }
+
+                // Replicate tierForbiddenWithin for this tier
+                // Must use the original tier index (t) mapped back to knowledge's tier list,
+                // since nonEmptyTiers may have skipped empty tiers.
+                if (knowledge.isTierForbiddenWithin(originalTierIndex(knowledge, t))) {
+                    expandedKnowledge.setTierForbiddenWithin(expandedTier, true);
+                }
+            }
+        }
+
+        // The expanded tiers above interleave time blocks with the input tiers:
+        // tier(X:a) = (numLags - a) * k + t(X). That total order forbids future-to-past
+        // edges (source lag a < target lag b) and within-lag tier violations (a == b with
+        // t(X) > t(Y)), but it CANNOT also forbid the remaining cross-lag tier violations,
+        // where a deeper-lag variable in a later input tier points into a more recent
+        // variable in an earlier input tier (a > b with t(X) > t(Y)) - e.g., with weather
+        // in a later tier than day, Rain:4 --> day is not tier-forbidden, because Rain:4's
+        // expanded tier index is necessarily smaller than day's. No total tier order can
+        // express the intended product order (time x input tier): Rain:4 --> Rain:3 must be
+        // allowed while Rain:4 --> day is forbidden, which would require
+        // tier(Rain:4) <= tier(Rain:3) < tier(day) < tier(Rain:4). So the input tier order
+        // is applied to the base variables at every pair of lags via explicit forbidden
+        // edges for exactly the cases the tiers do not cover (a > b).
+        for (int tFrom = 1; tFrom < k; tFrom++) {
+            for (int tTo = 0; tTo < tFrom; tTo++) {
+                for (String fromBase : nonEmptyTiers.get(tFrom)) {
+                    for (String toBase : nonEmptyTiers.get(tTo)) {
+                        for (int a = numLags; a >= 1; a--) {
+                            String laggedFrom = fromBase + ":" + a;
+                            for (int b = a - 1; b >= 0; b--) {
+                                String laggedTo = (b == 0) ? toBase : toBase + ":" + b;
+                                expandedKnowledge.setForbidden(laggedFrom, laggedTo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Replicate explicit forbidden edges within each lag
+        Iterator<KnowledgeEdge> forbiddenIt = knowledge.forbiddenEdgesIterator();
+        while (forbiddenIt.hasNext()) {
+            KnowledgeEdge edge = forbiddenIt.next();
+            String from = edge.getFrom();
+            String to = edge.getTo();
+
+            // Only replicate if both endpoints are base variable names (no lag suffix)
+            // and the edge is explicitly forbidden (not just implied by tier ordering)
+            if (!from.contains(":") && !to.contains(":")) {
+                for (int lag = numLags; lag >= 0; lag--) {
+                    String laggedFrom = (lag == 0) ? from : from + ":" + lag;
+                    String laggedTo   = (lag == 0) ? to   : to   + ":" + lag;
+                    expandedKnowledge.setForbidden(laggedFrom, laggedTo);
+                }
+            }
+        }
+
+        // Replicate explicit required edges within each lag
+        Iterator<KnowledgeEdge> requiredIt = knowledge.requiredEdgesIterator();
+        while (requiredIt.hasNext()) {
+            KnowledgeEdge edge = requiredIt.next();
+            String from = edge.getFrom();
+            String to = edge.getTo();
+
+            if (!from.contains(":") && !to.contains(":")) {
+                for (int lag = numLags; lag >= 0; lag--) {
+                    String laggedFrom = (lag == 0) ? from : from + ":" + lag;
+                    String laggedTo   = (lag == 0) ? to   : to   + ":" + lag;
+                    expandedKnowledge.setRequired(laggedFrom, laggedTo);
+                }
+            }
+        }
+
+        expandedKnowledge.setDefaultToKnowledgeLayout(true);
+        laggedData.setKnowledge(expandedKnowledge);
+        return laggedData;
+    }
+
+    /**
+     * Returns the original tier index in the given knowledge object for the t-th non-empty tier.
+     */
+    private static int originalTierIndex(Knowledge knowledge, int nonEmptyTierIndex) {
+        int count = 0;
+        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+            if (!knowledge.getTier(i).isEmpty()) {
+                if (count == nonEmptyTierIndex) return i;
+                count++;
+            }
+        }
+        throw new IllegalArgumentException("Non-empty tier index out of range: " + nonEmptyTierIndex);
     }
 
     /**
@@ -465,7 +615,7 @@ public class TsUtils {
         data = data.copy();
         ContinuousVariable timeVar = new ContinuousVariable("Time");
         data.addVariable(timeVar);
-        int c = data.getColumn(timeVar);
+        int c = data.getColumnIndex(timeVar);
 
         for (int r = 0; r < data.getNumRows(); r++) {
             data.setDouble(r, c, (r + 1));
@@ -476,142 +626,81 @@ public class TsUtils {
 
     }
 
-//    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
-//        // Backward-compatible default: roughly matches your old ~0.15 density when n~10
-//        final double defaultAvgOutDeg = 0.15 * Math.max(0, _graph.getNodes().size() - 1);
-//        final int noHardMax = -1;
-//        return graphToLagGraph(_graph, numLags, defaultAvgOutDeg, noHardMax, 0.05);
-//    }
-
     /**
      * Converts a directed graph into a time-lagged graph representation.
      * The resulting graph includes lagged copies of nodes, self-lagged edges,
      * contemporaneous edges, and probabilistically generated inter-variable lagged edges up to the specified maximum lag.
      *
-     * @param _graph The base directed graph to be converted. Must only contain directed edges.
+     * @param _graph The base DAG graph to be converted. Must only contain directed edges.
      *               Throws IllegalArgumentException if the input graph is not fully directed.
      * @param numLags The maximum number of lags to include in the time-lagged graph.
-     * @param lagEdgeProb The probability of adding lagged inter-variable edges between nodes in the graph.
+     * @param extraLaggedEdges The number of extra lagged edges to include in the time-lagged graph.
      * @return A time-lagged graph representation of the input graph with the specified properties.
      *         The resulting graph includes lagged nodes, self-lagged edges, and probabilistically generated lagged edges.
      */
-    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags, double lagEdgeProb) {
-        lagEdgeProb = 0.05;
+    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags, int extraLaggedEdges) {
+        if (_graph == null) throw new NullPointerException("Base graph must not be null.");
+        if (numLags < 1) throw new IllegalArgumentException("numLags must be >= 1, got: " + numLags);
+        if (extraLaggedEdges < 0) throw new IllegalArgumentException("extraLaggedEdges must be >= 0, got: " + extraLaggedEdges);
 
-        TimeLagGraph graph = new TimeLagGraph();
-        graph.setMaxLag(numLags);
-
-        // Add lagged copies of each node (Lag 0 to Lag numLags)
-        for (Node node : _graph.getNodes()) {
-            Node graphNode = new ContinuousVariable(node.getName());
-            graphNode.setNodeType(node.getNodeType());
-            graph.addNode(graphNode);
-
-            // Add intra-variable lag edge (self lag connection)
-            Node from = graph.getNode(node.getName(), 1);
-            Node to = graph.getNode(node.getName(), 0);
-            Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-            graph.addEdge(edge);
-        }
-
-        // Add contemporaneous edges (lag 0)
         for (Edge edge : _graph.getEdges()) {
             if (!Edges.isDirectedEdge(edge)) {
                 throw new IllegalArgumentException("Base graph must be fully directed.");
             }
-
-            Node from = edge.getNode1();
-            Node to = edge.getNode2();
-            Node _from = graph.getNode(from.getName(), 0);
-            Node _to = graph.getNode(to.getName(), 0);
-            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
-            graph.addEdge(edge1);
         }
 
-        // Add lagged inter-variable edges probabilistically
-        RandomUtil random = RandomUtil.getInstance();
+        TimeLagGraph graph = new TimeLagGraph();
+        graph.setMaxLag(numLags);
 
-        for (int lag = 1; lag <= numLags; lag++) {
-            for (Node node1 : graph.getLag0Nodes()) {
-                Node from = graph.getNode(node1.getName(), lag);
-                for (Node node2 : graph.getLag0Nodes()) {
-                    if (node1.getName().equals(node2.getName())) continue;
+        // Add lag-0 nodes
+        for (Node node : _graph.getNodes()) {
+            Node graphNode = new ContinuousVariable(node.getName());
+            graphNode.setNodeType(node.getNodeType());
+            graph.addNode(graphNode);
+        }
 
-                    // Use configurable probability
-                    if (random.nextUniform(0, 1) <= lagEdgeProb) {
-                        Node to = graph.getNode(node2.getName(), 0);
-                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-                        graph.addEdge(edge);
-                    }
-                }
+        // Add self-lag edges: X:lag -> X:0 for each lag 1..numLags
+        for (Node node : _graph.getNodes()) {
+            for (int lag = 1; lag <= 1; lag++) {
+                Node from = graph.getNode(node.getName(), lag);
+                Node to   = graph.getNode(node.getName(), 0);
+                graph.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW));
             }
+        }
+
+        // Add contemporaneous edges at lag 0 (structural edges from base graph)
+        for (Edge edge : _graph.getEdges()) {
+            Node from = graph.getNode(edge.getNode1().getName(), 0);
+            Node to   = graph.getNode(edge.getNode2().getName(), 0);
+            graph.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW));
+        }
+
+        // Add exactly extraLaggedEdges lagged edges (X:1 --> Y:0, X != Y)
+        List<Node> nodes = new ArrayList<>(_graph.getNodes());
+        int n = nodes.size();
+
+        // Build all candidate pairs
+        List<int[]> pairs = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                pairs.add(new int[]{i, j});
+            }
+        }
+
+        Collections.shuffle(pairs);
+
+        int added = 0;
+        for (int[] pair : pairs) {
+            if (added >= extraLaggedEdges) break;
+            Node from = graph.getNode(nodes.get(pair[0]).getName(), RandomUtil.getInstance().nextInt(numLags) + 1);
+            Node to   = graph.getNode(nodes.get(pair[1]).getName(), 0);
+            if (graph.isAdjacentTo(from, to)) continue;
+            graph.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW));
+            added++;
         }
 
         return graph;
     }
-
-
-
-//    /**
-//     * <p>graphToLagGraph.</p>
-//     *
-//     * @param _graph  a {@link edu.cmu.tetrad.graph.Graph} object
-//     * @param numLags a int
-//     * @return a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
-//     */
-//    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
-//        TimeLagGraph graph = new TimeLagGraph();
-//        graph.setMaxLag(numLags);
-//
-//        for (Node node : _graph.getNodes()) {
-//            Node graphNode = new ContinuousVariable(node.getName());
-//            graphNode.setNodeType(node.getNodeType());
-//            graph.addNode(graphNode);
-//
-//            /* adding node from Lag 1 to Lag 0 for every node */
-//            Node from = graph.getNode(node.getName(), 1);
-//            Node to = graph.getNode(node.getName(), 0);
-//            Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-//            graph.addEdge(edge);
-//            //graph.addDirectedEdge(from, to);
-//        }
-//
-//        for (Edge edge : _graph.getEdges()) {
-//            if (!Edges.isDirectedEdge(edge)) {
-//                throw new IllegalArgumentException();
-//            }
-//
-//            Node from = edge.getNode1();
-//            Node to = edge.getNode2();
-//            Node _from = graph.getNode(from.getName(), 0);
-//            Node _to = graph.getNode(to.getName(), 0);
-//            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
-//            graph.addEdge(edge1);
-//            //graph.addDirectedEdge(_from, _to);
-//        }
-//
-//        //for lag
-//        // for node
-//        //  with probability 0.3 add edge from node to *random* node at lag0
-//        for (int lag = 1; lag <= numLags; lag++) {
-//            for (Node node1 : graph.getLag0Nodes()) {
-//                Node from = graph.getNode(node1.getName(), lag);
-//                for (Node node2 : graph.getLag0Nodes()) {
-//                    Node to = graph.getNode(node2.getName(), 0);
-//                    if (node1.getName().equals(node2.getName())) {
-//                        continue;
-//                    }
-//                    if (RandomUtil.getInstance().nextUniform(0, 1) <= 0.15) {
-//                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
-//                        graph.addEdge(edge);
-//                        //graph.addDirectedEdge(from, to);
-//                    }
-//                } // for node at lag0 (to)
-//            } // for node at lag (from)
-//        } // for lag
-//
-//        return graph;
-//    }
 
     /**
      * <p>getNameNoLag.</p>
@@ -621,10 +710,32 @@ public class TsUtils {
      */
     public static String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if (tempS.indexOf(':') == -1) {
+        if (parseLagSuffix(tempS) < 0) {
             return tempS;
-        } else {
-            return tempS.substring(0, tempS.indexOf(':'));
+        }
+        return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+    /**
+     * Parses the lag suffix of a possibly-lagged name of the form "name:lag". A name has a valid
+     * lag suffix only if it contains a colon and everything after the first colon parses as a
+     * nonnegative integer; this matches the definition used by NaturalSort, and in particular a
+     * name with two colons, such as "A:1:2", is not a valid lagged name. Returns the lag if the
+     * suffix is valid and -1 otherwise. Never throws.
+     *
+     * @param s the name to parse.
+     * @return the lag, or -1 if the name is not a valid lagged name.
+     */
+    private static int parseLagSuffix(String s) {
+        int colon = s.indexOf(':');
+        if (colon < 0) {
+            return -1;
+        }
+        try {
+            int lag = Integer.parseInt(s.substring(colon + 1));
+            return lag >= 0 ? lag : -1;
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 
@@ -654,7 +765,11 @@ public class TsUtils {
                 return y;
             }
         }
-        throw new IllegalArgumentException("Not integer suffix.");
+
+        // The whole string parsed as an integer; that integer is the index. (This case
+        // formerly threw, so that names without an integer suffix returned 0 from the
+        // catch above while entirely numeric names crashed.)
+        return y;
     }
 
     /**
@@ -664,11 +779,8 @@ public class TsUtils {
      * @return a int
      */
     public static int getLag(String s) {
-        if (s.indexOf(':') == -1) {
-            return 0;
-        }
-        String tmp = s.substring(s.indexOf(':') + 1);
-        return (Integer.parseInt(tmp));
+        int lag = parseLagSuffix(s);
+        return lag < 0 ? 0 : lag;
     }
 
     /**
@@ -683,17 +795,8 @@ public class TsUtils {
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         Knowledge knowledge = new Knowledge();
-        int lag;
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
-            laglist.add(lag);
+            laglist.add(getLag(node.getName()));
         }
         numLags = Collections.max(laglist);
 
@@ -722,22 +825,10 @@ public class TsUtils {
             }
         });
 
-//        System.out.println("Variable list after the sort = " + variables);
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-//                laglist.add(lag);
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
-            }
-            knowledge.addToTier(numLags - lag, node.getName());
+            knowledge.addToTier(numLags - getLag(node.getName()), node.getName());
         }
 
-        //System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
     }
 
@@ -753,7 +844,7 @@ public class TsUtils {
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
             double realEigenvalue = eig.getEigenvalue(i).getReal();
             double imagEigenvalue = eig.getEigenvalue(i).getImaginary();
-            double modulus = FastMath.sqrt(FastMath.pow(realEigenvalue, 2) + FastMath.pow(imagEigenvalue, 2));
+            double modulus = TMath.sqrt(TMath.pow(realEigenvalue, 2) + TMath.pow(imagEigenvalue, 2));
 
             if (modulus >= 1.0) {
                 return false;

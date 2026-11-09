@@ -29,11 +29,11 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,7 +53,16 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * The data model to check.
      */
-    private final DataModel dataModel;
+    private DataModel dataModel;
+    /**
+     * The data models the parent data box offers, in order; the check runs on one of them. Null in sessions saved
+     * before the choice existed, in which case the single data model above is the only one.
+     */
+    private List<DataModel> dataModels;
+    /**
+     * The index, in dataModels, of the data model being checked.
+     */
+    private int dataIndex;
     /**
      * The graph to check.
      */
@@ -61,7 +70,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * The parameters.
      */
-    private final Parameters /**/parameters;
+    private final Parameters parameters;
     /**
      * The name of this model.
      */
@@ -79,10 +88,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
      */
     private Knowledge knowledge;
-    /**
-     * Whether verbose output should be printed.
-     */
-    private boolean verbose = false;
 
     /**
      * Constructs a new Markov checer with the given data model, graph, and parameters.
@@ -106,6 +111,13 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
                                    Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
+        this.dataModels = new ArrayList<>(dataModel.getDataModelList());
+
+        // By identity, not equals(): equal-content data sets (and equals() on large ones) should not matter.
+        for (int i = 0; i < this.dataModels.size(); i++) {
+            if (this.dataModels.get(i) == this.dataModel) this.dataIndex = i;
+        }
+
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
 
@@ -131,7 +143,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      */
     public void setIndependenceTest(IndependenceTest test) {
         if (this.getMarkovCheck() == null) {
-            this.markovCheck = new MarkovCheck(this.graph, test, ConditioningSetType.LOCAL_MARKOV);
+            this.markovCheck = new MarkovCheck(this.graph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
         } else {
             this.markovCheck.setIndependenceTest(test);
         }
@@ -167,6 +179,39 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      */
     public DataModel getDataModel() {
         return dataModel;
+    }
+
+    /**
+     * The data models that can be checked, in the order of the parent data box.
+     *
+     * @return the data models; just the one in use for sessions saved before the choice existed.
+     */
+    public List<DataModel> getDataModels() {
+        return dataModels == null ? List.of(dataModel) : dataModels;
+    }
+
+    /**
+     * The index, in getDataModels(), of the data model being checked.
+     *
+     * @return the index.
+     */
+    public int getDataIndex() {
+        return dataModels == null ? 0 : dataIndex;
+    }
+
+    /**
+     * Chooses the data model to check. The independence test in use was built on the previous data model, so the
+     * caller must build a new one and pass it to setIndependenceTest before running the check again.
+     *
+     * @param index the index, in getDataModels(), of the data model to check.
+     */
+    public void setDataIndex(int index) {
+        if (index < 0 || index >= getDataModels().size()) {
+            throw new IllegalArgumentException("No data model at index " + index + ".");
+        }
+
+        this.dataModel = getDataModels().get(index);
+        this.dataIndex = index;
     }
 
     /**
@@ -250,49 +295,118 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the source graph.
-     */
     @Override
     public Graph getSourceGraph() {
-        return null;
+        return graph;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the result graph.
-     */
     @Override
     public Graph getResultGraph() {
-        return null;
+        return graph;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables.
-     */
     @Override
     public List<Node> getVariables() {
-        return null;
+        // Prefer the data model variables if available; otherwise fall back to graph nodes.
+        if (dataModel != null && dataModel.getVariables() != null) {
+            return dataModel.getVariables();
+        }
+        return graph.getNodes();
+    }
+
+    @Override
+    public List<String> getVariableNames() {
+        return getVariables().stream().map(Node::getName).toList();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variable names.
+     * Sets whether the Markov check prints verbose output. Has no effect if the Markov check has not been created.
+     *
+     * @param verbose true for verbose output.
      */
-    @Override
-    public List<String> getVariableNames() {
-        return null;
+    public void setVerbose(boolean verbose) {
+        if (this.markovCheck != null) {
+            this.markovCheck.setVerbose(verbose);
+        }
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-        this.getMarkovCheck().setVerbose(verbose);
+    /**
+     * Returns the fraction of the sample to use, stored in the parameters; defaults to 1.0.
+     *
+     * @return the fraction sample.
+     */
+    public double getFractionSample() {
+        return this.parameters.getDouble("fractionSampleParam", 1.0);
+    }
+
+    /**
+     * Sets the fraction of the sample to use, storing it in the parameters.
+     *
+     * @param value the fraction sample; must be between 0 and 1.
+     * @throws IllegalArgumentException if the value is not between 0 and 1.
+     */
+    public void setFractionSample(double value) {
+        if (value < 0.0 || value > 1.0) {
+            throw new IllegalArgumentException("Fraction sample must be between 0 and 1.");
+        }
+
+        this.parameters.set("fractionSampleParam", value);
+    }
+
+    /**
+     * Stores the name of the selected editor tab in the parameters.
+     *
+     * @param selectedTab the selected tab.
+     */
+    public void setSelectedTab(String selectedTab) {
+        this.parameters.set("selectedTabParam", selectedTab);
+    }
+
+    /**
+     * Returns the name of the selected editor tab, stored in the parameters; defaults to "indep".
+     *
+     * @return the selected tab.
+     */
+    public String getSelectedTab() {
+        return this.parameters.getString("selectedTabParam", "indep");
+    }
+
+    /**
+     * Stores the name of the selected independence test class in the parameters.
+     *
+     * @param name the name of the independence test class.
+     */
+    public void setIndependenceTestClass(String name) {
+        this.parameters.set("independenceTestClassParam", name);
+    }
+
+    /**
+     * Returns the name of the selected independence test class, stored in the parameters; defaults to
+     * "MarkovCheckIndTest".
+     *
+     * @return the name of the independence test class.
+     */
+    public String getIndependenceTestClass() {
+        return this.parameters.getString("independenceTestClassParam", "MarkovCheckIndTest");
+    }
+
+    /**
+     * Returns the conditioning set type, stored in the parameters; defaults to
+     * ORDERED_LOCAL_MARKOV_PROPERTY.
+     *
+     * @return the conditioning set type.
+     */
+    public ConditioningSetType getConditioningSetType() {
+        return (ConditioningSetType) this.parameters.get("conditioningSetTypeParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+    }   
+
+    /**
+     * Stores the conditioning set type in the parameters.
+     *
+     * @param conditioningSetType the conditioning set type.
+     */
+    public void setConditioningSetType(ConditioningSetType conditioningSetType) {
+        this.parameters.set("conditioningSetTypeParam", conditioningSetType);
     }
 }
 
