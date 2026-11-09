@@ -143,6 +143,19 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
     private int maxMarkFlips = -1;
     private final SepsetMap sepsets = new SepsetMap();
     /**
+     * The two optional per-commit gates, the I-map gate and the score step, shared with the *-FCI family and FCIT
+     * through {@link CorrectnessGates}; see that class for what each guarantees. Both are judged on the same
+     * candidate Zhang MAG this class's own legality gate judges, after it. The seeding style here is FCIT's: the
+     * sepset map starts empty, and the start DAG's separators are entered as known separators only when the test
+     * confirms them.
+     */
+    private final CorrectnessGates gates;
+    /**
+     * Whether the saturating pass runs (default true). The three-way correctness choice keys it off whenever one of
+     * the gates is on; see {@link #setCorrectnessOption(int, double)}.
+     */
+    private boolean useSaturatingStep = true;
+    /**
      * The list of selection nodes in the graph.
      */
     private final List<Node> selection;
@@ -333,6 +346,7 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
 
         this.test = test;
         this.score = score;
+        this.gates = new CorrectnessGates(test);
 
         this.selection = this.test.getVariables().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
@@ -632,6 +646,22 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
 
         this.interimPags.add(pag);
 
+        // Correctness gates: declare the start DAG's test-confirmed separators, give the score step its score,
+        // and take the start state's baseline.
+        gates.reset();
+        gates.setVerbose(verbose);
+        if (gates.requireImapStates()) {
+            seedKnownSeparators(dag, pag);
+        }
+        if (gates.useScoreStep()) {
+            if (replicatingGraph) {
+                throw new IllegalArgumentException("The score step does not support the time-lag "
+                                                   + "replicating-graph wrapper.");
+            }
+            gates.setGateScore(score);
+        }
+        gates.beginRun(pag, sepsets);
+
         // The seed colliders: computed ONCE from the PAG of the score-based DAG, and
         // recalled at every subsequent reorientation. Soundness of this set is the single
         // orientation premise the argument consumes.
@@ -661,10 +691,12 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             // two or more. A lone survivor means the single-edge phase proposed and REVERTED
             // it, which is exactly the case worth re-attempting in batch; skipping it would
             // return a graph carrying an adjacency already certified absent.
-            List<Edge> spurious = findSpuriousEdges(interimPags.getLast());
-            TetradLogger.getInstance().log(spurious.isEmpty()
-                    ? "\nNo spurious edges remain."
-                    : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
+            List<Edge> spurious = useSaturatingStep ? findSpuriousEdges(interimPags.getLast()) : new ArrayList<>();
+            if (useSaturatingStep) {
+                TetradLogger.getInstance().log(spurious.isEmpty()
+                        ? "\nNo spurious edges remain."
+                        : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
+            }
 
             if (!spurious.isEmpty()) {
                 boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
@@ -766,6 +798,7 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
 
         reportColliderGenuineness(finalPag);
 
+        gates.logSummary("FCIT-ZM", true);
         TetradLogger.getInstance().log("\nFCIT-ZM finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
@@ -1487,6 +1520,15 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             return false;
         }
 
+        if (gates.anyGateOn() && !gateAccepts(_mag, "removal of " + _edge + ", sepset = " + b)) {
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + _edge
+                        + ", legal MAG, but a correctness gate vetoed it; sepset = " + b);
+            }
+            sepsets.set(x, y, prevSepset);
+            return false;
+        }
+
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
                     + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
@@ -1501,12 +1543,65 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             // is given the knowledge. A knowledge-free MagToPag returns the canonical PAG of
             // the class and the knowledge marks vanish at every MAG-route commit.
             pushPag(magToPagWithKnowledge(_mag, excludeSelectionBias));
+            gateCommitted();
             return true;
         }
 
         // PAG route: carry forward the very graph the gate just certified.
         pushPag(_pag);
+        gateCommitted();
         return true;
+    }
+
+    /**
+     * The gates' verdict on a candidate MAG, with the interruption handling the removal loops here use: an
+     * interruption re-sets the thread's flag and counts as a veto, so the loop winds down through its normal
+     * revert path.
+     */
+    private boolean gateAccepts(Graph candidateMag, String what) {
+        try {
+            return gates.accepts(candidateMag, sepsets, what);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    /**
+     * Records the commit of {@code interimPags.getLast()} with the gates.
+     */
+    private void gateCommitted() {
+        try {
+            gates.committed(interimPags.getLast(), sepsets);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Seeds known separators from the start DAG, FCIT-style: for each nonadjacent pair, the parent set that
+     * d-separates it in D, kept iff the test confirms it at imapAlpha.
+     */
+    private void seedKnownSeparators(Graph dag, Graph pag) throws InterruptedException {
+        List<Node> ns = dag.getNodes();
+        for (int i = 0; i < ns.size(); i++) {
+            for (int j = i + 1; j < ns.size(); j++) {
+                Node a = ns.get(i), b = ns.get(j);
+                if (dag.isAdjacentTo(a, b)) continue;
+                Set<Node> paA = new HashSet<>(dag.getParents(a));
+                Set<Node> sep = dag.paths().isMSeparatedFrom(a, b, paA, false) ? paA : new HashSet<>(dag.getParents(b));
+                Node x = pag.getNode(a.getName()), z = pag.getNode(b.getName());
+                if (x == null || z == null) continue;
+                Set<Node> mapped = new HashSet<>();
+                for (Node n : sep) {
+                    Node own = pag.getNode(n.getName());
+                    if (own != null) mapped.add(own);
+                }
+                if (gates.judgedIndependent(x, z, mapped)) {
+                    gates.addKnownSeparator(x, z, mapped);
+                }
+            }
+        }
     }
 
     /**
@@ -1578,6 +1673,17 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             return false;
         }
 
+        if (gates.anyGateOn() && !gateAccepts(_mag, "joint removal of " + edges)) {
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + edges
+                        + " (multi-edge), legal MAG, but a correctness gate vetoed it");
+            }
+            for (Edge edge : edges) {
+                sepsets.set(edge.getNode1(), edge.getNode2(), prev.get(edge));
+            }
+            return false;
+        }
+
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + edges + " (multi-edge), reached a PAG");
         }
@@ -1585,11 +1691,13 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
         if (commitRoute == COMMIT_ROUTE.MAG) {
             // KEEP-KNOWLEDGE: see the single-edge commit.
             pushPag(magToPagWithKnowledge(_mag, excludeSelectionBias));
+            gateCommitted();
             return true;
         }
 
         // PAG route: carry forward the very graph the gate just certified.
         pushPag(_pag);
+        gateCommitted();
         return true;
     }
 
@@ -1924,6 +2032,55 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             this.interimPags.clear();
             this.interimPags.add(last);
         }
+    }
+
+    /**
+     * Sets whether the I-map gate is on (option 1 of the three-way correctness choice). Default false.
+     *
+     * @param requireImapStates true to require every committed state to be an I-map of the test.
+     */
+    public void setRequireImapStates(boolean requireImapStates) {
+        gates.setRequireImapStates(requireImapStates);
+    }
+
+    /**
+     * Sets the significance level of the I-map gate's tests. Default 0.001.
+     *
+     * @param imapAlpha a value in (0, 1).
+     */
+    public void setImapAlpha(double imapAlpha) {
+        gates.setImapAlpha(imapAlpha);
+    }
+
+    /**
+     * Sets whether the score step is on (option 2 of the three-way correctness choice). The score given at
+     * construction must then be a SEM BIC score on a covariance matrix with zero structure prior. Default false.
+     *
+     * @param useScoreStep true to require each committed removal to improve the RICF BIC of the implied MAG.
+     */
+    public void setUseScoreStep(boolean useScoreStep) {
+        gates.setUseScoreStep(useScoreStep);
+    }
+
+    /**
+     * Sets whether the saturating pass runs (option 3 of the three-way correctness choice). Default true.
+     *
+     * @param useSaturatingStep true to run it.
+     */
+    public void setUseSaturatingStep(boolean useSaturatingStep) {
+        this.useSaturatingStep = useSaturatingStep;
+    }
+
+    /**
+     * Applies one of the three correctness options shared with FCIT and the *-FCI family: 1 = Guarantee I-map
+     * (I-map gate on, saturating pass off), 2 = Score step (score step on, saturating pass off), 3 = Saturating
+     * step (both gates off, saturating pass on). The score step uses the score given at construction.
+     *
+     * @param option    1, 2, or 3.
+     * @param imapAlpha the I-map gate alpha, consulted only for option 1.
+     */
+    public void setCorrectnessOption(int option, double imapAlpha) {
+        this.useSaturatingStep = gates.applyOption(option, score, imapAlpha);
     }
 
     /**
