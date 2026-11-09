@@ -35,6 +35,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
@@ -51,18 +52,24 @@ import java.util.List;
  * @author bryanandrews
  * @author josephramsey
  * @version $Id: $Id
+ * <p>
+ * <b>Backward compatibility only.</b> The I-map gate developed here was merged into {@code StarFci} on 2026-11-08, where it is option 1 of the
+ * three-way correctness choice; with the gate off this class was option 3. Its registration annotations are commented out, so it does not appear in the algorithm chooser;
+ * new work should use {@link Bfci} with the {@code fcitCorrectness} option. This class is retained under its
+ * original name so that sessions saved by earlier versions, which refer to it by this class name, continue
+ * to load; such a session re-runs through BFCI with the equivalent option.
  */
 // Hidden from the interface on 2026-10-21 (no @Algorithm annotation): kept only so that saved sessions
 // that used it still load. The shipping BFCI is now this formulation; see edu.cmu.tetrad.search.StarFci.
 
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI-Bryan",
-        command = "bfci-bryan",
-        algoType = AlgType.allow_latent_common_causes,
-        dataType = DataType.Mixed
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BFCI-Bryan",
+//        command = "bfci-bryan",
+//        algoType = AlgType.allow_latent_common_causes,
+//        dataType = DataType.Mixed
+//)
 @Bootstrapping
-@Experimental
+//@Experimental
 public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -117,33 +124,18 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        edu.cmu.tetrad.search.BfciBryan search = new edu.cmu.tetrad.search.BfciBryan(
-                this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-
-        search.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
-        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
-        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setNumThreads(Runtime.getRuntime().availableProcessors());
-        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
-        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
-
-        search.setKnowledge(knowledge);
-
-        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        boolean requireImapStates = parameters.getBoolean(Params.REQUIRE_IMAP_STATES);
-        // The saturating step is not a user choice here: it runs iff the I-map gate is off (2026-10-28). With the
-        // gate on, every committed state is required to be an I-map of the test, and the joint removal is not run.
-        search.setRequireImapStates(requireImapStates);
-        search.setUseSaturatingStep(!requireImapStates);
-        search.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
-        search.setUsePass0(parameters.getBoolean(Params.USE_PASS_0));
-        search.setReharvestSepsets(parameters.getBoolean(Params.REHARVEST_SEPSETS));
-
-        return search.search();
+        // Delegation (2026-11-08): the gates this class carried were merged into StarFci, so the shipping BFCI
+        // runs the same code. Map this class's stored parameters onto the three-way correctness option and run BFCI.
+        Parameters p = new Parameters(parameters);
+        p.set(Params.FCIT_CORRECTNESS, parameters.getBoolean(Params.REQUIRE_IMAP_STATES) ? 1 : 3);
+        if (!parameters.getBoolean(Params.USE_PASS_0) || parameters.getBoolean(Params.REHARVEST_SEPSETS)) {
+            TetradLogger.getInstance().log("BFCI-Bryan: the usePass0 and reharvestSepsets options were not carried "
+                                           + "into the consolidated BFCI; Pass 0 always runs and no re-harvest is "
+                                           + "done. Running BFCI with the remaining settings.");
+        }
+        Bfci delegate = new Bfci(this.test, this.score);
+        delegate.setKnowledge(this.knowledge);
+        return delegate.runSearch(dataModel, p);
     }
 
     /**
@@ -165,7 +157,7 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
      */
     @Override
     public String getDescription() {
-        return "BFCI-Bryan (sepset re-selection, no saturating step) using " + this.test.getDescription()
+        return "BFCI-Bryan (retained for saved sessions; runs BFCI with correctness option 1 or 3) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 

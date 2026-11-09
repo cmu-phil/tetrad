@@ -52,15 +52,21 @@ import java.util.List;
  * @author bryanandrews
  * @author josephramsey
  * @version $Id: $Id
+ * <p>
+ * <b>Backward compatibility only.</b> The RICF-BIC score step developed here was merged into {@code StarFci} on 2026-11-08, where it is option 2
+ * of the three-way correctness choice. Its registration annotations are commented out, so it does not appear in the algorithm chooser;
+ * new work should use {@link Bfci} with the {@code fcitCorrectness} option. This class is retained under its
+ * original name so that sessions saved by earlier versions, which refer to it by this class name, continue
+ * to load; such a session re-runs through BFCI with the equivalent option.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI-Bryan-Score",
-        command = "bfci-bryan-score",
-        algoType = AlgType.allow_latent_common_causes,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BFCI-Bryan-Score",
+//        command = "bfci-bryan-score",
+//        algoType = AlgType.allow_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
-@Experimental
+//@Experimental
 public class BfciBryanScore extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -115,25 +121,14 @@ public class BfciBryanScore extends AbstractBootstrapAlgorithm implements Algori
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        edu.cmu.tetrad.search.BfciBryanScore search = new edu.cmu.tetrad.search.BfciBryanScore(
-                this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        // Delegation (2026-11-08): the gates this class carried were merged into StarFci, so the shipping BFCI
+        // runs the same code. Map this class's stored parameters onto the three-way correctness option and run BFCI.
+        Parameters p = new Parameters(parameters);
+        p.set(Params.FCIT_CORRECTNESS, 2);
 
-        search.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
-        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
-        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setNumThreads(Runtime.getRuntime().availableProcessors());
-        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
-        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
-
-        search.setKnowledge(knowledge);
-
-        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-
-        return search.search();
+        Bfci delegate = new Bfci(this.test, this.score);
+        delegate.setKnowledge(this.knowledge);
+        return delegate.runSearch(dataModel, p);
     }
 
     /**
@@ -155,7 +150,7 @@ public class BfciBryanScore extends AbstractBootstrapAlgorithm implements Algori
      */
     @Override
     public String getDescription() {
-        return "BFCI-Bryan-Score (sepset re-selection, RICF-BIC score step) using " + this.test.getDescription()
+        return "BFCI-Bryan-Score (retained for saved sessions; runs BFCI with correctness option 2)" + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 

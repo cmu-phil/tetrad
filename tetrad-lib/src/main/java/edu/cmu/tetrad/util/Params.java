@@ -623,10 +623,11 @@ public final class Params {
      */
     public static final String FCIT_STARTS_WITH = "fcitStartsWith";
     /**
-     * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. FCIT's warrant for the result, a three-way
-     * choice: 1 = Guarantee I-map (the I-map gate; saturating step off), 2 = No score drop (the BFCI-Bryan
-     * score step as a veto; saturating step off), 3 = Saturating step (no extra gate; the joint-removal
-     * discharge of Cor. saturation runs).
+     * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. The warrant for the result, a three-way choice
+     * shared by FCIT and the *-FCI family (BFCI, GFCI, SP-FCI, GRaSP-FCI): 1 = Guarantee I-map (the I-map gate;
+     * saturating step off), 2 = Score step (the RICF-BIC score gate; saturating step off; continuous data only),
+     * 3 = Saturating step (no extra gate; the joint-removal discharge of Cor. saturation runs). The key keeps
+     * its original name so that saved FCIT sessions continue to read it. See {@code StarFci.setCorrectnessOption}.
      */
     public static final String FCIT_CORRECTNESS = "fcitCorrectness";
     /**

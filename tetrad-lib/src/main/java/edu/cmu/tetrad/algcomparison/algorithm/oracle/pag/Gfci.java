@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -114,7 +115,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
 
         IndependenceTest test1 = this.test.getTest(dataModel, parameters);
         test1 = new CachedIndependenceQueries(test1);
-        edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(test1, this.score.getScore(dataModel, parameters));
+        Score score = this.score.getScore(dataModel, parameters);
+        edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(test1, score);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -125,7 +127,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
+        search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS), score,
+                parameters.getDouble(Params.IMAP_ALPHA));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setOut(System.out);
 
@@ -181,7 +184,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
         parameters.add(Params.DO_POSSIBLE_DSEP);
-        parameters.add(Params.USE_SATURATING_STEP);
+        parameters.add(Params.FCIT_CORRECTNESS);
+        parameters.add(Params.IMAP_ALPHA);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.NUM_THREADS);
 

@@ -42,6 +42,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -145,10 +146,15 @@ public class FcitMagMarkov extends AbstractBootstrapAlgorithm implements Algorit
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
 
-        if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-                throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
-            }
+        // Oracle input with a BOSS start is supported since 2026-10-10 (Boss accepts a GraphScore and scores a
+        // permutation by the edge count of its grow-shrink DAG; see Boss and TestBossOracle). The one caveat is
+        // BOSS's own: with an m-separation oracle, the BES step is what guarantees that the CPDAG of the true DAG
+        // is returned, so warn if it has been turned off rather than refuse the run.
+        if (test instanceof MsepTest && parameters.getInt(Params.FCIT_STARTS_WITH) == 1
+            && !parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE)) {
+            TetradLogger.getInstance().log("FCIT with a d-separation oracle and a BOSS start: the BES step is off, "
+                                           + "so BOSS is not guaranteed to return the CPDAG of the true DAG; turn "
+                                           + "useBes on for an exact oracle run.");
         }
 
         test = new CachedIndependenceQueries(test);
