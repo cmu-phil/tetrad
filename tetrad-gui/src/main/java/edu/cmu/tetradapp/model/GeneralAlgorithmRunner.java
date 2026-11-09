@@ -934,10 +934,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             }
 
-            // elapsed time for dataset branch
-            long stop = System.currentTimeMillis();
-            this.elapsedTime = stop - start;
         }
+
+        // Elapsed time of the search, for both branches. This used to be set inside the dataset branch only, so a run
+        // from an oracle graph left it at -1 and the Stats List comparison, which clamps at zero, reported 0 ms.
+        this.elapsedTime = System.currentTimeMillis() - start;
 
         // Layout pass. Each result above was detached (GraphUtils.detachNodes), so its nodes are its own: it holds
         // no positions from anywhere else, and the positions the workbench writes to it reach nothing else. The
