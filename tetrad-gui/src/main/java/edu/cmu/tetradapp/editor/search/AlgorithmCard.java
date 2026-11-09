@@ -773,7 +773,10 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
                 this.algoDescTextArea.setText("");
                 firePropertyChange("algoFwdBtn", null, false);
             } else {
-                String savedAlgo = this.parameters.getString(UI_ALGO, parameters.getString(UI_ALGO, null));
+                // Same precedence as restoreUserAlgoSelections: the runner's remembered choice first, then the
+                // UI_ALGO parameter. Reading UI_ALGO alone here selected a stale algorithm whenever the two
+                // disagreed, and the selection listener then overwrote the remembered choice with it (2026-11-09).
+                String savedAlgo = getSavedAlgoName(this.algorithmRunner.getUserAlgoSelections());
                 AlgorithmModel model = findAlgorithmByName(savedAlgo);
                 if (model != null) {
                     this.algorithmList.setSelectedValue(model, true);
