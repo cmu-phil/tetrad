@@ -369,7 +369,8 @@ public final class Icd implements IGraphSearch {
      * {@code maxDepth}.
      *
      * <p>A node {@code node3} is added when {@code node2} is a possible collider on
-     * {@code node1 -- node2 -- node3}, i.e. {@code !graph.isDefNoncollider(node1, node2, node3)}.
+     * {@code node1 -- node2 -- node3}, in the sense of {@link #isPossibleCollider(Graph, Node, Node, Node)}:
+     * the triple is a triangle, or {@code node2} is a definite collider on it.
      *
      * <p>Edge removal is simulated via a canonical string-key set (symmetric, blocking both
      * traversal directions), mirroring the Python's {@code adj_graph.remove_edge}.
@@ -399,8 +400,7 @@ public final class Icd implements IGraphSearch {
                 String eKey = edgeKey(node2, node3);
                 if (removedEdges.contains(eKey)) continue;
 
-                // Possible collider iff NOT a definite non-collider.
-                if (!graph.isDefNoncollider(node1, node2, node3)) {
+                if (isPossibleCollider(graph, node1, node2, node3)) {
                     int d = depth + 1;
                     minDist.merge(node3, d, Math::min);
                     removedEdges.add(eKey);
@@ -411,6 +411,38 @@ public final class Icd implements IGraphSearch {
 
         minDist.remove(root);
         return new PdsResult(root, minDist);
+    }
+
+    /**
+     * Returns true just in case {@code node2} is a possible collider on {@code node1 *-* node2 *-* node3},
+     * which is the condition every subpath of a possible-D-SEP path must satisfy: either the triple is a
+     * triangle, or {@code node2} is a definite collider on it (Spirtes, Glymour and Scheines 2000, p. 188).
+     *
+     * <p>This is the predicate used by {@link edu.cmu.tetrad.graph.Paths#possibleDsep} and by ICD's reference
+     * implementation. It is <i>not</i> the complement of {@code isDefNoncollider}, which this method replaced.
+     * The two disagree in both directions. Where a tail at {@code node2} sits in a triangle, the complement
+     * says "not a possible collider" while the triple is one, which shrinks the PDS set and can lose the
+     * separating set that would have removed an edge. Where exactly one arrowhead meets {@code node2} and the
+     * ends are not adjacent, the complement says "possible collider" while the triple is not one, which grows
+     * the PDS set and costs tests. Since ICD applies R1 to R4 and R8 to R10 between rounds, and those rules
+     * create tails, the first case is reachable from the second round onward.
+     *
+     * @param graph the graph, which may be partially oriented
+     * @param node1 the first node of the triple
+     * @param node2 the middle node of the triple
+     * @param node3 the third node of the triple
+     * @return true if the middle node is a possible collider on the triple
+     */
+    static boolean isPossibleCollider(Graph graph, Node node1, Node node2, Node node3) {
+        if (node1 == node3) {
+            return false;
+        }
+
+        if (!graph.isAdjacentTo(node1, node2) || !graph.isAdjacentTo(node2, node3)) {
+            return false;
+        }
+
+        return graph.isAdjacentTo(node1, node3) || graph.isDefCollider(node1, node2, node3);
     }
 
     /**
