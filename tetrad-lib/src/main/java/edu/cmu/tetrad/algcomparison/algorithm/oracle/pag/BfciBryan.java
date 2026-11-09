@@ -59,7 +59,7 @@ import java.util.List;
  * original name so that sessions saved by earlier versions, which refer to it by this class name, continue
  * to load; such a session re-runs through BFCI with the equivalent option.
  */
-// Hidden from the interface on 2026-10-21 (no @Algorithm annotation): kept only so that saved sessions
+// Hidden from the interface on 2026-11-08 (no @Algorithm annotation): kept only so that saved sessions
 // that used it still load. The shipping BFCI is now this formulation; see edu.cmu.tetrad.search.StarFci.
 
 //@edu.cmu.tetrad.annotation.Algorithm(
