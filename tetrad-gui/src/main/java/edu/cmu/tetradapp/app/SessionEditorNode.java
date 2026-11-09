@@ -75,6 +75,9 @@ public final class SessionEditorNode extends DisplayNode {
      * The simulation edu.cmu.tetrad.study (used to edit the repetition values).
      */
     private final SimulationStudy simulationStudy;
+    /**
+     * The configuration for this session node.
+     */
     private final SessionNodeConfig config;
     /**
      * If an editor has been opened, this is a reference to that editor. Used to close the editor if necessary.
@@ -1371,6 +1374,8 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * The configuration for this editor node.
+     *
+     * @return the session node configuration.
      */
     public SessionNodeConfig getConfig() {
         return config;

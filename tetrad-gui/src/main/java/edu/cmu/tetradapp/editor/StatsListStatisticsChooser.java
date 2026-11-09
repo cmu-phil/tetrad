@@ -44,10 +44,11 @@ import java.util.regex.PatternSyntaxException;
  * when the key is absent (e.g., sessions saved before this was added), the box shows the default list with output
  * unchanged.
  * <p>
- * The catalog offered is the default stats-list statistics, in their usual order, followed by every other statistic
- * in edu.cmu.tetrad.algcomparison.statistic that has a public no-argument constructor (found by the same reflection
- * scan the grid search tool uses), sorted by abbreviation. Statistics needing extra construction arguments (e.g., the
- * Markov checker statistics) are not offered. The dialog pattern — a checkbox table with a semicolon-separated regex
+ * The catalog offered is the default stats-list statistics, in their usual order, followed (sorted by abbreviation)
+ * by the curated statistics from {@link CompareTwoGraphs#curatedStatistics()} and every other statistic in
+ * edu.cmu.tetrad.algcomparison.statistic that has a public no-argument constructor (found by the same reflection
+ * scan the grid search tool uses). Other statistics needing extra construction arguments (e.g., the Markov checker
+ * statistics) are not offered. The dialog pattern — a checkbox table with a semicolon-separated regex
  * filter — follows the grid search tool's column chooser.
  *
  * @author josephramsey
@@ -88,6 +89,13 @@ public final class StatsListStatisticsChooser {
         }
 
         List<Statistic> others = new ArrayList<>();
+
+        // Curated statistics first, so ones needing constructor arguments (e.g., SHD (CPDAG)) are still offered.
+        for (Statistic statistic : CompareTwoGraphs.curatedStatistics()) {
+            if (seen.add(statistic.getAbbreviation())) {
+                others.add(statistic);
+            }
+        }
 
         try {
             Set<Class<? extends Statistic>> classes = new Reflections("edu.cmu.tetrad.algcomparison.statistic",

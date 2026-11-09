@@ -46,35 +46,99 @@ import java.util.stream.Collectors;
 public final class LinearAdjustmentTotalEffectsModel implements SessionModel, GraphSource, Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * The data set used for the regressions.
+     */
     private final DataSet dataSet;
+    /**
+     * The graph, with nodes replaced by the data set's variables.
+     */
     private final Graph graph;
     // Selected treatment(s) and outcome(s)
+    /**
+     * The selected treatment variables X.
+     */
     private final LinkedHashSet<Node> X = new LinkedHashSet<>();
+    /**
+     * The selected outcome variables Y.
+     */
     private final LinkedHashSet<Node> Y = new LinkedHashSet<>();
+    /**
+     * The parameters for the analysis.
+     */
     private final Parameters parameters;
+    /**
+     * The data wrapper supplying the data.
+     */
     private final DataWrapper dataModel;
+    /**
+     * The source of the graph.
+     */
     private final GraphSource graphSource;
     // Computed results
+    /**
+     * The computed result rows.
+     */
     private final List<ResultRow> results = new ArrayList<>();
     /**
      * The true SEM IM. May be null if no true SEM IM is available.
      */
     private final SemIm trueSemIm;
+    /**
+     * The name of this model.
+     */
     private String name = "";
     // RA parameters (defaults are reasonable starting points)
+    /**
+     * The graph type ("PDAG", "MAG" or "PAG") used for adjustment.
+     */
     private String graphType = "PDAG";
+    /**
+     * The maximum number of adjustment sets to consider.
+     */
     private int maxNumSets = 20;
+    /**
+     * The maximum radius for adjustment sets; less than 0 means no radius limit.
+     */
     private int maxRadius = -1;           // <0 means "no radius limit"
+    /**
+     * Which endpoint the radius is measured from: 0 = source, 1 = target, otherwise the minimum.
+     */
     private int nearWhichEndpoint = 1;    // 0 = source, 1 = target, else min
+    /**
+     * The maximum path length; less than 0 means unbounded.
+     */
     private int maxPathLength = -1;       // <0 means "unbounded"
+    /**
+     * Whether to avoid amenable paths when searching for adjustment sets.
+     */
     private boolean avoidAmenable = true;
+    /**
+     * The nodes that should not be followed in adjustment sets.
+     */
     private Set<Node> notFollowed = Collections.emptySet();
+    /**
+     * The nodes that should be contained in adjustment sets.
+     */
     private Set<Node> containing = Collections.emptySet();
 
     // Mode: pairwise vs joint
+    /**
+     * The effect mode: pairwise or joint.
+     */
     private EffectMode effectMode = EffectMode.PAIRWISE;
+    /**
+     * Whether to perform regressions involving discrete variables; if false, such rows are flagged as discrete
+     * and not regressed.
+     */
     private boolean doDiscreteRegressions = false;
+    /**
+     * The text specifying the treatment variables, as entered in the editor; "*" means all variables.
+     */
     private String treatmentsText = "*";
+    /**
+     * The text specifying the outcome variables, as entered in the editor; "*" means all variables.
+     */
     private String outcomesText = "*";
 
     /**
@@ -761,22 +825,48 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         this.name = name;
     }
 
+    /**
+     * Returns whether regressions involving discrete variables are performed.
+     *
+     * @return true if discrete regressions are performed.
+     */
     public boolean getDoDiscreteRegressions() {
         return this.doDiscreteRegressions;
     }
 
+    /**
+     * Sets whether regressions involving discrete variables are performed.
+     *
+     * @param selected true if discrete regressions should be performed.
+     */
     public void setDoDiscreteRegressions(boolean selected) {
         this.doDiscreteRegressions = selected;
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters.
+     */
     public Parameters getParameters() {
         return parameters;
     }
 
+    /**
+     * Returns the text specifying the treatment variables.
+     *
+     * @return the treatments text.
+     */
     public String getTreatmentsText() {
         return treatmentsText;
     }
 
+    /**
+     * Sets the text specifying the treatment variables.
+     *
+     * @param treatmentsText the treatments text.
+     * @throws IllegalArgumentException if the text is null.
+     */
     public void setTreatmentsText(String treatmentsText) {
         if (treatmentsText == null) {
             throw new IllegalArgumentException("Treatments text cannot be null");
@@ -784,10 +874,21 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         this.treatmentsText = treatmentsText;
     }
 
+    /**
+     * Returns the text specifying the outcome variables.
+     *
+     * @return the outcomes text.
+     */
     public String getOutcomesText() {
         return outcomesText;
     }
 
+    /**
+     * Sets the text specifying the outcome variables.
+     *
+     * @param outcomesText the outcomes text.
+     * @throws IllegalArgumentException if the text is null.
+     */
     public void setOutcomesText(String outcomesText) {
         if (outcomesText == null) {
             throw new IllegalArgumentException("Outcomes text cannot be null");
@@ -830,8 +931,17 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         return trueSemIm.getTotalEffect(sx, sy);
     }
 
+    /**
+     * The mode for computing total effects.
+     */
     public enum EffectMode {
+        /**
+         * Total effects for all (x, y) in X × Y, computed pairwise.
+         */
         PAIRWISE,  // total effects for all (x, y) ∈ X×Y using RecursiveAdjustment
+        /**
+         * Joint effects, conditioning on all of X jointly.
+         */
         JOINT      // joint conditioning p(Y | joint(X)) using RecursiveAdjustmentMultiple
     }
 
@@ -847,7 +957,13 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         @Serial
         private static final long serialVersionUID = 23L;
 
+        /**
+         * The treatment variables for this row.
+         */
         public final Set<Node> X;
+        /**
+         * The outcome variables for this row.
+         */
         public final Set<Node> Y;
 
         /**
@@ -875,6 +991,17 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
          */
         public final RegressionResult regressionResult;
 
+        /**
+         * Constructs a result row. The node sets are copied.
+         *
+         * @param X                  the treatment variables.
+         * @param Y                  the outcome variables.
+         * @param Z                  the adjustment set, or null if there is none.
+         * @param amenable           whether an adjustment set exists.
+         * @param discreteRegression whether the regression involves a discrete variable.
+         * @param betas              the per-X betas, or null if not computed.
+         * @param regressionResult   the full regression result, or null if not computed.
+         */
         public ResultRow(Set<Node> X,
                          Set<Node> Y,
                          Set<Node> Z,
@@ -897,14 +1024,30 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
             return s.stream().map(Node::getName).sorted().collect(Collectors.joining(", "));
         }
 
+        /**
+         * Formats the treatment set as a sorted, comma-separated list of names.
+         *
+         * @return the formatted treatment set; "∅" if empty.
+         */
         public String formatXSet() {
             return formatSet(X);
         }
 
+        /**
+         * Formats the outcome set as a sorted, comma-separated list of names.
+         *
+         * @return the formatted outcome set; "∅" if empty.
+         */
         public String formatYSet() {
             return formatSet(Y);
         }
 
+        /**
+         * Formats the adjustment set for display, or a label explaining why there is none.
+         *
+         * @return "(Discrete)", "(Not amenable)" or "(No semidirected path)" where applicable; otherwise the formatted
+         * adjustment set, "∅" if empty.
+         */
         public String formatZSet() {
             if (discreteRegression) return "(Discrete)";
             else if (!amenable) return "(Not amenable)";

@@ -53,7 +53,8 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
     /**
      * <p>Constructor for DagFromCPDAGWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DagFromCPDAGWrapper(Graph graph, Parameters parameters) {
         super(DagFromCPDAGWrapper.getGraph(graph), parameters, "Choose Random DAG in CPDAG.");

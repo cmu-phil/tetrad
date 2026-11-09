@@ -92,8 +92,29 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     //==============================CONSTRUCTORS==========================//
 
+    /**
+     * Constructs a new GeneralizedSemEstimatorWrapper that estimates the given generalized SEM PM using the data from
+     * the given simulation.
+     *
+     * @param semPm      the generalized SEM PM wrapper
+     * @param simulation the simulation supplying the data
+     * @param parameters the parameters
+     */
     public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, Simulation simulation, Parameters parameters) {
         this(semPm, new DataWrapper(simulation, parameters));
+    }
+
+    /**
+     * Estimates from a Graph (or Search) box directly, building the generalized SEM PM from the graph as the PM
+     * box would (linear, Gaussian). The graph must have every edge directed or bidirected.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param parameters  the parameters (unused).
+     */
+    public GeneralizedSemEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(new GeneralizedSemPmWrapper(EstimatorGraphs.semGraph(graphSource, "The generalized SEM estimator")),
+                dataWrapper);
     }
 
     /**

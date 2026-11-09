@@ -52,7 +52,8 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     /**
      * <p>Constructor for PagFromDagGraphWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PagFromDagGraphWrapper(Graph graph, Parameters parameters) {
         super(graph);

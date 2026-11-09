@@ -407,7 +407,22 @@ public class LayoutUtil {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static void fruchtermanReingoldLayout(Graph graph) {
+        fruchtermanReingoldLayout(graph, 0.0);
+    }
+
+    /**
+     * Fruchterman-Reingold with a chosen natural edge length: the distance at which the textbook pull along an edge
+     * and push between its two endpoints balance. Because hubs here repel in proportion to the square root of their
+     * degree and overlapping node boxes are separated afterwards, edges settle to about twice this value in
+     * practice (a natural length of 80 gives mean edge lengths of 150 to 180 pixels on measurement models). Zero or
+     * less means automatic, 20 + 20 times the average degree; 40 to 60 keeps a latent measurement model compact.
+     *
+     * @param graph             the graph.
+     * @param naturalEdgeLength the natural edge length in pixels, or 0 for automatic.
+     */
+    public static void fruchtermanReingoldLayout(Graph graph, double naturalEdgeLength) {
         FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(graph);
+        layout.setNaturalEdgeLength(naturalEdgeLength);
         layout.doLayout();
     }
 
@@ -449,6 +464,12 @@ public class LayoutUtil {
          * Fruchterman-Reingold; see {@link FruchtermanReingoldLayout}.
          */
         FRUCHTERMAN_REINGOLD,
+
+        /**
+         * Kamada-Kawai, with its standard parameters (natural edge length 80, spring constant 0.2, stop energy 1,
+         * not randomly initialized); see {@link #kamadaKawaiLayout(Graph, boolean, double, double, double)}.
+         */
+        KAMADA_KAWAI,
 
         /**
          * Rows by causal order; see {@link #layoutByCausalOrder(Graph, NodeSize)}.
@@ -539,6 +560,8 @@ public class LayoutUtil {
             case CIRCLE -> circleLayout(graph, size);
             case SQUARE -> squareLayout(graph);
             case FRUCHTERMAN_REINGOLD -> fruchtermanReingoldLayout(graph);
+            // A default layout runs wherever a graph arrives without positions, so never with a progress monitor.
+            case KAMADA_KAWAI -> kamadaKawaiLayout(graph, false, 80.0, 0.2, 1.0, new NoOpProgressListener());
             case CAUSAL_ORDER -> layoutByCausalOrder(graph, size);
             default -> richardsLayout(graph, size);
         }
@@ -2782,6 +2805,23 @@ public class LayoutUtil {
         private double optimalDistance = 100;
 
         /**
+         * The natural edge length asked for, or 0 for the automatic choice from the average degree.
+         */
+        private double naturalEdgeLength = 0.0;
+
+        /**
+         * Sets the natural edge length, the distance at which an edge's pull and its endpoints' mutual push balance.
+         * Edges settle to about twice it in practice; see {@link LayoutUtil#fruchtermanReingoldLayout(Graph, double)}.
+         * Zero or less means automatic: 20 + 20 times the average degree of the graph, which grows with density
+         * and spreads a dense graph widely.
+         *
+         * @param naturalEdgeLength the length in pixels, or 0 for automatic.
+         */
+        public void setNaturalEdgeLength(double naturalEdgeLength) {
+            this.naturalEdgeLength = naturalEdgeLength;
+        }
+
+        /**
          * Temperature.
          */
         private double temperature;
@@ -2925,7 +2965,7 @@ public class LayoutUtil {
             double avgDegree = 2 * this.graph.getNumEdges()
                     / (double) this.graph.getNumNodes();
 
-            setOptimalDistance(20.0 + 20.0 * avgDegree);
+            setOptimalDistance(this.naturalEdgeLength > 0 ? this.naturalEdgeLength : 20.0 + 20.0 * avgDegree);
             initTemperature();
 
             for (int iter = 0; iter < numIterations(); iter++) {

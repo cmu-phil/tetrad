@@ -190,7 +190,13 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * user closes the editor and re-opens it.
      */
     private IndependenceTestModel selectedIndependenceTestModel = null;
+    /**
+     * The parameters for the Markov checker.
+     */
     private final Parameters mcParameters = new Parameters();
+    /**
+     * Whether the editor should show the true graph.
+     */
     private boolean showTrueGraph = false;
 
     /**
@@ -367,6 +373,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return reflections.getSubTypesOf(interfaceClazz);
     }
 
+    /**
+     * Sorts the given table columns in place: parameter columns first, then statistic columns, each group ordered
+     * by column name, case-insensitively.
+     *
+     * @param selectedTableColumns the table columns to sort
+     */
     public static void sortTableColumns(List<MyTableColumn> selectedTableColumns) {
         selectedTableColumns.sort((o1, o2) -> {
             if (o1.equals(o2)) {
@@ -415,6 +427,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return paramNamesSet;
     }
 
+    /**
+     * Returns the names of all parameters of the independence tests used by the given algorithms.
+     *
+     * @param algorithms the algorithm specifications
+     * @return the set of independence test parameter names
+     */
     @NotNull
     public static Set<String> getAllTestParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
@@ -430,6 +448,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return paramNamesSet;
     }
 
+    /**
+     * Returns the names of all parameters of the scores used by the given algorithms.
+     *
+     * @param algorithms the algorithm specifications
+     * @return the set of score parameter names
+     */
     public static Set<String> getAllScoreParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
 
@@ -444,6 +468,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return paramNamesSet;
     }
 
+    /**
+     * Returns the names of all bootstrapping parameters for the given algorithms.
+     *
+     * @param algorithms the algorithm specifications
+     * @return the set of bootstrapping parameter names
+     */
     @NotNull
     public static Set<String> getAllBootstrapParameters(List<AlgorithmSpec> algorithms) {
         Set<String> paramNamesSet = new HashSet<>();
@@ -481,6 +511,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      *
      * @param ps1 A print stream to write the verbose output.
      * @param ps2 A print stream to write the verbose output.
+     * @throws ParseException if an error occurs while running the comparison.
      */
     public void runComparison(PrintStream ps1, PrintStream ps2) throws ParseException {
         initializeIfNull();
@@ -545,6 +576,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * Re-runs statistics against saved graphs from a previous run, without
      * re-running any algorithms. The savedResultsPath should be a prior
      * comparison-N directory (containing results/, elapsed/, simulation1/save/).
+     *
+     * @param savedResultsPath the path of a previous comparison-N results directory.
+     * @param ps1              A print stream to write the verbose output.
+     * @param ps2              A print stream to write the verbose output.
+     * @throws ParseException if an error occurs while recomputing the statistics.
      */
     public void recomputeFromSavedRun(String savedResultsPath, PrintStream ps1, PrintStream ps2) throws ParseException {
         initializeIfNull();
@@ -627,6 +663,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     /**
      * A list of possible simulations.
+     *
+     * @return the names of the possible simulations.
      */
     public List<String> getSimulationName() {
         return simNames;
@@ -634,6 +672,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     /**
      * A private instance variable that holds a list of possible Algorithm objects.
+     *
+     * @return the names of the possible algorithms.
      */
     public List<String> getAlgorithmsName() {
         return algNames;
@@ -641,6 +681,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     /**
      * A private instance variable that holds a list of possible Statistic objects.
+     *
+     * @return the names of the possible statistics.
      */
     public List<String> getStatisticsNames() {
         return statNames;
@@ -675,10 +717,22 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * Appends an algorithm to the list of selected algorithms.
+     *
+     * @param algorithm The algorithm to add.
+     */
     public void addAlgorithm(AlgorithmSpec algorithm) {
         insertAlgorithmAt(getSelectedAlgorithmSpecs().size(), algorithm);
     }
 
+    /**
+     * Inserts an algorithm into the list of selected algorithms at the given index, clamped to the list bounds. The
+     * selected algorithm index is adjusted so it still refers to the same algorithm.
+     *
+     * @param index     The index at which to insert.
+     * @param algorithm The algorithm to insert.
+     */
     public void insertAlgorithmAt(int index, AlgorithmSpec algorithm) {
         initializeIfNull();
         LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
@@ -689,16 +743,29 @@ public class GridSearchModel implements SessionModel, GraphSource {
         if (selectedAlgorithm >= index) selectedAlgorithm++;
     }
 
+    /**
+     * Removes the last algorithm from the list of selected algorithms, if any.
+     */
     public void removeLastAlgorithm() {
         initializeIfNull();
         removeAlgorithmAt(getSelectedAlgorithmSpecs().size() - 1);
     }
 
+    /**
+     * Returns the list of selected algorithms.
+     *
+     * @return the live list of selected algorithm specifications.
+     */
     public List<AlgorithmSpec> getAlgorithms() {
         initializeIfNull();
         return getSelectedAlgorithmSpecs();
     }
 
+    /**
+     * Replaces the list of selected algorithms, clamping the selected algorithm index to the new list.
+     *
+     * @param algorithms The new algorithms.
+     */
     public void setAlgorithms(List<AlgorithmSpec> algorithms) {
         initializeIfNull();
         LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
@@ -709,12 +776,22 @@ public class GridSearchModel implements SessionModel, GraphSource {
         if (selectedAlgorithm < 0) selectedAlgorithm = 0;
     }
 
+    /**
+     * Removes all selected algorithms and resets the selected algorithm index to 0.
+     */
     public void clearAlgorithms() {
         initializeIfNull();
         getSelectedAlgorithmSpecs().clear();
         selectedAlgorithm = 0;
     }
 
+    /**
+     * Moves a selected algorithm from one position to another, adjusting the selected algorithm index so it still
+     * refers to the same algorithm. Does nothing if either index is out of bounds or they are equal.
+     *
+     * @param fromIndex The current index of the algorithm.
+     * @param toIndex   The new index of the algorithm.
+     */
     public void moveAlgorithm(int fromIndex, int toIndex) {
         initializeIfNull();
         LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
@@ -757,12 +834,22 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * Replaces the list of selected table columns with a copy of the given list.
+     *
+     * @param cols The table columns.
+     */
     public void setSelectedTableColumns(List<MyTableColumn> cols) {
         initializeIfNull();
         // store a fresh list so the model owns it
         parameters.set("algcomparison.selectedTableColumns", new ArrayList<>(cols));
     }
 
+    /**
+     * Returns the list of selected table columns, creating an empty list if none is stored.
+     *
+     * @return the live list of selected table columns.
+     */
     @SuppressWarnings("unchecked")
     public List<MyTableColumn> getSelectedTableColumns() {
         initializeIfNull();
@@ -775,6 +862,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     /**
      * Returns the list of statistics classes.
+     *
+     * @return a copy of the list of statistics classes.
      */
     public List<Class<? extends Statistic>> getStatisticsClasses() {
         initializeIfNull();
@@ -823,6 +912,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * The currently selected simulation in the GridSearchModel. A list of size one (enforced) that contains the
      * selected simulation.
+     *
+     * @return the selected simulations, or a single-dataset simulation wrapping the supplied data if there is any.
      */
     public Simulations getSelectedSimulations() {
         initializeIfNull();
@@ -838,6 +929,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     /**
      * A private instance variable that holds a list of selected Algorithm objects.
+     *
+     * @return the live list of selected algorithm specifications.
      */
     public List<AlgorithmSpec> getSelectedAlgorithms() {
         if (!(parameters.get("algcomparison.selectedAlgorithms") instanceof LinkedList<?>)) {
@@ -847,6 +940,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (LinkedList<AlgorithmSpec>) parameters.get("algcomparison.selectedAlgorithms");
     }
 
+    /**
+     * Replaces the list of selected algorithms. The selected algorithm index is not changed.
+     *
+     * @param specs The new algorithms.
+     */
     public void setSelectedAlgorithms(List<AlgorithmSpec> specs) {
         initializeIfNull();
         LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
@@ -854,6 +952,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
         list.addAll(specs);
     }
 
+    /**
+     * Returns the index of the selected algorithm, first clamping it to the bounds of the selected algorithm list.
+     *
+     * @return the selected algorithm index, or -1 if no algorithms are selected.
+     */
     public int getSelectedAlgorithmSafe() {
         initializeIfNull();
         int n = getSelectedAlgorithmSpecs().size();
@@ -863,6 +966,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return selectedAlgorithm;
     }
 
+    /**
+     * Removes the selected algorithm at the given index, if the index is in bounds.
+     *
+     * @param index The index of the algorithm to remove.
+     */
     public void removeAlgorithmAt(int index) {
         initializeIfNull();
         LinkedList<AlgorithmSpec> list = getSelectedAlgorithmSpecs();
@@ -1032,6 +1140,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return pairs;
     }
 
+    /**
+     * Returns the parameters for the Markov checker.
+     *
+     * @return the Markov checker parameters.
+     */
     public Parameters getMarkovCheckerParameters() {
         return mcParameters;
     }
@@ -1168,6 +1281,14 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return simulationNames;
     }
 
+    /**
+     * Builds the statistics for the selected table columns: an instance of each selected statistic class (Markov
+     * checker statistics are constructed with the Markov checker's test, conditioning set type and parameters), and a
+     * parameter column for each selected parameter. Each statistic's weight is read from the parameters. The selected
+     * statistics are also recorded as the last statistics used.
+     *
+     * @return the selected statistics.
+     */
     public Statistics getSelectedStatistics() {
         List<MyTableColumn> selectedTableColumns = getSelectedTableColumns();
 
@@ -1232,6 +1353,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return selectedStatistics;
     }
 
+    /**
+     * Returns all available table columns: one for each parameter of the selected simulations, algorithms,
+     * independence tests, scores and bootstrapping, and one for each statistic class that can be instantiated.
+     *
+     * @return the list of all available table columns.
+     */
     @NotNull
     public List<MyTableColumn> getAllTableColumns() {
         List<MyTableColumn> allTableColumns = new ArrayList<>();
@@ -1327,11 +1454,21 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return !userDefault;
     }
 
+    /**
+     * Returns the abbreviations of the statistics last used, as stored in the user preferences.
+     *
+     * @return the abbreviations of the last statistics used.
+     */
     public List<String> getLastStatisticsUsed() {
         String[] lastStatisticsUsed = Preferences.userRoot().get("lastAlgcomparisonStatisticsUsed", "").split(";");
         return Arrays.asList(lastStatisticsUsed);
     }
 
+    /**
+     * Stores the abbreviations of the given statistics in the user preferences as the last statistics used.
+     *
+     * @param lastStatisticsUsed the statistics.
+     */
     public void setLastStatisticsUsed(List<Statistic> lastStatisticsUsed) {
         StringBuilder sb = new StringBuilder();
         for (Statistic statistic : lastStatisticsUsed) {
@@ -1343,10 +1480,21 @@ public class GridSearchModel implements SessionModel, GraphSource {
         Preferences.userRoot().put("lastAlgcomparisonStatisticsUsed", sb.toString());
     }
 
+    /**
+     * Returns the name of the last independence test used, as stored in the user preferences.
+     *
+     * @return the name of the last independence test used, or an empty string if none.
+     */
     public String getLastIndependenceTest() {
         return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", "");
     }
 
+    /**
+     * Stores the name of the last independence test used in the user preferences.
+     *
+     * @param name the name of an independence test model.
+     * @throws IllegalArgumentException if there is no independence test model with that name.
+     */
     public void setLastIndependenceTest(String name) {
         // Changed 2026-8-24: validate against the full registry, so a test chosen through an editor's local
         // "include experimental" switch is accepted even when the global preference is off.
@@ -1363,14 +1511,31 @@ public class GridSearchModel implements SessionModel, GraphSource {
         throw new IllegalArgumentException("Independence test by that name not found: " + name);
     }
 
+    /**
+     * Returns the name of the last independence test used, as stored in the user preferences (the same preference as
+     * {@link #getLastIndependenceTest()}), defaulting to the name of this model.
+     *
+     * @return the name of the last independence test used.
+     */
     public String getLastMarkovCheckerTest() {
         return Preferences.userRoot().get("lastAlgcomparisonIndependenceTestUsed", name);
     }
 
+    /**
+     * Returns the name of the last score used, as stored in the user preferences.
+     *
+     * @return the name of the last score used, or an empty string if none.
+     */
     public String getLastScore() {
         return Preferences.userRoot().get("lastAlgcomparisonScoreUsed", "");
     }
 
+    /**
+     * Stores the name of the last score used in the user preferences.
+     *
+     * @param name the name of a score model.
+     * @throws IllegalArgumentException if there is no score model with that name.
+     */
     public void setLastScore(String name) {
         ScoreModels scoreModels = ScoreModels.getInstance(true);
         List<ScoreModel> models = scoreModels.getModels();
@@ -1385,26 +1550,56 @@ public class GridSearchModel implements SessionModel, GraphSource {
         throw new IllegalArgumentException("Score by that name not found: " + name);
     }
 
+    /**
+     * Returns the last graph choice, as stored in the user preferences.
+     *
+     * @return the last graph choice, or an empty string if none.
+     */
     public String getLastGraphChoice() {
         return Preferences.userRoot().get("lastAlgcomparisonGraphChoice", "");
     }
 
+    /**
+     * Stores the last graph choice in the user preferences.
+     *
+     * @param name the graph choice.
+     */
     public void setLastGraphChoice(String name) {
         Preferences.userRoot().put("lastAlgcomparisonGraphChoice", name);
     }
 
+    /**
+     * Returns the last algorithm choice, as stored in the user preferences.
+     *
+     * @return the last algorithm choice, or an empty string if none.
+     */
     public String getLastAlgorithmChoice() {
         return Preferences.userRoot().get("lastAlgcomparisonAlgorithmChoice", "");
     }
 
+    /**
+     * Stores the last algorithm choice in the user preferences.
+     *
+     * @param name the algorithm choice.
+     */
     public void setLastAlgorithmChoice(String name) {
         Preferences.userRoot().put("lastAlgcomparisonAlgorithmChoice", name);
     }
 
+    /**
+     * Returns the last simulation choice, as stored in the user preferences.
+     *
+     * @return the last simulation choice (a String), or an empty string if none.
+     */
     public Object getLastSimulationChoice() {
         return Preferences.userRoot().get("lastAlgcomparisonSimulationChoice", "");
     }
 
+    /**
+     * Stores the last simulation choice in the user preferences.
+     *
+     * @param selectedItem the simulation choice.
+     */
     public void setLastSimulationChoice(String selectedItem) {
         Preferences.userRoot().put("lastAlgcomparisonSimulationChoice", selectedItem);
     }
@@ -1412,6 +1607,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * The suppliedGraph variable represents a graph that can be supplied by the user. This graph will be given as an
      * option in the user interface.
+     *
+     * @return the supplied graph, or null if none.
      */
     public Graph getSuppliedGraph() {
         return suppliedGraph;
@@ -1419,22 +1616,36 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
     /**
      * The last comparison text displayed.
+     *
+     * @return the last comparison text, or an empty string if none.
      */
     public String getLastComparisonText() {
         return lastComparisonText == null ? "" : lastComparisonText;
     }
 
+    /**
+     * Sets the last comparison text displayed.
+     *
+     * @param lastComparisonText the comparison text.
+     */
     public void setLastComparisonText(String lastComparisonText) {
         this.lastComparisonText = lastComparisonText;
     }
 
     /**
      * The last verbose output displayed.
+     *
+     * @return the last verbose output text, or an empty string if none.
      */
     public String getLastVerboseOutputText() {
         return lastVerboseOutputText == null ? "" : lastVerboseOutputText;
     }
 
+    /**
+     * Sets the last verbose output displayed.
+     *
+     * @param lastVerboseOutputText the verbose output text.
+     */
     public void setLastVerboseOutputText(String lastVerboseOutputText) {
         this.lastVerboseOutputText = lastVerboseOutputText;
     }
@@ -1476,6 +1687,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * Represents the variable "knowledge" in the GridSearchModel class. This variable is of type Knowledge and is
      * private and final.
+     *
+     * @return the knowledge.
      */
     public Knowledge getKnowledge() {
         return knowledge;
@@ -1492,6 +1705,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * DataSet dataset = new DataSet();
      * suppliedData = dataset;
      * </pre>
+     *
+     * @return the supplied data set, or null if none.
      */
     public DataSet getSuppliedData() {
         return suppliedData;
@@ -1500,19 +1715,36 @@ public class GridSearchModel implements SessionModel, GraphSource {
     /**
      * The variable resultsPath represents the path to the result folder. This is set after a comparison has been run
      * and can be used to add additional files to the comparison results.
+     *
+     * @return the path to the results folder, or null if no comparison has been run.
      */
     public String getResultsPath() {
         return resultsPath;
     }
 
+    /**
+     * Sets the path to the results folder.
+     *
+     * @param resultsPath the results path.
+     */
     public void setResultsPath(String resultsPath) {
         this.resultsPath = resultsPath;
     }
 
+    /**
+     * Sets the selected graph, returned by {@link #getGraph()}.
+     *
+     * @param graph the selected graph.
+     */
     public void setSelectedGraph(Graph graph) {
         this.selectedGraph = graph;
     }
 
+    /**
+     * Returns the selected simulation specification, as stored in the parameters.
+     *
+     * @return the selected simulation specification, or null if none.
+     */
     public SimulationSpec getSelectedSimulation() {
         initializeIfNull();
 
@@ -1520,32 +1752,65 @@ public class GridSearchModel implements SessionModel, GraphSource {
         return (obj instanceof SimulationSpec s) ? s : null;
     }
 
+    /**
+     * Stores the selected simulation specification in the parameters.
+     *
+     * @param simulation the selected simulation specification.
+     */
     public void setSelectedSimulation(SimulationSpec simulation) {
         initializeIfNull();
         parameters.set("algcomparison.selectedSimulation", simulation);
     }
 
+    /**
+     * Sets the index of the selected simulation.
+     *
+     * @param selectedSimulation the index of the selected simulation.
+     */
     public void setSelectedSimulation(int selectedSimulation) {
         this.selectedSimulation = selectedSimulation;
     }
 
+    /**
+     * Removes the selected simulation specification from the parameters.
+     */
     public void clearSelectedSimulation() {
         initializeIfNull();
         parameters.remove("algcomparison.selectedSimulation");
     }
 
+    /**
+     * Returns the index of the selected algorithm.
+     *
+     * @return the index of the selected algorithm.
+     */
     public int getSelectedAlgorithm() {
         return selectedAlgorithm;
     }
 
+    /**
+     * Sets the index of the selected algorithm.
+     *
+     * @param selectedAlgorithm the index of the selected algorithm.
+     */
     public void setSelectedAlgorithm(int selectedAlgorithm) {
         this.selectedAlgorithm = selectedAlgorithm;
     }
 
+    /**
+     * Returns the index of the selected graph.
+     *
+     * @return the index of the selected graph.
+     */
     public int getSelectedGraphIndex() {
         return selectedGraphIndex;
     }
 
+    /**
+     * Sets the index of the selected graph.
+     *
+     * @param selectedGraphIndex the index of the selected graph.
+     */
     public void setSelectedGraphIndex(int selectedGraphIndex) {
         this.selectedGraphIndex = selectedGraphIndex;
     }
@@ -1554,6 +1819,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * A wrapper for a statistical independence test used by the Markov checker.
      * <p>
      * This instance by default utilizes the Fisher-Z test for determining statistical independence.
+     *
+     * @return the independence wrapper used by the Markov checker.
      */
     public IndependenceWrapper getMarkovCheckerIndependenceWrapper() {
         return markovCheckerIndependenceWrapper;
@@ -1580,6 +1847,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * <p>
      * The value is set to {@code ConditioningSetType.LOCAL_MARKOV} by default, indicating that the local Markov
      * property is being utilized.
+     *
+     * @return the conditioning set type used by the Markov checker.
      */
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
         // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
@@ -1610,22 +1879,47 @@ public class GridSearchModel implements SessionModel, GraphSource {
         parameters.set(PARAM_MARKOV_CHECKER_COND_SET_TYPE, markovCheckerConditioningSetType.name());
     }
 
+    /**
+     * Returns the independence test model selected in the editor.
+     *
+     * @return the selected independence test model, or null if none.
+     */
     public IndependenceTestModel getSelectedIndependenceTestModel() {
         return selectedIndependenceTestModel;
     }
 
+    /**
+     * Sets the independence test model selected in the editor.
+     *
+     * @param selectedIndependenceTestModel the selected independence test model.
+     */
     public void setSelectedIndependenceTestModel(IndependenceTestModel selectedIndependenceTestModel) {
         this.selectedIndependenceTestModel = selectedIndependenceTestModel;
     }
 
+    /**
+     * Returns whether the editor should show the true graph.
+     *
+     * @return true if the true graph should be shown.
+     */
     public boolean getShowTrueGraph() {
         return this.showTrueGraph;
     }
 
+    /**
+     * Sets whether the editor should show the true graph.
+     *
+     * @param showTrueGraph true if the true graph should be shown.
+     */
     public void setShowTrueGraph(boolean showTrueGraph) {
         this.showTrueGraph = showTrueGraph;
     }
 
+    /**
+     * Returns the index of the selected simulation.
+     *
+     * @return the index of the selected simulation (a boxed Integer).
+     */
     public Object getSelectedSimulationIndex() {
         return selectedSimulation;
     }
@@ -1659,6 +1953,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
     private record NamedClass<T>(String name, Class<? extends T> clazz) {
     }
 
+    /**
+     * A column of the comparison results table, showing either a statistic or a parameter value.
+     */
     public static class MyTableColumn implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -1687,6 +1984,13 @@ public class GridSearchModel implements SessionModel, GraphSource {
          */
         private boolean setByUser = false;
 
+        /**
+         * Constructs a statistic column.
+         *
+         * @param name        the column name.
+         * @param description the column description.
+         * @param statistic   the statistic class.
+         */
         public MyTableColumn(String name, String description, Class<? extends Statistic> statistic) {
             this.columnName = name;
             this.description = description;
@@ -1695,6 +1999,13 @@ public class GridSearchModel implements SessionModel, GraphSource {
             this.type = ColumnType.STATISTIC;
         }
 
+        /**
+         * Constructs a parameter column.
+         *
+         * @param name        the column name.
+         * @param description the column description.
+         * @param parameter   the parameter name.
+         */
         public MyTableColumn(String name, String description, String parameter) {
             this.columnName = name;
             this.description = description;
@@ -1703,36 +2014,78 @@ public class GridSearchModel implements SessionModel, GraphSource {
             this.type = ColumnType.PARAMETER;
         }
 
+        /**
+         * Returns the description of the column.
+         *
+         * @return the description.
+         */
         public String getDescription() {
             return description;
         }
 
+        /**
+         * Returns the name of the column.
+         *
+         * @return the column name.
+         */
         public String getColumnName() {
             return columnName;
         }
 
+        /**
+         * Returns the description of the column; same as {@link #getDescription()}.
+         *
+         * @return the description.
+         */
         public String getdescription() {
             return description;
         }
 
+        /**
+         * Returns the type of the column.
+         *
+         * @return the column type.
+         */
         public ColumnType getType() {
             return type;
         }
 
+        /**
+         * Returns the statistic class of a statistic column.
+         *
+         * @return the statistic class.
+         * @throws IllegalStateException if this is not a statistic column.
+         */
         public Class<? extends Statistic> getStatistic() {
             if (type != ColumnType.STATISTIC) throw new IllegalStateException("Not a statistic column");
             return statistic;
         }
 
+        /**
+         * Returns the parameter name of a parameter column.
+         *
+         * @return the parameter name.
+         * @throws IllegalStateException if this is not a parameter column.
+         */
         public String getParameter() {
             if (type != ColumnType.PARAMETER) throw new IllegalStateException("Not a parameter column");
             return parameter;
         }
 
+        /**
+         * Returns whether the column's parameter was set by the user, i.e. differs from its default value.
+         *
+         * @return true if set by the user.
+         */
         public boolean isSetByUser() {
             return setByUser;
         }
 
+        /**
+         * Sets whether the column's parameter was set by the user.
+         *
+         * @param setByUser true if set by the user.
+         */
         public void setSetByUser(boolean setByUser) {
             this.setByUser = setByUser;
         }
@@ -1784,8 +2137,18 @@ public class GridSearchModel implements SessionModel, GraphSource {
             return true;
         }
 
+        /**
+         * The type of a table column.
+         */
         public enum ColumnType {
-            STATISTIC, PARAMETER
+            /**
+             * A column showing a statistic.
+             */
+            STATISTIC,
+            /**
+             * A column showing a parameter value.
+             */
+            PARAMETER
         }
 
 

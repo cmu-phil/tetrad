@@ -46,6 +46,12 @@ public class ImputeMissingDataParamsEditor extends JPanel implements ParameterEd
     private Parameters params;
 
     /**
+     * Constructs a new impute missing data parameters editor.
+     */
+    public ImputeMissingDataParamsEditor() {
+    }
+
+    /**
      * Sets up the panel.
      */
     public void setup() {

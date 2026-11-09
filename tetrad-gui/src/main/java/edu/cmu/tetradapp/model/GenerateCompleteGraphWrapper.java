@@ -51,7 +51,8 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
     /**
      * <p>Constructor for GenerateCompleteGraphWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GenerateCompleteGraphWrapper(Graph graph, Parameters parameters) {
         super(GenerateCompleteGraphWrapper.generateCompleteGraph(graph), parameters, "Generate Complete Graph");

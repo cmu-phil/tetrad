@@ -68,6 +68,7 @@ public class NumDirectedEdgeNoMeasureAncestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -75,7 +76,7 @@ public class NumDirectedEdgeNoMeasureAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (existsDirectedPathFromTo(trueGraph, x, y)) {
+                if (existsDirectedPathFromTo(dag, x, y)) {
                     tp++;
                 }
             }

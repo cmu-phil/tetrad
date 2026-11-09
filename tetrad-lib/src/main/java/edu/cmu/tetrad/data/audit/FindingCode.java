@@ -166,8 +166,32 @@ public enum FindingCode {
      * inside the observed range or coincides with plausible measurements will not be. Whether the flagged value is a
      * code or a measurement is a question about the data's provenance, and the audit takes no position on it. Only
      * continuous variables are checked; a sentinel category of a discrete variable is visible in its level list.
+     * An extreme value adjacent to the rest of the distribution -- within a small fraction of the range, or one
+     * grid step -- is never reported here however large its mass; with a large mass it is a {@link #BOUNDARY_ATOM}.
      */
     SENTINEL_VALUE,
+
+    /**
+     * A continuous variable has a large share of its observed values at the top or bottom of its observed range,
+     * with no gap separating that value from the rest of the distribution: a grade of 100, a detector at its
+     * maximum, a scale that ran out. The value is a real measurement, not a code, but it is a censored one: a cell
+     * at the ceiling says "at least this much," and a cell at the floor "at most this much." Treating the atom as an
+     * exact value flattens the top (or bottom) of the distribution and attenuates every correlation the variable
+     * takes part in, by an amount that differs from variable to variable with the size of the atom, so the
+     * attenuation does not cancel across a block and rank-based or correlation-based structure tests see it as
+     * structure. Rank correlation does not rescue it: the ordering inside the tied mass does not exist to be
+     * recovered. Treating the atom as missing is wrong in the other direction, since it throws away the information
+     * that the value was large and is missing-not-at-random besides.
+     * <p>
+     * The remedy is to treat the bound as a bound: a censored covariance estimate (for RLCD, the censor-ceiling
+     * option; for score-based searches, the censored covariance estimator from code), or a test for discrete or
+     * mixed data after dichotomizing at the bound. The finding is per variable and per end, with the bound under
+     * "value", the number of cells at it under "count", its share of the observed values under "mass", and 1.0
+     * under "atMinimum" for a floor. This is the complement of {@link #SENTINEL_VALUE}: the two checks share the
+     * mass condition and are separated by the gap, a repeated extreme value with a gap below (above) it being a
+     * candidate code and one without being a candidate bound. Only continuous variables are checked.
+     */
+    BOUNDARY_ATOM,
 
     /**
      * Two columns are exact affine functions of one another on the rows where both are observed (identical columns,

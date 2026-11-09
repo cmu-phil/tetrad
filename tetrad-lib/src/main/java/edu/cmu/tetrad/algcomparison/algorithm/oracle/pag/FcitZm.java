@@ -42,6 +42,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -145,10 +146,14 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
 
-        if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-                throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
-            }
+        // Oracle input with a BOSS start is supported since 2026-10-10 (Boss accepts a GraphScore; see Boss and
+        // TestBossOracle). The one caveat is BOSS's own: with an m-separation oracle, the BES step is what guarantees
+        // that the CPDAG of the true DAG is returned, so warn if it has been turned off rather than refuse the run.
+        if (test instanceof MsepTest && parameters.getInt(Params.FCIT_STARTS_WITH) == 1
+            && !parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE)) {
+            TetradLogger.getInstance().log("A d-separation oracle with a BOSS start: the BES step is off, so BOSS is "
+                                           + "not guaranteed to return the CPDAG of the true DAG; turn useBes on for "
+                                           + "an exact oracle run.");
         }
 
         test = new CachedIndependenceQueries(test);
@@ -167,6 +172,10 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        // The warrant for the result, the three-way choice shared with FCIT and the *-FCI family: 1 = Guarantee
+        // I-map, 2 = Score step, 3 = Saturating step. The saturating pass runs exactly when neither gate is on.
+        search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS),
+                parameters.getDouble(Params.IMAP_ALPHA));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
@@ -249,6 +258,8 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.IMAP_ALPHA);
         params.add(Params.TEST_TIMEOUT);
 
         // General

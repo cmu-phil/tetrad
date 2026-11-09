@@ -42,6 +42,11 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
      */
     private Parameters params;
 
+    /**
+     * Constructs a new bootstrap sampler parameters editor.
+     */
+    public BootstrapSamplerParamsEditor() {
+    }
 
     /**
      * {@inheritDoc}

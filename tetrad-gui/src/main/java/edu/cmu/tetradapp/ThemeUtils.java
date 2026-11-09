@@ -7,6 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.prefs.Preferences;
 
+/**
+ * Utilities for switching the application between light and dark FlatLaf themes and for scaling the UI font.
+ */
 public final class ThemeUtils {
 
     /**
@@ -97,6 +100,13 @@ public final class ThemeUtils {
         return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 
+    /**
+     * Switches the Look and Feel to the FlatLaf dark or light theme, saves the choice in the user preferences, and
+     * refreshes all open windows.
+     *
+     * @param dark true for the dark theme, false for the light theme.
+     * @throws RuntimeException if the Look and Feel cannot be switched.
+     */
     public static void applyTheme(boolean dark) {
         try {
             if (dark) {

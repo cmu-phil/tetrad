@@ -76,6 +76,11 @@ public final class RlcdClusterSearch {
     private Consumer<String> log = s -> {
     };
     private Knowledge knowledge = new Knowledge();
+    private boolean observedExplanationCheck = false;
+    private double observedExplanationAlpha = 0.05;
+    private int observedExplanationMaxSets = 20000;
+    private int observedExplanationMaxSize = 3;
+    private int explainedAway = 0;
 
     /**
      * Constructs the search.
@@ -107,6 +112,55 @@ public final class RlcdClusterSearch {
     public void setLog(Consumer<String> log) {
         this.log = log == null ? s -> {
         } : log;
+    }
+
+    /**
+     * Sets whether a rank deficiency is checked for an observed explanation before it is accepted as a cluster
+     * (default false). A set As found rank deficient against Bs given the non-sinks, at a rank that would introduce
+     * t new latents, is accepted only if no set T of t observed variables (from the partition, outside the
+     * non-sinks; members of As are allowed, since a choke can sit inside) makes As and Bs rank-independent given T
+     * and the non-sinks -- that is, only if no t observed variables explain the deficiency as well as t latents
+     * would. The test adds T to both sides, so "rank at most m given T" is "partial cross-rank zero".
+     * <p>
+     * This is what keeps a Markov chain from being read as a measurement model: the later half of a chain is rank
+     * one against the earlier half because the variable between them separates them, and that variable is the T
+     * that explains it. It also removes the population-level rank deficiencies that a dense observed DAG implies
+     * (about two thirds of the spurious latents on latent-free data, measured October 2026), which no implied-
+     * constraint check can remove because they are real. It costs nothing on true measurement models at N = 2000;
+     * at small N an underpowered explanation test can explain a true cluster away by accident, which is why its
+     * alpha is separate and larger by default: a larger alpha rejects more readily, so fewer accidental
+     * explanations.
+     *
+     * <b>Two halves.</b> The explanation test above is the first; it is kept to sets of at most t variables, since
+     * wider sets drawn from inside a cluster explain every true cluster (enough indicators screen the rest). A chain
+     * of observed variables defeats it: the chain's segments are rank deficient against everything else, the search
+     * underestimates their rank when the chain has weak skip edges, and no explainer narrower than the whole other
+     * side exists. The second half catches those: after the deficient sets of a round are merged into clusters and
+     * before they are confirmed, each cluster's measured members are tested pairwise for independence given up to
+     * two other members. Pure indicators of one latent are never so separated; members of a chain are; a cluster
+     * with a separated pair is dropped as observed structure. Three mutually adjacent variables have no separated
+     * pair and are a saturated model either way, so a triangle stays a latent whatever it really is.
+     *
+     * @param check   whether to check.
+     * @param alpha   the alpha of both tests (default 0.05; larger is more protective of true clusters).
+     * @param maxSize the largest explaining set tried, capped at t (default 3).
+     * @param maxSets the most candidate sets tried per deficiency, for either half (default 20000).
+     */
+    public void setObservedExplanationCheck(boolean check, double alpha, int maxSize, int maxSets) {
+        this.observedExplanationCheck = check;
+        this.observedExplanationAlpha = alpha;
+        this.observedExplanationMaxSize = maxSize;
+        this.observedExplanationMaxSets = maxSets;
+    }
+
+    /**
+     * The number of rank deficiencies this search found and then explained away by observed variables, so declined
+     * to make clusters of. Diagnostic.
+     *
+     * @return the count.
+     */
+    public int getExplainedAway() {
+        return explainedAway;
     }
 
     /**
@@ -257,6 +311,19 @@ public final class RlcdClusterSearch {
         boolean globalFound = false;
         if (foundDeficiency) {
             g.determineClusters();
+            if (observedExplanationCheck) {
+                // The merged cluster is what gets confirmed, so the within-set check applies here: three mutually
+                // adjacent chain members pass it one triangle at a time and fail it once merged into a segment.
+                int removed = g.filterClusters(vs -> {
+                    String separated = separatedWithin(g, vs, List.of());
+                    if (separated != null) {
+                        log.accept("   Merged cluster " + vs + " has members independent given other members: "
+                                   + separated + "; not a measurement cluster, dropped.");
+                    }
+                    return separated == null;
+                });
+                explainedAway += removed;
+            }
             boolean found = g.confirmClusters();
             globalFound = found;
             if (globalFound) {
@@ -391,8 +458,16 @@ public final class RlcdClusterSearch {
                     // usually a test without the power to see a weak dependence, not real independence.
                     log.accept("   " + as + " is not dependent on Bs (rank 0); no cluster. Bs:" + bs);
                 } else if (!vStructureFound) {
-                    res.toAdd.add(new Object[]{as, test[1], new ArrayList<>(nonsinks)});
-                    res.found = true;
+                    List<String> explanation = observedExplanationCheck
+                            ? observedExplanation(g, as, bs, test[1], nonsinks) : null;
+                    if (explanation != null) {
+                        explainedAway++;
+                        log.accept("   " + as + " at rank " + test[1] + " is explained by observed " + explanation
+                                   + " given " + nonsinks + "; no cluster.");
+                    } else {
+                        res.toAdd.add(new Object[]{as, test[1], new ArrayList<>(nonsinks)});
+                        res.found = true;
+                    }
                 }
             }
         }
@@ -479,6 +554,108 @@ public final class RlcdClusterSearch {
             }
         }
         return new int[]{1, minRank};
+    }
+
+    /**
+     * Looks for observed variables that explain the rank-m deficiency of As against Bs: a set T, disjoint from the
+     * non-sinks, such that with T and the non-sinks added to both sides the cross-covariance has rank at most
+     * |T| + |nonsinks|, which is to say the partial cross-rank given T and the non-sinks is zero. Candidates for T
+     * come from the observed variables of the partition, members of As included.
+     * Sets are tried in order of size from one variable up to t = m - |nonsinks| (and no wider than the configured
+     * maximum), smallest first, and the first that explains the deficiency is returned.
+     *
+     * @return the explaining set, or null if none explains it (or t is 0, or the cap on sets is reached).
+     */
+    private List<String> observedExplanation(LatentGroups g, Set<Cover> as, Set<Cover> bs, int m,
+                                             List<String> nonsinks) {
+        int t = m - nonsinks.size();
+        if (t <= 0) return null;
+        int maxSize = Math.min(t, observedExplanationMaxSize);
+
+        Set<String> aMeasures = new TreeSet<>(CoverSets.vars(g.pickAllMeasures(as)));
+        Set<String> bMeasures = new TreeSet<>(CoverSets.vars(g.pickAllMeasures(bs)));
+
+        // Candidates: the partition's observed variables outside the non-sinks, members of As included (a choke can
+        // sit inside the set). Sets are never wider than t: a one-factor model itself implies that enough of a
+        // cluster's indicators screen the rest from everything, so a wide set drawn from inside a cluster would
+        // "explain" every true cluster. Chains, which need wider separators, are caught by separatedWithin instead.
+        List<String> candidates = new ArrayList<>();
+        for (String v : g.getXNames()) {
+            if (nonsinks.contains(v)) continue;
+            candidates.add(v);
+        }
+        Collections.sort(candidates);
+
+        int tried = 0;
+        for (int size = 1; size <= maxSize; size++) {
+            if (size > candidates.size()) break;
+            for (List<String> tSet : CoverSets.combinations(candidates, size)) {
+                if (++tried > observedExplanationMaxSets) return null;
+                Set<String> a = new TreeSet<>(aMeasures);
+                Set<String> b = new TreeSet<>(bMeasures);
+                a.addAll(nonsinks);
+                b.addAll(nonsinks);
+                a.addAll(tSet);
+                b.addAll(tSet);
+                int shared = nonsinks.size() + tSet.size();
+                // With |shared| columns on both sides the cross-covariance has rank at least |shared|; the partial
+                // cross-rank given the shared columns is zero exactly when the rank is at most |shared|.
+                int[] pcols = a.stream().mapToInt(xvars::indexOf).toArray();
+                int[] qcols = b.stream().mapToInt(xvars::indexOf).toArray();
+                if (pcols.length <= shared || qcols.length <= shared) continue;
+                if (rankTester.failToReject(pcols, qcols, shared, observedExplanationAlpha)) {
+                    return tSet;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The second half of the observed-explanation check, aimed at what the first half cannot reach. A segment of a
+     * chain of observed variables is rank deficient against everything else, and no observed set explains that
+     * without conditioning on the whole of the other side, so the first check passes it. But a chain segment is not
+     * a measurement cluster, and the difference shows inside the set: pure indicators of one latent are never
+     * independent given other indicators (the latent stays open), while members of a chain are separated by the
+     * members between them. This tests every pair of measured members of As for independence given up to two other
+     * members (and the non-sinks), with the rank test at rank |S|, which is the zero partial correlation. A pair
+     * found independent means As is observed structure, and the deficiency is declined.
+     * <p>
+     * A triangle, three mutually adjacent observed variables, has no separated pair and is a saturated model either
+     * way, so it is kept as a latent; nothing in a covariance matrix distinguishes it from one. Two-member sets have
+     * no pair to condition on and are left to the first check.
+     *
+     * @return a description of the separated pair and its separating set, or null if none.
+     */
+    private String separatedWithin(LatentGroups g, Set<Cover> as, List<String> nonsinks) {
+        List<String> members = new ArrayList<>(new TreeSet<>(CoverSets.vars(g.pickAllMeasures(as))));
+        if (members.size() < 3) return null;
+        int maxCond = Math.min(2, members.size() - 2);
+        int tried = 0;
+        for (int i = 0; i < members.size(); i++) {
+            for (int j = i + 1; j < members.size(); j++) {
+                String u = members.get(i), v = members.get(j);
+                List<String> others = new ArrayList<>(members);
+                others.remove(u);
+                others.remove(v);
+                for (int size = 0; size <= maxCond; size++) {
+                    for (List<String> cond : CoverSets.combinations(others, size)) {
+                        if (++tried > observedExplanationMaxSets) return null;
+                        Set<String> shared = new TreeSet<>(cond);
+                        shared.addAll(nonsinks);
+                        Set<String> a = new TreeSet<>(shared), b = new TreeSet<>(shared);
+                        a.add(u);
+                        b.add(v);
+                        int[] pcols = a.stream().mapToInt(xvars::indexOf).toArray();
+                        int[] qcols = b.stream().mapToInt(xvars::indexOf).toArray();
+                        if (rankTester.failToReject(pcols, qcols, shared.size(), observedExplanationAlpha)) {
+                            return u + " _||_ " + v + " | " + shared;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

@@ -43,8 +43,17 @@ import java.awt.event.WindowEvent;
  */
 public class LongToWideParamsEditor extends JDialog implements FinalizingParameterEditor {
 
+    /**
+     * The parameters being edited.
+     */
     private Parameters params;
+    /**
+     * The long-format data set to be reshaped, taken from the parent data box; may be null.
+     */
     private DataSet sourceDataSet;
+    /**
+     * True if the user finished the wizard rather than cancelling it.
+     */
     private boolean finished = false;
 
     /**

@@ -215,6 +215,17 @@ public class BayesPmWrapper implements SessionModel {
         }
     }
 
+    /**
+     * Constructs a new BayesPmWrapper for the graph in the given graph wrapper, using the given Bayes PM wrapper as
+     * a source of variable categories where applicable. The graph must be convertible to a DAG.
+     *
+     * @param graphWrapper the graph wrapper; must not be null
+     * @param pm           the existing Bayes PM wrapper
+     * @param params       the parameters, which determine how the number of categories is initialized
+     * @throws NullPointerException  if the graph wrapper is null
+     * @throws RuntimeException      if the graph cannot be converted to a DAG
+     * @throws IllegalStateException if the initialization mode is not recognized
+     */
     public BayesPmWrapper(GraphWrapper graphWrapper, BayesPmWrapper pm, Parameters params) {
         if (graphWrapper == null) {
             throw new NullPointerException("Graph must not be null.");

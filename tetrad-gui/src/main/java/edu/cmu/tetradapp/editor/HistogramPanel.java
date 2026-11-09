@@ -28,12 +28,17 @@ import java.util.Map;
  */
 public class HistogramPanel extends JPanel {
 
+    /** Names for n-tiles, indexed by n - 1 (e.g., index 3 is "quartile"). */
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
+    /** The histogram being displayed. */
     private final Histogram histogram;
+    /** Maps each drawn bar rectangle to its count, for tooltips. */
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
+    /** True if axes and axis labels should be drawn. */
     private final boolean drawAxes;
+    /** Horizontal padding on the left of the plot area, in pixels. */
     private final int paddingX;
 
     /**
@@ -41,9 +46,18 @@ public class HistogramPanel extends JPanel {
      */
     private Color barColor;
 
-    // Popup bin choices
+    /**
+     * The numbers of bins offered in the right-click popup.
+     */
     private int[] binChoices = new int[]{5, 10, 15, 20, 30, 40};
 
+    /**
+     * Constructs a panel displaying the given histogram.
+     *
+     * @param histogram the histogram to display
+     * @param drawAxes  true if axes and axis labels should be drawn
+     * @throws NullPointerException if histogram is null
+     */
     public HistogramPanel(Histogram histogram, boolean drawAxes) {
         this.drawAxes = drawAxes;
         this.paddingX = drawAxes ? 40 : 5;
@@ -176,12 +190,24 @@ public class HistogramPanel extends JPanel {
     // Public API
     // ============================================================
 
+    /**
+     * Sets the numbers of bins offered in the right-click popup. Null or empty arrays are ignored.
+     *
+     * @param choices the bin choices
+     */
     public void setBinChoices(int[] choices) {
         if (choices == null || choices.length == 0) return;
         this.binChoices = choices.clone();
         installBinsPopup();
     }
 
+    /**
+     * Forces the x-axis bounds of the histogram, for continuous targets; ignored otherwise.
+     *
+     * @param min           the lower bound
+     * @param max           the upper bound
+     * @param ignoreOutside whether data points outside the bounds are ignored
+     */
     public void setXAxisBounds(double min, double max, boolean ignoreOutside) {
         try {
             this.histogram.setContinuousBounds(min, max, ignoreOutside);
@@ -191,6 +217,7 @@ public class HistogramPanel extends JPanel {
         repaint();
     }
 
+    /** Clears any forced x-axis bounds on the histogram. */
     public void clearXAxisBounds() {
         try {
             this.histogram.clearContinuousBounds();
@@ -378,10 +405,20 @@ public class HistogramPanel extends JPanel {
         return String.format("%.3g", v);
     }
 
+    /**
+     * Returns the histogram being displayed.
+     *
+     * @return the histogram
+     */
     public Histogram getHistogram() {
         return this.histogram;
     }
 
+    /**
+     * Sets the bar color and repaints; if null, the theme color is used.
+     *
+     * @param barColor the bar color, or null
+     */
     public void setBarColor(Color barColor) {
         this.barColor = barColor;
         repaint();

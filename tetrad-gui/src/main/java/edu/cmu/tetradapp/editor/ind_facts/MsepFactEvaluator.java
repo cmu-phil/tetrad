@@ -5,9 +5,17 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 
 import java.util.Set;
 
+/**
+ * A fact evaluator that judges independence facts by m-separation in a graph.
+ */
 public final class MsepFactEvaluator implements FactEvaluator {
     private final Graph g;
 
+    /**
+     * Constructs an evaluator for the given graph.
+     *
+     * @param g the graph in which m-separation is checked.
+     */
     public MsepFactEvaluator(Graph g) {
         this.g = g;
     }

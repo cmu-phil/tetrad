@@ -38,6 +38,9 @@ import java.io.IOException;
  */
 public class SaveComponentImage extends AbstractAction {
 
+    /**
+     * The component whose image is to be saved.
+     */
     private final JComponent comp;
 
     /**
@@ -97,7 +100,9 @@ public class SaveComponentImage extends AbstractAction {
     }
 
     /**
-     * The component whose image is to be saved.
+     * Returns the component whose image is to be saved.
+     *
+     * @return the component whose image is to be saved
      */
     public JComponent getComp() {
         return comp;

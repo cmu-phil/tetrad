@@ -51,8 +51,17 @@ public class Simulation extends DataWrapper implements
 
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * The knowledge to be used in the simulation; may be null.
+     */
     private Knowledge knowledge;
+    /**
+     * The input graph for a trained-data simulation; null otherwise.
+     */
     private Graph inputGraph = null;
+    /**
+     * The input data for a trained-data simulation; null otherwise.
+     */
     private DataSet inputData = null;
 
     /**
@@ -110,6 +119,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param graphSource the source of the graph to be used in the simulation
      * @param parameters  the parameters to be used in the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(GraphSource graphSource, Parameters parameters) throws ParseException {
         this(graphSource, null, parameters);
@@ -122,6 +132,7 @@ public class Simulation extends DataWrapper implements
      * @param knowledge   the knowledge to be used in the simulation. For time series simulations, this will be
      *                    replicated across lags.
      * @param parameters  the parameters to be used in the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(GraphSource graphSource, KnowledgeBoxModel knowledge, Parameters parameters) throws ParseException {
         this.fixedGraph = true;
@@ -158,6 +169,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the BayesImWrapper instance used to create the simulation
      * @param parameters the Parameters instance used for configuring the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(BayesImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
@@ -170,6 +182,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the BayesImWrapperObs object to use for creating the simulation
      * @param parameters the Parameters object for the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
@@ -182,6 +195,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    The BayesPmWrapper object containing the Bayesian network model.
      * @param parameters The Parameters object containing the simulation parameters.
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getBayesPm());
@@ -194,6 +208,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    The BayesEstimatorWrapper object.
      * @param parameters The Parameters object.
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
@@ -206,6 +221,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    The DirichletBayesImWrapper used by the simulation.
      * @param parameters The Parameters used for the simulation.
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
@@ -218,6 +234,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    The DirichletEstimatorWrapper object used to estimate the Bayesian network.
      * @param parameters The Parameters object used for the simulation.
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
@@ -230,6 +247,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the SemPmWrapper object for accessing the SEM-PM functionality
      * @param parameters the Parameters object containing simulation parameters
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(SemPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getSemPm());
@@ -242,6 +260,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the SemImWrapper object used to initialize the simulation
      * @param parameters the Parameters object used to configure the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(HybridCgPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new HybridCgSimulation(wrapper.getHybridCgPm());
@@ -249,6 +268,13 @@ public class Simulation extends DataWrapper implements
         createSimulation();
     }
 
+    /**
+     * Constructs a Simulation object using the specified HybridCgImWrapper and Parameters.
+     *
+     * @param wrapper    the HybridCgImWrapper holding the Hybrid CG IM to simulate from
+     * @param parameters the Parameters object used to configure the simulation
+     * @throws ParseException if there is an error parsing the parameters
+     */
     public Simulation(HybridCgImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new HybridCgSimulation(wrapper.getHybridCgIm());
         this.parameters = parameters;
@@ -261,6 +287,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the HybridCgEstimatorWrapper holding the estimated model
      * @param parameters the Parameters object used to configure the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(HybridCgEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new HybridCgSimulation(wrapper.getEstimatedHybridCgIm());
@@ -273,6 +300,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the SemImWrapper object used to initialize the simulation
      * @param parameters the Parameters object used to configure the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(SemImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getSemIm());
@@ -285,6 +313,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    The StandardizedSemImWrapper object that encapsulates the standardized semantic image.
      * @param parameters The Parameters object that specifies the simulation parameters.
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
@@ -297,6 +326,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the SemEstimatorWrapper containing the estimated SEM image
      * @param parameters the Parameters object containing the simulation parameters
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getEstimatedSemIm());
@@ -309,6 +339,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the SemUpdaterWrapper object containing the SEM updater
      * @param parameters the Parameters object containing simulation parameters
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
@@ -321,6 +352,7 @@ public class Simulation extends DataWrapper implements
      *
      * @param wrapper    the wrapper object that provides the necessary SEM-PM model for the simulation
      * @param parameters the parameters needed for running the simulation
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) throws ParseException {
         this.simulation = new GeneralSemSimulation(wrapper.getSemPm());
@@ -334,6 +366,7 @@ public class Simulation extends DataWrapper implements
      * @param wrapper    the GeneralizedSemImWrapper object to be used for simulation
      * @param parameters the Parameters object containing simulation parameters
      * @throws IllegalArgumentException if the wrapper contains more than one SEM IM
+     * @throws ParseException if there is an error parsing the parameters
      */
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) throws ParseException {
         if (wrapper.getSemIms().size() != 1) {
@@ -365,6 +398,15 @@ public class Simulation extends DataWrapper implements
         this.fixedSimulation = false;
     }
 
+    /**
+     * Initializes a trained-data simulation from the given data and graph: a model is trained on the data,
+     * using the given graph, and data are then simulated from it.
+     *
+     * @param dataWrapper the data wrapper object containing the required data model list
+     * @param graph       the graph wrapper supplying the graph to train on
+     * @param parameters  the parameters for the simulation
+     * @throws ParseException if there is an error parsing the parameters
+     */
     public Simulation(DataWrapper dataWrapper, GraphWrapper graph, Parameters parameters)
             throws ParseException {
         inputGraph = graph.getGraph();
@@ -630,10 +672,20 @@ public class Simulation extends DataWrapper implements
         }
     }
 
+    /**
+     * Returns the input data for a trained-data simulation.
+     *
+     * @return the input data, or null if none.
+     */
     public DataSet getInputData() {
         return inputData;
     }
 
+    /**
+     * Returns the input graph for a trained-data simulation.
+     *
+     * @return the input graph, or null if none.
+     */
     public Graph getInputGraph() {
         return inputGraph;
     }

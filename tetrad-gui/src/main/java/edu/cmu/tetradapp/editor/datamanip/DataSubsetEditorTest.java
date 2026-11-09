@@ -27,6 +27,12 @@ import static org.junit.Assert.*;
 public class DataSubsetEditorTest {
 
     /**
+     * Constructs a new test instance.
+     */
+    public DataSubsetEditorTest() {
+    }
+
+    /**
      * Build a small 10x5 continuous dataset with variables X1..X5.
      * Each cell is value = row * 10 + col (0-based row/col indices),
      * so we can easily check correctness.

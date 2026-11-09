@@ -833,6 +833,19 @@
                     edu.cmu.tetradapp.editor.ImputeMissingDataParamsEditor
                 </params-editor-class>
             </model>
+            <model name="Covariance Matrix from Incomplete Data--EM or Censored" acronym="Covariance Estimate"
+                   help="data" category="Missing Values">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CovarianceEstimateDataWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.CovarianceEstimateParamsEditor
+                </params-editor-class>
+            </model>
             <model name="Add Missingness Indicators" acronym="Missingness Indicators"
                    help="data" category="Missing Values">
                 <logger>
@@ -1038,6 +1051,16 @@
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.ImpliedCovarianceDataAllWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
+            <model name="Residual Covariance Matrix--Latents Factored Out" acronym="Residual Covar" help="data"
+                   category="implied">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.ResidualCovarianceDataWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>

@@ -53,7 +53,13 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
     private static final long serialVersionUID = 24L;
 
     // ── session inputs ──────────────────────────────────────────────────────
+    /**
+     * The input graph (DAG) used for factorization.
+     */
     private final Graph inputGraph;
+    /**
+     * The observed data set the estimator is fitted to.
+     */
     private DataSet inputData;
 
     /**
@@ -66,12 +72,21 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
      * The index in sourceData of the data set the estimator is fitted to.
      */
     private int dataIndex = 0;
+    /**
+     * The parameters for the estimator.
+     */
     private final Parameters parameters;
 
     // ── core estimator (transient — refitted on demand) ─────────────────────
+    /**
+     * The underlying library estimator; transient, refitted on demand.
+     */
     private transient NNEstimator estimator;
 
     // ── persisted state ─────────────────────────────────────────────────────
+    /**
+     * The sample size used in the most recent resimulation.
+     */
     private int sampleSize;
 
     /**
@@ -80,6 +95,9 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
      */
     private CVReport persistedCvReport;
 
+    /**
+     * The accumulated edge-strength results, persisted so the Edge Strength tab is repopulated on reopen.
+     */
     private List<EdgeStrengthPair> persistedEdgeStrengthResults = new ArrayList<>();
 
     /**
@@ -94,6 +112,13 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
 
     // ── constructor ───────────────────────────────────────────────────────────
 
+    /**
+     * Constructs a new NN estimator model from the given data, graph and parameters.
+     *
+     * @param dataWrapper  the data wrapper; its selected tabular data set is used, or else the first tabular one.
+     * @param graphWrapper the graph wrapper supplying the DAG.
+     * @param parameters   the parameters.
+     */
     public NNEstimatorModel(DataWrapper dataWrapper,
                             GraphWrapper graphWrapper,
                             Parameters parameters) {
@@ -241,6 +266,9 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
                 .removeIf(p -> p.edge().childName.equals(childName));
     }
 
+    /**
+     * Removes all persisted edge-strength results.
+     */
     public void clearEdgeStrengthResults() {
         persistedEdgeStrengthResults.clear();
     }
@@ -257,18 +285,32 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
 
     // ── accessors for the editor ──────────────────────────────────────────────
 
-    /** @return the original observed dataset */
+    /**
+     * Returns the original observed dataset.
+     *
+     * @return the original observed dataset
+     */
     public DataSet getInputData() { return inputData; }
 
-    /** @return the DAG used for factorization */
+    /**
+     * Returns the DAG used for factorization.
+     *
+     * @return the DAG used for factorization
+     */
     public Graph getInputGraph() { return inputGraph; }
 
-    /** @return the most recently simulated dataset, or null before first resimulate() */
+    /**
+     * Returns the most recently simulated dataset.
+     *
+     * @return the most recently simulated dataset, or null before first resimulate()
+     */
     public DataSet getSimulatedData() {
         return estimator == null ? null : estimator.getSimulatedData();
     }
 
     /**
+     * Returns the adequacy report from the most recent resimulate() call.
+     *
      * @return the adequacy report from the most recent resimulate() call,
      *         or null before first resimulate()
      */
@@ -300,6 +342,17 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
         return persistedCvReport;
     }
 
+    /**
+     * Computes the partial edge strength of the edge parentName → childName by k-fold cross-validation: the
+     * difference in held-out fit between the full model and a model whose child mechanism is retrained without
+     * the parent.
+     *
+     * @param parentName name of the parent variable.
+     * @param childName  name of the child variable.
+     * @param k          number of CV folds.
+     * @return the partial edge-strength result.
+     * @throws IllegalStateException if resimulate() has not been called.
+     */
     public PartialEdgeStrengthResult computePartialEdgeStrength(
             String parentName, String childName, int k) {
         if (estimator == null)
@@ -308,10 +361,18 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
         return estimator.computePartialEdgeStrength(parentName, childName, k);
     }
 
-    /** @return the sample size used in the most recent resimulate() call */
+    /**
+     * Returns the sample size used in the most recent resimulate() call.
+     *
+     * @return the sample size used in the most recent resimulate() call
+     */
     public int getSampleSize() { return sampleSize; }
 
-    /** @return the underlying library estimator (for advanced / library use) */
+    /**
+     * Returns the underlying library estimator.
+     *
+     * @return the underlying library estimator (for advanced / library use)
+     */
     public NNEstimator getEstimator() { return estimator; }
 
     // ── GraphSource ───────────────────────────────────────────────────────────
@@ -370,6 +431,10 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
      * Ensures {@link #persistedEdgeStrengthResults} is never null when
      * deserializing a session file that was saved before this field existed
      * (i.e. with {@code serialVersionUID = 23L}).
+     *
+     * @param in the ObjectInputStream to read the object from.
+     * @throws IOException            if an I/O error occurs.
+     * @throws ClassNotFoundException if the class of the serialized object cannot be found.
      */
     @Serial
     private void readObject(ObjectInputStream in)
@@ -445,6 +510,9 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
      *
      * <p>Must be {@link Serializable} because instances live inside the
      * persisted {@link NNEstimatorModel}.
+     *
+     * @param edge    the marginal edge-strength result.
+     * @param partial the partial edge-strength result.
      */
     public record EdgeStrengthPair(EdgeStrengthResult edge,
                                    PartialEdgeStrengthResult partial)

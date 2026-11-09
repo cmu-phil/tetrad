@@ -79,6 +79,9 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      * The Bayes PM and tolerance the estimate was made with, kept for re-estimating on another data set.
      */
     private BayesPm bayesPm;
+    /**
+     * The EM convergence tolerance the estimate was made with, kept for re-estimating on another data set.
+     */
     private double tolerance = 0.0001;
 
     //============================CONSTRUCTORS==========================//
@@ -92,6 +95,24 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      */
     public EmBayesEstimatorWrapper(Simulation simulation, BayesPmWrapper bayesPmWrapper, Parameters params) {
         this(new DataWrapper(simulation, params), bayesPmWrapper, params);
+    }
+
+    /**
+     * Estimates from a Graph (or Search) box directly, building the Bayes PM from the DAG and the data's
+     * categories as the Bayes PM box would. The data must be all discrete and the graph a DAG.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param params      the parameters.
+     */
+    public EmBayesEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters params) {
+        this(dataWrapper, new BayesPmWrapper(EstimatorGraphs.dag(graphSource, "The EM Bayes estimator"),
+                checkDiscrete(dataWrapper, "The EM Bayes estimator")), params);
+    }
+
+    private static DataWrapper checkDiscrete(DataWrapper dataWrapper, String estimator) {
+        EstimatorGraphs.discreteDataSet(dataWrapper, estimator);
+        return dataWrapper;
     }
 
     /**

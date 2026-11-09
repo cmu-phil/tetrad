@@ -50,7 +50,8 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     /**
      * <p>Constructor for MagInPagWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MagInPagWrapper(Graph graph, Parameters parameters) {
         super(MagInPagWrapper.getGraph(graph), parameters, "Choose Zhang MAG in PAG.");

@@ -104,6 +104,10 @@ public final class IndTestMulti implements IndependenceTest {
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException("Interrupted");
+        }
+
         IndependenceFact fact = new IndependenceFact(x, y, z);
         IndependenceResult cached = facts.get(fact);
         if (cached != null) return cached;

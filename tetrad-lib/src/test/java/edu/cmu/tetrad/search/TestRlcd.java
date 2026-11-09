@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.search.rlcd.RlcdStabilitySummary;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeTierStructure;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
@@ -31,6 +32,11 @@ import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
+import edu.cmu.tetrad.search.rlcd.EmCovarianceRankTest;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.search.rlcd.TierPrecedence;
 import edu.cmu.tetrad.search.rlcd.TwoIndicatorTest;
 import edu.cmu.tetrad.sem.SemIm;
@@ -184,9 +190,24 @@ public class TestRlcd {
         }
         DataSet data = simulate(g, 3000, 3L);
 
+        // With the default qualification of observed causes, F --> L1 and F --> L2 are placements the data cannot
+        // support (F has no observed parent), so they come out undirected.
+        Rlcd qualified = new Rlcd(data);
+        qualified.setMaxK(2);
+        qualified.setSeed(1L);
+        Graph q = qualified.search();
+        for (Node l : q.getNodes()) {
+            if (l.getNodeType() != NodeType.LATENT) continue;
+            Edge e = q.getEdge(q.getNode("F"), l);
+            assertTrue("F to " + l + " should be undirected, was " + e + " in " + q, e != null
+                                                                                      && Edges.isUndirectedEdge(e));
+        }
+
+        // The rest of the test is about tiers constraining ancestry, which needs the raw placements.
         Rlcd plain = new Rlcd(data);
         plain.setMaxK(2);
         plain.setSeed(1L);
+        plain.setQualifyObservedCauses(false);
         Graph unconstrained = plain.search();
         assertTrue("Precondition: without knowledge F should be an ancestor of E1: " + unconstrained,
                 unconstrained.paths().isAncestorOf(unconstrained.getNode("F"), unconstrained.getNode("E1")));
@@ -207,6 +228,7 @@ public class TestRlcd {
         rlcd.setMaxK(2);
         rlcd.setSeed(1L);
         rlcd.setKnowledge(knowledge);
+        rlcd.setQualifyObservedCauses(false);
         Graph out = rlcd.search();
 
         for (Node a : out.getNodes()) {
@@ -708,4 +730,379 @@ public class TestRlcd {
                     runTwoIndicator(gauss, true));
         }
     }
+
+    /**
+     * Testwise deletion with no missing values must reproduce the complete-data test exactly: same decisions, same
+     * p-values, since every query's complete rows are all the rows.
+     */
+    @Test
+    public void testTestwiseDeletionMatchesCompleteData() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 2000, 777L);
+        Chi2RankTest full = new Chi2RankTest(data);
+        TestwiseDeletionRankTest twd = new TestwiseDeletionRankTest(data);
+
+        int[][] ps = {{0, 1}, {0, 1, 2}, {3, 4}, {0, 3}};
+        int[][] qs = {{2, 3, 4, 5}, {3, 4, 5}, {0, 1, 2}, {1, 2, 4, 5}};
+        for (int i = 0; i < ps.length; i++) {
+            for (int r = 0; r < 2; r++) {
+                assertEquals("decision, query " + i + ", rank " + r,
+                        full.failToReject(ps[i], qs[i], r, 0.01),
+                        twd.failToReject(ps[i], qs[i], r, 0.01));
+                assertEquals("p-value, query " + i + ", rank " + r,
+                        full.pValue(ps[i], qs[i], r), twd.pValue(ps[i], qs[i], r), 1e-9);
+            }
+        }
+        assertEquals(0, twd.getSkippedQueries());
+    }
+
+    /**
+     * With a fifth of the values missing completely at random, testwise deletion should still recover the two-latent
+     * measurement model, and should report using fewer rows per query than the data have.
+     */
+    @Test
+    public void testTestwiseDeletionRecoversTwoLatents() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 4242L);
+        DataSet holes = full.copy();
+        Random random = new Random(4242L);
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            for (int j = 1; j < holes.getNumColumns(); j++) {
+                if (random.nextDouble() < 0.2) holes.setDouble(i, j, Double.NaN);
+            }
+        }
+
+        Rlcd rlcd = new Rlcd(holes);
+        rlcd.setTestwiseDeletion(true);
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+
+        List<Node> latents = new ArrayList<>();
+        for (Node v : out.getNodes()) if (v.getNodeType() == NodeType.LATENT) latents.add(v);
+        assertEquals(2, latents.size());
+
+        Set<Set<String>> clusters = new HashSet<>();
+        for (Node l : latents) {
+            Set<String> kids = new HashSet<>();
+            for (Node c : out.getChildren(l)) if (c.getNodeType() != NodeType.LATENT) kids.add(c.getName());
+            clusters.add(kids);
+        }
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X1", "X2", "X3")));
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X4", "X5", "X6")));
+    }
+
+    /**
+     * The guards: a query whose columns have too few complete rows between them, and a query whose Lawley multiplier
+     * would be non-positive, must both come back as rejections rather than as free rank deficiencies.
+     */
+    @Test
+    public void testTestwiseDeletionGuardsReject() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 400, 99L);
+        DataSet holes = full.copy();
+
+        // X1 and X4 are observed on disjoint halves of the rows, so no row has both.
+        int half = holes.getNumRows() / 2;
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            if (i < half) holes.setDouble(i, 0, Double.NaN);
+            else holes.setDouble(i, 3, Double.NaN);
+        }
+
+        TestwiseDeletionRankTest twd = new TestwiseDeletionRankTest(holes);
+        assertFalse(twd.failToReject(new int[]{0, 1}, new int[]{3, 4}, 1, 0.01));
+        assertEquals(0.0, twd.pValue(new int[]{0, 1}, new int[]{3, 4}, 1), 0.0);
+        assertEquals(2, twd.getSkippedQueries());
+
+        // A tiny minimum sample size lets the no-complete-rows union through the first guard; the multiplier guard
+        // still has to catch it.
+        TestwiseDeletionRankTest small = new TestwiseDeletionRankTest(holes);
+        small.setMinSampleSize(10);
+        assertFalse(small.failToReject(new int[]{0, 1}, new int[]{3, 4}, 1, 0.01));
+        assertTrue(small.getSkippedQueries() > 0);
+        assertTrue(small.getSampleSizeSummary().contains("column unions tested"));
+    }
+
+    /**
+     * Testwise deletion and pooled imputations are different modes and must not be combined silently.
+     */
+    @Test
+    public void testTestwiseDeletionRefusesImputations() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 500, 5L);
+        Rlcd rlcd = new Rlcd(List.of(full, full.copy()));
+        try {
+            rlcd.setTestwiseDeletion(true);
+            fail("Expected an IllegalArgumentException.");
+        } catch (IllegalArgumentException expected) {
+            // Wanted.
+        }
+    }
+
+
+    /**
+     * With no missing values, the EM-covariance rank test on the sample covariance with full N must reproduce the
+     * complete-data test exactly, and the mean-pairwise rule must give the same N as full N.
+     */
+    @Test
+    public void testEmRankTestMatchesCompleteData() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 1500, 31L);
+        Chi2RankTest full = new Chi2RankTest(data);
+        EmCovarianceEstimator em = new EmCovarianceEstimator(data);
+        EmCovarianceRankTest emTest = new EmCovarianceRankTest(em.estimate(), em.getPairwiseCounts(),
+                data.getNumRows());
+        int[][] ps = {{0, 1}, {0, 1, 2}, {3, 4}};
+        int[][] qs = {{2, 3, 4, 5}, {3, 4, 5}, {0, 1, 2}};
+        for (int i = 0; i < ps.length; i++) {
+            assertEquals(data.getNumRows(), emTest.sampleSize(ps[i], qs[i]), 1e-9);
+            for (int r = 0; r < 2; r++) {
+                assertEquals(full.pValue(ps[i], qs[i], r), emTest.pValue(ps[i], qs[i], r), 1e-6);
+            }
+        }
+    }
+
+    /**
+     * The EM policy should recover the two-latent model at 30 percent missing completely at random, where the
+     * testwise policy's queries have too few complete rows to be sure of it.
+     */
+    @Test
+    public void testEmPolicyRecoversTwoLatents() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 4242L);
+        DataSet holes = full.copy();
+        Random random = new Random(4242L);
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            for (int j = 1; j < holes.getNumColumns(); j++) {
+                if (random.nextDouble() < 0.3) holes.setDouble(i, j, Double.NaN);
+            }
+        }
+        Rlcd rlcd = new Rlcd(holes);
+        rlcd.setMissingDataSpec(edu.cmu.tetrad.data.missing.MissingDataSpec.emCovariance()
+                .withEssMode(edu.cmu.tetrad.data.missing.MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE));
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+        Set<Set<String>> clusters = new HashSet<>();
+        for (Node l : out.getNodes()) {
+            if (l.getNodeType() != NodeType.LATENT) continue;
+            Set<String> kids = new HashSet<>();
+            for (Node c : out.getChildren(l)) if (c.getNodeType() != NodeType.LATENT) kids.add(c.getName());
+            clusters.add(kids);
+        }
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X1", "X2", "X3")));
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X4", "X5", "X6")));
+    }
+
+    /**
+     * The censored estimator with nothing censored must return the sample covariance (to Monte Carlo noise of the
+     * draws there are none of, so exactly), and with the top 30 percent of each indicator censored at a known bound
+     * it must recover the correlation matrix far better than treating those values as missing at random.
+     */
+    @Test
+    public void testCensoredEstimatorRecoversCorrelations() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 77L);
+        int p = full.getNumColumns();
+
+        CensoredMvnCovarianceEstimator none = new CensoredMvnCovarianceEstimator(full, null, null);
+        none.setIterations(10, 5);
+        double[][] exact = new CovarianceMatrix(full).getMatrix().toArray();
+        double[][] got = none.estimate().getMatrix().toArray();
+        for (int a = 0; a < p; a++) {
+            for (int b = 0; b < p; b++) assertEquals(exact[a][b] * (full.getNumRows() - 1.0) / full.getNumRows(),
+                    got[a][b], 1e-9);
+        }
+        assertEquals(0, none.getCensoredCells());
+
+        double[] upper = new double[p];
+        DataSet clipped = full.copy();
+        for (int j = 0; j < p; j++) {
+            double[] col = new double[full.getNumRows()];
+            for (int i = 0; i < col.length; i++) col[i] = full.getDouble(i, j);
+            java.util.Arrays.sort(col);
+            upper[j] = col[(int) (0.7 * (col.length - 1))];
+            for (int i = 0; i < col.length; i++) {
+                if (clipped.getDouble(i, j) >= upper[j]) clipped.setDouble(i, j, upper[j]);   // recorded at the bound
+            }
+        }
+        double[][] truth = corr(new CovarianceMatrix(full).getMatrix().toArray());
+        double[][] naive = corr(new CovarianceMatrix(clipped).getMatrix().toArray());
+        CensoredMvnCovarianceEstimator est = new CensoredMvnCovarianceEstimator(clipped, upper, null);
+        double[][] censored = corr(est.estimate().getMatrix().toArray());
+        assertEquals(full.getNumRows() * p * 3 / 10, est.getCensoredCells(), full.getNumRows() * p / 100);
+        assertTrue("deterministic form should converge before the cap", est.getNumIterationsRun() < 60);
+
+        // Deterministic: a second estimator over the same data gives the identical matrix.
+        double[][] again = new CensoredMvnCovarianceEstimator(clipped, upper, null).estimate().getMatrix().toArray();
+        for (int a = 0; a < p; a++) for (int b = 0; b < p; b++) assertEquals(again[a][b],
+                est.estimate().getMatrix().toArray()[a][b], 0.0);
+
+        // The stochastic form agrees with it closely.
+        CensoredMvnCovarianceEstimator stoch = new CensoredMvnCovarianceEstimator(clipped, upper, null);
+        stoch.setStochastic(true);
+        stoch.setSeed(3L);
+        double[][] stochastic = corr(stoch.estimate().getMatrix().toArray());
+
+        double naiveErr = 0, censoredErr = 0, stochErr = 0, disagreement = 0;
+        int pairs = 0;
+        for (int a = 0; a < p; a++) {
+            for (int b = a + 1; b < p; b++) {
+                naiveErr += Math.abs(naive[a][b] - truth[a][b]);
+                censoredErr += Math.abs(censored[a][b] - truth[a][b]);
+                stochErr += Math.abs(stochastic[a][b] - truth[a][b]);
+                disagreement += Math.abs(stochastic[a][b] - censored[a][b]);
+                pairs++;
+            }
+        }
+        naiveErr /= pairs;
+        censoredErr /= pairs;
+        stochErr /= pairs;
+        disagreement /= pairs;
+        assertTrue("naive " + naiveErr + " censored " + censoredErr, censoredErr < naiveErr / 3);
+        assertTrue("censored mean abs error " + censoredErr, censoredErr < 0.03);
+        assertTrue("stochastic mean abs error " + stochErr, stochErr < 0.03);
+        assertTrue("forms disagree by " + disagreement, disagreement < 0.02);
+    }
+
+    private static double[][] corr(double[][] cov) {
+        int p = cov.length;
+        double[][] out = new double[p][p];
+        for (int a = 0; a < p; a++) {
+            for (int b = 0; b < p; b++) out[a][b] = cov[a][b] / Math.sqrt(cov[a][a] * cov[b][b]);
+        }
+        return out;
+    }
+
+
+    /**
+     * The qualification of observed causes. With P --> O known, P --> O --> L --> {X1..X4} gives O --> L: P depends
+     * on the indicators marginally and not given O. P --> O <-- L --> {X1..X4} gives L --> O: P is independent of
+     * the indicators marginally and dependent given O. Which placement stage 2 makes is immaterial: the check reads
+     * the arrow off the output and corrects it from P.
+     */
+    @Test
+    public void testQualifyObservedCauses() throws Exception {
+        for (boolean oCauses : new boolean[]{true, false}) {
+            Graph g = new EdgeListGraph();
+            Node p = new GraphNode("P"), o = new GraphNode("O"), l = new GraphNode("L");
+            l.setNodeType(NodeType.LATENT);
+            g.addNode(p);
+            g.addNode(o);
+            g.addNode(l);
+            g.addDirectedEdge(p, o);
+            if (oCauses) g.addDirectedEdge(o, l);
+            else g.addDirectedEdge(l, o);
+            for (int i = 1; i <= 4; i++) {
+                Node x = new GraphNode("X" + i);
+                g.addNode(x);
+                g.addDirectedEdge(l, x);
+            }
+            DataSet data = simulate(g, 4000, 11L);
+
+            Rlcd rlcd = new Rlcd(data);
+            rlcd.setMaxK(2);
+            rlcd.setSeed(1L);
+            if (oCauses) {
+                // Without a known direction on P -- O the chain P - O - L - X is rank-equivalent either way;
+                // the tiers supply P --> O, and the check then identifies O --> L from it.
+                Knowledge k = new Knowledge();
+                k.addToTier(0, "P");
+                k.addToTier(1, "O");
+                for (int i = 1; i <= 4; i++) k.addToTier(1, "X" + i);
+                rlcd.setKnowledge(k);
+            }
+            Graph out = rlcd.search();
+            Node oo = out.getNode("O");
+            Node latent = null;
+            for (Node v : out.getNodes()) {
+                if (v.getNodeType() == NodeType.LATENT && out.getChildren(v).contains(out.getNode("X1"))) latent = v;
+            }
+            assertNotNull("a latent over the X's: " + out, latent);
+            Edge e = out.getEdge(oo, latent);
+            assertNotNull("O adjacent to the latent: " + out, e);
+            if (oCauses) {
+                assertTrue("O --> L should be kept: " + out, out.isParentOf(oo, latent));
+            } else {
+                assertTrue("L --> O should hold (O is a collider child): " + out, out.isParentOf(latent, oo));
+            }
+        }
+    }
+
+
+    /**
+     * The stability summary is stated over observed variables only, since latent names are not comparable across
+     * runs. Two runs agree with the main graph on one cluster and split the other.
+     */
+    @Test
+    public void testStabilitySummaryCounts() {
+        Graph main = latentGraph(new String[][]{{"A", "B", "C"}, {"D", "E", "F"}}, "A-D");
+        Graph run1 = latentGraph(new String[][]{{"A", "B", "C"}, {"D", "E", "F"}}, "A-D");
+        Graph run2 = latentGraph(new String[][]{{"A", "B", "C"}, {"D", "E"}, {"F"}}, "");
+        RlcdStabilitySummary s = new RlcdStabilitySummary(main, List.of(run1, run2));
+        assertEquals(2, s.getNumRuns());
+        assertEquals(1.0, s.coClusterFrequency("A", "B"), 1e-12);
+        assertEquals(1.0, s.coClusterFrequency("D", "E"), 1e-12);
+        assertEquals(0.5, s.coClusterFrequency("E", "F"), 1e-12);
+        assertEquals(0.0, s.coClusterFrequency("A", "D"), 1e-12);
+        assertEquals(0.5, s.adjacencyFrequency("A", "D"), 1e-12);
+        String report = s.report();
+        assertTrue(report, report.contains("F 0.50"));
+        assertTrue(report, report.contains("A --- D 0.50"));
+        assertTrue(report, report.contains("2 latents in 1 run") && report.contains("3 latents in 1 run"));
+    }
+
+    /**
+     * The wrapper's stability runs: three bootstrap reruns on a two-latent model, main graph unchanged, attribute
+     * attached. Also checks that a time limit of zero stops after the first rerun.
+     */
+    @Test
+    public void testStabilityRunsThroughWrapper() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node l1 = new GraphNode("L1"), l2 = new GraphNode("L2");
+        l1.setNodeType(NodeType.LATENT);
+        l2.setNodeType(NodeType.LATENT);
+        g.addNode(l1);
+        g.addNode(l2);
+        g.addDirectedEdge(l1, l2);
+        for (int i = 1; i <= 4; i++) {
+            Node x = new GraphNode("X" + i), y = new GraphNode("Y" + i);
+            g.addNode(x);
+            g.addNode(y);
+            g.addDirectedEdge(l1, x);
+            g.addDirectedEdge(l2, y);
+        }
+        DataSet data = simulate(g, 1500, 3L);
+
+        Parameters params = new Parameters();
+        params.set(Params.ALPHA, 0.01);
+        params.set(Params.RLCD_MAX_K, 2);
+        params.set(Params.SEED, 5L);
+        params.set(Params.RLCD_STABILITY_RUNS, 3);
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        Graph out = wrapper.search(data, params);
+        Object attr = out.getAllAttributes().get("RLCD stability");
+        assertNotNull(attr);
+        assertTrue(attr.toString(), attr.toString().contains("over 3 bootstrap runs"));
+
+        params.set(Params.RLCD_STABILITY_TIME_LIMIT, 0.0);
+        out = wrapper.search(data, params);
+        attr = out.getAllAttributes().get("RLCD stability");
+        assertTrue(attr.toString(), attr.toString().contains("1 of 3 requested runs completed"));
+    }
+
+    private static Graph latentGraph(String[][] clusters, String observedEdge) {
+        Graph g = new EdgeListGraph();
+        int k = 0;
+        for (String[] cluster : clusters) {
+            Node l = new GraphNode("L" + (++k));
+            l.setNodeType(NodeType.LATENT);
+            g.addNode(l);
+            for (String name : cluster) {
+                if (g.getNode(name) == null) g.addNode(new GraphNode(name));
+                g.addDirectedEdge(l, g.getNode(name));
+            }
+        }
+        if (!observedEdge.isEmpty()) {
+            String[] ab = observedEdge.split("-");
+            g.addUndirectedEdge(g.getNode(ab[0]), g.getNode(ab[1]));
+        }
+        return g;
+    }
+
 }

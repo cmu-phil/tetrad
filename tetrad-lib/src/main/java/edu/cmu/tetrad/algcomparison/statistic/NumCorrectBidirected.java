@@ -77,13 +77,14 @@ public class NumCorrectBidirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
-        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+        estGraph = GraphUtils.replaceNodes(estGraph, dag.getNodes());
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.bidirectedExistsLatentConfounder(edge, trueGraph)) {
+                if (GraphUtils.bidirectedExistsLatentConfounder(edge, dag)) {
                     tp++;
                 }
             }

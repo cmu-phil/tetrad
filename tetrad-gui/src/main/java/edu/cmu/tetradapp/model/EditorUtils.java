@@ -41,6 +41,13 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class EditorUtils {
+
+    /**
+     * Constructs a new EditorUtils. All methods of this class are static, so instances are not normally needed.
+     */
+    public EditorUtils() {
+    }
+
     /**
      * <p>getTopLeftPoint.</p>
      *
@@ -193,6 +200,18 @@ public class EditorUtils {
         return outfile;
     }
 
+    /**
+     * Returns a file in the save location for a new session, of the form prefix.suffix if overwrite is true, or else
+     * the next available file of the form prefix{n}.suffix. No dialog is shown.
+     *
+     * @param prefix       the prefix of the file name
+     * @param suffix       the suffix of the file name
+     * @param parent       the parent component (not used)
+     * @param overwrite    true iff the file prefix.suffix should be used even if it exists
+     * @param dialogName   the dialog name (not used)
+     * @param saveLocation the directory to use; if null, the stored "fileSaveLocation" preference is used
+     * @return the file, or null if the directory does not exist and could not be created
+     */
     public static File getNewSessionName(String prefix, String suffix,
                                          Component parent, boolean overwrite, String dialogName, String saveLocation) {
         String fileSaveLocation;
@@ -259,6 +278,14 @@ public class EditorUtils {
         return chooser;
     }
 
+    /**
+     * Adds tab completion to the given text field. Pressing Tab completes the word before the caret to the longest
+     * common prefix of the given words that start with it. This disables the default Tab focus traversal for the
+     * field.
+     *
+     * @param textField the text field
+     * @param words     the words available for completion
+     */
     public static void addTabCompleteLogic(JTextField textField, List<String> words) {
         SwingUtilities.invokeLater(() -> {
 
@@ -324,16 +351,30 @@ public class EditorUtils {
      * component does not have focus.
      */
     public static class JTextFieldWithPrompt extends JTextField {
+        /**
+         * The prompt text.
+         */
         private final String promptText;
         /**
          * The color of the prompt text.
          */
         private final Color promptColor;
 
+        /**
+         * Constructs a text field with the given prompt text, displayed in gray.
+         *
+         * @param promptText the prompt text
+         */
         public JTextFieldWithPrompt(String promptText) {
             this(promptText, Color.GRAY);
         }
 
+        /**
+         * Constructs a text field with the given prompt text and prompt color.
+         *
+         * @param promptText  the prompt text
+         * @param promptColor the color of the prompt text
+         */
         public JTextFieldWithPrompt(String promptText, Color promptColor) {
             this.promptText = promptText;
             this.promptColor = promptColor;
@@ -378,6 +419,8 @@ public class EditorUtils {
 
         /**
          * The prompt text.
+         *
+         * @return the prompt text
          */
         public String getPromptText() {
             return promptText;

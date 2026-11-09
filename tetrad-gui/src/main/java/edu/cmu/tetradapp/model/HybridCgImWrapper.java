@@ -49,8 +49,17 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The wrapped Hybrid CG IM.
+     */
     private HybridCgIm im;
+    /**
+     * The name of this session model.
+     */
     private String name = "Hybrid CG IM";
+    /**
+     * Free-form notes attached to this model.
+     */
     private String notes = "";
 
     /**
@@ -277,6 +286,8 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
 
     /**
      * Deep-ish copy: fresh IM bound to the same PM (parameters not copied).
+     *
+     * @return a new wrapper with a fresh IM over the same PM, and the same name and notes
      */
     public HybridCgImWrapper deepCopy() {
         HybridCgPm pm = getPm();

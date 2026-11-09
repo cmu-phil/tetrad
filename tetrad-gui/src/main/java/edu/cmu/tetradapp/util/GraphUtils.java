@@ -44,6 +44,12 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class GraphUtils {
+
+    /**
+     * Constructs a new GraphUtils. All methods are static.
+     */
+    public GraphUtils() {
+    }
     /**
      * <p>makeRandomGraph.</p>
      *
@@ -122,6 +128,13 @@ public class GraphUtils {
                 alpha, beta, deltaIn, deltaOut);
     }
 
+    /**
+     * Returns a "Check Graph Type" menu with items, with Alt+1 through Alt+5 accelerators, that check whether the
+     * workbench graph is a DAG, CPDAG, PDAG, MAG or PAG.
+     *
+     * @param workbench the workbench whose graph is checked.
+     * @return the menu.
+     */
     public static @NotNull JMenu getCheckGraphMenu(GraphWorkbench workbench) {
         JMenu checkGraph = new JMenu("Check Graph Type");
         JMenuItem checkGraphForDag = new JMenuItem(new CheckGraphFoDagAction(workbench));
@@ -153,6 +166,13 @@ public class GraphUtils {
         return checkGraph;
     }
 
+    /**
+     * Returns a "Highlight" menu with actions that select edges of various types, edges in triangles, cliques and
+     * cycles, and latent or measured nodes in the workbench.
+     *
+     * @param workbench the workbench in which the selections are made.
+     * @return the menu.
+     */
     public static @NotNull JMenu getHighlightMenu(GraphWorkbench workbench) {
         JMenu highlightMenu = new JMenu("Highlight");
         highlightMenu.add(new SelectDirectedAction(workbench));
@@ -209,7 +229,8 @@ public class GraphUtils {
     /**
      * Adds graph manipulation items to the given graph menu.
      *
-     * @param graph the graph menu to add the items to.
+     * @param graph     the graph menu to add the items to.
+     * @param workbench the workbench whose graph the items manipulate.
      */
     public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
 
@@ -327,6 +348,13 @@ public class GraphUtils {
         }
     }
 
+    /**
+     * Returns a "PAG Edge Specialization Markups" menu with an action that toggles the PAG edge specialization markups
+     * in the workbench and an item that shows instructions for them.
+     *
+     * @param workbench the workbench in which the markups are shown.
+     * @return the menu.
+     */
     public static @NotNull JMenu addPagEdgeSpecializationsItems(GraphWorkbench workbench) {
         JMenu pagEdgeSpecializations = new JMenu("PAG Edge Specialization Markups");
         pagEdgeSpecializations.add(new PagEdgeSpecialization(workbench));

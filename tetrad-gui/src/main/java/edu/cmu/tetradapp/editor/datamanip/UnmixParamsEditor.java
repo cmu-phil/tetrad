@@ -31,33 +31,55 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
+/**
+ * Parameter editor for unmixing a dataset into latent components (clusters) based on residual signatures. Edits an
+ * {@link UnmixSpec}, choosing the number of components K explicitly or by BIC over a range, along with parent-superset,
+ * residual-scaling, covariance, EM-stability and diagnostics options, and stores the spec in the parameters under
+ * "unmixSpec".
+ */
 public class UnmixParamsEditor extends JPanel implements FinalizingParameterEditor {
 
+    /** The unmixing specification edited by this panel. */
     private final UnmixSpec spec = new UnmixSpec();
+    /** The parameters into which the spec is stored. */
     private Parameters parameters;
     // Basic
+    /** Whether to select K automatically by BIC. */
     private JCheckBox autoKCheck;
+    /** Spinners for the fixed K and for the minimum and maximum K searched when K is auto-selected. */
     private JSpinner kSpinner, kminSpinner, kmaxSpinner;
 
     // Parent-superset
+    /** Whether to use a parent superset. */
     private JCheckBox supersetCheck;
+    /** The number of top candidate parents kept in the parent superset. */
     private JSpinner topMSpinner;
+    /** The score used to rank candidate parents for the superset. */
     private JComboBox<UnmixSpec.SupersetScore> supersetScoreBox;
 
     // Residual scaling
+    /** Whether to robustly scale residuals (by MAD). */
     private JCheckBox robustScaleCheck;
 
     // Covariance
+    /** Buttons selecting the covariance mode: auto, full, or diagonal. */
     private JRadioButton covAuto, covFull, covDiag;
+    /** The safety margin used when deciding whether a full covariance can be estimated in auto mode. */
     private JSpinner safetyMarginSpinner;
 
     // EM stability
+    /**
+     * Spinners for EM stability settings: k-means restarts, maximum EM iterations, ridge, shrinkage, annealing steps and
+     * annealing start temperature.
+     */
     private JSpinner restartsSpinner, itersSpinner, ridgeSpinner, shrinkageSpinner,
             annealStepsSpinner, annealTSpinner;
 
     // Diagnostics
+    /** Whether to save diagnostics (responsibilities, per-K BIC, and cluster sizes). */
     private JCheckBox diagCheck;
 
+    /** Constructs a new editor with controls initialized from a default {@link UnmixSpec}. */
     public UnmixParamsEditor() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

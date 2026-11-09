@@ -67,6 +67,7 @@ public class TrueDagRecallTails implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int fn = 0;
 
@@ -80,7 +81,7 @@ public class TrueDagRecallTails implements Statistic {
 
                 if (edge == null) continue;
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     if (Edges.directedEdge(x, y).equals(edge)) {
                         tp++;
                     } else {

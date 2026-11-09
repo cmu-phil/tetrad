@@ -69,16 +69,43 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
     @Serial
     private static final long serialVersionUID = 42L;
 
+    /**
+     * The data wrapper supplying the data sets to estimate from.
+     */
     private final DataWrapper dataWrapper;
+    /**
+     * The parameters for estimation.
+     */
     private final Parameters parameters;
 
+    /**
+     * The estimated Hybrid CG IMs, one per data set.
+     */
     private final List<HybridCgIm> hybridIms = new ArrayList<>();
+    /**
+     * The Hybrid CG PM wrapper that was estimated.
+     */
     private final HybridCgPmWrapper pmWrapper;
+    /**
+     * The currently selected estimated IM.
+     */
     private HybridCgIm hybridIm;
+    /**
+     * The data set corresponding to the currently selected IM.
+     */
     private DataSet dataSet;
 
+    /**
+     * The name of this session model.
+     */
     private String name = "Hybrid CG Estimator";
+    /**
+     * The number of estimated models.
+     */
     private int numModels = 0;
+    /**
+     * The index of the currently selected model.
+     */
     private int modelIndex = 0;
 
     /**
@@ -109,6 +136,19 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
                                     HybridCgPmWrapper pmWrapper,
                                     Parameters parameters) {
         this(new DataWrapper(simulation, parameters), pmWrapper, parameters);
+    }
+
+    /**
+     * Estimates from a Graph (or Search) box directly, building the Hybrid CG PM from the DAG with the variable
+     * types and categories taken from the data, as the Hybrid CG PM box would. The graph must be a DAG.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param parameters  the parameters.
+     */
+    public HybridCgEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(dataWrapper, new HybridCgPmWrapper(EstimatorGraphs.dag(graphSource, "The Hybrid CG estimator"),
+                EstimatorGraphs.dataSet(dataWrapper, "The Hybrid CG estimator"), parameters), parameters);
     }
 
     /**
@@ -491,6 +531,12 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
         this.dataSet = (DataSet) dml.get(modelIndex);
     }
 
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
@@ -503,6 +549,14 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
 
     // ============================ INTERNALS ==================================
 
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore
+     * the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {

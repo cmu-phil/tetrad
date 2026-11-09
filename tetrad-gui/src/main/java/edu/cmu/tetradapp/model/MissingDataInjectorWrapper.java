@@ -44,6 +44,8 @@ public class MissingDataInjectorWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * The output data set, with missing values injected.
+     *
      * @serial Cannot be null.
      */
     private final DataSet outputDataSet;

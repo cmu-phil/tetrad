@@ -64,10 +64,11 @@ public class DefiniteDirectedPathPrecision implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0, fp = 0;
 
-        List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
+        List<Node> nodes = dag.getNodes();
+        Graph cpdag = GraphTransforms.dagToCpdag(dag);
 
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
 

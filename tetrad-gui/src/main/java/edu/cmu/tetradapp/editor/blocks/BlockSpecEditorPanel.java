@@ -64,29 +64,55 @@ public final class BlockSpecEditorPanel extends JPanel {
 
     // Reuse the same token pattern as the codec for canonicalize RHS
     private static final Pattern TOKEN = Pattern.compile("\"([^\"]*)\"|#(\\d+)|([^,\\s]+)");
+    /** The text pane holding the block specification text. */
     private final JTextPane textPane = new JTextPane();
+    /** Shows the parse and apply status. */
     private final JLabel status = new JLabel("Ready");
+    /** Imports block text from a file. */
     private final JButton btnImport = new JButton("Importâ¦");
+    /** Exports the block text to a file. */
     private final JButton btnExport = new JButton("Exportâ¦");
+    /** Inserts a comment listing the available variables. */
     private final JButton btnVars = new JButton("List Variables");
+    /** Canonicalizes the block text, preserving comments and line order. */
     private final JButton btnAlphatize = new JButton("Alphabetize");
+    /** The popup offering variable name completions. */
     private final JPopupMenu completionPopup = new JPopupMenu();
+    /** The list of variable name completions in the popup. */
     private final JList<String> completionList = new JList<>();
+    /** The model of variable name completions. */
     private final DefaultListModel<String> completionModel = new DefaultListModel<>();
+    /** Paints red squiggles under errors. */
     private final Highlighter.HighlightPainter errorPainter = new SquigglePainter(new Color(220, 50, 47));  // red
+    /** Paints orange squiggles under warnings. */
     private final Highlighter.HighlightPainter warnPainter = new SquigglePainter(new Color(203, 75, 22));  // orange
+    /** Delays reparsing until typing pauses. */
     private final Timer debounce;
+    /** The undo manager for edits to the text. */
     private final UndoManager undo = new UndoManager();
+    /** The text style used for % comment lines. */
     private final AttributeSet COMMENT_STYLE =
             StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY,
                     StyleConstants.Foreground, Color.GRAY);
+    /** The data set whose variables the blocks refer to. */
     private DataSet dataSet;
+    /** The block spec from the last successful parse, or null if the text has errors. */
     private BlockSpec currentSpec;                 // last successful parse
+    /** The issues found in the last parse. */
     private List<BlockSpecTextCodec.Issue> issues; // last issues
+    /** The callback invoked with the block spec when clean text is applied. */
     private Consumer<BlockSpec> onApply;           // user callback
+    /** The text as last set with markOriginal true. */
     private String originalText = "";
+    /** The text last applied through the callback, so unchanged text is not applied again. */
     private String lastAppliedText = null;
 
+    /**
+     * Constructs a block spec editor for the given data set, initialized with the given block text.
+     *
+     * @param dataSet   the data set whose variables the blocks refer to; must not be null.
+     * @param blockText the initial block specification text.
+     */
     public BlockSpecEditorPanel(DataSet dataSet, String blockText) {
         super(new BorderLayout());
         this.dataSet = Objects.requireNonNull(dataSet, "DataSet is required");
@@ -194,6 +220,11 @@ public final class BlockSpecEditorPanel extends JPanel {
         return q >= 0 ? q + 1 : -1; // +1 to point inside the quotes
     }
 
+    /**
+     * Shows the editor in a frame with demo data, for manual testing.
+     *
+     * @param args ignored.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame f = new JFrame("BlockSpec Editor");
@@ -264,15 +295,31 @@ public final class BlockSpecEditorPanel extends JPanel {
         }
     }
 
+    /**
+     * Sets the data set whose variables the blocks refer to, and reparses the text.
+     *
+     * @param ds the data set; must not be null.
+     */
     public void setDataSet(DataSet ds) {
         this.dataSet = Objects.requireNonNull(ds);
         parseAndRender();
     }
 
+    /**
+     * Sets the callback invoked with the current block spec whenever clean text is applied.
+     *
+     * @param onApply the callback, or null for none.
+     */
     public void setOnApply(Consumer<BlockSpec> onApply) {
         this.onApply = onApply;
     }
 
+    /**
+     * Replaces the editor text, clears the undo history, and reparses.
+     *
+     * @param text         the new text; null is treated as empty.
+     * @param markOriginal whether to record the text as the original text.
+     */
     public void setText(String text, boolean markOriginal) {
         textPane.setText(text == null ? "" : text);
         textPane.setCaretPosition(textPane.getDocument().getLength());
@@ -282,20 +329,40 @@ public final class BlockSpecEditorPanel extends JPanel {
         parseAndRender();
     }
 
+    /**
+     * Returns the current editor text.
+     *
+     * @return the current editor text.
+     */
     public String getText() {
         return textPane.getText();
     }
 
+    /**
+     * Replaces the editor text, records it as the original text, clears the undo history, and reparses.
+     *
+     * @param text the new text; null is treated as empty.
+     */
     public void setText(String text) {
         setText(text, true);
     }
 
     // ---------------- Core parsing & rendering ----------------
 
+    /**
+     * Returns the block spec from the last successful parse.
+     *
+     * @return the current block spec, or null if the text has errors.
+     */
     public BlockSpec getCurrentSpec() {
         return currentSpec;
     }
 
+    /**
+     * Returns whether the last parse found no errors (warnings are allowed).
+     *
+     * @return true if the text has no errors.
+     */
     public boolean isClean() {
         return issues == null || issues.stream().noneMatch(i -> i.severity() == BlockSpecTextCodec.Severity.ERROR);
     }
@@ -723,6 +790,11 @@ public final class BlockSpecEditorPanel extends JPanel {
 
     // ---------------- Painter ----------------
 
+    /**
+     * Returns the current block specification text.
+     *
+     * @return the current editor text.
+     */
     public String getBlockText() {
         return textPane.getText();
     }

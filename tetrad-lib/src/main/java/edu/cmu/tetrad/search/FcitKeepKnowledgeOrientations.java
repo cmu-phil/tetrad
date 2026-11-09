@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
+import edu.cmu.tetrad.search.score.MagRicfBicScorer;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -387,51 +387,13 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
      */
     private boolean useMarkFlipEscalation = true;
     /**
-     * EXPERIMENTAL I-MAP GATE (2026-10-24; same mechanism as {@link BfciBryan#setRequireImapStates(boolean)}).
-     * When true, every candidate the legality gate accepts (single-edge deletions and the saturating pass) must
-     * also introduce no independence the test has not confirmed: for every nonadjacent pair x,z of the
-     * candidate's Zhang MAG that is not already uncertified in the committed state, some KNOWN separator (the
-     * recorded sepset, a seeded parent set from the initial DAG that passed the test, or a set an earlier check
-     * found independent) must m-separate x,z in the candidate; failing that, one recursive-blocking separator is
-     * tested at {@link #imapAlpha}. Pairs uncertified in the committed state are exempt, so a pre-existing
-     * violation cannot veto every later move. Seeding: for each pair nonadjacent in the initial DAG D, PA(a) or
-     * PA(b) (whichever d-separates in D) is tested once; if independent it is a known separator for that pair.
-     * <p>
-     * Costs tests (one per seeded pair at the start, then one per uncertified pair per candidate), so on data a
-     * false "dependent" becomes a veto. Default false.
+     * The two optional per-commit gates, the I-map gate and the score step, shared with the *-FCI family and
+     * FCIT-ZM through {@link CorrectnessGates}; see that class for what each gate guarantees. Configured through
+     * {@link #setRequireImapStates(boolean)}, {@link #setImapAlpha(double)} and {@link #setRequireNoScoreDrop(boolean)}.
+     * The seeding style here is FCIT's: the sepset map starts empty, and the start DAG's separators are entered as
+     * known separators only when the test confirms them ({@link #seedKnownSeparators(Graph)}).
      */
-    private boolean requireImapStates = false;
-    /**
-     * Significance level of the I-map gate's tests (applied to the p-value when the test reports a probability,
-     * else the test's own verdict). Default 0.001.
-     */
-    private double imapAlpha = 0.001;
-    /**
-     * NO-SCORE-DROP GATE (the BFCI-Bryan score step as a veto; see
-     * {@link BfciBryanScore}). When true, every candidate the legality gate (and,
-     * if on, the I-map gate) accepts must also not lower the RICF BIC of its
-     * Zhang MAG relative to the committed state's, by more than
-     * {@link #SCORE_EPSILON}. An unscorable candidate (MAG conversion fails, or
-     * the MAG has a selection-bias undirected edge) is vetoed. Only MAG scores
-     * are ever compared with MAG scores, so no DAG/MAG scale alignment is
-     * needed; the covariance matrix and penalty discount are taken from the
-     * supplied {@link SemBicScore}, which is therefore required. Default false.
-     */
-    private boolean requireNoScoreDrop = false;
-    /** Tolerance for the no-score-drop comparison. */
-    private static final double SCORE_EPSILON = 1e-6;
-    /** RICF BIC scorer over Zhang MAGs, for the no-score-drop gate. */
-    private MagRicfBicScorer magScorer = null;
-    /** RICF BIC of the committed state's Zhang MAG. */
-    private double currentScore = Double.NaN;
-    /** No-score-drop gate tallies, reported at the end of the run. */
-    private int scoreGateCandidates = 0, scoreGateVetoes = 0, scoreGateUnscorable = 0;
-    /** Known test-confirmed separators per pair, for the I-map gate (a cache; never written into sepsets). */
-    private final Map<Set<Node>, List<Set<Node>>> knownSeparators = new HashMap<>();
-    /** Pairs uncertified in the committed state; exempt from the I-map gate. */
-    private Set<Set<Node>> baselineUncertified = new HashSet<>();
-    /** I-map gate tallies for the end-of-run summary. */
-    private int imapCandidates = 0, imapVetoes = 0, imapTests = 0, imapIndeterminate = 0;
+    private final CorrectnessGates gates;
     /**
      * Cap on flip hypotheses (single marks) tried per pair by the mark-flip
      * escalation; -1 unlimited. Hypotheses are name-sorted for determinism, so
@@ -464,6 +426,7 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
                 ? new CachedIndependenceQueries(test)
                 : test;
         this.score = score;
+        this.gates = new CorrectnessGates(this.test);
 
         this.selection = this.test.getVariables().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
@@ -908,16 +871,22 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
         // from the CPDAG on; deleted pairs always carry a recorded sepset.
         strategy.setSepsetGraph(new EdgeListGraph(this.pag));
 
-        if (requireImapStates) {
-            knownSeparators.clear();
-            imapCandidates = imapVetoes = imapTests = imapIndeterminate = 0;
+        gates.reset();
+        gates.setVerbose(verbose);
+
+        if (gates.requireImapStates()) {
             seedKnownSeparators(dag);
-            refreshBaseline(this.pag, this.sepsets);
         }
 
-        if (requireNoScoreDrop) {
-            initScoreGate();
+        if (gates.useScoreStep()) {
+            if (replicatingGraph) {
+                throw new IllegalArgumentException("The score step does not support the time-lag "
+                                                   + "replicating-graph wrapper.");
+            }
+            gates.setGateScore(score);
         }
+
+        gates.beginRun(this.pag, this.sepsets);
 
         // ---------------------------------------------------------------------
         // Thm. algorithm: phase 1 (legality-gated single-edge deletions) to
@@ -982,17 +951,7 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
         }
 
-        if (requireNoScoreDrop) {
-            TetradLogger.getInstance().log("\nFCIT score gate summary: legal candidates scored = "
-                    + scoreGateCandidates + ", vetoed = " + scoreGateVetoes
-                    + ", unscorable = " + scoreGateUnscorable + "; final MAG score = " + currentScore + ".");
-        }
-
-        if (requireImapStates) {
-            TetradLogger.getInstance().log("\nFCIT I-map gate summary (imapAlpha = " + imapAlpha
-                    + "): legal candidates checked = " + imapCandidates + ", vetoed = " + imapVetoes
-                    + ", tests spent = " + imapTests + ", indeterminate separators = " + imapIndeterminate + ".");
-        }
+        gates.logSummary("FCIT", true);
 
         TetradLogger.getInstance().log("\nFCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -1601,11 +1560,11 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             return false;
         }
 
-        if (requireImapStates && !isImapOfTest(this.pag, scratch, "removal of " + _edge + " | " + b)) {
-            // I-map veto: revert exactly as for an illegal state, but do not memoize (the verdict depends on
-            // the committed baseline, which changes).
+        if (gates.anyGateOn() && !gateAccepts(scratch, "removal of " + _edge + " | " + b)) {
+            // Gate veto: revert exactly as for an illegal state, but do not memoize (the verdict depends on the
+            // committed baseline or score, which change).
             if (verbose) {
-                TetradLogger.getInstance().log("\tTried removing " + _edge + ", legal PAG, but the I-map gate "
+                TetradLogger.getInstance().log("\tTried removing " + _edge + ", legal PAG, but a correctness gate "
                         + "vetoed it; sepset = " + b);
             }
             restorePag(_pag);
@@ -1613,27 +1572,6 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
                 r0r4Strategy.setSepsetMap(this.sepsets);
             }
             return false;
-        }
-
-        if (requireNoScoreDrop) {
-            // Score veto: revert like the I-map veto, and likewise do not memoize (the verdict depends on the
-            // committed score, which changes).
-            scoreGateCandidates++;
-            Double trial = scoreMagOfPag(this.pag);
-            if (trial == null || trial < currentScore - SCORE_EPSILON) {
-                if (trial == null) scoreGateUnscorable++; else scoreGateVetoes++;
-                if (verbose) {
-                    TetradLogger.getInstance().log("\tTried removing " + _edge + ", legal PAG, but the score "
-                            + "gate vetoed it (" + (trial == null ? "unscorable" : trial + " < " + currentScore)
-                            + "); sepset = " + b);
-                }
-                restorePag(_pag);
-                if (r0r4Strategy != null) {
-                    r0r4Strategy.setSepsetMap(this.sepsets);
-                }
-                return false;
-            }
-            currentScore = trial;  // the commit below is unconditional from here
         }
 
         if (memoHit) {
@@ -1649,7 +1587,7 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
         // at it.
         this.sepsets = scratch;
         graphVersion++;
-        if (requireImapStates) refreshBaseline(this.pag, this.sepsets);
+        gateCommitted();
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + " (" + type + "), sepset = " + b);
@@ -1659,69 +1597,33 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
     }
 
     // -------------------------------------------------------------------------
-    // No-score-drop gate (see requireNoScoreDrop).
-    // -------------------------------------------------------------------------
-
-    /**
-     * Builds the RICF BIC scorer and scores the initial PAG. The covariance
-     * matrix and penalty discount come from the supplied {@link SemBicScore};
-     * only MAG scores are compared with MAG scores, so unlike
-     * {@link BfciBryanScore} no structure-prior restriction is needed.
-     */
-    private void initScoreGate() {
-        if (replicatingGraph) {
-            throw new IllegalArgumentException("The no-score-drop gate does not support the time-lag "
-                    + "replicating-graph wrapper.");
-        }
-        if (!(score instanceof SemBicScore semBic) || semBic.getCovariances() == null) {
-            throw new IllegalArgumentException("The no-score-drop gate requires a SemBicScore built on a "
-                    + "covariance matrix: the gate compares RICF BICs of candidate Zhang MAGs, and the "
-                    + "covariance and penalty discount are taken from the SemBicScore (got "
-                    + (score == null ? "null" : score.getClass().getSimpleName()) + ").");
-        }
-        magScorer = new MagRicfBicScorer(semBic.getCovariances());
-        magScorer.setPenaltyDiscount(semBic.getPenaltyDiscount());
-        // Trusted-caller fast path, as in BfciBryanScore: every scored MAG is the Zhang MAG of a legality-
-        // checked candidate over the test's variables, and edge types are re-checked in scoreMag.
-        magScorer.setSkipChecks(true);
-        magScorer.setTolerance(1e-8);
-        scoreGateCandidates = scoreGateVetoes = scoreGateUnscorable = 0;
-
-        Double initial = scoreMagOfPag(this.pag);
-        if (initial == null) {
-            throw new IllegalStateException("The no-score-drop gate could not score the initial PAG's Zhang MAG.");
-        }
-        currentScore = initial;
-    }
-
-    /**
-     * RICF BIC of a PAG's Zhang MAG; null if the conversion fails or the MAG is
-     * unscorable (an undirected selection-bias edge, or a non-finite score).
-     */
-    private Double scoreMagOfPag(Graph pag) {
-        Graph mag;
-        try {
-            mag = GraphTransforms.zhangMagFromPag(pag);
-        } catch (Exception e) {
-            return null;
-        }
-        if (mag == null) return null;
-
-        for (Edge e : mag.getEdges()) {
-            if (!Edges.isDirectedEdge(e) && !Edges.isBidirectedEdge(e)) return null;
-        }
-
-        try {
-            double sc = magScorer.score(mag);
-            return Double.isFinite(sc) ? sc : null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // I-map gate (see requireImapStates).
     // -------------------------------------------------------------------------
+
+    /**
+     * The gates' verdict on the current candidate {@code this.pag}, with the interruption handling the gate sites
+     * here have always used: an interruption re-sets the thread's flag and counts as a veto, so the enclosing
+     * removal loop, which does not declare {@code InterruptedException}, winds down through its normal revert path.
+     */
+    private boolean gateAccepts(SepsetMap trialMap, String what) {
+        try {
+            return gates.accepts(CorrectnessGates.tryZhangMag(this.pag), trialMap, what);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    /**
+     * Records a commit with the gates; interruption is re-flagged and otherwise ignored, as before.
+     */
+    private void gateCommitted() {
+        try {
+            gates.committed(this.pag, this.sepsets);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
     /**
      * Seeds known separators from the initial DAG: for each nonadjacent pair, the parent set that d-separates it
@@ -1742,123 +1644,11 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
                     Node own = this.pag.getNode(n.getName());
                     if (own != null) mapped.add(own);
                 }
-                imapTests++;
-                if (judgedIndependent(x, z, mapped)) {
-                    knownSeparators.computeIfAbsent(Set.of(x, z), k -> new ArrayList<>()).add(mapped);
+                if (gates.judgedIndependent(x, z, mapped)) {
+                    gates.addKnownSeparator(x, z, mapped);
                 }
             }
         }
-    }
-
-    private boolean judgedIndependent(Node x, Node z, Set<Node> cond) throws InterruptedException {
-        IndependenceResult r = test.checkIndependence(x, z, cond);
-        return test.isPValueAProbability() ? r.getPValue() > imapAlpha : r.isIndependent();
-    }
-
-    /** The I-map check: true iff the candidate introduces no uncertified independence (baseline pairs exempt). */
-    private boolean isImapOfTest(Graph candidate, SepsetMap map, String what) {
-        imapCandidates++;
-        try {
-            Set<Node> bad = firstNewUncertifiedPair(candidate, map, what);
-            if (bad != null) imapVetoes++;
-            return bad == null;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            imapVetoes++;
-            return false;
-        }
-    }
-
-    /** Recomputes the committed state's uncertified pairs after a commit. */
-    private void refreshBaseline(Graph committed, SepsetMap map) {
-        Set<Set<Node>> base = new HashSet<>();
-        try {
-            Graph mag = GraphTransforms.zhangMagFromPag(committed);
-            List<Node> ns = mag.getNodes();
-            for (int i = 0; i < ns.size(); i++) {
-                for (int j = i + 1; j < ns.size(); j++) {
-                    Node x = ns.get(i), z = ns.get(j);
-                    if (mag.isAdjacentTo(x, z)) continue;
-                    if (!certified(mag, map, x, z, null)) base.add(Set.of(x, z));
-                }
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (Exception ignored) {
-            // No MAG: nothing to exempt.
-        }
-        if (verbose && !base.isEmpty()) {
-            TetradLogger.getInstance().log("\tI-map gate: committed state has " + base.size()
-                    + " uncertified pair(s), exempt until repaired.");
-        }
-        baselineUncertified = base;
-    }
-
-    private Set<Node> firstNewUncertifiedPair(Graph candidate, SepsetMap map, String what) throws InterruptedException {
-        Graph mag;
-        try {
-            mag = GraphTransforms.zhangMagFromPag(candidate);
-        } catch (Exception e) {
-            if (verbose) TetradLogger.getInstance().log("\tI-map gate: no Zhang MAG for " + what + "; vetoed.");
-            return Set.of();
-        }
-        List<Node> ns = mag.getNodes();
-        for (int i = 0; i < ns.size(); i++) {
-            for (int j = i + 1; j < ns.size(); j++) {
-                Node x = ns.get(i), z = ns.get(j);
-                if (mag.isAdjacentTo(x, z)) continue;
-                Set<Node> key = Set.of(x, z);
-                if (baselineUncertified.contains(key)) continue;
-                if (!certified(mag, map, x, z, what)) return key;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Whether x,z (nonadjacent in mag) has a test-confirmed separator: a known one (recorded sepset, seeded or
-     * cached set) that m-separates them in mag; failing that, the recursive-blocking separator in mag, tested
-     * once and cached if independent.
-     */
-    private boolean certified(Graph mag, SepsetMap map, Node x, Node z, String what) throws InterruptedException {
-        Set<Node> key = Set.of(x, z);
-        List<Set<Node>> known = new ArrayList<>();
-        Set<Node> entry = map.get(x, z);
-        if (entry != null) known.add(entry);
-        List<Set<Node>> cached = knownSeparators.get(key);
-        if (cached != null) known.addAll(cached);
-        for (Set<Node> sep : known) {
-            if (mag.paths().isMSeparatedFrom(x, z, sep, false)) return true;
-        }
-
-        Set<Node> d;
-        try {
-            RecursiveBlocking.BlockingResult b = RecursiveBlocking.blockPathsRecursively(
-                    mag, x, z, Set.of(), Set.of(), -1, -1, -1, 1, true);
-            d = (b == null || b.indeterminate() || b.blockingSet() == null) ? null : new HashSet<>(b.blockingSet());
-        } catch (Exception e) {
-            d = null;
-        }
-        if (d == null || !mag.paths().isMSeparatedFrom(x, z, d, false)) {
-            imapIndeterminate++;
-            if (verbose && what != null) {
-                TetradLogger.getInstance().log("\tI-map gate: no separator found for " + x + ", " + z
-                        + " in the candidate MAG (" + what + "); vetoed.");
-            }
-            return false;
-        }
-
-        d.removeIf(n -> n.getNodeType() == NodeType.LATENT);
-        imapTests++;
-        if (!judgedIndependent(x, z, d)) {
-            if (verbose && what != null) {
-                TetradLogger.getInstance().log("\tI-map gate: " + what + " asserts " + x + " _||_ " + z + " | " + d
-                        + ", judged dependent; vetoed.");
-            }
-            return false;
-        }
-        knownSeparators.computeIfAbsent(key, k -> new ArrayList<>()).add(d);
-        return true;
     }
 
     /**
@@ -1970,37 +1760,20 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             return false;
         }
 
-        if (requireImapStates && !isImapOfTest(this.pag, scratch, "saturating batch of " + confirmed.size()
-                + " edge(s)")) {
+        if (gates.anyGateOn() && !gateAccepts(scratch, "saturating batch of " + confirmed.size() + " edge(s)")) {
             restorePag(backup);
             if (r0r4Strategy != null) {
                 r0r4Strategy.setSepsetMap(this.sepsets);
             }
-            TetradLogger.getInstance().warn("SATURATION REVERTED by the I-map gate: the joint removal is a legal "
-                    + "PAG but asserts an independence the test judges false at imapAlpha.");
+            TetradLogger.getInstance().warn("SATURATION REVERTED by a correctness gate: the joint removal is a legal "
+                    + "PAG but either asserts an independence the test judges false at imapAlpha, or does not "
+                    + "improve the MAG score.");
             return false;
-        }
-
-        if (requireNoScoreDrop) {
-            scoreGateCandidates++;
-            Double trial = scoreMagOfPag(this.pag);
-            if (trial == null || trial < currentScore - SCORE_EPSILON) {
-                if (trial == null) scoreGateUnscorable++; else scoreGateVetoes++;
-                restorePag(backup);
-                if (r0r4Strategy != null) {
-                    r0r4Strategy.setSepsetMap(this.sepsets);
-                }
-                TetradLogger.getInstance().warn("SATURATION REVERTED by the score gate: the joint removal is a "
-                        + "legal PAG but " + (trial == null ? "its Zhang MAG is unscorable."
-                        : "lowers the MAG score (" + trial + " < " + currentScore + ")."));
-                return false;
-            }
-            currentScore = trial;
         }
 
         this.sepsets = scratch;
         graphVersion++;
-        if (requireImapStates) refreshBaseline(this.pag, this.sepsets);
+        gateCommitted();
 
         TetradLogger.getInstance().log("Saturating step committed: " + confirmed.size()
                 + " edge(s) removed.");
@@ -2432,33 +2205,35 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
     }
 
     /**
-     * Turns the experimental I-map gate on or off (default off); see {@link #requireImapStates}.
+     * Turns the I-map gate on or off (default off); see {@link CorrectnessGates#setRequireImapStates(boolean)}.
      *
      * @param requireImapStates true to require every committed state to introduce no uncertified independence.
      */
     public void setRequireImapStates(boolean requireImapStates) {
-        this.requireImapStates = requireImapStates;
+        gates.setRequireImapStates(requireImapStates);
     }
 
     /**
-     * Turns the no-score-drop gate on or off (default off); see {@link #requireNoScoreDrop}. Requires the
-     * supplied score to be a SemBicScore built on a covariance matrix.
+     * Turns the score step on or off (default off). Kept under its historical name; since 2026-11-08 the rule is
+     * the one shared with the *-FCI family through {@link CorrectnessGates}: a legal candidate's Zhang MAG must
+     * score STRICTLY above the committed state's by more than {@code SCORE_EPSILON}, not merely not drop. Requires
+     * a {@link SemBicScore} built on a covariance matrix with zero structure prior; refused with the time-lag
+     * replicating-graph wrapper.
      *
-     * @param requireNoScoreDrop true to veto any accepted candidate whose Zhang MAG's RICF BIC is lower than
-     *                           the committed state's.
+     * @param requireNoScoreDrop true to turn the score step on.
      */
     public void setRequireNoScoreDrop(boolean requireNoScoreDrop) {
-        this.requireNoScoreDrop = requireNoScoreDrop;
+        gates.setUseScoreStep(requireNoScoreDrop);
     }
 
     /**
-     * Sets the significance level of the I-map gate's tests (default 0.001); see {@link #imapAlpha}.
+     * Sets the significance level of the I-map gate's tests (default 0.001); see
+     * {@link CorrectnessGates#setImapAlpha(double)}.
      *
      * @param imapAlpha a level in [0, 1].
      */
     public void setImapAlpha(double imapAlpha) {
-        if (!(imapAlpha >= 0 && imapAlpha <= 1)) throw new IllegalArgumentException("imapAlpha must be in [0, 1]");
-        this.imapAlpha = imapAlpha;
+        gates.setImapAlpha(imapAlpha);
     }
 
     /**

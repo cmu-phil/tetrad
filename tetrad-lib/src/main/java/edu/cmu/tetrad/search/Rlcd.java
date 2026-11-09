@@ -24,13 +24,23 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.PairwiseCovarianceEstimator;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
+import edu.cmu.tetrad.search.rlcd.EmCovarianceRankTest;
 import edu.cmu.tetrad.search.rlcd.LatentGroups;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
 import edu.cmu.tetrad.search.rlcd.TierPrecedence;
 import edu.cmu.tetrad.search.rlcd.TwoIndicatorTest;
@@ -125,6 +135,13 @@ public class Rlcd {
      * {@link #setStratifiedRankTest}.
      */
     private CovarianceMatrix stage1CovarianceOverride = null;
+    /**
+     * True in testwise-deletion mode. Stage 1's covariance is then built from the listwise-complete rows, but only
+     * if stage 1 is actually run: with a supplied stage-1 graph, or Stage1Method.NONE, it is never needed, and on
+     * many variables at any real missingness rate it could not be built anyway.
+     */
+    private boolean testwiseDeletion = false;
+    private MissingDataSpec missingDataSpec = null;
     private double alpha = 0.01;
     private double[] alphaByRank = null;
     private int maxK = 3;
@@ -134,6 +151,11 @@ public class Rlcd {
     private static final int MAX_GATE_TESTS = 20000;
     private boolean latentGate = true;
     private boolean resolveTwoIndicatorLatents = false;
+    private boolean knowledgeInStage1 = true;
+    private boolean qualifyObservedCauses = true;
+    private boolean observedExplanationCheck = false;
+    private double observedExplanationAlpha = 0.05;
+    private int explainedAway = 0;
     private boolean allowNonLeafX = true;
     private boolean unfoldCovers = true;
     private boolean checkV = true;
@@ -212,6 +234,211 @@ public class Rlcd {
     }
 
     /**
+     * Puts the search into testwise-deletion mode. Equivalent to {@code setMissingDataSpec(MissingDataSpec.testwise())}
+     * when on, and to clearing the spec when off; see {@link #setMissingDataSpec(MissingDataSpec)}.
+     *
+     * @param on true to switch the mode on.
+     */
+    public void setTestwiseDeletion(boolean on) {
+        setMissingDataSpec(on ? MissingDataSpec.testwise() : null);
+    }
+
+    /**
+     * Tells the search how to treat missing values in a single data set, by Tetrad's standard
+     * {@link MissingDataSpec}. Pass null to clear a previous setting. The policies, and what each does to the two
+     * stages of RLCD:
+     * <ul>
+     *     <li><b>EM_COVARIANCE</b> (recommended): one covariance matrix is estimated from all of the incomplete rows
+     *     by EM ({@link EmCovarianceEstimator}), which is consistent under MAR and positive semidefinite. Stage 1
+     *     scores it, with the spec's effective sample size; every stage-2 rank test runs on it through
+     *     {@link EmCovarianceRankTest}, with a sample size chosen per query from the pairwise-complete counts of
+     *     the columns that query mentions, by the spec's {@link MissingDataSpec.EffectiveSampleSizeMode}. The mean
+     *     pairwise rule is recommended; the default FULL_N overstates the information and loses clusters. One
+     *     matrix serves the whole search, so stage 1 and every stage-2 decision see the same estimate.</li>
+     *     <li><b>PAIRWISE_COVARIANCE</b>: as EM_COVARIANCE but with the available-case matrix of
+     *     {@link PairwiseCovarianceEstimator}, which need not be positive semidefinite. Stage 1's score can misbehave
+     *     on such a matrix; supply a stage-1 graph or use {@link Stage1Method#NONE} if it does.</li>
+     *     <li><b>TESTWISE</b>: each stage-2 rank query is answered from the rows complete on that query's columns, by
+     *     {@link TestwiseDeletionRankTest}. Invents nothing, but a query over u columns keeps only about
+     *     (1 − rate)^u of the rows, so it is for few variables or low missingness. When stage 1 is run in this
+     *     mode it runs on the <i>listwise-complete</i> rows, the only choice here guaranteed positive semidefinite;
+     *     with many variables there may be none, in which case supply a stage-1 graph or use
+     *     {@link Stage1Method#NONE} and the listwise matrix is never built.</li>
+     *     <li><b>LISTWISE</b>: both stages run on the rows complete in every column.</li>
+     *     <li><b>MULTIPLE_IMPUTATION</b>: not handled here. Impute, and construct the search over the imputations
+     *     with {@link #Rlcd(List)}, which pools the rank tests by the D2 rule. Be aware that D2 at a handful of
+     *     imputations accepts rank deficiency whenever the statistic varies much across imputations, which on many
+     *     variables returns one latent over nearly everything; see the simulation notes.</li>
+     *     <li><b>FAIL</b>: an exception if the data have any missing value.</li>
+     * </ul>
+     * All of these are decided here, before stage 1, from the single data set the search was constructed over.
+     *
+     * @param spec the spec, or null.
+     * @throws IllegalArgumentException if called on a search constructed over several imputations, or if the policy
+     *                                 is MULTIPLE_IMPUTATION (use the other constructor), or FAIL with missing
+     *                                 values present.
+     */
+    public void setMissingDataSpec(MissingDataSpec spec) {
+        this.rankTester = null;
+        this.stage1CovarianceOverride = null;
+        this.testwiseDeletion = false;
+        this.missingDataSpec = spec;
+        if (spec == null) return;
+
+        if (imputations.size() > 1) {
+            throw new IllegalArgumentException("A missing-data policy applies to a single data set with missing "
+                                               + "values, not to a set of imputations; use one constructor or the "
+                                               + "other.");
+        }
+
+        MissingDataAudit audit = new MissingDataAudit(dataSet);
+        int n = dataSet.getNumRows();
+
+        switch (spec.getPolicy()) {
+            case FAIL -> {
+                if (audit.anyMissing()) {
+                    throw new IllegalArgumentException("RLCD: the data have missing values and the policy is to "
+                                                       + "fail. " + TestwiseDeletionRankTest.describe(dataSet));
+                }
+            }
+            case LISTWISE -> {
+                DataSet complete = MissingDataUtils.listwiseDelete(dataSet);
+                if (complete.getNumRows() < dataSet.getNumColumns() + 2) {
+                    throw new IllegalArgumentException("RLCD: listwise deletion leaves " + complete.getNumRows()
+                                                       + " complete rows of " + n + ", too few. "
+                                                       + TestwiseDeletionRankTest.describe(dataSet));
+                }
+                this.rankTester = new Chi2RankTest(complete);
+                this.stage1CovarianceOverride = new CovarianceMatrix(complete);
+                TetradLogger.getInstance().log("RLCD listwise: " + complete.getNumRows() + " complete rows of " + n);
+            }
+            case TESTWISE -> {
+                this.rankTester = new TestwiseDeletionRankTest(dataSet);
+                this.testwiseDeletion = true;
+            }
+            case EM_COVARIANCE, PAIRWISE_COVARIANCE -> {
+                ICovarianceMatrix cov;
+                int[][] counts;
+                if (spec.getPolicy() == MissingDataPolicy.EM_COVARIANCE) {
+                    EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
+                    estimator.setRidge(spec.getEmRidge());
+                    estimator.setTolerance(spec.getEmTolerance());
+                    estimator.setMaxIterations(spec.getEmMaxIterations());
+                    cov = estimator.estimate();
+                    counts = estimator.getPairwiseCounts();
+                    TetradLogger.getInstance().log("RLCD EM covariance: " + estimator.getNumIterations()
+                                                   + " iterations, converged " + estimator.isConverged()
+                                                   + ", min pairwise count " + estimator.getMinPairwiseCount());
+                } else {
+                    cov = PairwiseCovarianceEstimator.estimate(dataSet);
+                    counts = audit.getPairwiseCompleteCounts();
+                }
+                this.rankTester = new EmCovarianceRankTest(cov, counts, n, spec.getEssMode(), 1.0);
+                int ess = MissingDataUtils.effectiveSampleSize(dataSet, spec);
+                this.stage1CovarianceOverride = new CovarianceMatrix(variables, cov.getMatrix(), ess < 0 ? n : ess);
+            }
+            case MULTIPLE_IMPUTATION -> throw new IllegalArgumentException("RLCD: for multiple imputation, impute "
+                                                                           + "and construct the search over the "
+                                                                           + "imputations with Rlcd(List<DataSet>).");
+        }
+    }
+
+    /**
+     * The missing-data spec in force, or null.
+     *
+     * @return the spec.
+     */
+    public MissingDataSpec getMissingDataSpec() {
+        return missingDataSpec;
+    }
+
+    /**
+     * Runs both stages on a covariance matrix estimated with censored values treated as censored -- a grade at the
+     * top of its scale is at least that, not missing and not exactly that -- by
+     * {@link CensoredMvnCovarianceEstimator}. Stage 1 scores the estimate; every stage-2 rank test runs on it through
+     * {@link EmCovarianceRankTest} with the given sample-size rule over the pairwise <i>uncensored</i> counts. This is
+     * the treatment for ceilings and floors, which no missing-value policy handles: a value missing or clipped because
+     * of its own size is missing-not-at-random, and the MAR estimate of {@link MissingDataSpec#emCovariance()} is
+     * biased toward attenuated correlations under it. Under Gaussian errors the censored estimate is close to exact;
+     * under skewed errors the correction is partial.
+     *
+     * @param estimator the estimator, constructed over this search's data set with its bounds set.
+     * @param essMode   how a query's sample size is chosen from the pairwise uncensored counts; mean pairwise
+     *                  recommended.
+     * @throws IllegalArgumentException if called on a search constructed over several imputations.
+     */
+    public void setCensoredCovariance(CensoredMvnCovarianceEstimator estimator,
+                                      MissingDataSpec.EffectiveSampleSizeMode essMode) {
+        if (imputations.size() > 1) {
+            throw new IllegalArgumentException("A censored covariance applies to a single data set, not to a set "
+                                               + "of imputations.");
+        }
+        this.missingDataSpec = null;
+        this.testwiseDeletion = false;
+        ICovarianceMatrix cov = estimator.estimate();
+        int[][] counts = estimator.getPairwiseCounts();
+        int n = dataSet.getNumRows();
+        this.rankTester = new EmCovarianceRankTest(cov, counts, n, essMode, 1.0);
+        double sum = 0;
+        int pairs = 0;
+        for (int a = 0; a < counts.length; a++) {
+            for (int b = a + 1; b < counts.length; b++) {
+                sum += counts[a][b];
+                pairs++;
+            }
+        }
+        int ess = essMode == MissingDataSpec.EffectiveSampleSizeMode.FULL_N || pairs == 0 ? n
+                : (int) Math.round(sum / pairs);
+        this.stage1CovarianceOverride = new CovarianceMatrix(variables, cov.getMatrix(), ess);
+        TetradLogger.getInstance().log("RLCD censored covariance: " + estimator.getCensoredCells()
+                                       + " censored cells, " + estimator.getMissingCells() + " missing cells.");
+    }
+
+    /**
+     * The covariance matrix of the rows with no missing value in any column, for stage 1 under testwise deletion.
+     */
+    private CovarianceMatrix listwiseCompleteCovariance() {
+        int n = dataSet.getNumRows(), p = dataSet.getNumColumns();
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            boolean ok = true;
+            for (int j = 0; j < p; j++) {
+                if (Double.isNaN(dataSet.getDouble(i, j))) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) rows.add(i);
+        }
+        int m = rows.size();
+        if (m < p + 2) {
+            throw new IllegalArgumentException("Testwise deletion needs a stage-1 covariance matrix, and these data "
+                                               + "have only " + m + " rows complete in all " + p + " columns. Set "
+                                               + "Stage1Method.NONE or supply a stage-1 graph. Missingness: "
+                                               + TestwiseDeletionRankTest.describe(dataSet));
+        }
+        double[] mean = new double[p];
+        for (int i : rows) for (int j = 0; j < p; j++) mean[j] += dataSet.getDouble(i, j);
+        for (int j = 0; j < p; j++) mean[j] /= m;
+
+        Matrix cov = new Matrix(p, p);
+        for (int a = 0; a < p; a++) {
+            for (int b = a; b < p; b++) {
+                double s = 0.0;
+                for (int i : rows) {
+                    s += (dataSet.getDouble(i, a) - mean[a]) * (dataSet.getDouble(i, b) - mean[b]);
+                }
+                double v = s / (m - 1.0);
+                cov.set(a, b, v);
+                cov.set(b, a, v);
+            }
+        }
+        TetradLogger.getInstance().log("RLCD testwise deletion: stage-1 covariance from " + m + " complete rows of "
+                                       + n + ".");
+        return new CovarianceMatrix(dataSet.getVariables(), cov, m);
+    }
+
+    /**
      * Puts the search into stratified (domain-pooled) mode for data gathered in several domains -- batches, sites,
      * cohorts -- whose causal structure is shared but whose linear coefficients, means, and noise variances may
      * differ by domain; the Phase 1 upgrade of LCD-NOD (Dong et al., ICML 2026) applied to RLCD. Two things change
@@ -281,7 +508,8 @@ public class Rlcd {
     }
 
     /**
-     * Sets whether to try to replace two-indicator latents by direct edges, using non-Gaussianity (default false).
+     * Sets whether to try to replace two-indicator latents by direct edges, using non-Gaussianity or, failing that,
+     * the temporal tiers of the background knowledge (default false).
      * Rank constraints cannot tell L --&gt; {X1, X2} with X1 --&gt; X2 from a second latent over {X1, X2}, and RLCD
      * reports the second latent. With this set, each latent of the output that has exactly two observed children,
      * no observed parent and exactly one latent neighbor M, where M has at least three pure observed children, is
@@ -290,13 +518,61 @@ public class Rlcd {
      * edge; otherwise the latent is left as it is. The test is conservative (it needs positive evidence for the
      * edge) and needs skewed data; with Gaussian data nothing changes. Not done under a stratified rank test, whose
      * pooled domains make the data non-Gaussian whatever the model. With several imputations, the edge is taken
-     * only if every imputation shows it. {@link #getAdjacency()} and {@link #getLatentGroups()} describe the search
-     * before this step.
+     * only if every imputation shows it.
+     * <p>
+     * When the test is unavailable (no reference cluster: the latent has no latent neighbor, as a latent standing for
+     * one link of a chain of observed variables has none) or undecided, and the knowledge's tiers order the two
+     * indicators, the edge is drawn in the tier direction instead. A two-indicator latent and a direct edge between
+     * its indicators are rank-equivalent, so this changes the representation of the same covariance to the more
+     * parsimonious one, not the fit. In that no-neighbor case the indicators may have observed parents of their own
+     * (which they keep) but not latent ones. {@link #getAdjacency()} and {@link #getLatentGroups()} describe the
+     * search before this step.
      *
      * @param resolve true to try.
      */
     public void setResolveTwoIndicatorLatents(boolean resolve) {
         this.resolveTwoIndicatorLatents = resolve;
+    }
+
+    /**
+     * Sets whether background knowledge is given to stage 1 as well as stage 2 (default true). Stage 2 always
+     * honours it: no non-sink forbidden as a parent, tier precedence in cluster placement, orientation of what the
+     * tiers order. Stage 1 is the question. Under tier constraints BOSS returns a denser skeleton (about eight more
+     * edges on thirty variables, October 2026), the clique merge then puts more variables in one partition, and
+     * stage 2's rank tests over a larger set with weak correlations fail to reject rank one across it -- the
+     * fourteen-variable cluster seen on the chem data whenever knowledge was on. Measured on mixed30: knowledge in
+     * stage 2 alone did slightly better on latent structure than no knowledge, knowledge in stage 1 did worse; stage
+     * 1 knowledge also removed observed false positives at the partition boundary. So: true where the observed
+     * edges and their directions are the point, false where the latent structure is and the knowledge is rich.
+     *
+     * @param knowledgeInStage1 whether stage 1 sees the knowledge.
+     */
+    public void setKnowledgeInStage1(boolean knowledgeInStage1) {
+        this.knowledgeInStage1 = knowledgeInStage1;
+    }
+
+    /**
+     * Sets whether a rank deficiency must survive an observed-explanation check before it becomes a cluster
+     * (default false). See {@link RlcdClusterSearch#setObservedExplanationCheck(boolean, double, int, int)}. In short: a
+     * set is made a cluster of t latents only if no t observed variables explain its rank deficiency equally well.
+     * This is the guard against reading a chain of observed variables -- a sequence of unit scores, say -- as a
+     * measurement model, which rank constraints alone license, since a chain is rank one across any cut.
+     *
+     * @param check whether to check.
+     * @param alpha the alpha of the explanation test; 0.05 by default, larger than the cluster alpha on purpose.
+     */
+    public void setObservedExplanationCheck(boolean check, double alpha) {
+        this.observedExplanationCheck = check;
+        this.observedExplanationAlpha = alpha;
+    }
+
+    /**
+     * The number of rank deficiencies the last search explained away by observed variables, summed over partitions.
+     *
+     * @return the count; 0 when the check is off.
+     */
+    public int getExplainedAway() {
+        return explainedAway;
     }
 
     /**
@@ -445,6 +721,7 @@ public class Rlcd {
         RlcdClusterSearch search = new RlcdClusterSearch(xvars, rankTester, this::alphaFor, maxK,
                 allowNonLeafX, unfoldCovers, checkV);
         search.setKnowledge(knowledge);
+        search.setObservedExplanationCheck(observedExplanationCheck, observedExplanationAlpha, maxK, 20000);
         if (verbose) search.setLog(this::log);
 
         for (List<Node> group : partition) {
@@ -497,6 +774,7 @@ public class Rlcd {
 
             current = search.findClusters(current);
             latentGroups.add(current);
+            explainedAway = search.getExplainedAway();
 
             LatentGroups.AdjacencyResult out = current.toAdjacency();
             int[][] outAdj = getReducedAdj(out.adjacency(), m);
@@ -565,8 +843,134 @@ public class Rlcd {
         }
         Graph graph = adjacencyToGraph(adj, nodes);
         orientLatentEdgesByRankTests(graph);
+        if (qualifyObservedCauses) qualifyObservedCausesOfLatents(graph);
         if (resolveTwoIndicatorLatents) resolveTwoIndicatorLatents(graph);
         return graph;
+    }
+
+    // ---------------------------------------------------------------- observed causes of latents
+
+    /**
+     * Sets whether a directed edge between an observed variable O and a latent L is kept only when the data identify
+     * its direction (default true). Rank constraints cannot tell an observed cause of a latent from an indicator of
+     * it: O --&gt; L --&gt; X and L --&gt; O, L --&gt; X give the same covariance over the observed variables, so the
+     * direction stage 2 reports is a placement, not a finding. What does identify it is a directed observed parent P
+     * of O not itself attached to L. Under the chain P --&gt; O --&gt; L --&gt; X, P is dependent on the indicators
+     * marginally and independent of them given O; under the collider P --&gt; O &lt;-- L --&gt; X, P is independent of
+     * them marginally and dependent given O. Each directed observed-latent edge is checked against every such parent:
+     * all chain signatures give O --&gt; L, all collider signatures give L --&gt; O, anything else is unidentified. An
+     * unidentified O --&gt; L (including one with no directed observed parent) is made undirected; an unidentified
+     * L --&gt; O is left as the measurement-model default unless the parents actively disagree, when it too is made
+     * undirected. The tests are rank tests on the search's own rank tester at the cluster alphas (rank 0 marginally,
+     * rank 1 with O added to both sides), so they pool over imputations or honour censoring as the rest of the search
+     * does.
+     *
+     * @param qualify whether to qualify such edges.
+     */
+    public void setQualifyObservedCauses(boolean qualify) {
+        this.qualifyObservedCauses = qualify;
+    }
+
+    /**
+     * See {@link #setQualifyObservedCauses(boolean)}.
+     *
+     * @param graph the output graph, changed in place.
+     */
+    private void qualifyObservedCausesOfLatents(Graph graph) {
+        List<String> xvars = new ArrayList<>();
+        for (Node v : variables) xvars.add(v.getName());
+
+        // Every directed edge between an observed O and a latent L, in either direction.
+        List<Edge> candidates = new ArrayList<>();
+        for (Edge e : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(e)) continue;
+            Node from = Edges.getDirectedEdgeTail(e), to = Edges.getDirectedEdgeHead(e);
+            boolean fromLatent = from.getNodeType() == NodeType.LATENT, toLatent = to.getNodeType() == NodeType.LATENT;
+            if (fromLatent != toLatent) candidates.add(e);
+        }
+        candidates.sort(Comparator.comparing(Edge::toString));
+
+        for (Edge e : candidates) {
+            Node tail = Edges.getDirectedEdgeTail(e), head = Edges.getDirectedEdgeHead(e);
+            boolean placedAsCause = head.getNodeType() == NodeType.LATENT;
+            Node o = placedAsCause ? tail : head, l = placedAsCause ? head : tail;
+            String placed = o + " --> " + l;
+
+            List<Node> indicators = new ArrayList<>();
+            for (Node c : graph.getChildren(l)) {
+                if (c.getNodeType() != NodeType.LATENT && c != o) indicators.add(c);
+            }
+            // Directed observed parents of O that are not themselves attached to L.
+            List<Node> parents = new ArrayList<>();
+            for (Node pa : graph.getParents(o)) {
+                if (pa.getNodeType() == NodeType.LATENT) continue;
+                if (graph.isAdjacentTo(pa, l)) continue;
+                parents.add(pa);
+            }
+
+            if (indicators.isEmpty() || parents.isEmpty()) {
+                if (!placedAsCause) continue; // L --> O is the measurement-model default; leave it.
+                String why = indicators.isEmpty() ? "no indicators to test against" : "no directed observed parent of " + o;
+                graph.removeEdge(e);
+                graph.addUndirectedEdge(o, l);
+                log("Observed cause " + placed + ": " + why + "; direction undetermined, made undirected.");
+                continue;
+            }
+
+            // Two signatures per parent P. Chain P --> O --> L --> X: P dependent on the indicators marginally,
+            // independent given O. Collider P --> O <-- L --> X: P independent marginally, dependent given O.
+            // Anything else (another path from P to the indicators) is uninformative.
+            int oCol = xvars.indexOf(o.getName());
+            int[] qcols = indicators.stream().mapToInt(v -> xvars.indexOf(v.getName())).toArray();
+            int[] qcolsO = Arrays.copyOf(qcols, qcols.length + 1);
+            qcolsO[qcols.length] = oCol;
+            int chain = 0, collider = 0, other = 0;
+            StringBuilder detail = new StringBuilder();
+            for (Node pa : parents) {
+                int pCol = xvars.indexOf(pa.getName());
+                boolean margIndep = rankTester.failToReject(new int[]{pCol}, qcols, 0, alphaFor(0));
+                boolean condIndep = rankTester.failToReject(new int[]{pCol, oCol}, qcolsO, 1, alphaFor(1));
+                String sig;
+                if (!margIndep && condIndep) {
+                    chain++;
+                    sig = "chain";
+                } else if (margIndep && !condIndep) {
+                    collider++;
+                    sig = "collider";
+                } else {
+                    other++;
+                    sig = "uninformative";
+                }
+                detail.append(' ').append(pa).append(':').append(sig);
+            }
+
+            if (chain > 0 && collider == 0 && other == 0) {
+                if (!placedAsCause) {
+                    graph.removeEdge(e);
+                    graph.addDirectedEdge(o, l);
+                    log("Indicator " + l + " --> " + o + ":" + detail + "; reversed to " + placed
+                        + " (its observed parents reach the indicators only through " + o + ").");
+                } else {
+                    log("Observed cause " + placed + ":" + detail + "; kept.");
+                }
+            } else if (collider > 0 && chain == 0 && other == 0) {
+                if (placedAsCause) {
+                    graph.removeEdge(e);
+                    graph.addDirectedEdge(l, o);
+                    log("Observed cause " + placed + ":" + detail + "; reversed to " + l + " --> " + o
+                        + " (" + o + " is a collider between its observed parents and " + l + ", hence a child).");
+                } else {
+                    log("Indicator " + l + " --> " + o + ":" + detail + "; kept.");
+                }
+            } else if (chain == 0 && collider == 0 && !placedAsCause) {
+                log("Indicator " + l + " --> " + o + ":" + detail + "; kept (default).");
+            } else {
+                graph.removeEdge(e);
+                graph.addUndirectedEdge(o, l);
+                log((placedAsCause ? "Observed cause " + placed : "Indicator " + l + " --> " + o) + ":" + detail
+                    + "; not identified, made undirected.");
+            }
+        }
     }
 
     // ---------------------------------------------------------------- two-indicator latents
@@ -602,7 +1006,7 @@ public class Rlcd {
         for (Node lp : latents) {
             if (!graph.containsNode(lp)) continue;
 
-            // Exactly two observed neighbors, both children, and exactly one latent neighbor.
+            // Exactly two observed neighbors, both children, no parent, and at most one latent neighbor.
             List<Node> children = new ArrayList<>();
             Node m = null;
             boolean ok = true;
@@ -620,44 +1024,73 @@ public class Rlcd {
                     break;
                 }
             }
-            if (!ok || m == null || children.size() != 2) continue;
+            if (!ok || children.size() != 2) continue;
             children.sort(Comparator.comparing(Node::getName));
             Node x1 = children.get(0), x2 = children.get(1);
-            if (!isPureChildOf(graph, x1, lp) || !isPureChildOf(graph, x2, lp) || graph.isAdjacentTo(x1, x2)) {
-                continue;
-            }
+            if (graph.isAdjacentTo(x1, x2)) continue;
 
-            List<Node> refs = new ArrayList<>();
-            for (Node c : graph.getChildren(m)) {
-                if (c.getNodeType() != NodeType.LATENT && isPureChildOf(graph, c, m)) refs.add(c);
-            }
-            if (refs.size() < 3) continue;
-            refs.sort(Comparator.comparing(Node::getName));
-            if (refs.size() > TWO_INDICATOR_MAX_REFS) refs = refs.subList(0, TWO_INDICATOR_MAX_REFS);
+            // With a latent neighbor M, the children must be pure (M's cluster is the reference set); without one,
+            // the children may have observed parents of their own -- the chain case, where Z --> X1, Z --> X2 and a
+            // latent over X1, X2 stands for X1 --> X2 -- but no latent parent.
+            boolean pure = isPureChildOf(graph, x1, lp) && isPureChildOf(graph, x2, lp);
+            if (m != null && !pure) continue;
+            if (m == null && (!hasOnlyObservedParentsBesides(graph, x1, lp)
+                              || !hasOnlyObservedParentsBesides(graph, x2, lp))) continue;
 
-            TwoIndicatorTest.Answer answer = null;
-            StringBuilder detail = new StringBuilder();
-            for (DataSet d : imputations) {
-                TwoIndicatorTest.Result r = TwoIndicatorTest.test(column(d, x1), column(d, x2), columns(d, refs),
-                        TWO_INDICATOR_DELTA, TWO_INDICATOR_BOOT, seed == -1 ? 17L : seed);
-                detail.append(String.format(" [n12 = %.3f, n21 = %.3f, N = %d: %s]", r.n12(), r.n21(), r.n(),
-                        r.answer()));
-                if (answer == null) answer = r.answer();
-                else if (answer != r.answer()) answer = TwoIndicatorTest.Answer.UNDECIDED;
+            // First choice: the non-Gaussian test, when there is a reference cluster to run it against.
+            TwoIndicatorTest.Answer answer = TwoIndicatorTest.Answer.UNDECIDED;
+            if (m != null) {
+                List<Node> refs = new ArrayList<>();
+                for (Node c : graph.getChildren(m)) {
+                    if (c.getNodeType() != NodeType.LATENT && isPureChildOf(graph, c, m)) refs.add(c);
+                }
+                if (refs.size() >= 3) {
+                    refs.sort(Comparator.comparing(Node::getName));
+                    if (refs.size() > TWO_INDICATOR_MAX_REFS) refs = refs.subList(0, TWO_INDICATOR_MAX_REFS);
+                    answer = null;
+                    StringBuilder detail = new StringBuilder();
+                    for (DataSet d : imputations) {
+                        TwoIndicatorTest.Result r = TwoIndicatorTest.test(column(d, x1), column(d, x2),
+                                columns(d, refs), TWO_INDICATOR_DELTA, TWO_INDICATOR_BOOT, seed == -1 ? 17L : seed);
+                        detail.append(String.format(" [n12 = %.3f, n21 = %.3f, N = %d: %s]", r.n12(), r.n21(),
+                                r.n(), r.answer()));
+                        if (answer == null) answer = r.answer();
+                        else if (answer != r.answer()) answer = TwoIndicatorTest.Answer.UNDECIDED;
+                    }
+                    log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + ", references " + refs
+                        + " under " + m + ":" + detail);
+                }
             }
-            log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + ", references " + refs + " under " + m
-                + ":" + detail);
 
             Node from, to;
+            String basis;
             if (answer == TwoIndicatorTest.Answer.X1_TO_X2) {
                 from = x1;
                 to = x2;
+                basis = "non-Gaussianity";
             } else if (answer == TwoIndicatorTest.Answer.X2_TO_X1) {
                 from = x2;
                 to = x1;
+                basis = "non-Gaussianity";
+            } else if (knowledge.isForbidden(x2.getName(), x1.getName())
+                       && !knowledge.isForbidden(x1.getName(), x2.getName())) {
+                // Second choice: the temporal tiers order the pair. A two-indicator latent is rank-equivalent to a
+                // direct edge between its indicators (or to correlated errors); when knowledge says which way the
+                // edge would run, the edge is the more parsimonious reading of the same covariance.
+                from = x1;
+                to = x2;
+                basis = "knowledge";
+            } else if (knowledge.isForbidden(x1.getName(), x2.getName())
+                       && !knowledge.isForbidden(x2.getName(), x1.getName())) {
+                from = x2;
+                to = x1;
+                basis = "knowledge";
             } else {
+                if (m == null) log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + " has no reference "
+                                   + "cluster and knowledge does not order the pair; kept.");
                 continue;
             }
+            log("   Direction " + from + " --> " + to + " by " + basis + ".");
 
             if (knowledge.isForbidden(from.getName(), to.getName())) {
                 log("   Knowledge forbids " + from + " --> " + to + "; " + lp + " kept.");
@@ -674,12 +1107,32 @@ public class Rlcd {
             }
 
             graph.removeNode(lp);
-            graph.addDirectedEdge(m, x1);
-            graph.addDirectedEdge(m, x2);
+            if (m != null) {
+                graph.addDirectedEdge(m, x1);
+                graph.addDirectedEdge(m, x2);
+            }
             graph.addDirectedEdge(from, to);
-            log("   Replaced " + lp + " by " + m + " --> " + x1 + ", " + m + " --> " + x2 + ", " + from + " --> "
-                + to + ".");
+            log("   Replaced " + lp + " by " + (m != null ? m + " --> " + x1 + ", " + m + " --> " + x2 + ", " : "")
+                + from + " --> " + to + ".");
         }
+    }
+
+    /**
+     * Whether every edge at an observed node, other than the one from the given latent, is either directed away
+     * from it or directed into it from an observed node.
+     */
+    private static boolean hasOnlyObservedParentsBesides(Graph graph, Node x, Node latent) {
+        for (Edge e : graph.getEdges(x)) {
+            Node other = e.getDistalNode(x);
+            if (other == latent) {
+                if (!graph.isParentOf(latent, x)) return false;
+            } else if (!Edges.isDirectedEdge(e)) {
+                return false;
+            } else if (Edges.getDirectedEdgeHead(e) == x && other.getNodeType() == NodeType.LATENT) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1135,14 +1588,14 @@ public class Rlcd {
         score.setPenaltyDiscount(penaltyDiscount);
         if (stage1Method == Stage1Method.FGES) {
             Fges fges = new Fges(score);
-            fges.setKnowledge(knowledge);
+            if (knowledgeInStage1) fges.setKnowledge(knowledge);
             fges.setVerbose(false);
             return fges.search();
         } else {
             Boss boss = new Boss(score);
             boss.setVerbose(false);
             PermutationSearch ps = new PermutationSearch(boss);
-            ps.setKnowledge(knowledge);
+            if (knowledgeInStage1) ps.setKnowledge(knowledge);
             if (seed != -1) ps.setSeed(seed);
             return ps.search();
         }
@@ -1154,6 +1607,10 @@ public class Rlcd {
      */
     private CovarianceMatrix stage1Covariance() {
         if (stage1CovarianceOverride != null) return stage1CovarianceOverride;
+        if (testwiseDeletion) {
+            stage1CovarianceOverride = listwiseCompleteCovariance();
+            return stage1CovarianceOverride;
+        }
 
         CovarianceMatrix first = new CovarianceMatrix(dataSet);
         if (imputations.size() == 1) return first;

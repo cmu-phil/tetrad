@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 
@@ -180,17 +179,9 @@ public class SemOptimizerEm implements SemOptimizer {
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
 
-            double[] p = new double[freeParameters.size()];
-
-            for (int i = 0; i < freeParameters.size(); i++) {
-                if (freeParameters.get(i).getType() == ParamType.VAR) {
-                    p[i] = RandomUtil.getInstance().nextUniform(0, 3);
-                } else {
-                    p[i] = RandomUtil.getInstance().nextUniform(-2, 2);
-                }
-            }
-
-            _sem2.setFreeParamValues(p);
+            // Every trial starts from a scale-aware random draw (see SemStartValues); the model's own
+            // initialization is scale-blind and, on data with large variances, hopeless as a start.
+            _sem2.setFreeParamValues(SemStartValues.draw(_sem2, freeParameters));
 
             optimize2(_sem2);
 

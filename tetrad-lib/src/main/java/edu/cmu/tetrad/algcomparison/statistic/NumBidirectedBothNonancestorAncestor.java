@@ -67,6 +67,7 @@ public class NumBidirectedBothNonancestorAncestor implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int count = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -74,7 +75,7 @@ public class NumBidirectedBothNonancestorAncestor implements Statistic {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (!trueGraph.paths().isAncestorOf(x, y) && !trueGraph.paths().isAncestorOf(y, x)) {
+                if (!dag.paths().isAncestorOf(x, y) && !dag.paths().isAncestorOf(y, x)) {
                     count++;
                 }
             }

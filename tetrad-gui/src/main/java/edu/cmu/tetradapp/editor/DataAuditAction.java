@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetradapp.ThemeUtils;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
 import edu.cmu.tetrad.data.audit.CovarianceAudit;
@@ -657,6 +658,8 @@ class DataAuditAction extends AbstractAction {
         // controls that act on what is selected in the table above, the second the two that remove variables.
         JPanel inspectRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         inspectRow.add(recode);
+        inspectRow.add(createRecodeEverywhereControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache, onDatasetEdited, recode));
         inspectRow.add(createPlotMatrixControl(dataSet, tabs, findingsTable, variablesTable));
 
         JPanel removeRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -670,6 +673,245 @@ class DataAuditAction extends AbstractAction {
         controls.add(inspectRow);
         controls.add(removeRow);
         return controls;
+    }
+
+    /**
+     * Builds the file-wide recode control: a button that sets to missing every cell, in every continuous variable,
+     * holding one value the user names. The per-finding recode above acts on one variable at a time, which is right
+     * when a code is specific to a column; but a code is usually file-wide -- a zero written for "not submitted"
+     * means the same thing in every grade column -- and recoding it finding by finding across forty variables is
+     * the kind of chore that stops an analysis. This button does the whole file in one confirmed edit.
+     * <p>
+     * The value defaults to the one named by a selected SENTINEL_VALUE finding, if any, and otherwise to 0. The
+     * confirmation lists every variable in which the value occurs, each with its cell count and a checkbox, all
+     * checked, in a scrolling list, so the user sees exactly what will change and can opt particular variables out
+     * -- a column in which the value is a real measurement rather than a code. A variable in which the value sits
+     * at the top or bottom of the observed range with other values right next to it is marked, since there it is
+     * more likely a floor or ceiling than a code and should be censored rather than recoded; a BOUNDARY_ATOM
+     * finding on that variable is the audit's own statement of the same thing. Variables in which the value does
+     * not occur are not listed and are not touched. Like the per-finding recode, this edits the dataset in place,
+     * cannot be undone, and recomputes the audit afterwards.
+     *
+     * @param perFindingRecode the per-finding recode button, disabled after a successful edit here for the same
+     *                         reason it disables itself: the findings it was enabled for have been recomputed.
+     */
+    private static JComponent createRecodeEverywhereControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                            DataAuditJTable variablesTable, JLabel summary,
+                                                            JTextArea missingText, MissingDataAudit[] missingRef,
+                                                            Map<String, DataAudit> groupCache,
+                                                            Runnable onDatasetEdited, JButton perFindingRecode) {
+        JButton recodeAll = new JButton("Recode a Value to Missing in All Variables...");
+        recodeAll.setToolTipText("Set to missing every cell in every continuous variable that holds one value you "
+                + "name (for instance 0 for \"not submitted\"). Modifies the dataset in place; not undoable.");
+
+        recodeAll.addActionListener(e -> {
+            // Default to the code of a selected sentinel finding, else 0, the commonest file-wide code.
+            double suggested = 0.0;
+            List<AuditFinding> selected = selectedSentinelFindings(findingsTable);
+
+            if (!selected.isEmpty()) {
+                Double v = selected.get(0).getValues().get("value");
+                if (v != null) suggested = v;
+            }
+
+            String answer = JOptionPane.showInputDialog(recodeAll,
+                    "Value to set to missing in every continuous variable:", suggested);
+            if (answer == null) return;
+
+            double value;
+
+            try {
+                value = Double.parseDouble(answer.trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(recodeAll, "Not a number: " + answer, "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Tally the value per continuous variable, and note where it is the variable's extreme with no gap
+            // (a candidate floor or ceiling), so the confirmation can say so.
+            Map<String, Integer> cells = new LinkedHashMap<>();
+            List<String> atBound = new ArrayList<>();
+
+            for (Node node : dataSet.getVariables()) {
+                if (!(node instanceof ContinuousVariable)) continue;
+                int j = dataSet.getColumnIndex(node);
+                int count = 0;
+                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+                double nextAboveMin = Double.POSITIVE_INFINITY, nextBelowMax = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double x = dataSet.getDouble(i, j);
+                    if (Double.isNaN(x)) continue;
+                    if (x == value) count++;
+                    if (x < min) { nextAboveMin = min; min = x; } else if (x > min && x < nextAboveMin) nextAboveMin = x;
+                    if (x > max) { nextBelowMax = max; max = x; } else if (x < max && x > nextBelowMax) nextBelowMax = x;
+                }
+
+                if (count == 0) continue;
+                cells.put(node.getName(), count);
+
+                // "No gap": the neighbor on the inside is within one unit of the value. Coarse on purpose; this is
+                // a caution in a dialog, not the audit's gap test, which is what the BOUNDARY_ATOM finding reports.
+                boolean floor = value == min && nextAboveMin - min <= 1.0;
+                boolean ceiling = value == max && max - nextBelowMax <= 1.0;
+                if (floor || ceiling) atBound.add(node.getName());
+            }
+
+            if (cells.isEmpty()) {
+                JOptionPane.showMessageDialog(recodeAll, "No continuous variable holds the value " + value + ".",
+                        "Nothing to Recode", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            List<String> chosen = showRecodeEverywhereDialog(recodeAll, dataSet, value, cells, atBound);
+            if (chosen == null || chosen.isEmpty()) return;
+
+            int changed = 0;
+
+            try {
+                for (String name : chosen) {
+                    changed += DataAudit.recodeToMissing(dataSet, name, value);
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(recodeAll, "Could not recode: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, recodeAll, "The cells were recoded",
+                    changed + " cell(s) equal to " + value + " recoded to missing in " + chosen.size()
+                            + " variable(s).",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    () -> perFindingRecode.setEnabled(false));
+        });
+
+        return recodeAll;
+    }
+
+    /**
+     * Shows the confirmation for the file-wide recode: one checkbox per variable in which the value occurs, with
+     * its cell count, all checked, in a scroll pane of fixed height so the OK and Cancel buttons stay on screen
+     * however many variables are implicated; a caution line naming the variables in which the value sits at an end
+     * of the range with neighbors right next to it; and select-all / select-none buttons for long lists.
+     *
+     * @param parent  the component to anchor the dialog on.
+     * @param dataSet the dataset, for the row count.
+     * @param value   the value to be recoded.
+     * @param cells   the implicated variables in dataset order, each with the number of cells holding the value.
+     * @param atBound the subset of those in which the value is at the top or bottom of the observed range with
+     *                other values adjacent to it.
+     * @return the names of the variables the user left checked, or null if the dialog was cancelled.
+     */
+    private static List<String> showRecodeEverywhereDialog(JComponent parent, DataSet dataSet, double value,
+                                                           Map<String, Integer> cells, List<String> atBound) {
+        int n = dataSet.getNumRows();
+        Set<String> bound = new LinkedHashSet<>(atBound);
+
+        JPanel list = new JPanel();
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        List<JCheckBox> boxes = new ArrayList<>();
+        JLabel totalLabel = new JLabel(" ");
+
+        Runnable updateTotal = () -> {
+            int vars = 0, total = 0;
+            for (JCheckBox box : boxes) {
+                if (box.isSelected()) {
+                    vars++;
+                    total += cells.get(box.getName());
+                }
+            }
+            totalLabel.setText(total + " cell(s) in " + vars + " of " + cells.size() + " variable(s) will be set "
+                    + "to missing.");
+        };
+
+        for (Map.Entry<String, Integer> entry : cells.entrySet()) {
+            String name = entry.getKey();
+            JCheckBox box = new JCheckBox(name + "    (" + entry.getValue() + " of " + n + " cells)"
+                    + (bound.contains(name) ? "    \u26a0 at the " + (isAtMaximum(dataSet, name, value)
+                    ? "top" : "bottom") + " of the range" : ""));
+            box.setName(name);
+            box.setSelected(true);
+            box.addItemListener(ev -> updateTotal.run());
+            boxes.add(box);
+            list.add(box);
+        }
+
+        updateTotal.run();
+
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setPreferredSize(new Dimension(520, 260));
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        JButton all = new JButton("Select All");
+        JButton none = new JButton("Select None");
+        all.addActionListener(ev -> boxes.forEach(b -> b.setSelected(true)));
+        none.addActionListener(ev -> boxes.forEach(b -> b.setSelected(false)));
+
+        JPanel selectRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        selectRow.add(all);
+        selectRow.add(none);
+
+        JPanel head = new JPanel();
+        head.setLayout(new BoxLayout(head, BoxLayout.Y_AXIS));
+        head.add(new JLabel("Set every cell equal to " + value + " to missing in the checked variables?"));
+        head.add(Box.createVerticalStrut(6));
+        head.add(selectRow);
+        head.add(Box.createVerticalStrut(6));
+
+        JTextArea notes = new JTextArea();
+        notes.setEditable(false);
+        notes.setLineWrap(true);
+        notes.setWrapStyleWord(true);
+        notes.setOpaque(false);
+        notes.setFont(totalLabel.getFont());
+        StringBuilder sb = new StringBuilder();
+
+        if (!bound.isEmpty()) {
+            sb.append("\u26a0 In ").append(String.join(", ", bound)).append(" the value ").append(value)
+                    .append(" is the top or bottom of the observed range with other values right next to it, so it ")
+                    .append("may be a floor or ceiling rather than a code. A ceiling or floor should be treated as ")
+                    .append("censored, not set to missing; uncheck those unless the codebook says otherwise.\n\n");
+        }
+
+        sb.append("The audit cannot tell a missing-data code from a real measurement; the codebook for the file "
+                + "settles that. This edit modifies the dataset in place, for every box downstream of it in the "
+                + "session, and cannot be undone.");
+        notes.setText(sb.toString());
+
+        JPanel foot = new JPanel();
+        foot.setLayout(new BoxLayout(foot, BoxLayout.Y_AXIS));
+        foot.add(Box.createVerticalStrut(6));
+        foot.add(totalLabel);
+        foot.add(Box.createVerticalStrut(6));
+        foot.add(notes);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 4));
+        panel.add(head, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(foot, BorderLayout.SOUTH);
+        panel.setPreferredSize(new Dimension(560, 480));
+
+        int choice = JOptionPane.showConfirmDialog(parent, panel, "Recode to Missing Everywhere",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (choice != JOptionPane.OK_OPTION) return null;
+
+        List<String> chosen = new ArrayList<>();
+        for (JCheckBox box : boxes) if (box.isSelected()) chosen.add(box.getName());
+        return chosen;
+    }
+
+    /**
+     * Whether the given value is the maximum observed value of the named continuous variable.
+     */
+    private static boolean isAtMaximum(DataSet dataSet, String variable, double value) {
+        int j = dataSet.getColumnIndex(dataSet.getVariable(variable));
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double x = dataSet.getDouble(i, j);
+            if (!Double.isNaN(x) && x > max) max = x;
+        }
+        return value == max;
     }
 
     /**

@@ -56,18 +56,27 @@ public class BlockClusteringWizard extends JPanel {
     private static final List<String> TESTS_NONE = List.of();                       // TSC
     // private static final String TEST_ARK = "ARK"; // commented out per instruction
     // ---- UI ----
+    /** The card layout switching between the wizard pages. */
     private final CardLayout cards = new CardLayout();
+    /** The panel holding the wizard pages. */
     private final JPanel cardPanel = new JPanel(cards);
+    /** The result page, showing the discovered blocks in the block editor. */
     private final JPanel pageResult = new JPanel(new BorderLayout());
     // ... UI fields ...
+    /** Selects the clustering algorithm. */
     private final JComboBox<String> cbAlgorithm = new JComboBox<>(new String[]{"TSC", "FOFC", "FTFC", "GFFC", "BPC"});
 
     // Put near your fields
+    /** Selects the tetrad (rank) test used by the clustering algorithm. */
     private final JComboBox<String> cbTetradTest = new JComboBox<>();
+    /** Runs the clustering search. */
     private final JButton btnSearch = new JButton("Search");
+    /** Shows the status of the search. */
     private final JLabel status = new JLabel("Ready.");
+    /** The editor for viewing and editing the discovered blocks. */
     private final BlockSpecEditorPanel editorPanel;
     // ---- State ----
+    /** The data set to cluster. */
     private final DataSet dataSet;
     /**
      * All tabular data sets in the parent data box, the selected one among them. With several (for example, several
@@ -75,10 +84,15 @@ public class BlockClusteringWizard extends JPanel {
      * the clustering algorithm runs on their averaged covariance matrix.
      */
     private final List<DataSet> dataSets;
+    /** Listeners notified when a block spec is produced or edited. */
     private final java.util.List<BlockSpecListener> specListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** The parameters for the clustering algorithm and test. */
     private final Parameters parameters;
+    /** The panel showing the parameters for the selected algorithm. */
     private final JPanel parameterBox = new JPanel(new BorderLayout());
+    /** The names of the parameters shown for the selected algorithm. */
     private final Set<String> paramList = new HashSet<>();
+    /** A map from latent names to their true children, used to give estimated clusters good names. */
     private final Map<String, List<String>> trueClusters;
 
     /**

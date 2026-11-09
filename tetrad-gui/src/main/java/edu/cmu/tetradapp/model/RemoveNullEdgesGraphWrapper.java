@@ -54,7 +54,8 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
     /**
      * <p>Constructor for RemoveNullEdgesGraphWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNullEdgesGraphWrapper(Graph graph, Parameters parameters) {
         super(GraphSampling.createGraphWithoutNullEdges(graph), parameters, "Remove Null Edges from Boostrapping");

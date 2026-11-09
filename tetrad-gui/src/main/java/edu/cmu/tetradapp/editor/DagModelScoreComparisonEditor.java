@@ -24,12 +24,23 @@ import java.util.List;
  */
 public final class DagModelScoreComparisonEditor extends JPanel {
 
+    /** The model holding the dataset and the graphs being compared. */
     private final DagModelScoreComparisonModel model;
+    /** The metrics computed for each graph, one per table row. */
     private final List<DagMetricSpec> metricSpecs = new ArrayList<>();
+    /** The computed metric results, indexed by metric row and then graph column. */
     private final List<List<DagMetricResult>> resultsByMetric = new ArrayList<>(); // [metricRow][graphCol]
+    /** The table displaying the results. */
     private final JTable table;
+    /** The table model backing the results table. */
     private final ResultTableModel tableModel;
 
+    /**
+     * Constructs an editor comparing the graphs in the given model on its dataset.
+     *
+     * @param model the DAG model score comparison model
+     * @throws NullPointerException if model is null
+     */
     public DagModelScoreComparisonEditor(DagModelScoreComparisonModel model) {
         super(new BorderLayout(8, 8));
         if (model == null) throw new NullPointerException("model");
@@ -121,6 +132,7 @@ public final class DagModelScoreComparisonEditor extends JPanel {
         }
     }
 
+    /** Recomputes all metrics for all graphs on the dataset and refreshes the table. */
     public void recompute() {
         resultsByMetric.clear();
 
@@ -174,10 +186,24 @@ public final class DagModelScoreComparisonEditor extends JPanel {
     }
 
     // --- Direction of "better" for bolding ---
-    public enum Better {HIGHER, LOWER, NA}
+    /**
+     * Indicates whether higher or lower values of a metric are better, or neither.
+     */
+    public enum Better {
+        /** Higher values are better. */
+        HIGHER,
+        /** Lower values are better. */
+        LOWER,
+        /** No direction; values are not compared. */
+        NA}
 
     /**
      * Metric spec = implementation + metadata for display/bolding.
+     *
+     * @param name   the display name of the metric
+     * @param note   a short description of the metric
+     * @param better whether higher or lower values are better
+     * @param metric the metric implementation
      */
     public record DagMetricSpec(String name, String note, Better better, DagMetric metric) {
     }

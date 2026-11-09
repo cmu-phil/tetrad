@@ -35,6 +35,12 @@ import static org.junit.Assert.assertSame;
 public class TestSessionEvent {
 
     /**
+     * Constructs a new test instance.
+     */
+    public TestSessionEvent() {
+    }
+
+    /**
      * The session for the events being tested.
      */
     private final Session session = new Session("Test");

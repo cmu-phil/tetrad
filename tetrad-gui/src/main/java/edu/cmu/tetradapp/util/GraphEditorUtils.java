@@ -36,6 +36,12 @@ import java.util.prefs.Preferences;
 public class GraphEditorUtils {
 
     /**
+     * Constructs a new GraphEditorUtils. All methods are static.
+     */
+    public GraphEditorUtils() {
+    }
+
+    /**
      * <p>editkamadaKawaiLayoutParams.</p>
      *
      * @return true if the user clicked OK, false if the dialog was
@@ -151,6 +157,68 @@ public class GraphEditorUtils {
                     "kamadaKawaiLayoutSpringConstant", springConstant);
             Preferences.userRoot().putDouble(
                     "kamadaKawaiLayoutStopEnergy", stopEnergy);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Pops up a modal editor for the one parameter of the Fruchterman-Reingold layout, the natural edge length: the
+     * distance at which an edge's pull and its endpoints' mutual push balance, so about the length edges settle to.
+     * Edges settle to about twice it in practice. Zero means automatic, 20 + 20 times the graph's average degree,
+     * which spreads a dense graph such as a latent measurement model very widely; 40 to 60 keeps such a graph
+     * compact. The value persists in the user's preferences, keyed "fruchtermanReingoldNaturalEdgeLength".
+     *
+     * @return true if the user clicked OK, false if the dialog was cancelled or closed, in which case the previous
+     * value is restored and the caller should skip the layout.
+     */
+    public static boolean editFruchtermanReingoldLayoutParams() {
+        double naturalEdgeLength = Preferences.userRoot().getDouble(
+                "fruchtermanReingoldNaturalEdgeLength", 0.0);
+
+        DoubleTextField naturalEdgeLengthField = new DoubleTextField(
+                naturalEdgeLength, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        naturalEdgeLengthField.setFilter(
+                (value, oldValue) -> {
+                    if (value < 0.0) {
+                        return oldValue;
+                    }
+
+                    Preferences.userRoot().putDouble(
+                            "fruchtermanReingoldNaturalEdgeLength", value);
+                    return value;
+                });
+
+        Box b = Box.createVerticalBox();
+
+        Box b1 = Box.createHorizontalBox();
+        b1.add(new JLabel("Natural edge length (0 = automatic): "));
+        b1.add(Box.createHorizontalGlue());
+        b1.add(naturalEdgeLengthField);
+        b.add(b1);
+
+        Box b2 = Box.createHorizontalBox();
+        JLabel note = new JLabel("<html>Edges settle to about twice this value.<br>Automatic is 20 + 20 &times; "
+                                 + "average degree, which spreads dense graphs widely;<br>40 to 60 keeps a latent "
+                                 + "measurement model compact.</html>");
+        note.setFont(note.getFont().deriveFont(Font.PLAIN, note.getFont().getSize() - 1f));
+        b2.add(note);
+        b2.add(Box.createHorizontalGlue());
+        b.add(Box.createVerticalStrut(6));
+        b.add(b2);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(b, BorderLayout.CENTER);
+
+        int choice = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                panel, "Fruchterman-Reingold Layout Parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) {
+            Preferences.userRoot().putDouble(
+                    "fruchtermanReingoldNaturalEdgeLength", naturalEdgeLength);
             return false;
         }
 

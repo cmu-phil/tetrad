@@ -623,10 +623,11 @@ public final class Params {
      */
     public static final String FCIT_STARTS_WITH = "fcitStartsWith";
     /**
-     * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. FCIT's warrant for the result, a three-way
-     * choice: 1 = Guarantee I-map (the I-map gate; saturating step off), 2 = No score drop (the BFCI-Bryan
-     * score step as a veto; saturating step off), 3 = Saturating step (no extra gate; the joint-removal
-     * discharge of Cor. saturation runs).
+     * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. The warrant for the result, a three-way choice
+     * shared by FCIT, FCIT-ZM, and the *-FCI family (BFCI, GFCI, SP-FCI, GRaSP-FCI): 1 = Guarantee I-map (the I-map gate;
+     * saturating step off), 2 = Score step (the RICF-BIC score gate; saturating step off; continuous data only),
+     * 3 = Saturating step (no extra gate; the joint-removal discharge of Cor. saturation runs). The key keeps
+     * its original name so that saved FCIT sessions continue to read it. See {@code CorrectnessGates.applyOption}.
      */
     public static final String FCIT_CORRECTNESS = "fcitCorrectness";
     /**
@@ -1686,6 +1687,36 @@ public final class Params {
      */
     public static final String RLCD_RESOLVE_TWO_INDICATOR_LATENTS = "rlcdResolveTwoIndicatorLatents";
     /**
+     * Constant <code>RLCD_OBSERVED_EXPLANATION_CHECK="rlcdObservedExplanationCheck"</code> Whether RLCD accepts a
+     * rank deficiency as a cluster only if no equally small set of observed variables explains it.
+     */
+    public static final String RLCD_OBSERVED_EXPLANATION_CHECK = "rlcdObservedExplanationCheck";
+    /**
+     * Constant <code>RLCD_KNOWLEDGE_IN_STAGE1="rlcdKnowledgeInStage1"</code> Whether RLCD gives background knowledge
+     * to stage 1 as well as stage 2.
+     */
+    public static final String RLCD_KNOWLEDGE_IN_STAGE1 = "rlcdKnowledgeInStage1";
+    /**
+     * Constant <code>RLCD_QUALIFY_OBSERVED_CAUSES="rlcdQualifyObservedCauses"</code> Whether RLCD keeps an arrow from
+     * an observed variable into a latent only when an observed parent of that variable identifies the direction.
+     */
+    public static final String RLCD_QUALIFY_OBSERVED_CAUSES = "rlcdQualifyObservedCauses";
+    /**
+     * Constant <code>RLCD_OBSERVED_EXPLANATION_ALPHA="rlcdObservedExplanationAlpha"</code> The alpha of RLCD's
+     * observed-explanation test.
+     */
+    public static final String RLCD_OBSERVED_EXPLANATION_ALPHA = "rlcdObservedExplanationAlpha";
+    /**
+     * Constant <code>RLCD_STABILITY_RUNS="rlcdStabilityRuns"</code> Number of bootstrap reruns RLCD makes after the
+     * main run to report co-clustering and adjacency frequencies; 0 (the default) makes none.
+     */
+    public static final String RLCD_STABILITY_RUNS = "rlcdStabilityRuns";
+    /**
+     * Constant <code>RLCD_STABILITY_TIME_LIMIT="rlcdStabilityTimeLimit"</code> Wall-clock budget, in seconds, for
+     * the stability reruns; checked between runs.
+     */
+    public static final String RLCD_STABILITY_TIME_LIMIT = "rlcdStabilityTimeLimit";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";
@@ -1694,6 +1725,17 @@ public final class Params {
      * Constant <code>RLCD_STAGE1_NONE="rlcdStage1None"</code>
      */
     public static final String RLCD_STAGE1_NONE = "rlcdStage1None";
+    /**
+     * Constant <code>RLCD_CENSOR_CEILING="rlcdCensorCeiling"</code> Whether RLCD treats values at a common ceiling
+     * (see RLCD_CEILING_VALUE) as censored -- known only to be at least the ceiling -- and estimates its covariance
+     * matrix accordingly.
+     */
+    public static final String RLCD_CENSOR_CEILING = "rlcdCensorCeiling";
+    /**
+     * Constant <code>RLCD_CEILING_VALUE="rlcdCeilingValue"</code> The ceiling for RLCD_CENSOR_CEILING, the same for
+     * every variable; 100 for percentage grades.
+     */
+    public static final String RLCD_CEILING_VALUE = "rlcdCeilingValue";
     /**
      * Constant <code>RLCD_UNFOLD_COVERS="rlcdUnfoldCovers"</code>
      */

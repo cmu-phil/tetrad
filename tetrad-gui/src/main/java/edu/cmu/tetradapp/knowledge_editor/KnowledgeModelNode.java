@@ -62,6 +62,9 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      * Center y coordinate of this node variable
      */
     private int centerY;
+    /**
+     * Whether this node is marked as subject to selection bias.
+     */
     private boolean selectionBias;
 
     //=============================CONSTRUCTORS=========================//

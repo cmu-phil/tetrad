@@ -38,43 +38,120 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
     private static final long serialVersionUID = 1L;
 
     // inputs
+    /**
+     * The data set the effects are estimated from.
+     */
     private final DataSet dataSet;
+    /**
+     * The input graph, with its nodes replaced by the data set's variables.
+     */
     private final Graph graph;
+    /**
+     * The parameters for this model.
+     */
     private final Parameters parameters;
 
     // kept (like the linear model; useful for future wiring)
+    /**
+     * The data wrapper this model was constructed from.
+     */
     private final DataWrapper dataWrapper;
+    /**
+     * The graph source this model was constructed from.
+     */
     private final GraphSource graphSource;
 
     // selections (set by editor after parsing wildcard/list strings)
+    /**
+     * The selected treatments.
+     */
     private final LinkedHashSet<Node> X = new LinkedHashSet<>();
+    /**
+     * The selected outcomes.
+     */
     private final LinkedHashSet<Node> Y = new LinkedHashSet<>();
 
     // UI state
+    /**
+     * The name of this session model.
+     */
     private String name = "";
+    /**
+     * The effect mode.
+     */
     private EffectMode effectMode = EffectMode.PAIRWISE;
+    /**
+     * The text the user entered to specify the treatments, kept for redisplay.
+     */
     private String treatmentsText = "*";
+    /**
+     * The text the user entered to specify the outcomes, kept for redisplay.
+     */
     private String outcomesText = "*";
 
     // RA parameters (editor can expose these)
+    /**
+     * The graph type passed to the adjustment set search ("DAG", "PDAG" or "PAG"), inferred from the graph by default.
+     */
     private String graphType = "DAG";
+    /**
+     * The maximum number of adjustment sets to compute for each treatment/outcome pair.
+     */
     private int maxNumSets = 20;
+    /**
+     * The maximum radius for the adjustment set search; -1 for no limit.
+     */
     private int maxRadius = -1;
+    /**
+     * Which endpoint the adjustment set candidates are drawn near: 1 = the treatment, 2 = the outcome, 3 = both.
+     */
     private int nearWhichEndpoint = 1;
+    /**
+     * The maximum path length considered by the adjustment set search; -1 for no limit.
+     */
     private int maxPathLength = -1;
+    /**
+     * Whether the adjustment set search avoids amenable paths.
+     */
     private boolean avoidAmenable = true;
+    /**
+     * Nodes that the adjustment set search should not follow during path exploration.
+     */
     private Set<Node> notFollowed = Collections.emptySet();
+    /**
+     * Nodes that must be included in the adjustment sets.
+     */
     private Set<Node> containing = Collections.emptySet();
 
     // estimator config (v1 estimator under the hood, but v2 tool)
+    /**
+     * The configuration for the doubly robust effect estimator.
+     */
     private final AdjustmentEffectEstimatorV1.ConfigV1 cfg = new AdjustmentEffectEstimatorV1.ConfigV1();
 
     // derived/binarized treatments (name -> spec)
+    /**
+     * The derived (binarized) treatments, keyed by derived variable name.
+     */
     private final Map<String, DerivedTreatmentSpecV2> derivedTreatments = new LinkedHashMap<>();
 
     // results
+    /**
+     * The result rows from the last computation.
+     */
     private final List<ResultRowV2> results = new ArrayList<>();
 
+    /**
+     * Constructs the model from the first data set of the given data wrapper and the given graph. The graph's nodes are
+     * replaced by the data set's variables, and the graph type for the adjustment set search is inferred from the graph's
+     * edge marks.
+     *
+     * @param dataWrapper the data; its first data model must be a DataSet
+     * @param graphSource the graph
+     * @param parameters  the parameters
+     * @throws NullPointerException     if any argument is null
+     * @throws IllegalArgumentException if the first data model is not a DataSet
+     */
     public DoublyRobustEstModelV2(DataWrapper dataWrapper,
                                   GraphSource graphSource,
                                   Parameters parameters) {
@@ -144,27 +221,56 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
     // Public getters/setters
     // -----------------------
 
+    /**
+     * Returns the data set.
+     *
+     * @return the data set
+     */
     public DataSet getDataSet() {
         return dataSet;
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters
+     */
     public Parameters getParameters() {
         return parameters;
     }
 
+    /**
+     * Returns the effect mode.
+     *
+     * @return the effect mode
+     */
     public EffectMode getEffectMode() {
         return effectMode;
     }
 
+    /**
+     * Sets the effect mode.
+     *
+     * @param effectMode the effect mode; must not be null
+     */
     public void setEffectMode(EffectMode effectMode) {
         this.effectMode = Objects.requireNonNull(effectMode, "effectMode");
     }
 
+    /**
+     * Returns the selected treatments.
+     *
+     * @return an unmodifiable view of the treatments
+     */
     public Set<Node> getX() {
         return Collections.unmodifiableSet(X);
     }
 
-    /** v2: Editor should pass dataset-aligned nodes; we still normalize by name defensively. */
+    /**
+     * v2: Editor should pass dataset-aligned nodes; we still normalize by name defensively.
+     *
+     * @param nodes the treatments; null clears the treatments
+     */
     public void setX(Collection<Node> nodes) {
         X.clear();
         if (nodes != null) {
@@ -175,11 +281,20 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
         }
     }
 
+    /**
+     * Returns the selected outcomes.
+     *
+     * @return an unmodifiable view of the outcomes
+     */
     public Set<Node> getY() {
         return Collections.unmodifiableSet(Y);
     }
 
-    /** v2: Editor should pass dataset-aligned nodes; we still normalize by name defensively. */
+    /**
+     * v2: Editor should pass dataset-aligned nodes; we still normalize by name defensively.
+     *
+     * @param nodes the outcomes; null clears the outcomes
+     */
     public void setY(Collection<Node> nodes) {
         Y.clear();
         if (nodes != null) {
@@ -190,83 +305,228 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
         }
     }
 
+    /**
+     * Returns the text the user entered to specify the treatments.
+     *
+     * @return the treatments text
+     */
     public String getTreatmentsText() {
         return treatmentsText;
     }
 
+    /**
+     * Sets the text the user entered to specify the treatments.
+     *
+     * @param treatmentsText the treatments text
+     * @throws IllegalArgumentException if treatmentsText is null
+     */
     public void setTreatmentsText(String treatmentsText) {
         if (treatmentsText == null) throw new IllegalArgumentException("Treatments text cannot be null.");
         this.treatmentsText = treatmentsText;
     }
 
+    /**
+     * Returns the text the user entered to specify the outcomes.
+     *
+     * @return the outcomes text
+     */
     public String getOutcomesText() {
         return outcomesText;
     }
 
+    /**
+     * Sets the text the user entered to specify the outcomes.
+     *
+     * @param outcomesText the outcomes text
+     * @throws IllegalArgumentException if outcomesText is null
+     */
     public void setOutcomesText(String outcomesText) {
         if (outcomesText == null) throw new IllegalArgumentException("Outcomes text cannot be null.");
         this.outcomesText = outcomesText;
     }
 
     // derived treatments
+    /**
+     * Returns whether a derived treatment with the given name has been defined.
+     *
+     * @param name the derived variable name
+     * @return true if a derived treatment with that name exists
+     */
     public boolean hasDerivedTreatment(String name) {
         return derivedTreatments.containsKey(name);
     }
 
+    /**
+     * Returns the derived treatment with the given name.
+     *
+     * @param name the derived variable name
+     * @return the derived treatment specification, or null if there is none
+     */
     public DerivedTreatmentSpecV2 getDerivedTreatment(String name) {
         return derivedTreatments.get(name);
     }
 
+    /**
+     * Returns all derived treatments.
+     *
+     * @return an unmodifiable view of the derived treatment specifications
+     */
     public Collection<DerivedTreatmentSpecV2> getDerivedTreatments() {
         return Collections.unmodifiableCollection(derivedTreatments.values());
     }
 
+    /**
+     * Adds a derived treatment, replacing any existing one with the same derived name.
+     *
+     * @param spec the derived treatment specification; must not be null
+     */
     public void addOrReplaceDerivedTreatment(DerivedTreatmentSpecV2 spec) {
         Objects.requireNonNull(spec, "spec");
         derivedTreatments.put(spec.getDerivedName(), spec);
     }
 
+    /**
+     * Removes the derived treatment with the given name, if any.
+     *
+     * @param derivedName the derived variable name
+     */
     public void removeDerivedTreatment(String derivedName) {
         derivedTreatments.remove(derivedName);
     }
 
     // RA knobs (optional to expose in editor)
+    /**
+     * Returns the graph type passed to the adjustment set search.
+     *
+     * @return the graph type
+     */
     public String getGraphType() { return graphType; }
+    /**
+     * Sets the graph type passed to the adjustment set search.
+     *
+     * @param graphType the graph type (e.g., "DAG", "PDAG", "PAG"); null means "DAG"
+     */
     public void setGraphType(String graphType) { this.graphType = (graphType == null) ? "DAG" : graphType; }
 
+    /**
+     * Returns the maximum number of adjustment sets computed per pair.
+     *
+     * @return the maximum number of adjustment sets
+     */
     public int getMaxNumSets() { return maxNumSets; }
+    /**
+     * Sets the maximum number of adjustment sets computed per pair.
+     *
+     * @param maxNumSets the maximum number of adjustment sets
+     */
     public void setMaxNumSets(int maxNumSets) { this.maxNumSets = maxNumSets; }
 
+    /**
+     * Returns the maximum radius for the adjustment set search.
+     *
+     * @return the maximum radius; -1 for no limit
+     */
     public int getMaxRadius() { return maxRadius; }
+    /**
+     * Sets the maximum radius for the adjustment set search.
+     *
+     * @param maxRadius the maximum radius; -1 for no limit
+     */
     public void setMaxRadius(int maxRadius) { this.maxRadius = maxRadius; }
 
+    /**
+     * Returns which endpoint the adjustment set search should stay near.
+     *
+     * @return 1 (near the treatment), 2 (near the outcome) or 3 (both)
+     */
     public int getNearWhichEndpoint() { return nearWhichEndpoint; }
+    /**
+     * Sets which endpoint the adjustment set search should stay near.
+     *
+     * @param nearWhichEndpoint 1 (near the treatment), 2 (near the outcome) or 3 (both)
+     */
     public void setNearWhichEndpoint(int nearWhichEndpoint) { this.nearWhichEndpoint = nearWhichEndpoint; }
 
+    /**
+     * Returns the maximum path length considered by the adjustment set search.
+     *
+     * @return the maximum path length; -1 for no limit
+     */
     public int getMaxPathLength() { return maxPathLength; }
+    /**
+     * Sets the maximum path length considered by the adjustment set search.
+     *
+     * @param maxPathLength the maximum path length; -1 for no limit
+     */
     public void setMaxPathLength(int maxPathLength) { this.maxPathLength = maxPathLength; }
 
+    /**
+     * Returns whether the adjustment set search avoids amenable paths.
+     *
+     * @return true if amenable paths are avoided
+     */
     public boolean isAvoidAmenable() { return avoidAmenable; }
+    /**
+     * Sets whether the adjustment set search avoids amenable paths.
+     *
+     * @param avoidAmenable true to avoid amenable paths
+     */
     public void setAvoidAmenable(boolean avoidAmenable) { this.avoidAmenable = avoidAmenable; }
 
+    /**
+     * Returns the nodes the adjustment set search should not follow.
+     *
+     * @return the nodes not followed
+     */
     public Set<Node> getNotFollowed() { return notFollowed; }
+    /**
+     * Sets the nodes the adjustment set search should not follow.
+     *
+     * @param notFollowed the nodes not followed; null means none
+     */
     public void setNotFollowed(Set<Node> notFollowed) {
         this.notFollowed = (notFollowed == null) ? Collections.emptySet() : new LinkedHashSet<>(notFollowed);
     }
 
+    /**
+     * Returns the nodes that must be included in the adjustment sets.
+     *
+     * @return the required nodes
+     */
     public Set<Node> getContaining() { return containing; }
+    /**
+     * Sets the nodes that must be included in the adjustment sets.
+     *
+     * @param containing the required nodes; null means none
+     */
     public void setContaining(Set<Node> containing) {
         this.containing = (containing == null) ? Collections.emptySet() : new LinkedHashSet<>(containing);
     }
 
+    /**
+     * Returns the (mutable) configuration for the doubly robust effect estimator.
+     *
+     * @return the estimator configuration
+     */
     public AdjustmentEffectEstimatorV1.ConfigV1 getCfg() {
         return cfg;
     }
 
+    /**
+     * Returns the result rows from the last computation.
+     *
+     * @return an unmodifiable view of the result rows
+     */
     public List<ResultRowV2> getResults() {
         return Collections.unmodifiableList(results);
     }
 
+    /**
+     * Returns the result row at the given index.
+     *
+     * @param i the row index
+     * @return the result row
+     */
     public ResultRowV2 getResultRow(int i) {
         return results.get(i);
     }
@@ -275,6 +535,15 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
     // Main computation
     // -----------------------
 
+    /**
+     * Recomputes the results in a watched process. The results are cleared; then, if both the treatments and outcomes
+     * are nonempty, for each treatment/outcome pair with x &ne; y, adjustment sets are computed from the graph (using
+     * the source variable for a derived treatment) and the doubly robust ATE is estimated for each set. Currently every
+     * pair is treated pairwise, whatever the effect mode.
+     *
+     * @param onFinish a callback run on the event thread after the results are computed; it is not run if the
+     *                 treatments or outcomes are empty
+     */
     public void recomputeAsync(Runnable onFinish) {
         class MyWatchedProcess extends WatchedProcess {
             @Override
@@ -570,27 +839,61 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
     // Enums / rows
     // -----------------------
 
+    /**
+     * Which interventions the effects are computed for.
+     */
     public enum EffectMode {
+        /**
+         * The effect of do(x) on y for each treatment/outcome pair.
+         */
         PAIRWISE,
+        /**
+         * The effect of the joint intervention on the treatments on each outcome (supported only for a single
+         * treatment).
+         */
         JOINT
     }
 
+    /**
+     * One result row: a treatment, an outcome, an adjustment set, a status, and the estimated effect.
+     */
     public static final class ResultRowV2 implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 2L;
 
+        /**
+         * The treatment, or null for a joint row with multiple treatments.
+         */
         public final Node x;
+        /**
+         * The outcome.
+         */
         public final Node y;
+        /**
+         * The adjustment set; empty for rows that are not OK.
+         */
         public final Set<Node> z; // may be empty for non-OK rows
+        /**
+         * The status of this row.
+         */
         public final Status status;
 
         // v2: table shows only ATE_DR
+        /**
+         * The doubly robust ATE estimate; NaN for rows that are not OK.
+         */
         public final double ateDr;
 
         // v2: full details for "View Details..."
+        /**
+         * The full estimation result, or null for rows that are not OK.
+         */
         public final AdjustmentEffectEstimatorV1.EffectEstimateResultV1 details;
 
         // v2: human-readable message for ineligible / not supported rows
+        /**
+         * A human-readable message for ineligible or unsupported rows; empty for OK rows.
+         */
         public final String message;
 
         private ResultRowV2(Node x, Node y, Set<Node> z, Status status,
@@ -606,41 +909,101 @@ public final class DoublyRobustEstModelV2 implements SessionModel, GraphSource, 
             this.message = message;
         }
 
+        /**
+         * Creates a row for a successful estimate.
+         *
+         * @param x  the treatment
+         * @param y  the outcome
+         * @param z  the adjustment set
+         * @param er the estimation result
+         * @return the row
+         */
         public static ResultRowV2 ok(Node x, Node y, Set<Node> z,
                                      AdjustmentEffectEstimatorV1.EffectEstimateResultV1 er) {
             return new ResultRowV2(x, y, z, Status.OK, er.ateDr, er, "");
         }
 
+        /**
+         * Creates a row recording that no adjustment set was found.
+         *
+         * @param x the treatment
+         * @param y the outcome
+         * @return the row
+         */
         public static ResultRowV2 noAdjustmentSet(Node x, Node y) {
             return new ResultRowV2(x, y, Collections.emptySet(), Status.NO_ADJUSTMENT_SET,
                     Double.NaN, null, "No adjustment set");
         }
 
+        /**
+         * Creates a row recording that the pair is ineligible for estimation.
+         *
+         * @param x      the treatment
+         * @param y      the outcome
+         * @param reason why the pair is ineligible
+         * @return the row
+         */
         public static ResultRowV2 ineligible(Node x, Node y, String reason) {
             return new ResultRowV2(x, y, Collections.emptySet(), Status.INELIGIBLE,
                     Double.NaN, null, reason);
         }
 
+        /**
+         * Creates a row recording that the joint mode is not supported for multiple treatments.
+         *
+         * @param y the outcome
+         * @return the row
+         */
         public static ResultRowV2 notSupportedJoint(Node y) {
             return new ResultRowV2(null, y, Collections.emptySet(), Status.NOT_SUPPORTED,
                     Double.NaN, null, "v2 supports JOINT only for a single binary treatment.");
         }
 
+        /**
+         * The status of a result row.
+         */
         public enum Status {
+            /**
+             * The effect was estimated.
+             */
             OK,
+            /**
+             * No adjustment set was found.
+             */
             NO_ADJUSTMENT_SET,
+            /**
+             * The treatment or outcome has the wrong type for the estimator.
+             */
             INELIGIBLE,
+            /**
+             * The requested estimate is not supported.
+             */
             NOT_SUPPORTED
         }
 
+        /**
+         * Returns the treatment name for display.
+         *
+         * @return the treatment name, or "(multiple X)" if there is no single treatment
+         */
         public String formatX() {
             return (x == null) ? "(multiple X)" : x.getName();
         }
 
+        /**
+         * Returns the outcome name for display.
+         *
+         * @return the outcome name, or an empty string if there is none
+         */
         public String formatY() {
             return (y == null) ? "" : y.getName();
         }
 
+        /**
+         * Returns the adjustment set for display, with names sorted, or a status marker for rows that are not OK.
+         *
+         * @return the formatted adjustment set
+         */
         public String formatZ() {
             if (status == Status.INELIGIBLE) return "(Ineligible)";
             if (status == Status.NOT_SUPPORTED) return "(Not supported)";

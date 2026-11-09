@@ -60,33 +60,111 @@ public class LongToWideWizardPanel extends JPanel {
     private static final String[] TITLES = {"Step 1 of 4: Keys", "Step 2 of 4: Value variables",
             "Step 3 of 4: Column names", "Step 4 of 4: Summary"};
 
+    /**
+     * The parameters to read initial choices from and write choices to.
+     */
     private final Parameters params;
+    /**
+     * The long data set, for variable names and levels; may be null.
+     */
     private final DataSet sourceDataSet;
+    /**
+     * Called when the user clicks Finish on the last page.
+     */
     private final Runnable onFinish;
+    /**
+     * Called when the user clicks Cancel.
+     */
     private final Runnable onCancel;
 
+    /**
+     * The variables of the source data set.
+     */
     private final List<Node> variables = new ArrayList<>();
+    /**
+     * The card layout used to switch between pages.
+     */
     private final CardLayout cards = new CardLayout();
+    /**
+     * The panel holding the wizard pages.
+     */
     private final JPanel pages = new JPanel(this.cards);
+    /**
+     * The label showing the title of the current page.
+     */
     private final JLabel title = new JLabel();
+    /**
+     * The label showing why the current page is incomplete, if it is.
+     */
     private final JLabel status = new JLabel(" ");
+    /**
+     * The Back button.
+     */
     private final JButton back = new JButton("< Back");
+    /**
+     * The Next button.
+     */
     private final JButton next = new JButton("Next >");
+    /**
+     * The Finish button.
+     */
     private final JButton finish = new JButton("Finish");
+    /**
+     * The Cancel button.
+     */
     private final JButton cancel = new JButton("Cancel");
+    /**
+     * The index of the page currently shown.
+     */
     private int page = PAGE_KEYS;
 
+    /**
+     * The list for choosing the row key variables.
+     */
     private JList<String> rowKeyList;
+    /**
+     * The combo box for choosing the column key variable.
+     */
     private JComboBox<String> columnKeyBox;
+    /**
+     * The table model for the value variables and their aggregations.
+     */
     private ValueTableModel valueModel;
+    /**
+     * The combo box for the default aggregation of value variables.
+     */
     private JComboBox<LongToWide.Aggregation> defaultAggregationBox;
+    /**
+     * The table model for the column key levels and their short names.
+     */
     private LevelTableModel levelModel;
+    /**
+     * The spinner for the maximum length of suggested short names.
+     */
     private JSpinner maxLengthSpinner;
+    /**
+     * The check box for prefixing wide column names with the value variable name.
+     */
     private JCheckBox includeValueNameBox;
+    /**
+     * The text field for the separator between the value variable name and the level.
+     */
     private JTextField separatorField;
+    /**
+     * The check box for sanitizing column names (punctuation becomes _).
+     */
     private JCheckBox sanitizeBox;
+    /**
+     * The check box for keeping the row key columns in the output.
+     */
     private JCheckBox keepKeysBox;
+    /**
+     * The text area showing the summary on the last page.
+     */
     private JTextArea summaryArea;
+    /**
+     * The short names for column key levels saved in the parameters, keyed by level.
+     */
     private Map<String, String> savedLevelNames = new LinkedHashMap<>();
 
     /**

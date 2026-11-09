@@ -37,19 +37,32 @@ import java.util.List;
  */
 public final class DagFactorizationComparePanel extends JPanel {
 
+    /** The observed dataset shown on the left. */
     private final DataSet observed;
+    /** The DAG used to simulate data for comparison. */
     private final Graph dag;
 
+    /** Spinner for the number of rows to simulate. */
     private final JSpinner nSpinner;
+    /** Button that resimulates data from the DAG. */
     private final JButton resimulateButton = new JButton("Resimulate");
+    /** Label showing status messages. */
     private final JLabel status = new JLabel(" ");
 
+    /** Side-by-side plot matrix comparing observed and simulated data. */
     private final DualPlotMatrix dual;
+    /** The comparison model being displayed. */
     private final DagFactorizationCompare model;
 
     // last simulated (right)
+    /** The most recently simulated dataset, shown on the right. */
     private DataSet simulated;
 
+    /**
+     * Constructs a panel comparing the observed data with data simulated from the model's DAG.
+     *
+     * @param model the DAG factorization comparison model
+     */
     public DagFactorizationComparePanel(DagFactorizationCompare model) {
         super(new BorderLayout(10, 10));
 

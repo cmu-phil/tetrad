@@ -53,6 +53,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class YeastPcCcdSearchWrapper {
+
+    /**
+     * Constructs a new YeastPcCcdSearchWrapper.
+     */
+    public YeastPcCcdSearchWrapper() {
+    }
+
     /**
      * <p>main.</p>
      *

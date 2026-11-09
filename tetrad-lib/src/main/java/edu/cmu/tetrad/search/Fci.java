@@ -480,6 +480,13 @@ public final class Fci implements IGraphSearch {
             return;
         }
 
+        // Published CFCI marks the triples its subsets disagree about as ambiguous. R0 may be applied twice (once
+        // before and once after the possible-d-sep step), so clear any marks from the earlier pass first rather than
+        // accumulating stale ones. These marks are metadata only: FciOrient does not consult them.
+        if (r0ColliderRule == ColliderRule.CONSERVATIVE) {
+            pag.setAmbiguousTriples(new HashSet<>());
+        }
+
         for (TripleLocal t : triples) {
             if (pag.isParentOf(t.x, t.z) && pag.isParentOf(t.y, t.z)) continue; // collider already
 
@@ -497,8 +504,12 @@ public final class Fci implements IGraphSearch {
                 GraphUtils.orientCollider(pag, t.x, t.z, t.y);
                 if (verbose)
                     TetradLogger.getInstance().log("[R0-" + r0ColliderRule + "] " + t.x.getName() + " -> " + t.z.getName() + " <- " + t.y.getName());
+            } else if (r0ColliderRule == ColliderRule.CONSERVATIVE && out == ColliderOutcome.AMBIGUOUS) {
+                pag.addAmbiguousTriple(t.x, t.z, t.y);
+                if (verbose)
+                    TetradLogger.getInstance().log("[R0-CONSERVATIVE] Ambiguous: " + t.x.getName() + " *-* " + t.z.getName() + " *-* " + t.y.getName());
             }
-            // DEPENDENT/NO_SEPSET/AMBIGUOUS -> leave as circles at z
+            // DEPENDENT/NO_SEPSET -> leave as circles at z
         }
     }
 

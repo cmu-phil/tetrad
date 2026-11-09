@@ -23,6 +23,8 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -60,7 +62,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-//@Experimental
+@Experimental
 public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -131,7 +133,8 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        Score score = this.score.getScore(dataModel, parameters);
+        edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), score);
 
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
@@ -149,7 +152,8 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
-        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
+        search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS), score,
+                parameters.getDouble(Params.IMAP_ALPHA));
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         return search.search();
@@ -211,7 +215,8 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.USE_SATURATING_STEP);
+        params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.IMAP_ALPHA);
 
         return params;
     }

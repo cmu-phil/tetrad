@@ -34,12 +34,12 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for FF-CI-Continuous test.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
+/**
+ * Wrapper for FF-CI-Continuous test.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 //@TestOfIndependence(
 //        name = "FFCI-Continuous (Fourier Features Conditional Independence)",
 //        command = "ffci-continuous",

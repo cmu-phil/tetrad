@@ -192,8 +192,17 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
      * Multi-data algorithm.
      */
     private final boolean multiDataAlgo;
+    /**
+     * The block spec for block tests and scores; typically null.
+     */
     private final BlockSpec blockSpec;
+    /**
+     * The box mode, which determines which algorithms are listed.
+     */
     private final AlgorithmChooserLogic.BoxMode mode;
+    /**
+     * The parameters of the algorithm runner.
+     */
     private final Parameters parameters;
     // Persisted UI selections (stored in Parameters)
 //    private static final String UI_IND_TEST = "ui.search.ind_test";
@@ -223,6 +232,7 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
      * <p>Constructor for AlgorithmCard.</p>
      *
      * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param blockSpec       the block spec for block tests and scores; typically null.
      */
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner, BlockSpec blockSpec) {
         this.algorithmRunner = algorithmRunner;
@@ -763,7 +773,10 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
                 this.algoDescTextArea.setText("");
                 firePropertyChange("algoFwdBtn", null, false);
             } else {
-                String savedAlgo = this.parameters.getString(UI_ALGO, parameters.getString(UI_ALGO, null));
+                // Same precedence as restoreUserAlgoSelections: the runner's remembered choice first, then the
+                // UI_ALGO parameter. Reading UI_ALGO alone here selected a stale algorithm whenever the two
+                // disagreed, and the selection listener then overwrote the remembered choice with it (2026-11-09).
+                String savedAlgo = getSavedAlgoName(this.algorithmRunner.getUserAlgoSelections());
                 AlgorithmModel model = findAlgorithmByName(savedAlgo);
                 if (model != null) {
                     this.algorithmList.setSelectedValue(model, true);

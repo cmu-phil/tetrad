@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.work_in_progress.LvBossExperimental;
-import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
+import edu.cmu.tetrad.search.score.MagRicfBicScorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;

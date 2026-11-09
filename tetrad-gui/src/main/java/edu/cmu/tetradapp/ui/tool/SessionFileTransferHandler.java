@@ -52,6 +52,12 @@ import java.util.prefs.Preferences;
  */
 public class SessionFileTransferHandler extends TransferHandler {
 
+    /**
+     * Constructs a new transfer handler for session files.
+     */
+    public SessionFileTransferHandler() {
+    }
+
     private static final long serialVersionUID = -6674597813640455425L;
 
     /**

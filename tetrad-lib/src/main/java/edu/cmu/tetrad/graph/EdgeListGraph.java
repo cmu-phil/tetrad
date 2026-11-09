@@ -566,6 +566,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return True if the first node is an ancestor of the second, false if not.
      */
     public boolean isAncestorOf(Node node1, Node node2) {
+        // Resolve onto this graph's own node objects before touching the cache. The path search is by identity,
+        // but the cache key compares nodes by name and type, so a query with a same-named node from another graph
+        // would otherwise compute false and then serve that false to later queries with this graph's own nodes.
+        node1 = this.namesHash.get(node1.getName());
+        node2 = this.namesHash.get(node2.getName());
+
+        if (node1 == null || node2 == null) {
+            return false;
+        }
+
         Boolean ancestor = ancestorCache.get(Pair.of(node1, node2));
 
         if (ancestor == null) {

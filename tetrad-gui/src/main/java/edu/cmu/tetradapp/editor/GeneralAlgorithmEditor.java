@@ -114,11 +114,18 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
      * The JSON result.
      */
     private String jsonResult;
+    /** The block specification for latent-structure searches, or null if none. */
     private BlockSpec blockSpec = null;
 
     // Adding these fields and using them below to fix an issue where the search is sometimes run a
     // seconds time for some reason. This is particularly bothersome with slow searches. jdramsey 2026-2-16
+    /**
+     * True once the editor is closing; prevents a search from starting or showing results afterward.
+     */
     private final java.util.concurrent.atomic.AtomicBoolean closing = new java.util.concurrent.atomic.AtomicBoolean(false);
+    /**
+     * True while a search is running; prevents the search from being run twice concurrently.
+     */
     private final java.util.concurrent.atomic.AtomicBoolean running = new java.util.concurrent.atomic.AtomicBoolean(false);
 
     /**
@@ -146,6 +153,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * Constructs an algorithm editor for a latent structure runner, using its block specification.
+     *
+     * @param algorithmRunner the latent structure runner
+     */
     public GeneralAlgorithmEditor(LatentStructureRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -379,6 +391,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         return true;
     }
 
+    /**
+     * Sets the block specification for latent-structure searches.
+     *
+     * @param blockSpec the block specification
+     */
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = blockSpec;
     }

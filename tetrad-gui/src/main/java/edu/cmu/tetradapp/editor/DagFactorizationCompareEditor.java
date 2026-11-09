@@ -13,6 +13,11 @@ import java.beans.PropertyChangeListener;
  */
 public final class DagFactorizationCompareEditor extends JPanel {
 
+    /**
+     * Constructs an editor for the given DAG factorization comparison model.
+     *
+     * @param model the DAG factorization comparison model
+     */
     public DagFactorizationCompareEditor(DagFactorizationCompare model) {
         super(new BorderLayout());
         DagFactorizationComparePanel comp = new DagFactorizationComparePanel(model);

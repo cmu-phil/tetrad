@@ -33,6 +33,12 @@ import java.awt.*;
  */
 public class SplashScreen {
 
+    /**
+     * Constructs a new SplashScreen. All methods are static.
+     */
+    public SplashScreen() {
+    }
+
     private static int MAX;
     private static SplashWindow WINDOW;
     private static JFrame frame;

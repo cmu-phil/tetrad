@@ -68,6 +68,7 @@ public class NumCorrectVisibleEdges implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -79,11 +80,11 @@ public class NumCorrectVisibleEdges implements Statistic {
 
                 // A latent confounder is a latent node z such that there is a trek x<~~(z)~~>y, so we can limit the
                 // length of these treks to 3.
-                Set<List<Node>> treks = trueDag.paths().treks(x, y, 3);
+                Set<List<Node>> treks = dag.paths().treks(x, y, 3);
 
                 // If there is a trek, x<~~z~~>y, where z is latent, then the edge is not semantically visible.
                 for (List<Node> trek : treks) {
-                    if (GraphUtils.isConfoundingTrek(trueDag, trek, x, y)) {
+                    if (GraphUtils.isConfoundingTrek(dag, trek, x, y)) {
                         existsLatentConfounder = true;
                         break;
                     }

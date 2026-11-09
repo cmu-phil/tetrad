@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.search.score.MagRicfBicScorer;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;

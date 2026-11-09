@@ -27,6 +27,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -67,6 +69,13 @@ final class WorkbenchSearchBar extends JPanel {
 
     private AbstractWorkbench workbench;
 
+    /**
+     * True while {@link #update()} runs in response to the user's typing, so that a focus loss during that window
+     * is recognized as a side effect of the update and reversed, while a deliberate focus change (a click
+     * elsewhere, Tab) is left alone.
+     */
+    private boolean updating;
+
     private WorkbenchSearchBar(AbstractWorkbench workbench, JScrollPane scrollPane) {
         super(null);
         this.workbench = workbench;
@@ -85,15 +94,30 @@ final class WorkbenchSearchBar extends JPanel {
 
         this.field.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                update();
+                updateKeepingFocus();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                update();
+                updateKeepingFocus();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                update();
+                updateKeepingFocus();
+            }
+        });
+
+        // Whatever took the focus while the field was being typed in, take it back. The selection the field makes
+        // runs listeners in the surrounding editor that are not this class's to audit, and the first keystroke was
+        // observed to leave the field unfocused, so that typing a second character required a click in the field.
+        this.field.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                if (!WorkbenchSearchBar.this.updating) return;
+                if (e.isTemporary()) return;
+                SwingUtilities.invokeLater(() -> {
+                    if (WorkbenchSearchBar.this.field.isShowing()) {
+                        WorkbenchSearchBar.this.field.requestFocusInWindow();
+                    }
+                });
             }
         });
 
@@ -166,6 +190,29 @@ final class WorkbenchSearchBar extends JPanel {
         this.label.setBounds(x, 3, l.width, height);
         this.field.setBounds(x + l.width + 6, 3, f.width, height);
         this.count.setBounds(x + l.width + f.width + 12, 3, 160, height);
+    }
+
+    /**
+     * Runs {@link #update()} for a document change, marking the window during which a focus loss is to be reversed,
+     * and re-checking at the end in case the loss happened synchronously.
+     */
+    private void updateKeepingFocus() {
+        boolean hadFocus = this.field.isFocusOwner();
+        this.updating = true;
+
+        try {
+            update();
+        } finally {
+            // Listeners fired by the selection may post their work to the event queue, so leave the flag up until
+            // that work has run; the focus listener clears nothing, this does.
+            SwingUtilities.invokeLater(() -> this.updating = false);
+        }
+
+        if (hadFocus && !this.field.isFocusOwner()) {
+            SwingUtilities.invokeLater(() -> {
+                if (this.field.isShowing()) this.field.requestFocusInWindow();
+            });
+        }
     }
 
     /**

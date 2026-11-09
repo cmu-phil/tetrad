@@ -279,6 +279,10 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return getDataSet();
     }
 
+    /**
+     * Deletes the selection: whole selected columns or rows are removed from the data set; otherwise the
+     * selected cells are set to missing.
+     */
     public void deleteSelected() {
         DataSet dataSet = getDataSet();
 
@@ -470,6 +474,8 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     /**
+     * Checks whether the given token is a legitimate value for a cell in the given column.
+     *
      * @param token a {@link java.lang.String} object
      * @param col   a int
      * @return true iff the given token is a legitimate value for the cell at (row, col) in the table.

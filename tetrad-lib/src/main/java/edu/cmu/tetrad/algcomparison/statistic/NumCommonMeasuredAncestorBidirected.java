@@ -84,12 +84,13 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (existsCommonAncestor(trueGraph, edge) && !existsLatentCommonAncestor(trueGraph, edge)) {
+                if (existsCommonAncestor(dag, edge) && !existsLatentCommonAncestor(dag, edge)) {
                     tp++;
                 } else {
                     fp++;

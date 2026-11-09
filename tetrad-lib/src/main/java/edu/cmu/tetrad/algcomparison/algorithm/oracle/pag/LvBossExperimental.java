@@ -34,7 +34,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.MagToPag;
-import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
+import edu.cmu.tetrad.search.score.MagRicfBicScorer;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;

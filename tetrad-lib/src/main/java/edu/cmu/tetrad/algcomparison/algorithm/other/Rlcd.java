@@ -24,10 +24,18 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
 import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -35,11 +43,13 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.search.rlcd.RlcdStabilitySummary;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Wrapper for the RLCD algorithm (Rank-based Latent Causal Discovery; Dong et al., ICLR 2024), which learns a graph
@@ -57,6 +67,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
+@Experimental
 public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
     @Serial
     private static final long serialVersionUID = 23L;
@@ -83,6 +94,133 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("RLCD requires a continuous tabular data set.");
+        }
+
+        Graph graph = searchOnce(dataSet, parameters);
+
+        int stabilityRuns = parameters.getInt(Params.RLCD_STABILITY_RUNS, 0);
+        if (stabilityRuns > 0) {
+            stabilitySummary(graph, parameters, stabilityRuns,
+                    random -> searchOnce(dataSet.subsetRows(bootstrapRows(dataSet.getNumRows(), random)), parameters));
+        }
+
+        return graph;
+    }
+
+    /**
+     * Resampled runs for the stability summary: bootstrap the rows, run the same configuration, tally. Bounded by
+     * the run count, by the time limit (checked between runs), and by the interface's stop button (also between
+     * runs). No run is cut off part way, and the main graph is never altered; the summary goes to the log and one
+     * line of it to the graph's attributes.
+     */
+    private void stabilitySummary(Graph graph, Parameters parameters, int runs, Resampler resampler) {
+        long limitMillis = Math.round(parameters.getDouble(Params.RLCD_STABILITY_TIME_LIMIT, 300.0) * 1000.0);
+        long start = System.currentTimeMillis();
+        long seed = parameters.getLong(Params.SEED);
+        List<Graph> sampled = new ArrayList<>();
+        String stoppedBy = null;
+
+        for (int r = 0; r < runs; r++) {
+            if (Thread.currentThread().isInterrupted()) {
+                stoppedBy = "the stop button";
+                break;
+            }
+            long elapsed = System.currentTimeMillis() - start;
+            if (r > 0 && elapsed + elapsed / r > limitMillis) {
+                // the next run would, on the average so far, overrun the budget.
+                stoppedBy = "the time limit of " + (limitMillis / 1000) + " s";
+                break;
+            }
+            try {
+                sampled.add(resampler.run(new Random(seed == -1 ? r : seed + r + 1)));
+            } catch (RuntimeException e) {
+                if (e.getCause() instanceof InterruptedException) {
+                    stoppedBy = "the stop button";
+                    break;
+                }
+                TetradLogger.getInstance().log("RLCD stability run " + (r + 1) + " failed and was skipped: " + e);
+            }
+        }
+
+        RlcdStabilitySummary summary = new RlcdStabilitySummary(graph, sampled);
+        String report = summary.report();
+        if (stoppedBy != null) {
+            report += "Stopped by " + stoppedBy + " after " + sampled.size() + " of " + runs + " requested runs.\n";
+        }
+        TetradLogger.getInstance().log(report);
+        graph.addAttribute("RLCD stability", summary.oneLine()
+                                             + (stoppedBy == null ? "" : " (" + sampled.size() + " of " + runs
+                                                                         + " requested runs completed)"));
+    }
+
+    /**
+     * Runs the search once on a bootstrap resample drawn with the given generator.
+     */
+    private interface Resampler {
+        Graph run(Random random);
+    }
+
+    private static int[] bootstrapRows(int n, Random random) {
+        int[] rows = new int[n];
+        for (int i = 0; i < n; i++) rows[i] = random.nextInt(n);
+        return rows;
+    }
+
+    /**
+     * One RLCD search on the data as given, in whatever configuration the parameters select.
+     */
+    private Graph searchOnce(DataSet dataSet, Parameters parameters) {
+        boolean censor = parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false);
+        MissingDataSpec spec = MissingDataUtils.fromParameters(parameters);
+        boolean stratified = parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false);
+        boolean anyMissing = new MissingDataAudit(dataSet).anyMissing();
+
+        if (stratified && (censor || spec != null)) {
+            throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with a "
+                                               + "missing-data policy or ceiling censoring: each sets the rank "
+                                               + "test, and only one of them can. Turn one of the two off.");
+        }
+
+        if (anyMissing && !censor && spec == null) {
+            // Without a policy, RLCD would invert a covariance matrix built from the data and fail deep in the
+            // linear algebra with "Cannot invert a matrix with NaN values", which tells the user nothing about
+            // what to do. Say it here instead, with the ways out and what each is for.
+            throw new IllegalArgumentException("RLCD: the data have missing values and no missing-data policy is "
+                                               + "set. Set missingDataPolicy to \"em\" (recommended: one covariance "
+                                               + "matrix from all the incomplete rows, consistent when values are "
+                                               + "missing at random; set missingEssMode to meanPairwise), to "
+                                               + "\"testwise\" (each rank test from the rows complete on its own "
+                                               + "columns; for few variables or little missingness), to "
+                                               + "\"listwise\", or to \"mi\" with poolImputations. If values sit at "
+                                               + "a ceiling such as 100, see rlcdCensorCeiling instead. Missing: "
+                                               + TestwiseDeletionRankTest.describe(dataSet));
+        }
+
+        if (!stratified && censor) {
+            edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
+            double ceiling = parameters.getDouble(Params.RLCD_CEILING_VALUE, 100.0);
+            CensoredMvnCovarianceEstimator estimator = new CensoredMvnCovarianceEstimator(dataSet,
+                    CensoredMvnCovarianceEstimator.commonCeiling(dataSet.getNumColumns(), ceiling), null);
+            estimator.setSeed(parameters.getLong(Params.SEED));
+            MissingDataSpec.EffectiveSampleSizeMode ess = spec == null
+                    ? MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE : spec.getEssMode();
+            rlcd.setCensoredCovariance(estimator, ess);
+            TetradLogger.getInstance().log("RLCD: censoring at " + ceiling + "; " + estimator.getCensoredCells()
+                                           + " censored cells, " + estimator.getMissingCells()
+                                           + " missing cells handled as missing at random.");
+            return run(rlcd, parameters);
+        }
+
+        if (!stratified && spec != null && anyMissing) {
+            if (spec.getPolicy() == MissingDataPolicy.MULTIPLE_IMPUTATION) {
+                List<DataSet> imputations = new MvnImputer(spec).impute(dataSet, spec.getNumImputations(),
+                        parameters.getLong(Params.SEED));
+                List<DataModel> models = new ArrayList<>(imputations);
+                return searchImputations(models, parameters);
+            }
+            edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
+            rlcd.setMissingDataSpec(spec);
+            return run(rlcd, parameters);
         }
 
         if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
@@ -127,6 +265,12 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
      */
     @Override
     public Graph searchImputations(List<DataModel> imputations, Parameters parameters) {
+        if (parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false)) {
+            throw new IllegalArgumentException("Ceiling censoring cannot be combined with pooled imputations: it "
+                                               + "estimates its own covariance matrix from the data as they are. "
+                                               + "Turn one of the two off.");
+        }
+
         if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
             throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with pooled "
                                                + "imputations: the strata must be independent samples, and "
@@ -143,7 +287,19 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             dataSets.add(dataSet);
         }
 
-        return run(new edu.cmu.tetrad.search.Rlcd(dataSets), parameters);
+        Graph graph = run(new edu.cmu.tetrad.search.Rlcd(dataSets), parameters);
+
+        int stabilityRuns = parameters.getInt(Params.RLCD_STABILITY_RUNS, 0);
+        if (stabilityRuns > 0) {
+            stabilitySummary(graph, parameters, stabilityRuns, random -> {
+                int[] rows = bootstrapRows(dataSets.get(0).getNumRows(), random);
+                List<DataSet> resampled = new ArrayList<>();
+                for (DataSet d : dataSets) resampled.add(d.subsetRows(rows));
+                return run(new edu.cmu.tetrad.search.Rlcd(resampled), parameters);
+            });
+        }
+
+        return graph;
     }
 
     private Graph run(edu.cmu.tetrad.search.Rlcd rlcd, Parameters parameters) {
@@ -154,6 +310,10 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         rlcd.setCheckV(parameters.getBoolean(Params.RLCD_CHECK_V));
         rlcd.setLatentGate(parameters.getBoolean(Params.RLCD_LATENT_GATE));
         rlcd.setResolveTwoIndicatorLatents(parameters.getBoolean(Params.RLCD_RESOLVE_TWO_INDICATOR_LATENTS, false));
+        rlcd.setKnowledgeInStage1(parameters.getBoolean(Params.RLCD_KNOWLEDGE_IN_STAGE1, true));
+        rlcd.setQualifyObservedCauses(parameters.getBoolean(Params.RLCD_QUALIFY_OBSERVED_CAUSES, true));
+        rlcd.setObservedExplanationCheck(parameters.getBoolean(Params.RLCD_OBSERVED_EXPLANATION_CHECK, false),
+                parameters.getDouble(Params.RLCD_OBSERVED_EXPLANATION_ALPHA, 0.05));
         rlcd.setPartitionCliqueThreshold(parameters.getInt(Params.RLCD_PARTITION_CLIQUE_THRESHOLD));
         rlcd.setStage1Method(parameters.getBoolean(Params.RLCD_STAGE1_NONE, false)
                 ? edu.cmu.tetrad.search.Rlcd.Stage1Method.NONE
@@ -214,9 +374,23 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_CHECK_V);
         parameters.add(Params.RLCD_LATENT_GATE);
         parameters.add(Params.RLCD_RESOLVE_TWO_INDICATOR_LATENTS);
+        parameters.add(Params.RLCD_KNOWLEDGE_IN_STAGE1);
+        parameters.add(Params.RLCD_QUALIFY_OBSERVED_CAUSES);
+        parameters.add(Params.RLCD_OBSERVED_EXPLANATION_CHECK);
+        parameters.add(Params.RLCD_OBSERVED_EXPLANATION_ALPHA);
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
         parameters.add(Params.RLCD_STAGE1_NONE);
+        parameters.add(Params.RLCD_STABILITY_RUNS);
+        parameters.add(Params.RLCD_STABILITY_TIME_LIMIT);
+        parameters.add(Params.RLCD_CENSOR_CEILING);
+        parameters.add(Params.RLCD_CEILING_VALUE);
+        parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
+        parameters.add(Params.MISSING_NUM_IMPUTATIONS);
+        parameters.add(Params.MISSING_EM_RIDGE);
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
         parameters.add(Params.STRATIFY_BY_DOMAIN);
         parameters.add(Params.DOMAIN_COLUMN);
         parameters.add(Params.POOL_IMPUTATIONS);

@@ -35,25 +35,67 @@ import java.util.stream.Collectors;
  */
 public final class NonlinearityChecks extends JPanel {
 
+    /**
+     * The data set being checked.
+     */
     private final DataSet dataSet;
+    /**
+     * The variables of the data set.
+     */
     private final List<Node> variables;
 
+    /**
+     * Text field for the treatment (X) variables.
+     */
     private final JTextField treatmentsArea = new JTextField(30);
+    /**
+     * Text field for the outcome (Y) variables.
+     */
     private final JTextField outcomesArea = new JTextField(30);
 
+    /**
+     * Selects pairwise mode: each X/Y pair with a single regressor.
+     */
     private final JRadioButton rbPairwise = new JRadioButton("Nonlinear effects for all X/Y pairs (single regressor)", true);
+    /**
+     * Selects conditional mode: each Y conditional on all X.
+     */
     private final JRadioButton rbConditional = new JRadioButton("Nonlinear effects of each Y conditional on all X (multiple regressors)", false);
 
+    /**
+     * Button that runs the nonlinearity checks.
+     */
     private final JButton runButton = new JButton("Check Nonlinearity");
+    /**
+     * Button that shows statistics for the results.
+     */
     private final JButton showStatsButton = new JButton("Show Stats");
+    /**
+     * Button that shows a plot matrix of the variables.
+     */
     private final JButton plotMatrixButton = new JButton("Plot Matrix");
 
+    /**
+     * Check box for including the (slow) cross-validation check.
+     */
     private final JCheckBox includeCv = new JCheckBox("Include CV (slow)", false);
+    /**
+     * Check box for including the additivity check on parents.
+     */
     private final JCheckBox includeAdditivity = new JCheckBox("Include Additivity (Parents)", false);
 
+    /**
+     * Table model for the results.
+     */
     private final ResultsTableModel tableModel = new ResultsTableModel();
+    /**
+     * Table showing the results.
+     */
     private final JTable table = new JTable(tableModel);
 
+    /**
+     * Format for p-values.
+     */
     private final DecimalFormat pFmt = new DecimalFormat("0.####");
 
     private static final Preferences PREFS =

@@ -51,28 +51,76 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     private static final DecimalFormat MODEL_P_FORMAT = new DecimalFormat("0.0000");
 
     // ---- Preferences (persist α and model-P top-K) ----
+    /**
+     * The vertex check model the panel repairs.
+     */
     private final VertexCheckIndTestModel baseModel;
+    /**
+     * The previous graphs, for undo.
+     */
     private final Deque<Graph> history = new ArrayDeque<>();
 
     // UI
+    /**
+     * Combo box for choosing the graph type.
+     */
     private final JComboBox<AdjustmentGraphType> graphTypeCombo = new JComboBox<>(AdjustmentGraphType.values());
+    /**
+     * Button that searches for adjustments at the selected node; its text names the node.
+     */
     private final JButton searchButton = new JButton();
+    /**
+     * Button that undoes the last repair.
+     */
     private final JButton backButton = new JButton("Undo");
+    /**
+     * Button that shows the current graph.
+     */
     private final JButton showGraphButton = new JButton("Graph");
+    /**
+     * Button that attempts a repair.
+     */
     private final JButton repairButton = new JButton("Attempt Repair");
     /**
      * Repairs at the selected node only; its text names the node, as the search button's does.
      */
     private final JButton repairNodeButton = new JButton();
+    /**
+     * Label for status messages.
+     */
     private final JLabel statusLabel = new JLabel(" ");
+    /**
+     * Table showing candidate adjustments.
+     */
     private final JTable resultsTable = new JTable();
+    /**
+     * Table model for the candidate adjustments.
+     */
     private final CandidateTableModel resultsModel = new CandidateTableModel();
+    /**
+     * Panel switching between the results table and a no-results card.
+     */
     private final JPanel resultsCard = new JPanel(new CardLayout());
+    /**
+     * Combo box for choosing the node to work on.
+     */
     private final JComboBox<Node> nodeCombo = new JComboBox<>();
+    /**
+     * Spinner for the random seed.
+     */
     private final JSpinner seedSpinner;
+    /**
+     * Combo box for choosing the repair strategy.
+     */
     private final JComboBox<RepairStrategy> repairStrategyCombo =
             new JComboBox<>(RepairStrategy.values());
+    /**
+     * True while the node combo box is being populated, so its listener does nothing.
+     */
     private boolean populatingNodeCombo = false;
+    /**
+     * Spinner for the prune alpha.
+     */
     private final JSpinner pruneAlphaSpinner;
 
     /**
@@ -100,17 +148,37 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
      */
     private boolean auditComputed = false;
 
+    /**
+     * The node currently being worked on.
+     */
     private Node x;
 
     /** The shared search object that owns the working graph and all repair logic. */
     private final VertexRepairSearch repairSearch;
 
+    /**
+     * The background worker currently running, or null if none.
+     */
     private volatile SwingWorker<?, ?> activeWorker;
+    /**
+     * The dialog shown while a background task runs, or null if none.
+     */
     private volatile JDialog watchDialog;
+    /**
+     * Whether to use the Anderson-Darling test.
+     */
     private boolean useAndersonDarling = false;
 
+    /**
+     * Whether to use the wild bootstrap.
+     */
     private boolean useWildBootstrap = false;
 
+    /**
+     * Sets whether to use the wild bootstrap, passing the setting to the repair search.
+     *
+     * @param useWildBootstrap true to use the wild bootstrap
+     */
     public void setUseWildBootstrap(boolean useWildBootstrap) {
         this.useWildBootstrap = useWildBootstrap;
         repairSearch.setUseWildBootstrap(useWildBootstrap);
@@ -120,6 +188,12 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     // Construction
     // =========================================================================
 
+    /**
+     * Constructs the repair panel.
+     *
+     * @param editor the vertex check editor that owns this panel
+     * @param x      the node to start with
+     */
     public VertexRepairPanelGlobalRepair(VertexCheckEditor editor, Node x) {
         super(new BorderLayout());
 
@@ -214,10 +288,20 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     // Public API
     // =========================================================================
 
+    /**
+     * Returns the working graph of the repair search.
+     *
+     * @return the working graph
+     */
     public Graph getGraph() {
         return repairSearch.getGraph();
     }
 
+    /**
+     * Sets the knowledge for the repair search and redetermines the legal graph types.
+     *
+     * @param knowledge the knowledge
+     */
     public void setKnowledge(Knowledge knowledge) {
         repairSearch.setKnowledge(knowledge);
         // Knowledge changes which graph types are legal for this graph, so redetermine.
@@ -225,6 +309,11 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         syncSearchFromUI();
     }
 
+    /**
+     * Sets whether to use the Anderson-Darling test, passing the setting to the repair search.
+     *
+     * @param useAndersonDarling true to use the Anderson-Darling test
+     */
     public void setUseAndersonDarling(boolean useAndersonDarling) {
         this.useAndersonDarling = useAndersonDarling;
         repairSearch.setUseAndersonDarling(useAndersonDarling);  // add this

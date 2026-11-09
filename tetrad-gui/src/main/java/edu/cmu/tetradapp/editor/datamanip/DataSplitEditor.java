@@ -47,30 +47,45 @@ import java.util.Set;
  */
 public class DataSplitEditor extends JPanel {
 
+    /** The data set to split. */
     private final DataSet dataSet;
 
+    /** The list of variables from which split conditions may be generated. */
     private final JList<Node> variableList;
+    /** Selects binning a continuous variable into bins of equal row count. */
     private final JRadioButton equalCountButton = new JRadioButton("Equal count", true);
+    /** Selects binning a continuous variable into bins of equal width. */
     private final JRadioButton equalWidthButton = new JRadioButton("Equal width");
+    /** Selects binning a continuous variable at user-given cut points. */
     private final JRadioButton cutPointsButton = new JRadioButton("Cut points:");
+    /** The number of bins for equal-count or equal-width binning. */
     private final JSpinner numBinsSpinner = new JSpinner(new SpinnerNumberModel(2, 2, 1000, 1));
+    /** The cut points for cut-point binning. */
     private final JTextField cutPointsField = new JTextField(14);
 
+    /** The split condition lines, one split per line. */
     private final JTextArea linesArea = new JTextArea(10, 50);
+    /** The names of variables to drop from each split. */
     private final JTextField dropVarsField = new JTextField(30);
+    /** Whether to add a data set for rows matching no condition. */
     private final JCheckBox remainderCheck = new JCheckBox("Add a data set for rows matching no condition, named");
+    /** Whether discrete variables keep every category of the full data in each split. */
     private final JCheckBox keepCategoriesCheck = new JCheckBox(
             "Discrete variables keep every category of the full data (uncheck to keep only those observed in each split)",
             true);
+    /** The name of the data set for rows matching no condition. */
     private final JTextField remainderNameField = new JTextField(DataSplitter.DEFAULT_REMAINDER_NAME, 12);
 
+    /** The table model for the preview of how many rows each split gets. */
     private final DefaultTableModel previewModel = new DefaultTableModel(new Object[]{"Split", "Rows"}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return false;
         }
     };
+    /** A summary of unmatched and multiply matched rows in the preview. */
     private final JLabel summaryLabel = new JLabel(" ");
+    /** Shows the error, if any, from parsing the split lines. */
     private final JLabel errorLabel = new JLabel(" ");
 
     /**

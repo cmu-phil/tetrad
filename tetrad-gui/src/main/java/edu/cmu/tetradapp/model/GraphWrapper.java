@@ -153,6 +153,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * <p>Constructor for GraphWrapper.</p>
      *
      * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @param message a {@link java.lang.String} object
      */
     public GraphWrapper(Graph graph, Parameters parameters, String message) {
@@ -346,14 +347,29 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         //       log();
     }
 
+    /**
+     * Returns whether any graph states have been recorded for undo/redo.
+     *
+     * @return true if the undo history is non-empty
+     */
     public boolean hasUndoHistory() {
         return undoHistory != null && !undoHistory.isEmpty();
     }
 
+    /**
+     * Returns whether there is an earlier recorded state to step back to.
+     *
+     * @return true if undo is possible
+     */
     public boolean canUndo() {
         return undoHistory != null && undoCursor > 0;
     }
 
+    /**
+     * Returns whether there is a later recorded state to step forward to.
+     *
+     * @return true if redo is possible
+     */
     public boolean canRedo() {
         return undoHistory != null && undoCursor >= 0 && undoCursor < undoHistory.size() - 1;
     }
@@ -362,6 +378,8 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * Pushes a snapshot of the given graph as the new current undo state, discarding any
      * redo tail. No-op if structurally equal to the current state (which also makes
      * undo/redo refreshes that re-fire the change listener harmless).
+     *
+     * @param graph the graph to record; if null, nothing is recorded
      */
     public void recordGraphState(Graph graph) {
         if (graph == null) return;
@@ -378,7 +396,11 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         undoCursor = undoHistory.size() - 1;
     }
 
-    /** Step back one state, make it current, return a copy. null if cannot. */
+    /**
+     * Step back one state, make it current, return a copy. null if cannot.
+     *
+     * @return a copy of the previous graph state, or null if undo is not possible
+     */
     public Graph undo() {
         if (!canUndo()) return null;
         undoCursor--;
@@ -387,7 +409,11 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return g;
     }
 
-    /** Step forward one state, make it current, return a copy. null if cannot. */
+    /**
+     * Step forward one state, make it current, return a copy. null if cannot.
+     *
+     * @return a copy of the next graph state, or null if redo is not possible
+     */
     public Graph redo() {
         if (!canRedo()) return null;
         undoCursor++;

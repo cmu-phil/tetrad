@@ -87,6 +87,13 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     private String sourceResultName;
 
+    /**
+     * Constructs the wrapper from a graph source. If the source carries its own data (e.g., a search or a
+     * simulation), that data is made available for display.
+     *
+     * @param graphWrapper the source of the graph
+     * @param parameters   the parameters
+     */
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
         this.sourceResultName = resultNameOf(graphWrapper);

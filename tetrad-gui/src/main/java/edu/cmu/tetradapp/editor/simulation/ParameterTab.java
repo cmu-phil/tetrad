@@ -87,6 +87,9 @@ public class ParameterTab extends JPanel {
             SimulationTypes.TRAINED_DAG_SIMULATION
     };
 
+    /**
+     * The label shown when there are no parameters to edit.
+     */
     public static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;

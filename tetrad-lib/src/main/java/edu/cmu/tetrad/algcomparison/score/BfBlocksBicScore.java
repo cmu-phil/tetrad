@@ -37,13 +37,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-///**
-// * Wrapper for Blocks BIC Score (Blocks-BIC) version.
-// *
-// * @author josephramsey
-// * @author bryanandrews
-// * @version $Id: $Id
-// */
+/**
+ * Wrapper for Blocks BIC Score (Blocks-BIC) version.
+ *
+ * @author josephramsey
+ * @author bryanandrews
+ * @version $Id: $Id
+ */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "BF-Blocks-BIC",
 //        command = "bf-blocks-bic-score",

@@ -43,6 +43,13 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
      */
     private Parameters params;
 
+    /**
+     * Constructs a new missing-data injector parameters editor. The parameters are supplied afterward through
+     * {@link #setParams(Parameters)}, and the GUI is built by {@link #setup()}.
+     */
+    public MissingDataInjectorParamsEditor() {
+    }
+
     //========================= Public Methods =======================================//
 
     /**

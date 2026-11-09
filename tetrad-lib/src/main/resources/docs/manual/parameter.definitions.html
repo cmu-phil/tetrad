@@ -1020,7 +1020,7 @@ Source:
                 Collider Orientation Style: 1 = Sepsets 2 = Conservative 3 = Max-P
         </span></li>
         <li>Default Value:
-            <span id="colliderOrientationStyle_default_value">3</span></li>
+            <span id="colliderOrientationStyle_default_value">1</span></li>
         <li>Lower Bound:
             <span id="colliderOrientationStyle_lower_bound">1</span></li>
         <li>Upper Bound: <span id="colliderOrientationStyle_upper_bound">3</span></li>
@@ -2433,9 +2433,9 @@ Source:
     <h3 class="parameter_description" id="fcitCorrectness">fcitCorrectness</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="fcitCorrectness_short_desc">
-                    Warrant for the result: 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step
+                    Warrant for the result: 1 = Guarantee I-map, 2 = Score step, 3 = Saturating step
         </span></li>
-        <li>Long Description: <span id="fcitCorrectness_long_desc">The warrant FCIT relies on for the final graph, a three-way choice. 1 = Guarantee I-map: every candidate the legality gate accepts must additionally be an I-map of the independence test (see requireImapStates; imapAlpha applies); the saturating step is off. 2 = No score drop: every accepted candidate's Zhang MAG must not score lower (RICF BIC) than the committed state's, as in the BFCI-Bryan score step; the saturating step is off, and a SemBicScore built on a covariance matrix is required. 3 = Saturating step: no extra per-commit gate; when no single removal commits, all pairs with test-confirmed separating sets are removed jointly, which is the step the oracle correctness argument needs. The saturating step is not a separate switch: it runs exactly when neither gate is on.</span></li>
+        <li>Long Description: <span id="fcitCorrectness_long_desc">The warrant the search relies on for the final graph, a three-way choice shared by FCIT, FCIT-ZM, and the *-FCI family (BFCI, GFCI, SP-FCI, GRaSP-FCI). 1 = Guarantee I-map: every candidate the legality gate accepts must additionally be an I-map of the independence test, that is, every nonadjacent pair of its implied MAG must have a test-confirmed separator at imapAlpha; the saturating step is off. 2 = Score step: every accepted candidate's Zhang MAG is scored by RICF BIC against the committed state's; the saturating step is off, and a SEM BIC score built on a covariance matrix with zero structure prior is required, so this option is available only for continuous data. The acceptance rule, shared by all of them since November 2026 and following the BFCI-Bryan score step, requires a strict improvement for each removal; the *-FCI family alone accepts a tie when re-selecting a separating set for an already nonadjacent pair, where no edge is removed. 3 = Saturating step: no extra per-commit gate; when no single removal commits, all pairs with test-confirmed separating sets are removed jointly, which is the step the oracle correctness argument needs. The saturating step is not a separate switch: it runs exactly when neither gate is on. Option 1 is the default; its no-stall property rests on a conjecture, while option 3 is the configuration proved correct in the oracle under the GFCI assumptions.</span></li>
         <li>Default Value: <span id="fcitCorrectness_default_value">1</span></li>
         <li>Lower Bound: <span id="fcitCorrectness_lower_bound">1</span></li>
         <li>Upper Bound: <span id="fcitCorrectness_upper_bound">3</span></li>
@@ -6996,6 +6996,28 @@ Source:
         <li>Value Type: <span id="rlcdAllowNonLeafX_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdCeilingValue ===
+    <h3 class="parameter_description" id="rlcdCeilingValue">rlcdCeilingValue</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdCeilingValue_short_desc">RLCD: the ceiling at and above which values are censored when rlcdCensorCeiling is on (default 100)</span></li>
+        <li>Long Description: <span id="rlcdCeilingValue_long_desc">The common ceiling used by rlcdCensorCeiling. A value equal to or above it is read as censored. 100 is right for percentage grades; use the top of the scale for other bounded measures.</span></li>
+        <li>Default Value: <span id="rlcdCeilingValue_default_value">100</span></li>
+        <li>Lower Bound: <span id="rlcdCeilingValue_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="rlcdCeilingValue_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="rlcdCeilingValue_value_type">Double</span></li>
+    </ul>
+
+    === rlcdCensorCeiling ===
+    <h3 class="parameter_description" id="rlcdCensorCeiling">rlcdCensorCeiling</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdCensorCeiling_short_desc">RLCD: treat values at the ceiling (rlcdCeilingValue) as censored, not as exact (default false)</span></li>
+        <li>Long Description: <span id="rlcdCensorCeiling_long_desc">If true, a value equal to or above rlcdCeilingValue in any variable is read as censored: known only to be at least the ceiling. This is what a grade of 100 means when many students score 100: the scale ran out, not the ability. Treated as exact values, ceiling scores flatten the top of each distribution and attenuate every correlation the variable takes part in, which weakens or hides rank constraints; treated as missing, they are missing because of their own size, which the EM policy's missing-at-random assumption does not cover. With this on, RLCD estimates one covariance matrix for both stages by stochastic EM under a multivariate normal model in which each censored value is drawn from its conditional distribution truncated above the ceiling, and runs every rank test on that matrix with a per-query sample size from the pairwise counts of uncensored values. Ordinary missing values (NaN) are handled in the same pass as missing at random. Under Gaussian errors the estimate is close to exact; under skewed errors the correction is partial but large. Uses the same ceiling for every variable; variables with no values at the ceiling are unaffected. When on, this takes the place of missingDataPolicy for RLCD, and the rank tests use the mean pairwise sample-size rule whatever missingEssMode shows, since the full-N rule overstates the information in a censored estimate. The estimate is deterministic (truncated-normal moments, iterated to a fixed point), so the same data and settings give the same answer.</span></li>
+        <li>Default Value: <span id="rlcdCensorCeiling_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdCensorCeiling_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdCensorCeiling_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdCensorCeiling_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdCheckV ===
     <h3 class="parameter_description" id="rlcdCheckV">rlcdCheckV</h3>
     <ul class="parameter_description_list">
@@ -7005,6 +7027,17 @@ Source:
         <li>Lower Bound: <span id="rlcdCheckV_lower_bound"></span></li>
         <li>Upper Bound: <span id="rlcdCheckV_upper_bound"></span></li>
         <li>Value Type: <span id="rlcdCheckV_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdKnowledgeInStage1 ===
+    <h3 class="parameter_description" id="rlcdKnowledgeInStage1">rlcdKnowledgeInStage1</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdKnowledgeInStage1_short_desc">RLCD: give background knowledge to stage 1 as well as stage 2 (default true)</span></li>
+        <li>Long Description: <span id="rlcdKnowledgeInStage1_long_desc">Stage 2 always honours background knowledge: tier precedence in placing clusters, forbidden parents, and the orientation of whatever the tiers order. This decides whether stage 1, the search for the observed skeleton that defines the partitions, sees it too. Under tier constraints the stage-1 search returns a denser skeleton, the clique merge then puts more variables into one partition, and the rank tests over a larger set of weakly correlated variables are more likely to fail to reject rank one across all of it, giving one latent over many variables. Measured in simulation, knowledge in stage 2 alone recovered latent structure slightly better than no knowledge, while knowledge in stage 1 recovered it worse; stage-1 knowledge did remove false observed adjacencies at partition boundaries. Leave true where the observed edges and their directions are the point; set false where the latent structure is the point and the knowledge is extensive.</span></li>
+        <li>Default Value: <span id="rlcdKnowledgeInStage1_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdKnowledgeInStage1_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdKnowledgeInStage1_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdKnowledgeInStage1_value_type">Boolean</span></li>
     </ul>
 
     === rlcdLatentGate ===
@@ -7029,6 +7062,28 @@ Source:
         <li>Value Type: <span id="rlcdMaxK_value_type">Integer</span></li>
     </ul>
 
+    === rlcdObservedExplanationAlpha ===
+    <h3 class="parameter_description" id="rlcdObservedExplanationAlpha">rlcdObservedExplanationAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdObservedExplanationAlpha_short_desc">RLCD: alpha of the observed-explanation test (default 0.05)</span></li>
+        <li>Long Description: <span id="rlcdObservedExplanationAlpha_long_desc">The significance level of the rank test used by rlcdObservedExplanationCheck to decide whether a set of observed variables explains a rank deficiency. It is separate from, and by default larger than, the cluster alpha: a larger alpha rejects more readily, so an underpowered explanation test is less likely to explain a true cluster away by accident. Lower it to remove more candidate latents, raise it to protect more of them.</span></li>
+        <li>Default Value: <span id="rlcdObservedExplanationAlpha_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="rlcdObservedExplanationAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="rlcdObservedExplanationAlpha_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="rlcdObservedExplanationAlpha_value_type">Double</span></li>
+    </ul>
+
+    === rlcdObservedExplanationCheck ===
+    <h3 class="parameter_description" id="rlcdObservedExplanationCheck">rlcdObservedExplanationCheck</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdObservedExplanationCheck_short_desc">RLCD: make a cluster only if no equally small set of observed variables explains its rank deficiency (default false)</span></li>
+        <li>Long Description: <span id="rlcdObservedExplanationCheck_long_desc">If true, a set of variables found rank deficient, at a rank that would introduce t new latents, becomes a cluster only if no t observed variables from the same partition explain the deficiency equally well, that is, make the two sides rank-independent when conditioned on. Rank constraints alone cannot tell a latent common cause from an observed separator: the later part of a chain of observed variables (unit scores in course order, say) is rank one against the earlier part because the variable between them separates them, and without this check RLCD reads the chain as a measurement model. The check also removes rank deficiencies that a dense observed causal structure implies in the population, which no test of implied constraints can remove because they are real. In simulation it costs nothing on true measurement models at moderate sample size; at small sample size an underpowered explanation test can explain a true cluster away by accident, which the separate, larger rlcdObservedExplanationAlpha guards against. Candidate explaining sets are tried from one variable up to t, smallest first, up to 20000 sets per deficiency.</span></li>
+        <li>Default Value: <span id="rlcdObservedExplanationCheck_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdObservedExplanationCheck_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdObservedExplanationCheck_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdObservedExplanationCheck_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdPartitionCliqueThreshold ===
     <h3 class="parameter_description" id="rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</h3>
     <ul class="parameter_description_list">
@@ -7040,6 +7095,17 @@ Source:
         <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
     </ul>
 
+    === rlcdQualifyObservedCauses ===
+    <h3 class="parameter_description" id="rlcdQualifyObservedCauses">rlcdQualifyObservedCauses</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdQualifyObservedCauses_short_desc">RLCD: keep an observed-to-latent arrow only when an observed parent identifies its direction (default true)</span></li>
+        <li>Long Description: <span id="rlcdQualifyObservedCauses_long_desc">Rank constraints cannot tell an observed cause of a latent from an indicator of it: an observed variable pointing into a latent, and the same variable as a child of the latent, imply the same covariance over the observed variables. So an arrow between an observed variable O and a latent L in RLCD's output is a placement rather than a finding. What identifies the direction is a directed observed parent P of O that is not itself attached to L. If O causes L, P is dependent on L's indicators marginally and independent of them given O (a chain). If O is an indicator, P is independent of them marginally and dependent given O (a collider at O). With this on, each directed observed-latent edge is checked against every such parent: all chain signatures give O into L, all collider signatures give L into O, and anything else is not identified. An arrow from O into L that is not identified, including one with no directed observed parent, is made undirected; an arrow from L into O that is not identified is left as the measurement-model default, unless the parents actively disagree, in which case it too is made undirected. Latent-to-latent edges are not touched. Set false to see the raw stage-2 placements.</span></li>
+        <li>Default Value: <span id="rlcdQualifyObservedCauses_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdQualifyObservedCauses_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdQualifyObservedCauses_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdQualifyObservedCauses_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdResolveTwoIndicatorLatents ===
     <h3 class="parameter_description" id="rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</h3>
     <ul class="parameter_description_list">
@@ -7049,6 +7115,28 @@ Source:
         <li>Lower Bound: <span id="rlcdResolveTwoIndicatorLatents_lower_bound"></span></li>
         <li>Upper Bound: <span id="rlcdResolveTwoIndicatorLatents_upper_bound"></span></li>
         <li>Value Type: <span id="rlcdResolveTwoIndicatorLatents_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdStabilityRuns ===
+    <h3 class="parameter_description" id="rlcdStabilityRuns">rlcdStabilityRuns</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStabilityRuns_short_desc">RLCD: number of bootstrap reruns for a stability summary after the main run (default 0 = none)</span></li>
+        <li>Long Description: <span id="rlcdStabilityRuns_long_desc">When greater than zero, RLCD first does its normal run, which is the graph returned, and then reruns the same configuration this many times on bootstrap resamples of the rows (the same rows across pooled imputations). The reruns do not change the graph. They produce a report in the log: for each latent of the main graph, its observed children with the fraction of reruns in which each was clustered with the others; the observed pairs clustered together in at least half the reruns but not in the main graph; the observed adjacencies of the main graph with the fraction of reruns in which they appear; and the number of latents found per rerun. One line of this is attached to the graph as the attribute "RLCD stability". Each rerun costs as much as the main run, so ten reruns take ten times as long; see rlcdStabilityTimeLimit. The stop button stops the reruns at the next run boundary and the main graph is still returned, with the summary over the reruns completed. Latent names differ from run to run, so everything in the report is stated in terms of the observed variables.</span></li>
+        <li>Default Value: <span id="rlcdStabilityRuns_default_value">0</span></li>
+        <li>Lower Bound: <span id="rlcdStabilityRuns_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="rlcdStabilityRuns_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rlcdStabilityRuns_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdStabilityTimeLimit ===
+    <h3 class="parameter_description" id="rlcdStabilityTimeLimit">rlcdStabilityTimeLimit</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStabilityTimeLimit_short_desc">RLCD: wall-clock budget in seconds for the stability reruns (default 300)</span></li>
+        <li>Long Description: <span id="rlcdStabilityTimeLimit_long_desc">A bound on the total time spent in the reruns requested by rlcdStabilityRuns. It is checked between reruns: another rerun starts only if, at the average pace so far, it would finish within the budget. No rerun is cut off part way, so the actual time can exceed the budget by at most one run. When the budget stops the reruns early, the report says how many of the requested reruns it is based on. The main run is not subject to this limit.</span></li>
+        <li>Default Value: <span id="rlcdStabilityTimeLimit_default_value">300</span></li>
+        <li>Lower Bound: <span id="rlcdStabilityTimeLimit_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="rlcdStabilityTimeLimit_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="rlcdStabilityTimeLimit_value_type">Double</span></li>
     </ul>
 
     === rlcdStage1Fges ===

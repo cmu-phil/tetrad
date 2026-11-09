@@ -275,6 +275,22 @@ public class CompareTwoGraphs {
     }
 
     /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long)}, but with the true DAG given separately from the
+     * comparison graph; see {@link #getStatsListTable(Graph, Graph, Graph, DataModel, long, List)}.
+     *
+     * @param trueDag     The true DAG, including latents, or null if none is available.
+     * @param trueGraph   The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, Graph targetGraph, DataModel dataModel,
+                                           long elapsedTime) {
+        return getStatsListTable(trueDag, trueGraph, targetGraph, dataModel, elapsedTime, statistics());
+    }
+
+    /**
      * As {@link #getStatsListTable(Graph, Graph, DataModel, long)}, but with the statistics to show given
      * explicitly, in display order.
      *
@@ -287,6 +303,25 @@ public class CompareTwoGraphs {
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime,
                                            List<Statistic> statistics) {
+        return getStatsListTable(trueGraph, trueGraph, targetGraph, dataModel, elapsedTime, statistics);
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long, List)}, but with the true DAG given separately
+     * from the comparison graph. Statistics that ask DAG-level questions (ancestry, latent confounding) read them
+     * off trueDag; statistics that compare adjacencies and endpoints use trueGraph, which may be the CPDAG or PAG
+     * of trueDag. The overloads without a trueDag pass trueGraph for both.
+     *
+     * @param trueDag     The true DAG, including latents, or null if none is available.
+     * @param trueGraph   The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @param statistics  The statistics to show.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, Graph targetGraph, DataModel dataModel,
+                                           long elapsedTime, List<Statistic> statistics) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
         TextTable table = new TextTable(statistics.size() + 1, 3);
@@ -298,7 +333,7 @@ public class CompareTwoGraphs {
 
         for (Statistic statistic : statistics) {
             try {
-                values.add(statistic.getValue(trueGraph, trueGraph, _targetGraph, dataModel, new Parameters()));
+                values.add(statistic.getValue(trueDag, trueGraph, _targetGraph, dataModel, new Parameters()));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {
@@ -343,6 +378,23 @@ public class CompareTwoGraphs {
     }
 
     /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List)}, but with the true DAG given separately from
+     * the comparison graph; see {@link #getStatsListTable(Graph, Graph, Graph, DataModel, long, List)}.
+     *
+     * @param trueDag      The true DAG, including latents, or null if none is available.
+     * @param trueGraph    The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, List<Graph> targetGraphs,
+                                           List<String> targetNames, DataModel dataModel, List<Long> elapsedTimes) {
+        return getStatsListTable(trueDag, trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics());
+    }
+
+    /**
      * As {@link #getStatsListTable(Graph, List, List, DataModel, List)}, but with the statistics to show given
      * explicitly, in display order.
      *
@@ -356,6 +408,26 @@ public class CompareTwoGraphs {
      */
     public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
                                            DataModel dataModel, List<Long> elapsedTimes,
+                                           List<Statistic> statistics) {
+        return getStatsListTable(trueGraph, trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics);
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List, List)}, but with the true DAG given
+     * separately from the comparison graph; see {@link #getStatsListTable(Graph, Graph, Graph, DataModel, long, List)}
+     * for the division of labor between the two.
+     *
+     * @param trueDag      The true DAG, including latents, or null if none is available.
+     * @param trueGraph    The comparison graph (the true DAG, or its CPDAG or PAG).
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @param statistics   The statistics to show.
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueDag, Graph trueGraph, List<Graph> targetGraphs,
+                                           List<String> targetNames, DataModel dataModel, List<Long> elapsedTimes,
                                            List<Statistic> statistics) {
         if (targetGraphs.size() != targetNames.size()) {
             throw new IllegalArgumentException("One name per target graph expected.");
@@ -371,7 +443,7 @@ public class CompareTwoGraphs {
 
             for (int i = 0; i < statistics.size(); i++) {
                 try {
-                    double value = statistics.get(i).getValue(trueGraph, trueGraph, _targetGraph, dataModel,
+                    double value = statistics.get(i).getValue(trueDag, trueGraph, _targetGraph, dataModel,
                             new Parameters());
                     cells[i][j] = Double.isNaN(value) ? "-" : nf.format(value);
                     anyValue[i] = true;
@@ -447,17 +519,28 @@ public class CompareTwoGraphs {
     }
 
     /**
-     * Returns the statistics shown by default in the stats list comparison, in display order, with duplicate
-     * abbreviations removed (the internal default list repeats a few entries, which the plain table methods keep
-     * for unchanged output).
+     * Returns the statistics shown by default in the stats list comparison, in display order. The Elapsed (wall
+     * time) row is not a statistic; the table methods append it separately when an elapsed time is supplied.
      *
      * @return a new list of the default statistics.
      */
     public static List<Statistic> defaultStatistics() {
+        return statistics();
+    }
+
+    /**
+     * Returns a broader, curated set of statistics suitable for the stats list comparison, with duplicate
+     * abbreviations removed. This includes some statistics (e.g., SHD compared to the CPDAG) that need constructor
+     * arguments and so cannot be found by a reflection scan for no-argument constructors; choosers should offer
+     * these in addition to the defaults.
+     *
+     * @return a new list of the curated statistics.
+     */
+    public static List<Statistic> curatedStatistics() {
         List<Statistic> unique = new ArrayList<>();
         java.util.Set<String> seen = new java.util.HashSet<>();
 
-        for (Statistic statistic : statistics()) {
+        for (Statistic statistic : allCuratedStatistics()) {
             if (seen.add(statistic.getAbbreviation())) {
                 unique.add(statistic);
             }
@@ -467,6 +550,21 @@ public class CompareTwoGraphs {
     }
 
     private static List<Statistic> statistics() {
+        List<Statistic> statistics = new ArrayList<>();
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new NumberOfEdgesEst());
+        statistics.add(new NumberOfEdgesTrue());
+        return statistics;
+    }
+
+    private static List<Statistic> allCuratedStatistics() {
         List<Statistic> statistics = new ArrayList<>();
 
         // Others

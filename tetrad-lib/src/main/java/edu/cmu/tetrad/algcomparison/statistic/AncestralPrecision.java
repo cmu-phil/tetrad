@@ -72,16 +72,17 @@ public class AncestralPrecision implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0, fp = 0;
 
-        List<Node> nodes = trueGraph.getNodes();
+        List<Node> nodes = dag.getNodes();
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
                 if (estGraph.paths().isAncestorOf(x, y)) {
-                    if (trueGraph.paths().isAncestorOf(x, y)) {
+                    if (dag.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;

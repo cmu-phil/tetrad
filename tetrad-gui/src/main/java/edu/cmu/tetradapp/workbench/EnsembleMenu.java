@@ -68,6 +68,13 @@ public class EnsembleMenu extends JMenu {
         initComponents();
     }
 
+    /**
+     * Returns whether the graph is the result of resampling, judged by whether its first edge carries edge type
+     * probabilities.
+     *
+     * @param graph the graph to check; may be null.
+     * @return true if the graph is non-null, has edges, and its first edge has edge type probabilities.
+     */
     public static boolean isSamplingGraph(Graph graph) {
         if (graph == null) {
             return false;
@@ -80,6 +87,13 @@ public class EnsembleMenu extends JMenu {
         }
     }
 
+    /**
+     * Returns whether the two graphs share nodes, judged by whether their first nodes are the same object.
+     *
+     * @param graph1 the first graph; may be null.
+     * @param graph2 the second graph; may be null.
+     * @return true if both graphs are non-null, have nodes, and have the identical first node.
+     */
     public static boolean isSameGraph(Graph graph1, Graph graph2) {
         if (graph1 == null || graph2 == null) {
             return false;

@@ -473,6 +473,12 @@ public final class UpdatedBayesImWizard extends JPanel {
         new MyWatchedProcess();
     }
 
+    /**
+     * Makes the given node the selected node, updating the workbench selection, combo boxes, editing table
+     * and marginals display. Does nothing if the node is already selected.
+     *
+     * @param node the node to select
+     */
     public void setCurrentNodeSub(Node node) {
         if (node == this.selectedNode) {
             return;
@@ -523,7 +529,9 @@ public final class UpdatedBayesImWizard extends JPanel {
     }
 
     /**
-     * @return the getModel selectedNode.
+     * Returns the currently selected node.
+     *
+     * @return the selected node.
      */
     public Node getSelectedNode() {
         return this.selectedNode;

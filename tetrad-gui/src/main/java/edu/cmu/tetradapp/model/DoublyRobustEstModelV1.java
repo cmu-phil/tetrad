@@ -19,12 +19,36 @@ import java.util.Objects;
  */
 public final class DoublyRobustEstModelV1 implements SessionModel {
 
+    /**
+     * The data set used for estimation.
+     */
     private final DataSet dataSet;
+    /**
+     * The input graphs.
+     */
     private final List<Graph> graphs;
+    /**
+     * The names of the input graphs, parallel to {@link #graphs}.
+     */
     private final List<String> graphNames;
+    /**
+     * The parameters for this model.
+     */
     private final Parameters parameters;
+    /**
+     * The name of this session model.
+     */
     private String name = "Adjustment Effect (v1)";
 
+    /**
+     * Constructs a new model from the given session inputs, which must include exactly one DataWrapper whose selected
+     * data model is a DataSet, and at least one GraphWrapper with a non-null graph.
+     *
+     * @param inputs     the parent session models
+     * @param parameters the parameters
+     * @throws NullPointerException     if inputs or parameters is null
+     * @throws IllegalArgumentException if the inputs do not contain exactly one data set and at least one graph
+     */
     public DoublyRobustEstModelV1(SessionModel[] inputs, Parameters parameters) {
         Objects.requireNonNull(inputs, "v1: inputs");
         this.parameters = Objects.requireNonNull(parameters, "v1: parameters");
@@ -70,18 +94,38 @@ public final class DoublyRobustEstModelV1 implements SessionModel {
         this.graphNames = List.copyOf(names);
     }
 
+    /**
+     * Returns the data set.
+     *
+     * @return the data set
+     */
     public DataSet getDataSet() {
         return dataSet;
     }
 
+    /**
+     * Returns the input graphs.
+     *
+     * @return an unmodifiable list of the input graphs
+     */
     public List<Graph> getGraphs() {
         return graphs;
     }
 
+    /**
+     * Returns the names of the input graphs, in the same order as {@link #getGraphs()}.
+     *
+     * @return an unmodifiable list of the graph names
+     */
     public List<String> getGraphNames() {
         return graphNames;
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters
+     */
     public Parameters getParameters() {
         return parameters;
     }

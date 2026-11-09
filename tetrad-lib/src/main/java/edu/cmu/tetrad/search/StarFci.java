@@ -22,6 +22,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -107,6 +109,39 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of
  * temporal tiers, by the same modulo-knowledge certificate as {@link StarFciOriginal}.
+ * <p>
+ * CORRECTNESS WARRANT (2026-11-08). Two further gates, developed in the {@code BfciBryan} and
+ * {@code BfciBryanScore} forks of this class and merged back here, may be placed after the legality certificate
+ * on every gated move (the edge visits of Passes 0 to 2 and the saturating batches). They are the same three-way
+ * choice the FCIT wrapper exposes as {@code fcitCorrectness}, and the wrappers for every subclass key the
+ * saturating step off whenever one of them is on:
+ * <ol>
+ * <li><b>Guarantee I-map</b> ({@link #setRequireImapStates(boolean)}): a legal candidate commits only if every
+ * nonadjacent pair of its Zhang MAG has a test-confirmed separator at {@link #setImapAlpha(double) imapAlpha}, pairs
+ * already uncertified in the committed state excepted. Proved: with it, every committed state after Pass 0 asserts
+ * no independence the test has not confirmed. Conjectured, not proved: that the gated search never stalls short of
+ * the true PAG; this rests on the generalized-Meek-for-projections conjecture, exhaustively supported at five and
+ * six observed variables and open in general. Observed on data (2026-10-21): with {@code imapAlpha} equal to the
+ * removal alpha the gate reduced accuracy, each false "dependent" vetoing a correct move; the smaller default
+ * {@code imapAlpha} is the response to that.</li>
+ * <li><b>Score step</b> ({@link #setUseScoreStep(boolean)}, {@link #setGateScore(Score)}): a legal candidate's Zhang
+ * MAG is scored by RICF BIC and commits only if the score strictly improves on the committed score (non-decreasing
+ * in Pass 0, where no edge is removed). Linear-Gaussian only: it requires a {@link SemBicScore} on a covariance
+ * matrix with zero structure prior, so that the DAG and MAG scores are on one scale. Note that this is a stricter
+ * rule than FCIT's "no score drop", which accepts a non-decreasing score everywhere.</li>
+ * <li><b>Saturating step</b> ({@link #setUseSaturatingStep(boolean)}): neither gate; stalled pairs are removed
+ * jointly at the end, as described above. This is the oracle-correct configuration under the GFCI assumptions.</li>
+ * </ol>
+ * Defaults differ by entry point, deliberately. This class's own defaults are option 3 (no gate, saturating step
+ * on), the configuration proved correct in the oracle, so direct callers and the existing oracle tests see the
+ * behavior they always have. The algorithm wrappers, which the interface and py-tetrad go through, read
+ * {@code fcitCorrectness} and default to option 1, by the November 2026 decision that the I-map gate be on by
+ * default for the latent-variable searches; {@link #setCorrectnessOption(int, Score, double)} is how they apply it.
+ * <p>
+ * The gates and the knowledge machinery compose as in the forks: each gate is evaluated after the modulo-knowledge
+ * certificate on the trial projection, and the final knowledge refinement is unchanged. Knowledge-forced marks can
+ * make a seeded entry fail the test; such pairs are refuted seeds, exempt from the I-map check until repaired, so a
+ * knowledge/data conflict in the start state cannot veto every later move.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -192,6 +227,13 @@ public abstract class StarFci implements IGraphSearch {
     private boolean replicatingGraph = false;
     /** First separating set found for each pair, cached across visits (survives gate rejections). */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
+
+    /**
+     * The two optional per-commit gates (I-map gate, score step), shared with FCIT and FCIT-ZM; see the class doc,
+     * CORRECTNESS WARRANT, and {@link CorrectnessGates}.
+     */
+    private final CorrectnessGates gates;
+
     /**
      * Constructor.
      *
@@ -200,6 +242,7 @@ public abstract class StarFci implements IGraphSearch {
     public StarFci(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is null");
         this.independenceTest = test;
+        this.gates = new CorrectnessGates(test);
     }
 
     /**
@@ -233,6 +276,8 @@ public abstract class StarFci implements IGraphSearch {
 
         SepsetMap sepsetMap = new SepsetMap();
         foundSepsets.clear();
+        gates.reset();
+        gates.setVerbose(verbose);
 
         // SEEDING (see class doc): a TOTAL sepset map from the DAG representative D -- for each nonadjacent
         // pair, PA(a) if it d-separates a and b in D, else PA(b) (one always does: nonadjacent nodes cannot
@@ -265,6 +310,7 @@ public abstract class StarFci implements IGraphSearch {
 
                 if (!independenceTest.checkIndependence(a, b, sepMapped).isIndependent()) {
                     pendingReselect.add(new Node[]{a, b});
+                    gates.addRefutedSeed(a, b);
                 }
             }
         }
@@ -278,10 +324,13 @@ public abstract class StarFci implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal (sepset projection, "
-                    + "sepset re-selection" + (useSaturatingStep ? ", saturating step" : ", no saturating step")
+                    + "sepset re-selection" + gates.describeActive()
+                    + (useSaturatingStep ? ", saturating step" : ", no saturating step")
                     + "); " + pendingReselect.size()
                     + " seeded sepset(s) failed the test and are queued for re-selection.");
         }
+
+        gates.beginRun(pag, sepsetMap);
 
         // Pass 0: re-select seeded sepsets the test rejects, by the ordinary edge-visit loop (the pair is
         // already nonadjacent, so the trial's removeEdge is a no-op; only the entry changes). Gated like
@@ -353,6 +402,8 @@ public abstract class StarFci implements IGraphSearch {
             pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, selection);
         }
 
+        gates.logSummary("*-FCI");
+
         // Uniform final knowledge refinement, as in StarFci: covers the path on which no removal ever
         // committed, where pag is the untouched dagToPag start carrying no knowledge marks.
         if (!knowledge.isEmpty()) {
@@ -384,21 +435,26 @@ public abstract class StarFci implements IGraphSearch {
      */
     private Graph reselectPending(Graph pag, List<Node[]> pending, Graph cpdag, List<Node> nodes,
                                   SepsetMap sepsetMap, Set<Node> selection) throws InterruptedException {
-        for (Iterator<Node[]> it = pending.iterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-            Node[] pr = it.next();
-            Node a = pr[0], b = pr[1];
+        gates.setTiesAccepted(true);
+        try {
+            for (Iterator<Node[]> it = pending.iterator(); it.hasNext(); ) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                Node[] pr = it.next();
+                Node a = pr[0], b = pr[1];
 
-            List<List<Node>> pools = new ArrayList<>();
-            pools.add(adjPool(pag, a, b));
-            pools.add(adjPool(pag, b, a));
+                List<List<Node>> pools = new ArrayList<>();
+                pools.add(adjPool(pag, a, b));
+                pools.add(adjPool(pag, b, a));
 
-            Graph next = tryRemoveEdge(pag, a, b, pools, depth, cpdag, nodes, sepsetMap, selection,
-                    "seeded-sepset re-selection");
-            if (next != null) {
-                pag = next;
-                it.remove();
+                Graph next = tryRemoveEdge(pag, a, b, pools, depth, cpdag, nodes, sepsetMap, selection,
+                        "seeded-sepset re-selection");
+                if (next != null) {
+                    pag = next;
+                    it.remove();
+                }
             }
+        } finally {
+            gates.setTiesAccepted(false);
         }
         return pag;
     }
@@ -452,14 +508,21 @@ public abstract class StarFci implements IGraphSearch {
             FciOrient trialOrient = buildFciOrient(trialMap);
             gfciOrientPag(trial, cpdag, nodes, trialMap, trialOrient);
 
+            // One Zhang MAG per trial, shared by the legality certificate and the gates.
+            Graph mag = CorrectnessGates.tryZhangMag(trial);
             PagLegalityCheck.LegalPagRet legal =
-                    legalPagModuloKnowledge(trial, new LinkedHashSet<>(selection), trialOrient);
+                    legalPagModuloKnowledge(trial, mag, new LinkedHashSet<>(selection), trialOrient);
+
+            if (legal.isLegalPag() && !gates.accepts(mag, trialMap, "joint removal of " + formatBatch(batch))) {
+                continue;   // gate veto: nothing was committed; try the next batch
+            }
 
             if (legal.isLegalPag()) {
                 for (Set<Node> pair : batch) {
                     List<Node> pn = new ArrayList<>(pair);
                     sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
                 }
+                gates.committed(trial, sepsetMap);
                 if (verbose) {
                     TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
                             + stalled.size() + " edge(s) jointly (legal PAG): " + formatBatch(batch) + ".");
@@ -537,11 +600,19 @@ public abstract class StarFci implements IGraphSearch {
                 FciOrient trialOrient = buildFciOrient(trialMap);
                 gfciOrientPag(_pag, cpdag, nodes, trialMap, trialOrient);
 
+                // One Zhang MAG per trial, shared by the legality certificate and the gates.
+                Graph mag = CorrectnessGates.tryZhangMag(_pag);
                 PagLegalityCheck.LegalPagRet legal =
-                        legalPagModuloKnowledge(_pag, new LinkedHashSet<>(selection), trialOrient);
+                        legalPagModuloKnowledge(_pag, mag, new LinkedHashSet<>(selection), trialOrient);
+
+                if (legal.isLegalPag() && !gates.accepts(mag, trialMap,
+                        a + " -- " + b + " (" + type + "), sepset = " + C)) {
+                    continue;   // gate veto: revert (nothing was committed) and try the next C
+                }
 
                 if (legal.isLegalPag()) {
                     sepsetMap.set(a, b, C);
+                    gates.committed(_pag, sepsetMap);
                     if (verbose) {
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + b + " (" + type
                                 + ", legal PAG); sepset = " + C + " (gate trial " + gateTrials + ").");
@@ -652,6 +723,17 @@ public abstract class StarFci implements IGraphSearch {
      */
     private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Set<Node> selection, FciOrient orient)
             throws InterruptedException {
+        return legalPagModuloKnowledge(pag, knowledge.isEmpty() ? null : CorrectnessGates.tryZhangMag(pag), selection, orient);
+    }
+
+    /**
+     * As {@link #legalPagModuloKnowledge(Graph, Set, FciOrient)}, but taking the candidate's Zhang MAG when the
+     * caller already holds it, so that one MAG per trial serves the certificate and the gates. A null MAG means the
+     * conversion failed; with knowledge that is a failed certificate, and without knowledge it is ignored, since
+     * {@link PagLegalityCheck#isLegalPag(Graph, Set)} derives its own.
+     */
+    private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Graph mag, Set<Node> selection,
+                                                                 FciOrient orient) throws InterruptedException {
         if (knowledge.isEmpty()) {
             return PagLegalityCheck.isLegalPag(pag, selection);
         }
@@ -662,10 +744,7 @@ public abstract class StarFci implements IGraphSearch {
             }
         }
 
-        Graph mag;
-        try {
-            mag = GraphTransforms.zhangMagFromPag(pag);
-        } catch (Exception e) {
+        if (mag == null) {
             return new PagLegalityCheck.LegalPagRet(false, "PAG to MAG failed");
         }
 
@@ -708,6 +787,64 @@ public abstract class StarFci implements IGraphSearch {
         orient.fciOrientbk(knowledge, g, g.getNodes(), excludeSelectionBias);
         orient.finalOrientation(g, excludeSelectionBias);
         return g;
+    }
+
+    // ---- Correctness gates: configuration. ----
+
+    /**
+     * Sets whether the I-map gate is on (see the class doc, CORRECTNESS WARRANT, option 1). Default false.
+     *
+     * @param requireImapStates true to require every committed state to be an I-map of the test.
+     */
+    public void setRequireImapStates(boolean requireImapStates) {
+        gates.setRequireImapStates(requireImapStates);
+    }
+
+    /**
+     * Sets the significance level of the I-map gate's tests. Default 0.001, deliberately below the removal alpha.
+     *
+     * @param imapAlpha a value in (0, 1).
+     */
+    public void setImapAlpha(double imapAlpha) {
+        gates.setImapAlpha(imapAlpha);
+    }
+
+    /**
+     * Sets whether the score step is on (see the class doc, CORRECTNESS WARRANT, option 2). Requires
+     * {@link #setGateScore(Score)} before {@link #search()}. Default false.
+     *
+     * @param useScoreStep true to require each committed removal to improve the RICF BIC of the implied MAG.
+     */
+    public void setUseScoreStep(boolean useScoreStep) {
+        gates.setUseScoreStep(useScoreStep);
+    }
+
+    /**
+     * Sets the score the score step uses for its covariance matrix and penalty discount. It must be a
+     * {@link SemBicScore} built on a covariance matrix with zero structure prior: the RICF MAG score is the
+     * linear-Gaussian BIC and is comparable only with that DAG score on one scale.
+     *
+     * @param score the score; null clears it.
+     * @throws IllegalArgumentException if the score is not usable for the score step.
+     */
+    public void setGateScore(Score score) {
+        gates.setGateScore(score);
+    }
+
+    /**
+     * Applies one of the three correctness options shared with FCIT's {@code fcitCorrectness}: 1 = Guarantee I-map
+     * (I-map gate on, saturating step off), 2 = Score step (score step on with the given score, saturating step
+     * off), 3 = Saturating step (both gates off, saturating step on). This is the single place the three options
+     * are interpreted for every subclass, so the wrappers cannot drift.
+     *
+     * @param option    1, 2, or 3.
+     * @param score     the SEM BIC score of the data, consulted only for option 2 (may be null otherwise).
+     * @param imapAlpha the I-map gate alpha, consulted only for option 1.
+     * @throws IllegalArgumentException if the option is unknown, or option 2 is chosen with a score the score step
+     *                                  cannot use (which includes every non-continuous data type).
+     */
+    public void setCorrectnessOption(int option, Score score, double imapAlpha) {
+        setUseSaturatingStep(gates.applyOption(option, score, imapAlpha));
     }
 
     /**

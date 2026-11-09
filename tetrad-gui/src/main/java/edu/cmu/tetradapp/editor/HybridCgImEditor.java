@@ -46,8 +46,11 @@ import java.util.stream.Collectors;
  */
 public final class HybridCgImEditor extends JPanel {
 
+    /** The instantiated model being edited. */
     private HybridCgIm im;
+    /** The IM's parametric model. */
     private HybridCgPm pm;
+    /** The nodes of the PM, in the PM's order. */
     private Node[] nodes;
 
     /** The session wrapper, when constructed standalone; null when embedded. */
@@ -55,37 +58,54 @@ public final class HybridCgImEditor extends JPanel {
 
     /** Persistent shaded-graph view, when constructed with a graph tab; null otherwise. */
     private HybridCgGraphViewer graphView;
+    /** The tabbed pane holding the IM and Graph tabs, when constructed with a graph tab; null otherwise. */
     private JTabbedPane tabs;
 
     // LEFT
+    /** The list model backing the variable list. */
     private final DefaultListModel<Node> varListModel = new DefaultListModel<>();
+    /** The list of variables on the left; selecting one shows its table. */
     private final JList<Node> varList = new JList<>(varListModel);
+    /** Text field for filtering the variable list. */
     private final JTextField filterField = new JTextField();
 
     /** Shown on the blank card; explains what to do when the model is empty. */
     private final JLabel blankHint = new JLabel();
 
     // RIGHT
+    /** Card layout switching the right panel between the discrete, continuous and blank cards. */
     private final CardLayout cards = new CardLayout();
+    /** The right panel holding the cards. */
     private final JPanel right = new JPanel(cards);
 
     // Discrete card
+    /** The card showing the conditional probability table of a discrete variable. */
     private final JPanel discCard = new JPanel(new BorderLayout(8,8));
+    /** Explanatory label for the discrete card. */
     private final JLabel discInfo = new JLabel(
             "Rows are strata (combinations of discrete parent values). Columns are the child’s categories.");
+    /** Scroll pane for the discrete table; created per selection. */
     private JScrollPane discScroll; // created per-selection
+    /** Button that normalizes all rows of the discrete table. */
     private final JButton discNormalizeAll = new JButton("Normalize All Rows");
+    /** Button that randomizes the discrete table. */
     private final JButton discRandomizeAll = new JButton("Randomize Table");
 
     // Continuous card
+    /** The card showing the regression parameters of a continuous variable. */
     private final JPanel contCard = new JPanel(new BorderLayout(8,8));
+    /** Explanatory label for the continuous card. */
     private final JLabel contInfo = new JLabel(
             "Regression parameters by stratum. Intercept / one column per continuous parent / Variance.");
+    /** Scroll pane for the continuous table; created per selection. */
     private JScrollPane contScroll; // created per-selection
+    /** Button that sets all rows of the continuous table to share one variance. */
     private final JButton contShareVar = new JButton("Share Variance Across Rows");
+    /** Button that randomizes the continuous table. */
     private final JButton contRandomizeAll = new JButton("Randomize Table");
 
     // state
+    /** The index of the currently selected variable, or -1 if none. */
     private int currentY = -1;
 
     // ---- Optional significance overlay, supplied by the estimator editor; null when not shown. ----
@@ -110,22 +130,36 @@ public final class HybridCgImEditor extends JPanel {
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
 
     // --- Forward "modelChanged" from inner tables ---
+    /** Listener forwarding changes in the discrete table as "modelChanged" events. */
     private javax.swing.event.TableModelListener discTml;
+    /** Listener forwarding changes in the continuous table as "modelChanged" events. */
     private javax.swing.event.TableModelListener contTml;
+    /** The table model the discrete listener is attached to. */
     private javax.swing.table.TableModel discModel;
+    /** The table model the continuous listener is attached to. */
     private javax.swing.table.TableModel contModel;
 
-    /** Standalone editor (session box): IM tables plus a Graph tab, with File and Graph menus. */
+    /**
+     * Standalone editor (session box): IM tables plus a Graph tab, with File and Graph menus.
+     *
+     * @param wrapper the session wrapper holding the IM
+     */
     public HybridCgImEditor(HybridCgImWrapper wrapper) {
         this(wrapper.getHybridCgIm(), true);
         this.wrapper = wrapper;
         add(buildMenuBar(), BorderLayout.NORTH);
     }
 
-    /** Embedded editor (e.g. inside the estimator, which supplies its own Graph tab): IM tables only. */
+    /**
+     * Embedded editor (e.g. inside the estimator, which supplies its own Graph tab): IM tables only.
+     *
+     * @param im the model to edit
+     */
     public HybridCgImEditor(HybridCgIm im) { this(im, false); }
 
     /**
+     * Constructs an editor for the given IM, optionally with a Graph tab.
+     *
      * @param im           the model to edit
      * @param withGraphTab if true, wrap the tables in an "IM" tab and add a "Graph" tab showing the model graph with
      *                     edges shaded by strength (see {@link HybridCgGraphViewer}); the graph is rebuilt each time
@@ -702,8 +736,17 @@ public final class HybridCgImEditor extends JPanel {
     }
 
     // Simple re-usable editor with formatted seed text
+    /**
+     * Cell editor for doubles whose text field is seeded with the value formatted by a decimal pattern.
+     */
     public static final class DoubleCellEditor extends DefaultCellEditor {
+        /** The format used to seed the editor text. */
         private final DecimalFormat fmt;
+        /**
+         * Constructs a cell editor using the given decimal format pattern.
+         *
+         * @param pattern the {@link DecimalFormat} pattern, e.g. "0.###"
+         */
         public DoubleCellEditor(String pattern) {
             super(new JTextField());
             this.fmt = new DecimalFormat(pattern);

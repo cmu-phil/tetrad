@@ -89,6 +89,21 @@ public final class Chi2RankTest implements RankTester {
     }
 
     /**
+     * Constructs the test from a correlation matrix and a sample size directly, for callers that build the matrix
+     * themselves. {@link TestwiseDeletionRankTest} uses this to make one test per column union from the rows complete
+     * on that union; the matrix is used as given and is assumed to be a correlation matrix (unit diagonal).
+     *
+     * @param corr       the correlation matrix, not copied.
+     * @param sampleSize the number of rows the matrix was computed from.
+     * @param nScaling   a multiplier on the sample size; 1.0 is the default.
+     */
+    public Chi2RankTest(double[][] corr, int sampleSize, double nScaling) {
+        this.corr = corr;
+        this.sampleSize = sampleSize;
+        this.nScaling = nScaling;
+    }
+
+    /**
      * Returns the sample size.
      *
      * @return the sample size used in the statistic.
@@ -123,6 +138,21 @@ public final class Chi2RankTest implements RankTester {
      * @return the statistic.
      */
     public double statistic(int[] pcols, int[] qcols, int r) {
+        return statistic(pcols, qcols, r, sampleSize * nScaling);
+    }
+
+    /**
+     * The statistic T of the class comment for the rank ≤ r test, with the sample size supplied by the caller in
+     * place of the one this test was built with. For a test built on a covariance matrix estimated from incomplete
+     * data, the right N differs from query to query; {@link EmCovarianceRankTest} supplies it here.
+     *
+     * @param pcols column indices of the first set.
+     * @param qcols column indices of the second set.
+     * @param r     the hypothesized maximum rank; 0 ≤ r &lt; min(|P|, |Q|).
+     * @param n     the sample size to use in Lawley's multiplier (already scaled, if scaling is wanted).
+     * @return the statistic.
+     */
+    public double statistic(int[] pcols, int[] qcols, int r, double n) {
         int p = pcols.length, q = qcols.length;
         int m = Math.min(p, q);
         double[] rho = canonicalCorrelations(pcols, qcols);
@@ -137,7 +167,7 @@ public final class Chi2RankTest implements RankTester {
             double li = rho[i];
             ratio += 1.0 / (li * li) - 1.0;
         }
-        ratio += sampleSize * nScaling - r - 0.5 * (p + q + 1);
+        ratio += n - r - 0.5 * (p + q + 1);
         return stat * ratio;
     }
 

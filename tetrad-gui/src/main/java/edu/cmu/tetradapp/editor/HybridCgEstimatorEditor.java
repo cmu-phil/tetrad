@@ -44,40 +44,65 @@ import java.util.Map;
 public final class HybridCgEstimatorEditor extends JPanel {
 
     // ---------- Estimation parameters UI ----------
+    /** The parameters holding the estimation settings. */
     private final Parameters params;
 
+    /** Spinner for the Dirichlet prior alpha. */
     private final JSpinner alpha      = new JSpinner(new SpinnerNumberModel(1.0, 0.0, 1e6, 0.1));
+    /** Check box for sharing variance across strata. */
     private final JCheckBox shareVar  = new JCheckBox("Share variance across strata", false);
+    /** Selector for the policy used to bin continuous parents. */
     private final JComboBox<String> binPolicy =
             new JComboBox<>(new String[]{"equal_frequency", "equal_interval", "none"});
+    /** Spinner for the number of bins for continuous parents. */
     private final JSpinner bins       = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
 
+    /** Spinner for the fallback default number of bins. */
     private final JSpinner defBins    = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
+    /** Spinner for the low end of the default range. */
     private final JSpinner defLo      = new JSpinner(new SpinnerNumberModel(-1.0, -1e6, 1e6, 0.1));
+    /** Spinner for the high end of the default range. */
     private final JSpinner defHi     = new JSpinner(new SpinnerNumberModel( 1.0, -1e6, 1e6, 0.1));
 
     // ---------- Significance and pruning UI ----------
+    /** Check box for greying out non-significant entries. */
     private final JCheckBox markSig   = new JCheckBox("Grey non-significant entries", false);
+    /** Spinner for the significance level of the LRT and t-tests. */
     private final JSpinner testAlpha  = new JSpinner(new SpinnerNumberModel(0.05, 1e-4, 0.5, 0.01));
+    /** Button that proposes pruning edges by backward elimination. */
     private final JButton proposePrune = new JButton("Propose Prune…");
+    /** Button that re-estimates on the input graph, discarding an applied prune. */
     private final JButton revertPrune  = new JButton("Revert Prune");
 
     // ---------- The session wrapper whose IM we show and update ----------
+    /** The session wrapper whose IM is shown and updated. */
     private final HybridCgEstimatorWrapper wrapper;
+    /** The data wrapper supplying the data for estimation. */
     private final DataWrapper dataWrapper;
+    /** The PM wrapper supplying the model to estimate. */
     private final HybridCgPmWrapper pmWrapper;
 
     // ---------- IM display host on the right ----------
+    /** The panel on the right that hosts the IM display. */
     private final JPanel imHost = new JPanel(new BorderLayout());
     /** The embedded IM editor currently shown in imHost; null until the first showIm. */
     private HybridCgImEditor imEditor;
+    /** Persistent shaded-graph view, updated in place on each estimate. */
     private final HybridCgGraphViewer graphView;
+    /** The tabbed pane holding the IM and graph views. */
     private JTabbedPane tabs;
+    /** Label showing the CG and hybrid CG BIC scores. */
     private final JLabel bicLabel = new JLabel("CG BIC: n/a | Hybrid CG BIC: n/a");
+    /** The status bar holding the BIC label. */
     private final JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
 
     // ---------- Constructors ----------
 
+    /**
+     * Constructs an editor for the given hybrid CG estimator wrapper.
+     *
+     * @param wrapper the estimator wrapper
+     */
     public HybridCgEstimatorEditor(HybridCgEstimatorWrapper wrapper) {
         this.wrapper     = wrapper;
         this.dataWrapper = wrapper.getDataWrapper();

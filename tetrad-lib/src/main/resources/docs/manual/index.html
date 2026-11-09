@@ -3316,9 +3316,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
             temporal tiers.</p>
         <p>FCIT, along with BOSS-FCI, can produce highly accurate models in simulation. FCIT, in particular, is
-            highly scalable. A paper describing BOSS-FCI and FCIT in more detail is planned. We make both BFCI and
-            FCIT non-experimental for this version since requests have been made to use them.</p>
-        </p>
+            highly scalable. A paper describing BOSS-FCI and FCIT in more detail is planned.</p>
+        <p>As of version 8.0.0 the extra-edge-removal step follows Bryan Andrews's formulation, shared by the whole
+            *-FCI family: the state of the search is the committed sepset map, the carried graph is the projection of
+            that map, and separating sets are re-selected rather than frozen when a candidate induces an illegal
+            orientation. The fcitCorrectness parameter chooses the warrant the search relies on: 1 = Guarantee I-map
+            (every committed state must be an I-map of the test at imapAlpha; the default), 2 = Score step (every
+            removal must strictly improve a RICF BIC score on the Zhang MAG; continuous data with a SEM BIC score
+            required), or 3 = Saturating step (the configuration proved correct in the oracle under the GFCI
+            assumptions). Because the default is new and has not yet been measured at scale on real data, BFCI is
+            marked experimental in this version. The former BFCI-Bryan and BFCI-Bryan-Score entries are retired;
+            they correspond to options 1 or 3 and to option 2 of this algorithm.</p>
 
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
@@ -3337,30 +3345,20 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
-        GRaSP.</p>
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and BOSS, together with
+        <a href="#fcitCorrectness">fcitCorrectness</a> and <a href="#imapAlpha">imapAlpha</a>.</p>
 
     <h3>The BFCI-Bryan Algorithm</h3>
 
     <h4>Description</h4>
 
     <div id="bfci-bryan">
-        <p>An experimental arm for comparison against BFCI. BOSS supplies the initial CPDAG, and the extra-edge-removal
-            step is Bryan Andrews's from-scratch formulation of the gated *-FCI step, in which the state of the search
-            is the committed sepset map alone and the carried graph is always the projection of that map: a complete
-            re-orientation from circles, with colliders at unshielded triples read off the map and Zhang's complete
-            final rules applied on top. The map is seeded from the DAG representative of the BOSS CPDAG and is total on
-            nonadjacent pairs throughout, so every accepted removal overwrites one entry rather than adding one.</p>
-        <p>The difference from the shipping BFCI is the removal schedule. The shipping version freezes the first
-            test-confirmed separating set it finds for a pair and gates removals on that one set, so a pair whose
-            frozen set induces an illegal re-orientation deadlocks. This version keeps scanning: when a candidate
-            separating set is rejected by the legality gate, the next separating set for the same pair is tried within
-            the same visit. Different separating sets induce different colliders, so a pair that fails under one set
-            can still be removed under another. Re-selection alone is not sufficient in general, however, so a final
-            saturating step is on by default; it removes jointly those pairs that have a test-confirmed separating set
-            but whose single removals the gate rejected, and it does nothing on a run that does not stall.</p>
-        <p>Both a test and a score must be given: the score drives BOSS, and the removal step and the gate need the
-            test. Knowledge of forbidden and required edges, including temporal tiers, is respected.</p>
+        <p>Retired in version 8.0.0. BFCI-Bryan was an experimental arm whose gated removal step, sepset re-selection,
+            and I-map gate have been merged into the shipping BFCI and the rest of the *-FCI family (see BFCI, above).
+            Its behavior with requireImapStates on is BFCI with fcitCorrectness = 1; with it off, BFCI with
+            fcitCorrectness = 3. The class is kept, unregistered, only so that sessions saved with it continue to
+            load; such a session re-runs through BFCI with the equivalent option. The usePass0 and reharvestSepsets
+            options were not carried over and are ignored.</p>
     </div>
 
     <h4>Input Assumptions</h4>
@@ -3373,31 +3371,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses the parameters of BFCI, together with usePass0, useSaturatingStep, requireImapStates, imapAlpha,
-        and reharvestSepsets.</p>
+    <p>Retired; see BFCI.</p>
 
     <h3>The BFCI-Bryan-Score Algorithm</h3>
 
     <h4>Description</h4>
 
     <div id="bfci-bryan-score">
-        <p>BFCI-Bryan with a scoring step added to every gated move, following Bryan Andrews's pseudocode for BFCI-Bryan
-            with scoring. A test-confirmed candidate whose projection passes the legality gate is committed only if the
-            score of the candidate's model strictly exceeds the score of the committed model; otherwise it is reverted
-            just as a gate rejection would be, and the scan moves on to the next separating set.</p>
-        <p>The score used for this step is a Gaussian BIC obtained by fitting the Zhang MAG of the PAG with RICF,
-            district by district and cached. That score is constant on a Markov equivalence class, so the score of a
-            PAG is well defined. Because the step is only meaningful on the same scale as the score that chose the
-            starting point, this algorithm requires the BOSS score to be SEM BIC with a zero structure prior, and takes
-            the penalty discount and the covariance matrix from it. Any other score, or a nonzero structure prior,
-            raises an exception. Continuous data only.</p>
-        <p>The scoring step is a filter on moves the gate has already accepted, so it can only reduce the set of
-            removals that commit. It does not by itself make the result a highest-scoring PAG.</p>
+        <p>Retired in version 8.0.0. BFCI-Bryan-Score added a RICF BIC scoring step to every gated move of
+            BFCI-Bryan; that step is now fcitCorrectness = 2 of BFCI and of the rest of the *-FCI family (see BFCI,
+            above), with the same requirement of continuous data and a SEM BIC score with zero structure prior. The
+            class is kept, unregistered, only so that sessions saved with it continue to load; such a session re-runs
+            through BFCI with option 2.</p>
     </div>
 
     <h4>Input Assumptions</h4>
 
-    <p>Same as for FCI, with continuous data and a SEM BIC score required.</p>
+    <p>Retired; see BFCI.</p>
 
     <h4>Output Format</h4>
 
@@ -3405,7 +3395,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>Uses the parameters of BFCI-Bryan.</p>
+    <p>Retired; see BFCI.</p>
 
     <h3>The SP-FCI Algorithm</h3>
 
@@ -4994,12 +4984,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="fcit-zm">
         <p>FCIT-ZM is a variant of FCIT (see) in which every proposed change is judged on the MAG side. A score-based search (BOSS or GRaSP) supplies a seed CPDAG whose unshielded colliders are taken as sound and are recalled, rather than recomputed, throughout. A recursive path-blocking search then proposes single-edge deletions, each committed only when the candidate graph projects to a legal Zhang MAG; a final saturating pass removes any test-separable adjacency the single-edge phase left standing.</p>
-        <p>Two commit routes are available: reorienting the PAG directly, leaving endpoints as circles until a rule commits them (the default), or projecting through the Zhang MAG and back to its canonical PAG (the route described as FCIT-ZM in the reachability analysis). Either way the returned graph is certified as a legal PAG, modulo background knowledge when knowledge is supplied: its implied MAG is legal and the graph equals the canonical PAG of that MAG. Requires both a test and a score. Experimental.</p>
+        <p>Two commit routes are available: reorienting the PAG directly, leaving endpoints as circles until a rule commits them (the default), or projecting through the Zhang MAG and back to its canonical PAG (the route described as FCIT-ZM in the reachability analysis). Either way the returned graph is certified as a legal PAG, modulo background knowledge when knowledge is supplied: its implied MAG is legal and the graph equals the canonical PAG of that MAG. As of version 8.0.0 FCIT-ZM also takes the fcitCorrectness choice shared with FCIT and the *-FCI family: 1 = Guarantee I-map (the default), 2 = Score step, or 3 = Saturating step; the saturating pass runs only under option 3. Requires both a test and a score. Experimental.</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, excludeSelectionBias, <a href="#testTimeout">testTimeout</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, excludeSelectionBias, <a href="#fcitCorrectness">fcitCorrectness</a>, <a href="#imapAlpha">imapAlpha</a>, <a href="#testTimeout">testTimeout</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
 
     <h3>The FCIT-SL Algorithm</h3>
 
@@ -5139,6 +5129,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             (1991), which shrinks the statistic by the disagreement among the imputations. The combining rule is an
             approximation; it assumes values missing at random, and stage 1 still scores at the full sample
             size.</p>
+        <p>RLCD is marked experimental in version 8.0.0: the clique-based stage 1 and the merge and finish rules
+            depart from the paper, so its identifiability theorem does not transfer to the implementation as written,
+            and several of the newer options are unit-tested but not yet measured at scale.</p>
     </div>
     <h4>Parameters</h4>
 

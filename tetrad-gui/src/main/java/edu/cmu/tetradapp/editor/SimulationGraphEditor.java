@@ -206,6 +206,8 @@ public final class SimulationGraphEditor extends JPanel {
     }
 
     /**
+     * Returns the workbench of the graph in the currently selected tab.
+     *
      * @return the workbench of the graph in view, or null if no graph is shown.
      */
     public GraphWorkbench getSelectedWorkbench() {
@@ -213,6 +215,11 @@ public final class SimulationGraphEditor extends JPanel {
         return index >= 0 && index < this.workbenches.size() ? this.workbenches.get(index) : null;
     }
 
+    /**
+     * Returns the graph in the currently selected tab.
+     *
+     * @return the selected graph
+     */
     public Graph getSelectedGraph(){
         return this.graphs.get(tabbedPane().getSelectedIndex());
     }

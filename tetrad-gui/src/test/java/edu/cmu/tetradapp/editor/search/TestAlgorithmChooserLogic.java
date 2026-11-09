@@ -40,6 +40,9 @@ public class TestAlgorithmChooserLogic {
 
     private static final Answers ANY = new Answers(LatentChoice.ANY, false, false, false, null);
 
+    /** ANY with experimental algorithms shown; RLCD is experimental in 8.0.0, so assertions naming it use this. */
+    private static final Answers ANY_EXP = new Answers(LatentChoice.ANY, false, false, true, null);
+
     private static List<AlgorithmModel> all() {
         return AlgorithmChooserLogic.allModels();
     }
@@ -95,10 +98,18 @@ public class TestAlgorithmChooserLogic {
         assertTrue(has(no, "PC"));
         assertTrue(has(yes, "FCI"));
         assertTrue(has(yes, "GFCI"));
-        assertTrue(has(yes, "RLCD"));
+        assertTrue(has(yes, "Factor Analysis"));
         assertFalse(has(yes, "BOSS"));
         assertFalse(has(no, "FCI"));
-        assertFalse(has(no, "RLCD"));
+        assertFalse(has(no, "Factor Analysis"));
+
+        // RLCD routes the same way once experimental algorithms are shown.
+        List<AlgorithmModel> noExp = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.SEARCH, ANY_EXP.withLatent(LatentChoice.NO));
+        List<AlgorithmModel> yesExp = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.SEARCH, ANY_EXP.withLatent(LatentChoice.YES));
+        assertTrue(has(yesExp, "RLCD"));
+        assertFalse(has(noExp, "RLCD"));
     }
 
     @Test
@@ -223,7 +234,10 @@ public class TestAlgorithmChooserLogic {
 
         assertTrue(has(AlgorithmChooserLogic.filter(all(), DataType.Continuous,
                 AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
-                new Answers(LatentChoice.NO, false, false, false, null)), "RLCD"));
+                new Answers(LatentChoice.NO, false, false, false, null)), "Factor Analysis"));
+        assertTrue(has(AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
+                new Answers(LatentChoice.NO, false, false, true, null)), "RLCD"));
     }
 
     @Test
@@ -238,13 +252,15 @@ public class TestAlgorithmChooserLogic {
         // The Search box with data alone lists every algorithm that runs on data alone (2026-10-11), including the
         // ones that find latent variables directly from the data; only the cluster-requiring ones are excluded.
         assertTrue(has(search, "BOSS"));
-        assertTrue(has(search, "RLCD"));
         assertTrue(has(search, "Factor Analysis"));
         assertFalse(has(search, "Mimbuild (Bollen)"));
+        assertTrue(has(AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.SEARCH, ANY_EXP), "RLCD"));
 
         // The legacy Latent Structure box with data alone lists the algorithms that find latents from data.
-        assertTrue(has(fromData, "RLCD"));
         assertTrue(has(fromData, "Factor Analysis"));
+        assertTrue(has(AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA, ANY_EXP), "RLCD"));
         assertFalse(has(fromData, "BOSS"));
         assertFalse(has(fromData, "Mimbuild (Bollen)"));
 

@@ -200,6 +200,18 @@ public class SemEstimatorWrapper implements SessionModel {
     }
 
     /**
+     * Estimates from a Graph (or Search) box directly, building the SEM PM from the graph as the SEM PM box would.
+     * The graph must have every edge directed or bidirected; see {@link EstimatorGraphs#semGraph}.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param params      the parameters.
+     */
+    public SemEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters params) {
+        this(dataWrapper, new SemPmWrapper(EstimatorGraphs.semGraph(graphSource, "The SEM estimator")), params);
+    }
+
+    /**
      * Constructs a SemEstimatorWrapper object.
      *
      * @param simulation      a Simulation object

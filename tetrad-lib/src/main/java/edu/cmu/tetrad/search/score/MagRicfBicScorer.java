@@ -18,7 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.CovarianceMatrix;

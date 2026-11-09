@@ -69,13 +69,14 @@ public class ImpliesLegalMag implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        List<Node> latent = trueGraph.getNodes().stream()
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
+        List<Node> latent = dag.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
 
-        List<Node> measured = trueGraph.getNodes().stream()
+        List<Node> measured = dag.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
 
-        List<Node> selection = trueGraph.getNodes().stream()
+        List<Node> selection = dag.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);

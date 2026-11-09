@@ -747,6 +747,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
+     * Returns the file this session was loaded from or last saved to.
+     *
      * @return the file this session was loaded from or last saved to, or null if it has not touched disk in this
      * run.
      */

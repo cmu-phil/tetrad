@@ -44,31 +44,70 @@ import java.util.regex.Pattern;
  */
 public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 
+    /**
+     * The model whose total effects are computed and displayed.
+     */
     private final LinearAdjustmentTotalEffectsModel model;
+    /**
+     * The graph from the model, used to find adjustment sets.
+     */
     private final Graph graph;
 
     // Mode controls
+    /**
+     * Selects pairwise mode: total effects for every X-Y pair.
+     */
     private final JRadioButton pairwiseRadio =
             new JRadioButton("Total effects for all X–Y pairs");
+    /**
+     * Selects joint mode: effects of the X set jointly on each Y.
+     */
     private final JRadioButton jointRadio =
             new JRadioButton("Joint conditioning: p(Y | joint(X))");
 
     // Text fields for X and Y (used in both modes)
+    /**
+     * Text field for the treatment (X) variables.
+     */
     private final JTextField treatmentsField = new JTextField();
+    /**
+     * Text field for the outcome (Y) variables.
+     */
     private final JTextField outcomesField = new JTextField();
 
+    /**
+     * Combo box for the type of graph (DAG, PDAG, MAG, PAG) used to find adjustment sets.
+     */
     private final JComboBox<String> graphTypeCombo =
             new JComboBox<>(new String[]{"DAG", "PDAG", "MAG", "PAG"});
 
     // Buttons
+    /**
+     * Button that computes the adjustment sets and total effects.
+     */
     private final JButton runButton =
             new JButton("Compute adjustment sets and effects");
+    /**
+     * Button that opens the parameter editor.
+     */
     private final JButton paramsButton = new JButton("Edit parameters...");
+    /**
+     * Button that shows the full regression for the selected row.
+     */
     private final JButton viewRegressionButton = new JButton("View regression...");
 
     // Table
+    /**
+     * The table of results.
+     */
     private final JTable resultTable;
+    /**
+     * The table model backing the results table.
+     */
     private final ResultTableModel tableModel;
+    /**
+     * Right-aligned renderer for effect values; shows '*' for null or NaN values.
+     */
     DefaultTableCellRenderer effectRenderer = new DefaultTableCellRenderer() {
         {
             setHorizontalAlignment(SwingConstants.RIGHT);

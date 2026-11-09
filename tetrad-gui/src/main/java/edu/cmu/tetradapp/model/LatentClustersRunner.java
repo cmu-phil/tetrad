@@ -58,8 +58,18 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * The data model.
      */
     private final DataWrapper dataWrapper;
+    /**
+     * The selected data set from the data wrapper.
+     */
     private final DataSet dataSet;
+    /**
+     * In simulation mode, the true clusters, mapping each latent variable name to the names of its measured
+     * children; used to give good names to the estimated clusters. Empty otherwise.
+     */
     private final Map<String, List<String>> trueNamedClusters;
+    /**
+     * The effective sample size; equal to the sample size if the parameter is -1.
+     */
     private final int ess;
     /**
      * The name of the model.
@@ -69,7 +79,13 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
      * The params object, so the GUI can remember stuff for logging.
      */
     private Parameters parameters;
+    /**
+     * The block specification of the discovered clusters.
+     */
     private BlockSpec blockSpec = null;
+    /**
+     * The text representation of the block specification.
+     */
     private String blockText = "";
 
     //===========================CONSTRUCTORS===========================//

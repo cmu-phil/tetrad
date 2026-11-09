@@ -319,16 +319,32 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return getVariables().stream().map(Node::getName).toList();
     }
 
+    /**
+     * Sets whether the Markov check prints verbose output. Has no effect if the Markov check has not been created.
+     *
+     * @param verbose true for verbose output.
+     */
     public void setVerbose(boolean verbose) {
         if (this.markovCheck != null) {
             this.markovCheck.setVerbose(verbose);
         }
     }
 
+    /**
+     * Returns the fraction of the sample to use, stored in the parameters; defaults to 1.0.
+     *
+     * @return the fraction sample.
+     */
     public double getFractionSample() {
         return this.parameters.getDouble("fractionSampleParam", 1.0);
     }
 
+    /**
+     * Sets the fraction of the sample to use, storing it in the parameters.
+     *
+     * @param value the fraction sample; must be between 0 and 1.
+     * @throws IllegalArgumentException if the value is not between 0 and 1.
+     */
     public void setFractionSample(double value) {
         if (value < 0.0 || value > 1.0) {
             throw new IllegalArgumentException("Fraction sample must be between 0 and 1.");
@@ -337,26 +353,58 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.parameters.set("fractionSampleParam", value);
     }
 
+    /**
+     * Stores the name of the selected editor tab in the parameters.
+     *
+     * @param selectedTab the selected tab.
+     */
     public void setSelectedTab(String selectedTab) {
         this.parameters.set("selectedTabParam", selectedTab);
     }
 
+    /**
+     * Returns the name of the selected editor tab, stored in the parameters; defaults to "indep".
+     *
+     * @return the selected tab.
+     */
     public String getSelectedTab() {
         return this.parameters.getString("selectedTabParam", "indep");
     }
 
+    /**
+     * Stores the name of the selected independence test class in the parameters.
+     *
+     * @param name the name of the independence test class.
+     */
     public void setIndependenceTestClass(String name) {
         this.parameters.set("independenceTestClassParam", name);
     }
 
+    /**
+     * Returns the name of the selected independence test class, stored in the parameters; defaults to
+     * "MarkovCheckIndTest".
+     *
+     * @return the name of the independence test class.
+     */
     public String getIndependenceTestClass() {
         return this.parameters.getString("independenceTestClassParam", "MarkovCheckIndTest");
     }
 
+    /**
+     * Returns the conditioning set type, stored in the parameters; defaults to
+     * ORDERED_LOCAL_MARKOV_PROPERTY.
+     *
+     * @return the conditioning set type.
+     */
     public ConditioningSetType getConditioningSetType() {
         return (ConditioningSetType) this.parameters.get("conditioningSetTypeParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
     }   
 
+    /**
+     * Stores the conditioning set type in the parameters.
+     *
+     * @param conditioningSetType the conditioning set type.
+     */
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
         this.parameters.set("conditioningSetTypeParam", conditioningSetType);
     }

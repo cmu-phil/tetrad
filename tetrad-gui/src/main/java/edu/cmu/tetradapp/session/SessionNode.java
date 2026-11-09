@@ -178,6 +178,9 @@ public class SessionNode implements Node {
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
+    /**
+     * Whether this node is marked as subject to selection bias.
+     */
     private boolean selectionBias;
 
     //==========================CONSTRUCTORS===========================//
@@ -461,6 +464,13 @@ public class SessionNode implements Node {
         return this.children.contains(child);
     }
 
+    /**
+     * Removes the given node as a parent of this node, unlinking this node from the parent's children, stopping this
+     * node's handler from listening to the parent, and firing a parent-removed event.
+     *
+     * @param parent the parent node to remove.
+     * @return true if the node was a parent and was removed, false otherwise.
+     */
     public boolean removeParent(SessionNode parent) {
         if (this.parents.contains(parent)) {
             this.parents.remove(parent);
@@ -472,6 +482,12 @@ public class SessionNode implements Node {
         return false;
     }
 
+    /**
+     * Removes the given node as a child of this node, by removing this node as a parent of the child.
+     *
+     * @param child the child node to remove.
+     * @return true if the node was a child and was removed, false otherwise.
+     */
     public boolean removeChild(SessionNode child) {
         return child.removeParent(this);
     }

@@ -112,49 +112,85 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private static final String FAMILY_GENERAL = "general";
     private static final String FAMILY_ALL = "all";
 
+    /** The runner holding data, knowledge, and persisted selections. */
     private final GeneralAlgorithmRunner algorithmRunner;
+    /** The block spec supplied by a Latent Clusters parent, or null if there is none. */
     private final BlockSpec blockSpec;
+    /** The box mode, which determines which algorithms are eligible. */
     private final AlgorithmChooserLogic.BoxMode mode;
+    /** The data type of the runner's data, used to filter algorithms, tests, and scores. */
     private final DataType dataType;
+    /** The parameters of the algorithm runner. */
     private final Parameters parameters;
+    /** All algorithm models that may be listed. */
     private final List<AlgorithmModel> allModels;
 
+    /** The independence test chosen for each algorithm and data type, remembered while the card is open. */
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
+    /** The score chosen for each algorithm and data type, remembered while the card is open. */
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
 
     // Answers.
+    /** The answer to whether there may be latent confounders. */
     private LatentChoice latent = defaultLatentChoice();
+    /** Whether the data are time series or lagged data. */
     private boolean timeSeries = false;
+    /** Whether the user has background knowledge. */
     private boolean knowledge = false;
+    /** Whether experimental and hidden algorithms are included. */
     private boolean experimental = false;
+    /** The text query filtering the algorithm list. */
     private String query = "";
+    /** The test and score family filter. */
     private String family = FAMILY_ALL;
 
     // Selection.
+    /** The currently selected algorithm, or null. */
     private AlgorithmModel selectedAlgo;
+    /** The currently selected independence test, or null. */
     private IndependenceTestModel selectedTest;
+    /** The currently selected score, or null. */
     private ScoreModel selectedScore;
 
     // Widgets.
+    /** Selects that latent confounders may or may not be present. */
     private final JRadioButton latentAnyBtn = new JRadioButton();
+    /** Selects that there are no latent confounders. */
     private final JRadioButton latentNoBtn = new JRadioButton();
+    /** Selects that there may be latent confounders. */
     private final JRadioButton latentYesBtn = new JRadioButton();
+    /** Shows how many algorithms fit if latent confounders may or may not be present. */
     private final JLabel latentAnyCount = countLabel();
+    /** Shows how many algorithms fit if there are no latent confounders. */
     private final JLabel latentNoCount = countLabel();
+    /** Shows how many algorithms fit if there may be latent confounders. */
     private final JLabel latentYesCount = countLabel();
+    /** Whether the data are time series or lagged data. */
     private final JCheckBox timeSeriesChk = new JCheckBox("Time series / lagged data");
+    /** Whether the user has background knowledge. */
     private final JCheckBox knowledgeChk = new JCheckBox("I have background knowledge");
+    /** Shows how many algorithms fit for time series data. */
     private final JLabel timeSeriesCount = countLabel();
+    /** Shows how many algorithms fit when background knowledge is used. */
     private final JLabel knowledgeCount = countLabel();
+    /** Whether experimental and hidden algorithms are included. */
     private final JCheckBox experimentalChk = new JCheckBox("Include experimental / hidden algorithms");
+    /** The text query filtering the algorithm list. */
     private final JTextField queryField = new JTextField();
+    /** Shows how many algorithms fit the current answers. */
     private final JLabel matchLabel = new JLabel();
+    /** Summarizes the active filters. */
     private final JLabel summaryLabel = new JLabel();
+    /** The panel listing one row per fitting algorithm. */
     private final JPanel rowsPanel = new ScrollableColumn();
+    /** The scroll pane around the algorithm rows. */
     private final JScrollPane rowsScroll = new JScrollPane(rowsPanel);
+    /** The button group making the algorithm rows mutually exclusive. */
     private final ButtonGroup rowGroup = new ButtonGroup();
+    /** The radio button for each listed algorithm. */
     private final Map<AlgorithmModel, JRadioButton> rowButtons = new HashMap<>();
 
+    /** True while widgets are being set from state, so their listeners do not react. */
     private boolean restoring = false;
 
     /**
@@ -271,6 +307,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     }
 
     /**
+     * Returns the currently selected independence test.
+     *
      * @return the currently selected independence test, or null.
      */
     public IndependenceTestModel getSelectedTest() {
@@ -278,6 +316,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     }
 
     /**
+     * Returns the currently selected score.
+     *
      * @return the currently selected score, or null.
      */
     public ScoreModel getSelectedScore() {
@@ -285,6 +325,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     }
 
     /**
+     * Returns the algorithms that fit the current answers.
+     *
      * @return the algorithms currently listed, in display order.
      */
     public List<AlgorithmModel> getListedAlgorithms() {

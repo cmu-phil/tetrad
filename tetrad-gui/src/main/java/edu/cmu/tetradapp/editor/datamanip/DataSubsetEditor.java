@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.ui.DualListDragAndDrop;
 import edu.cmu.tetradapp.model.datamanip.DataSubsetter;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetrad.util.TMath;
@@ -37,26 +38,39 @@ import java.util.stream.Collectors;
  */
 public class DataSubsetEditor extends JPanel {
 
+    /** The data set from which the subset is taken. */
     private final DataSet sourceDataSet;
 
     // Variable selection models and lists.
+    /** The model of variables available but not selected. */
     private final DefaultListModel<Node> availableModel = new DefaultListModel<>();
+    /** The model of variables selected for the subset. */
     private final DefaultListModel<Node> selectedModel = new DefaultListModel<>();
+    /** The list of variables available but not selected. */
     private final JList<Node> availableList = new JList<>(availableModel);
+    /** The list of variables selected for the subset, in output order. */
     private final JList<Node> selectedList = new JList<>(selectedModel);
 
     // Row & sampling controls.
+    /** The specification of rows to include. */
     private final JTextField rowSpecField = new JTextField();
+    /** The condition rows must satisfy to be included. */
     private final JTextField conditionField = new JTextField();
+    /** Shows how many rows match the condition. */
     private final JLabel conditionCountLabel = new JLabel(" ");
+    /** The sampling mode used to choose or resample rows. */
     private final JComboBox<DataSubsetter.SamplingMode> samplingModeCombo =
             new JComboBox<>(DataSubsetter.SamplingMode.values());
+    /** The sample size used for resampling. */
     private final JSpinner sampleSizeSpinner =
             new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+    /** The random seed used for sampling. */
     private final JTextField seedField = new IntTextField(40, 6);
+    /** The variables in their original data set order, used to sort variable lists. */
     private final List<Node> originalVarOrder;
 
     // Button to paste variable names.
+    /** Button for pasting a list of variable names to select. */
     private final JButton pasteVarListButton = new JButton("Paste...");
 
     /**
@@ -219,6 +233,12 @@ public class DataSubsetEditor extends JPanel {
         downButton.addActionListener(e -> moveSelectedDown(selectedList, selectedModel));
 
         pasteVarListButton.addActionListener(e -> showPasteVariableListDialog());
+
+        // Dragging does what the arrows do: drop on the other list to move, drop on the same list to reorder, which
+        // in the Selected list sets the column order of the subset.
+        DualListDragAndDrop.install(availableList, selectedList, null);
+        availableList.setToolTipText("Select variables and press > or drag them to the other list.");
+        selectedList.setToolTipText("Drag to reorder, or drag to the other list to remove. Order is column order.");
 
         buttonPanel.add(Box.createVerticalGlue());
         buttonPanel.add(center(addButton));

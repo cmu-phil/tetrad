@@ -38,27 +38,44 @@ import java.util.stream.Collectors;
  */
 public final class GRegressionEditor extends JPanel {
 
+    /** The model being edited. */
     private final GRegressionModel model;
+    /** The model's graph (an MPDAG) used for identification and estimation. */
     private final Graph graph;
 
+    /** Selects point interventions do(x) on y for all X-Y pairs. */
     private final JRadioButton pairwiseRadio = new JRadioButton("Point interventions: do(x) on y for all X–Y pairs");
+    /** Selects a joint intervention do(X) on each y in Y. */
     private final JRadioButton jointRadio = new JRadioButton("Joint intervention: do(X) on each y in Y");
+    /** Selects a joint intervention on the parents of each y in Y. */
     private final JRadioButton parentsRadio = new JRadioButton("Joint intervention: do(parents(y)) on each y in Y "
                                                                + "(X is ignored; in a DAG this gives y's structural "
                                                                + "equation)");
+    /** Text field for the treatment variables X (names or wildcards). */
     private final JTextField treatmentsField = new JTextField();
+    /** Text field for the outcome variables Y (names or wildcards). */
     private final JTextField outcomesField = new JTextField();
+    /** Text field for the number of bootstrap replications. */
     private final JTextField bootstrapsField = new JTextField(6);
+    /** Text field for the bootstrap random seed. */
     private final JTextField seedField = new JTextField(6);
+    /** Check box for closing the graph under Meek's rules before estimating. */
     private final JCheckBox meekCloseBox = new JCheckBox("Close graph under Meek's rules before estimating");
+    /** Button that estimates the total effects. */
     private final JButton runButton = new JButton("Estimate total effects");
+    /** Button that sets the treatments to the directed parents of the outcome. */
     private final JButton parentsButton = new JButton("X \u2190 parents of Y");
+    /** Button that shows details for the selected result row. */
     private final JButton detailsButton = new JButton("Details...");
+    /** Label describing the graph in use. */
     private final JLabel graphLabel = new JLabel();
 
+    /** The table displaying results. */
     private final JTable resultTable;
+    /** The table model backing the results table. */
     private final ResultTableModel tableModel;
 
+    /** Right-aligned renderer for numeric cells. */
     private final DefaultTableCellRenderer numberRenderer = new DefaultTableCellRenderer() {
         {
             setHorizontalAlignment(SwingConstants.RIGHT);

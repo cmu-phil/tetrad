@@ -23,26 +23,43 @@ import java.util.stream.Collectors;
  */
 public final class DoubleRobustEstEditorV1 extends JPanel {
 
+    /** The model being edited. */
     private final DoublyRobustEstModelV1 model;
 
     // v1: UI controls
+    /** Selector for the graph used to choose the adjustment set. */
     private final JComboBox<String> graphBox = new JComboBox<>();
+    /** Selector for the treatment variable X. */
     private final JComboBox<Node> xBox = new JComboBox<>();
+    /** Selector for the outcome variable Y. */
     private final JComboBox<Node> yBox = new JComboBox<>();
+    /** Multi-select list for the adjustment set Z. */
     private final JList<Node> zList = new JList<>();
+    /** The list model backing the adjustment set list. */
     private final DefaultListModel<Node> zListModel = new DefaultListModel<>();
 
+    /** Button that fills Z with the parents of X in the selected graph. */
     private final JButton useParentsButton = new JButton("Use Parents of X in Graph (v1)");
+    /** Button that clears the adjustment set selection. */
     private final JButton clearZButton = new JButton("Clear Z (v1)");
+    /** Button that runs the estimation. */
     private final JButton estimateButton = new JButton("Estimate (v1)");
 
+    /** The table model backing the results table. */
     private final ResultsTableModelV1 tableModel = new ResultsTableModelV1();
+    /** The table displaying estimation results. */
     private final JTable table = new JTable(tableModel);
 
     // v1: formatting
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
     private static final DecimalFormat DF4 = new DecimalFormat("0.####");
 
+    /**
+     * Constructs an editor for the given doubly robust estimation model.
+     *
+     * @param model the model to edit
+     * @throws NullPointerException if model is null
+     */
     public DoubleRobustEstEditorV1(DoublyRobustEstModelV1 model) {
         this.model = Objects.requireNonNull(model, "v1: model");
         buildUiV1();
