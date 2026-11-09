@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -66,6 +67,7 @@ import java.util.Random;
         algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
+@Experimental
 public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
     @Serial
     private static final long serialVersionUID = 23L;
