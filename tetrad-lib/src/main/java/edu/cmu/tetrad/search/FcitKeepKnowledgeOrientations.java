@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
+import edu.cmu.tetrad.search.score.MagRicfBicScorer;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
