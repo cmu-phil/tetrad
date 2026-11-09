@@ -84,7 +84,12 @@ public class IcaLingD extends AbstractBootstrapAlgorithm implements Algorithm, R
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search on the given data by delegating to the successor algorithm and returns the resulting graph.
+     *
+     * @param dataSet  the data to search over.
+     * @param parameters the parameters of the search.
+     * @return the graph the successor returns.
+     * @throws InterruptedException if the search is interrupted.
      */
     @Override
     public Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException {

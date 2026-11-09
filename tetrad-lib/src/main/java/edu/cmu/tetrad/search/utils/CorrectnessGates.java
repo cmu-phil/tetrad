@@ -163,6 +163,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Sets whether gate decisions are logged.
+     *
      * @param verbose whether gate decisions are logged.
      */
     public void setVerbose(boolean verbose) {
@@ -170,6 +172,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Turns the I-map gate on or off.
+     *
      * @param requireImapStates whether the I-map gate is on. Default false.
      */
     public void setRequireImapStates(boolean requireImapStates) {
@@ -177,6 +181,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Reports whether the I-map gate is on.
+     *
      * @return whether the I-map gate is on.
      */
     public boolean requireImapStates() {
@@ -184,6 +190,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Sets the significance level of the I-map gate's tests.
+     *
      * @param imapAlpha the significance level of the I-map gate's tests, in (0, 1). Default 0.001.
      */
     public void setImapAlpha(double imapAlpha) {
@@ -194,6 +202,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Returns the significance level of the I-map gate's tests.
+     *
      * @return the I-map gate alpha.
      */
     public double imapAlpha() {
@@ -201,6 +211,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Turns the score step on or off.
+     *
      * @param useScoreStep whether the score step is on. Requires {@link #setGateScore(Score)} before
      *                     {@link #beginRun}. Default false.
      */
@@ -209,6 +221,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Reports whether the score step is on.
+     *
      * @return whether the score step is on.
      */
     public boolean useScoreStep() {
@@ -216,6 +230,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Reports whether either gate is on; when neither is, the saturating step runs.
+     *
      * @return whether either gate is on.
      */
     public boolean anyGateOn() {
@@ -251,6 +267,8 @@ public final class CorrectnessGates {
     }
 
     /**
+     * Returns the penalty discount of the gate score.
+     *
      * @return the penalty discount of the gate score, for logging; NaN if none is set.
      */
     public double penaltyDiscount() {

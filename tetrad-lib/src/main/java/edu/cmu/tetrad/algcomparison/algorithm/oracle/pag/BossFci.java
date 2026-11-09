@@ -103,7 +103,12 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search on the given data by delegating to the successor algorithm and returns the resulting graph.
+     *
+     * @param dataModel the data to search over.
+     * @param parameters the parameters of the search.
+     * @return the graph the successor returns.
+     * @throws InterruptedException if the search is interrupted.
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {

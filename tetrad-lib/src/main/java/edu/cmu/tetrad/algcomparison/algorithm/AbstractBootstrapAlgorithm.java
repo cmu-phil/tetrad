@@ -92,6 +92,15 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         return runSearch(createDataSample((DataSet) dataModel, randomGenerator, selectedColumns, parameters, r), parameters);
     }
 
+    /**
+     * Runs one search on the given data with the given parameters and returns the resulting graph. Called once on
+     * the full data when bootstrapping is off, and once per resample when it is on.
+     *
+     * @param dataSet    the data to search over.
+     * @param parameters the parameters of the search.
+     * @return the graph the search returns.
+     * @throws InterruptedException if the search is interrupted.
+     */
     protected abstract Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException;
 
     /**

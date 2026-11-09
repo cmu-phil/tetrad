@@ -2205,7 +2205,7 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
     }
 
     /**
-     * Turns the experimental I-map gate on or off (default off); see {@link #requireImapStates}.
+     * Turns the I-map gate on or off (default off); see {@link CorrectnessGates#setRequireImapStates(boolean)}.
      *
      * @param requireImapStates true to require every committed state to introduce no uncertified independence.
      */
@@ -2227,7 +2227,8 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
     }
 
     /**
-     * Sets the significance level of the I-map gate's tests (default 0.001); see {@link #imapAlpha}.
+     * Sets the significance level of the I-map gate's tests (default 0.001); see
+     * {@link CorrectnessGates#setImapAlpha(double)}.
      *
      * @param imapAlpha a level in [0, 1].
      */

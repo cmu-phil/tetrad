@@ -33,12 +33,12 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for FF Marginal Likelihood Score.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
+/**
+ * Wrapper for FF Marginal Likelihood Score.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "FFML-Continuous Score",
 //        command = "ffml-continuous-score",
