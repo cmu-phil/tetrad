@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -61,7 +62,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-//@Experimental
+@Experimental
 public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
