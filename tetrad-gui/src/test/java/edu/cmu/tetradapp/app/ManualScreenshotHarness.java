@@ -1,8 +1,14 @@
 package edu.cmu.tetradapp.app;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLrt;
+import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.annotation.Algorithm;
+import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.BoxDataSet;
@@ -10,6 +16,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
@@ -35,6 +42,7 @@ import edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper;
 import edu.cmu.tetradapp.model.GeneralizedSemImWrapper;
 import edu.cmu.tetradapp.model.GeneralizedSemPmWrapper;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.HybridCgEstimatorWrapper;
 import edu.cmu.tetradapp.model.HybridCgImWrapper;
@@ -57,13 +65,18 @@ import edu.cmu.tetradapp.model.TextBayesUpdateModel;
 import edu.cmu.tetradapp.model.datamanip.NtadExplorerWrapper;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.session.SessionNode;
+import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -118,6 +131,18 @@ public final class ManualScreenshotHarness {
     private static final String BOX = "tetrad-interface/box-by-box/";
     private static final String OVERVIEW = "tetrad-interface/overview/";
 
+    /**
+     * The data set the manual's worked example uses, from cmu-phil/example-causal-datasets, kept with the tests so
+     * that the example's pictures can be remade without a download.
+     */
+    private static final String AUTO_MPG = "/manual-screenshots/auto-mpg.data.mixed.max.3.categories.txt";
+
+    /**
+     * The penalty discounts the worked example searches over.
+     */
+    private static final Object[] EXAMPLE_PENALTY_DISCOUNTS
+            = {1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6};
+
     private final File outDir;
     private final String filter;
     private JFrame frame;
@@ -128,6 +153,7 @@ public final class ManualScreenshotHarness {
     private DataSet continuousData;
     private DataSet discreteData;
     private DataSet mixedData;
+    private DataSet autoMpg;
 
     private ManualScreenshotHarness(File outDir, String filter) {
         this.outDir = outDir;
@@ -193,6 +219,14 @@ public final class ManualScreenshotHarness {
         scenes.put(BOX + "ntad-explorer.png", s -> {
             SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
             s.open(s.box("Data", "Data2", NtadExplorerWrapper.class, 340, 110, data));
+        });
+
+        scenes.put(BOX + "example-data-plotmatrix.png", s -> {
+            s.open(s.data("Auto MPG", this.autoMpg, 140, 110));
+            s.then(window -> chooseMenuItem(window, "Plot Matrix"));
+            // The tool opens showing one variable against itself; the example shows them all.
+            s.inNewWindow(ManualScreenshotHarness::selectAllInLists);
+            s.atLeast(1025, 780);
         });
 
         // ---------------------------------------------------------------- Knowledge
@@ -354,6 +388,46 @@ public final class ManualScreenshotHarness {
         scenes.put(BOX + "simulation-box.png", simulation);
         scenes.put(OVERVIEW + "simulate-data-dialog.png", simulation);
 
+        // ---------------------------------------------------------------- Grid Search: the worked example
+        Scene exampleGridSearch = s -> {
+            SessionNodeWrapper data = s.data("Auto MPG", this.autoMpg, 140, 110);
+            SessionNodeWrapper box = s.box("GridSearch", "Grid Search1", GridSearchModel.class, 340, 110, data);
+            configureWorkedExample((GridSearchModel) box.getSessionNode().getModel());
+            s.open(box);
+            s.atLeast(1025, 780);
+        };
+        WindowAction runExample = window -> {
+            selectTab(window, "Comparison");
+            // The box is set to this test already, but the editor runs with whatever its own list shows.
+            chooseInComboBox(window, "DG-LRT");
+            press(window, "Run Comparison");
+        };
+        scenes.put(BOX + "example-data-comparison.png", s -> {
+            exampleGridSearch.build(s);
+            s.then(runExample, 45_000);
+            s.after(window -> selectTab(window, "Comparison"));
+        });
+        scenes.put(BOX + "example-data-graph8.png", s -> {
+            exampleGridSearch.build(s);
+            s.then(runExample, 45_000);
+            s.after(window -> {
+                // The example picks, among the models that pass the Markov check, the one with the fewest edges.
+                // The file name says 8 because that was the answer when the example was written.
+                int algorithm = sparsestPassingAlgorithm(comparisonTable(window));
+                selectTab(window, "View Graphs");
+                List<JComboBox<?>> numbered = new ArrayList<>();
+                for (JComboBox<?> box : showingComboBoxes(window)) {
+                    if (box.getItemCount() > 0 && box.getItemAt(0) instanceof Integer) {
+                        numbered.add(box);
+                    }
+                }
+                if (numbered.size() < 2) {
+                    throw new IllegalStateException("The View Graphs tab has no algorithm selector.");
+                }
+                numbered.get(1).setSelectedItem(algorithm);
+            });
+        });
+
         // ---------------------------------------------------------------- Note
         scenes.put(BOX + "note-box.png", s -> {
             s.open(s.box("Note", "Note1", NoteModel.class, 140, 110));
@@ -451,7 +525,38 @@ public final class ManualScreenshotHarness {
                 // An action may start work that finishes off the event thread.
                 Thread.sleep(stage.pauseAfterAction);
             }
-            shoot(window, path);
+            if (stage.afterPause != null) {
+                onEdt(() -> {
+                    stage.afterPause.apply(window);
+                    return null;
+                });
+            }
+            // An action may have opened a further window, as a tool in a menu does; that window is the picture.
+            EditorWindow newest = onEdt(() -> {
+                for (JInternalFrame f : this.desktop.getDesktopPane().getAllFrames()) {
+                    if (f instanceof EditorWindow w && w != window && w.isVisible()) {
+                        return w;
+                    }
+                }
+                return null;
+            });
+            if (newest != null && stage.roomy) {
+                onEdt(() -> {
+                    giveRoom(newest, stage.minWidth, stage.minHeight);
+                    return null;
+                });
+            }
+            if (newest != null && stage.newWindowAction != null) {
+                onEdt(() -> {
+                    stage.newWindowAction.apply(newest);
+                    return null;
+                });
+                Thread.sleep(1500);
+            }
+            shoot(newest != null ? newest : window, path);
+            if (newest != null) {
+                closeEditor(newest);
+            }
         } finally {
             closeEditor(window);
         }
@@ -511,6 +616,54 @@ public final class ManualScreenshotHarness {
         this.discreteData = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM).simulateData(500, false);
 
         this.mixedData = mixedFrom(this.continuousData, 2);
+
+        this.autoMpg = loadAutoMpg();
+    }
+
+    /**
+     * Loads the worked example's data as the example says to: mixed, with at most three categories.
+     */
+    private static DataSet loadAutoMpg() throws Exception {
+        File file = File.createTempFile("auto-mpg", ".txt");
+        try (InputStream in = ManualScreenshotHarness.class.getResourceAsStream(AUTO_MPG)) {
+            if (in == null) {
+                throw new IllegalStateException("Missing test resource " + AUTO_MPG);
+            }
+            Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            DataSet data = SimpleDataLoader.loadMixedData(file, "//", '"', "*", true, 3, Delimiter.TAB, false);
+            data.setName("auto-mpg");
+            return data;
+        } finally {
+            Files.deleteIfExists(file.toPath());
+        }
+    }
+
+    /**
+     * Sets a Grid Search box up as sections 4 of the manual's worked example does: BOSS with the Degenerate Gaussian
+     * BIC score over a range of penalty discounts, the Markov check columns, a CPDAG comparison sorted by utility, and
+     * the DG-LRT test for the Markov checker.
+     */
+    private static void configureWorkedExample(GridSearchModel model) {
+        AlgorithmModel boss = new AlgorithmModel(
+                new AnnotatedClass<>(Boss.class, Boss.class.getAnnotation(Algorithm.class)));
+        AnnotatedClass<Score> dgBic = new AnnotatedClass<>(DegenerateGaussianBicScore.class,
+                DegenerateGaussianBicScore.class.getAnnotation(Score.class));
+        model.addAlgorithm(new GridSearchModel.AlgorithmSpec(boss.getName(), boss, null, dgBic));
+
+        // What the "Markov Check Columns" button in the Add Table Column(s) dialog selects.
+        List<String> markovCheckColumns = List.of("Cutoff for p values (alpha)", "Penalty discount", "#EdgesEst",
+                "MC-KSP", "MC-KSPass");
+        for (GridSearchModel.MyTableColumn column : model.getAllTableColumns()) {
+            if (markovCheckColumns.contains(column.getColumnName())) {
+                model.addTableColumn(column);
+            }
+        }
+
+        Parameters parameters = model.getParameters();
+        parameters.set("penaltyDiscount", EXAMPLE_PENALTY_DISCOUNTS);
+        parameters.set("algcomparisonGraphType", "CPDAG");
+        parameters.set("algcomparisonSortByUtility", true);
+        model.setMarkovCheckerIndependenceWrapper(new DegenerateGaussianLrt());
     }
 
     /**
@@ -561,6 +714,8 @@ public final class ManualScreenshotHarness {
         private final SessionWrapper session = new SessionWrapper(new Session(SESSION_NAME));
         private SessionNodeWrapper target;
         private WindowAction action;
+        private WindowAction afterPause;
+        private WindowAction newWindowAction;
         private long pauseAfterAction = 300;
         private boolean roomy = true;
         private int minWidth = MIN_EDITOR_WIDTH;
@@ -658,6 +813,20 @@ public final class ManualScreenshotHarness {
         void then(WindowAction action, long pauseMillis) {
             this.action = action;
             this.pauseAfterAction = pauseMillis;
+        }
+
+        /**
+         * Something to do once the pause after the first action is over, such as turning to the tab the result is on.
+         */
+        void after(WindowAction action) {
+            this.afterPause = action;
+        }
+
+        /**
+         * Something to do to a further window that the first action opened, before it is painted.
+         */
+        void inNewWindow(WindowAction action) {
+            this.newWindowAction = action;
         }
 
         /**
@@ -777,6 +946,157 @@ public final class ManualScreenshotHarness {
             throw new IllegalStateException("No button labelled \"" + label + "\"");
         }
         button.doClick(0);
+    }
+
+    /**
+     * Chooses the first item, in any menu of any menu bar in the window, whose label contains the given text.
+     */
+    private static void chooseMenuItem(Container window, String label) {
+        List<JMenuBar> bars = new ArrayList<>();
+        if (window instanceof JInternalFrame frame && frame.getJMenuBar() != null) {
+            bars.add(frame.getJMenuBar());
+        }
+        collect(window, JMenuBar.class, bars);
+        for (JMenuBar bar : bars) {
+            for (int i = 0; i < bar.getMenuCount(); i++) {
+                JMenuItem item = findMenuItem(bar.getMenu(i), label);
+                if (item != null) {
+                    item.doClick(0);
+                    return;
+                }
+            }
+        }
+        throw new IllegalStateException("No menu item labelled \"" + label + "\"");
+    }
+
+    private static JMenuItem findMenuItem(JMenu menu, String label) {
+        if (menu == null) {
+            return null;
+        }
+        for (Component c : menu.getMenuComponents()) {
+            if (c instanceof JMenu sub) {
+                JMenuItem found = findMenuItem(sub, label);
+                if (found != null) {
+                    return found;
+                }
+            } else if (c instanceof JMenuItem item && item.getText() != null && item.getText().contains(label)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    private static <T extends Component> void collect(Container root, Class<T> type, List<T> into) {
+        for (Component child : root.getComponents()) {
+            if (type.isInstance(child)) {
+                into.add(type.cast(child));
+            }
+            if (child instanceof Container container) {
+                collect(container, type, into);
+            }
+        }
+    }
+
+    /**
+     * Selects every entry of every list in a window.
+     */
+    private static void selectAllInLists(Container window) {
+        List<JList<?>> lists = new ArrayList<>();
+        collectLists(window, lists);
+        for (JList<?> list : lists) {
+            int size = list.getModel().getSize();
+            if (size > 0) {
+                list.setSelectionInterval(0, size - 1);
+            }
+        }
+    }
+
+    private static void collectLists(Container root, List<JList<?>> into) {
+        for (Component child : root.getComponents()) {
+            if (child instanceof JList<?> list) {
+                into.add(list);
+            }
+            if (child instanceof Container container) {
+                collectLists(container, into);
+            }
+        }
+    }
+
+    private static List<JComboBox<?>> showingComboBoxes(Container root) {
+        List<JComboBox<?>> boxes = new ArrayList<>();
+        collectComboBoxes(root, boxes);
+        boxes.removeIf(box -> !box.isShowing());
+        return boxes;
+    }
+
+    private static void collectComboBoxes(Container root, List<JComboBox<?>> into) {
+        for (Component child : root.getComponents()) {
+            if (child instanceof JComboBox<?> box) {
+                into.add(box);
+            }
+            if (child instanceof Container container) {
+                collectComboBoxes(container, into);
+            }
+        }
+    }
+
+    /**
+     * In the first showing combo box that has an entry whose text contains the given text, selects that entry.
+     */
+    private static void chooseInComboBox(Container window, String text) {
+        for (JComboBox<?> box : showingComboBoxes(window)) {
+            for (int i = 0; i < box.getItemCount(); i++) {
+                if (String.valueOf(box.getItemAt(i)).contains(text)) {
+                    box.setSelectedIndex(i);
+                    return;
+                }
+            }
+        }
+        throw new IllegalStateException("No list offers \"" + text + "\"");
+    }
+
+    /**
+     * The text of the Grid Search comparison table, from whichever text area in the window holds it.
+     */
+    private static String comparisonTable(Container window) {
+        JTextArea area = find(window, JTextArea.class, a -> a.getText().contains("AVERAGE VALUE"));
+        if (area == null) {
+            throw new IllegalStateException("The comparison has not produced a table.");
+        }
+        return area.getText();
+    }
+
+    /**
+     * Reads the first table of a Grid Search comparison and returns the number of the algorithm that passes the
+     * Markov check with the fewest edges, taking the first such row.
+     */
+    private static int sparsestPassingAlgorithm(String table) {
+        String[] lines = table.split("\\R");
+        for (int i = 0; i < lines.length; i++) {
+            List<String> header = Arrays.asList(lines[i].trim().split("\\s+"));
+            int alg = header.indexOf("Alg");
+            int edges = header.indexOf("#EdgesEst");
+            int pass = header.indexOf("MC-KSPass");
+            if (alg < 0 || edges < 0 || pass < 0) {
+                continue;
+            }
+            int best = -1;
+            double fewest = Double.POSITIVE_INFINITY;
+            for (int r = i + 1; r < lines.length && !lines[r].isBlank(); r++) {
+                String[] cells = lines[r].trim().split("\\s+");
+                if (Double.parseDouble(cells[pass]) == 1.0 && Double.parseDouble(cells[edges]) < fewest) {
+                    fewest = Double.parseDouble(cells[edges]);
+                    best = Integer.parseInt(cells[alg]);
+                }
+            }
+            if (best < 0) {
+                throw new IllegalStateException("No model in the worked example passes the Markov check.");
+            }
+            System.out.println("worked example: the sparsest model passing the Markov check is Algorithm " + best
+                               + ", with " + (int) fewest + " edges");
+            return best;
+        }
+        throw new IllegalStateException("The comparison table has no Alg, #EdgesEst and MC-KSPass columns.");
     }
 
     /**
