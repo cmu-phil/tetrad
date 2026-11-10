@@ -1222,7 +1222,8 @@ class DataAuditAction extends AbstractAction {
      * <p>
      * Like the sentinel recode, this is offered rather than performed. The suggester's convention (remove the
      * determined variable, the second of a duplicate pair, or the discrete coarsening) is a guess at which column
-     * is derived; the codebook settles it, and the user may prefer to drop a determiner instead. Removal modifies
+     * is derived; the codebook settles it, and the user may prefer to drop a determiner instead, so the determiners
+     * and the other members of each relationship are listed as checkable alternatives alongside. Removal modifies
      * the dataset every downstream box reads and cannot be undone; the hosting data editor is redrawn at once.
      */
     private static JComponent createRemoveDeterminismControl(DataSet dataSet, DataAuditJTable findingsTable,
@@ -1420,22 +1421,25 @@ class DataAuditAction extends AbstractAction {
     }
 
     /**
-     * Shows the removal dialog: a table of suggested variables with a checkbox (recommended ones checked), the
-     * finding code, and the reason. Returns the names the user checked, or null if the dialog was cancelled.
+     * Shows the removal dialog: a sortable table of the variables named in the determinism findings, each with a
+     * checkbox (recommended ones checked), its role in the relationship (the convention's pick or an alternative to
+     * it), the finding code, its fitted equation, and the reason. Returns the names the user checked, or null if the
+     * dialog was cancelled.
      */
     private static List<String> showRemovalDialog(JComponent parent,
                                                   List<DeterminismRemovalSuggester.Suggestion> suggestions,
                                                   Map<String, String> equations) {
-        String[] columns = {"Remove", "Variable", "Finding", "Equation", "Reason"};
-        Object[][] rows = new Object[suggestions.size()][5];
+        String[] columns = {"Remove", "Variable", "Role", "Finding", "Equation", "Reason"};
+        Object[][] rows = new Object[suggestions.size()][6];
 
         for (int i = 0; i < suggestions.size(); i++) {
             DeterminismRemovalSuggester.Suggestion s = suggestions.get(i);
             rows[i][0] = s.recommended();
             rows[i][1] = s.variable();
-            rows[i][2] = s.code().name();
-            rows[i][3] = equations.getOrDefault(s.variable(), "");
-            rows[i][4] = s.reason();
+            rows[i][2] = s.role() == DeterminismRemovalSuggester.Role.SUGGESTED ? "suggested" : "alternative";
+            rows[i][3] = s.code().name();
+            rows[i][4] = equations.getOrDefault(s.variable(), "");
+            rows[i][5] = s.reason();
         }
 
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(rows, columns) {
@@ -1454,6 +1458,11 @@ class DataAuditAction extends AbstractAction {
 
         JTable table = new JTable(tableModel);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+        // Sortable: with alternatives on the list a wide dataset can show many rows, and sorting by Variable or by
+        // Role is how the user finds the pair to decide between. The checkbox toggles below convert view rows to
+        // model rows already, and the chosen names are read from the model, so sorting does not disturb either.
+        table.setAutoCreateRowSorter(true);
 
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -1479,24 +1488,35 @@ class DataAuditAction extends AbstractAction {
         table.getColumnModel().getColumn(0).setPreferredWidth(60);
         table.getColumnModel().getColumn(0).setMaxWidth(70);
         table.getColumnModel().getColumn(1).setPreferredWidth(150);
-        table.getColumnModel().getColumn(2).setPreferredWidth(200);
-        table.getColumnModel().getColumn(3).setPreferredWidth(330);
-        table.getColumnModel().getColumn(4).setPreferredWidth(400);
+        table.getColumnModel().getColumn(2).setPreferredWidth(90);
+        table.getColumnModel().getColumn(2).setMaxWidth(110);
+        table.getColumnModel().getColumn(3).setPreferredWidth(200);
+        table.getColumnModel().getColumn(4).setPreferredWidth(300);
+        table.getColumnModel().getColumn(5).setPreferredWidth(400);
         table.setRowHeight(table.getRowHeight() + 2);
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(1150, Math.min(500, 60 + 22 * suggestions.size())));
+        scroll.setPreferredSize(new Dimension(1220, Math.min(500, 60 + 22 * suggestions.size())));
 
-        JTextArea note = new JTextArea("Checked rows are recommended: for each determinism finding, the variable "
-                + "the audit judged to be determined (or the second of a duplicate pair, or the discrete coarsening "
-                + "of a continuous variable) is proposed, and findings already resolved by an earlier removal are "
-                + "listed unchecked. Which member of a relationship is the derived one is a fact about how the "
-                + "file was built; uncheck a row, or check an unrecommended one, if you know better.");
+        JTextArea note = new JTextArea("Role 'suggested' is the member of each relationship the audit's convention "
+                + "picks: the variable judged to be determined, the second of a duplicate pair, or the discrete "
+                + "coarsening of a continuous variable. Checked rows are the recommended removals; a suggested row "
+                + "whose finding an earlier removal has likely already resolved is listed unchecked. Role "
+                + "'alternative' is one of the other variables named in the same finding, a determiner or the other "
+                + "column of a pair, offered unchecked so that you can drop one of those instead. Which member of a "
+                + "relationship is the derived one is a fact about how the file was built; uncheck a row, or check "
+                + "an alternative, if you know better. The audit is recomputed after removal, so any determinism "
+                + "that survives your choice reappears in the findings table.");
         note.setEditable(false);
         note.setLineWrap(true);
         note.setWrapStyleWord(true);
         note.setOpaque(false);
         note.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+
+        // Rows and columns bound the note's preferred size. A wrapped text area with neither reports the width of
+        // its text unwrapped, which would stretch the dialog past the table as the note grew.
+        note.setColumns(100);
+        note.setRows(6);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(note, BorderLayout.NORTH);

@@ -34,8 +34,9 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link DeterminismRemovalSuggester}: the convention for which member of a relationship is suggested, the
- * greedy resolution of findings by earlier removals, the ordering of exact before near findings, and the exclusion
- * of findings that name no removable variable.
+ * greedy resolution of findings by earlier removals, the ordering of exact before near findings, the exclusion of
+ * findings that name no removable variable, and the offering of the other variables named in each finding as
+ * unrecommended alternatives.
  *
  * @author josephramsey
  */
@@ -77,6 +78,60 @@ public class TestDeterminismRemovalSuggester {
         assertEquals(List.of("woman", "urm", "fwi", "level"), recommended);
         assertTrue(find(suggestions, "fwi").reason().contains("temp, wind"));
         assertTrue(find(suggestions, "level").reason().contains("coarsening of score"));
+    }
+
+    /**
+     * Every other variable named in a determinism finding is offered too, unrecommended and in role ALTERNATIVE, so
+     * that a determiner can be dropped in place of the determined variable. This is the list the dialog shows, and
+     * a variable named only as a determiner used to be absent from it.
+     */
+    @Test
+    public void testAlternativesAreOffered() {
+        List<AuditFinding> findings = List.of(
+                finding(FindingCode.DUPLICATE_COLUMNS, List.of("gender", "woman"), Map.of("correlation", 1.0)),
+                finding(FindingCode.DETERMINISTIC_RELATION, List.of("bmi", "weight", "height"), Map.of()),
+                finding(FindingCode.NEAR_DETERMINISM_DISCRETE_CONTINUOUS, List.of("level", "score"),
+                        Map.of("etaSquared", 0.99)));
+
+        List<Suggestion> suggestions = DeterminismRemovalSuggester.suggest(findings);
+
+        for (String name : List.of("gender", "woman", "bmi", "weight", "height", "level", "score")) {
+            assertNotNull("not offered: " + name, find(suggestions, name));
+        }
+
+        assertEquals(7, suggestions.size());
+
+        for (String name : List.of("gender", "weight", "height", "score")) {
+            Suggestion s = find(suggestions, name);
+            assertEquals(DeterminismRemovalSuggester.Role.ALTERNATIVE, s.role());
+            assertFalse("recommended: " + name, s.recommended());
+        }
+
+        for (String name : List.of("woman", "bmi", "level")) {
+            assertEquals(DeterminismRemovalSuggester.Role.SUGGESTED, find(suggestions, name).role());
+        }
+
+        assertTrue(find(suggestions, "weight").reason().contains("determiner of bmi"));
+        assertTrue(find(suggestions, "gender").reason().contains("duplicate pair with woman"));
+        assertTrue(find(suggestions, "score").reason().contains("coarsening of"));
+    }
+
+    /**
+     * The alternatives pass does not change the recommendations: a variable already on the list in its own right,
+     * recommended or not, is not repeated as an alternative, and the recommended set is what it was.
+     */
+    @Test
+    public void testAlternativesDoNotDisturbRecommendations() {
+        List<AuditFinding> findings = List.of(
+                finding(FindingCode.DETERMINISTIC_RELATION, List.of("X", "Y"), Map.of()),
+                finding(FindingCode.DETERMINISTIC_RELATION, List.of("Y", "X"), Map.of()));
+
+        List<Suggestion> suggestions = DeterminismRemovalSuggester.suggest(findings);
+
+        assertEquals(2, suggestions.size());
+        assertTrue(find(suggestions, "X").recommended());
+        assertFalse(find(suggestions, "Y").recommended());
+        assertEquals(DeterminismRemovalSuggester.Role.SUGGESTED, find(suggestions, "Y").role());
     }
 
     /**
@@ -122,7 +177,11 @@ public class TestDeterminismRemovalSuggester {
         for (Suggestion s : suggestions) if (s.recommended()) order.add(s.variable());
 
         assertEquals(List.of("S", "Q", "P"), order);
-        assertEquals(3, suggestions.size());
+
+        // Three recommended, plus R: the first column of the duplicate pair, offered as an alternative to S.
+        assertEquals(4, suggestions.size());
+        assertFalse(find(suggestions, "R").recommended());
+        assertEquals(DeterminismRemovalSuggester.Role.ALTERNATIVE, find(suggestions, "R").role());
     }
 
     /**

@@ -47,6 +47,14 @@ import java.util.*;
  * that would have been suggested but for an earlier removal are still returned, unrecommended, so the user can opt
  * in; the dialog shows both.
  * <p>
+ * The convention picks one member of each relationship, but the choice belongs to the user, so every OTHER variable
+ * named in a determinism finding is also returned, in role {@link Role#ALTERNATIVE} and never recommended: a
+ * determiner, the first column of a duplicate pair, the continuous variable of a near-coarsening. Without these a
+ * user who knows that the determined-looking column is the measured one has nothing to check; naming the determiners
+ * in a reason string is not an option they can act on. Removing an alternative is not guaranteed to resolve the
+ * finding (the remaining determiners may still determine the target), which is why these are offered rather than
+ * recommended; the audit is recomputed after removal, so surviving determinism reappears in the findings table.
+ * <p>
  * Constant columns are not determinism and are not included; the Data Manipulation box has a separate model for
  * them. {@link FindingCode#EXACT_LINEAR_DEPENDENCE} names no variables and cannot be acted on here.
  *
@@ -58,16 +66,38 @@ public final class DeterminismRemovalSuggester {
     }
 
     /**
+     * Which member of its finding's relationship a suggested variable is. This says what the variable is, not
+     * whether its removal is recommended; a {@link #SUGGESTED} row may be unrecommended because an earlier removal
+     * has likely resolved its finding.
+     */
+    public enum Role {
+
+        /**
+         * The member the fixed convention picks: the determined variable, the second column of a duplicate pair, or
+         * the discrete near-coarsening of a continuous variable.
+         */
+        SUGGESTED,
+
+        /**
+         * Another variable named in the same finding: a determiner, the first column of a duplicate pair, or the
+         * continuous variable of a near-coarsening. Offered so the user can drop one of these instead, and never
+         * recommended.
+         */
+        ALTERNATIVE
+    }
+
+    /**
      * One suggested removal.
      *
      * @param variable    The variable to remove.
      * @param code        The finding it is suggested for.
+     * @param role        Which member of the finding's relationship this variable is.
      * @param reason      A one-line reason naming the other variables involved and the statistic.
      * @param recommended True if removal is recommended; false if the finding is likely already resolved by an
-     *                    earlier recommended removal (named in the reason), so the variable is offered but not
-     *                    checked.
+     *                    earlier recommended removal (named in the reason), or if the variable is an
+     *                    {@link Role#ALTERNATIVE}, so the variable is offered but not checked.
      */
-    public record Suggestion(String variable, FindingCode code, String reason, boolean recommended) {
+    public record Suggestion(String variable, FindingCode code, Role role, String reason, boolean recommended) {
     }
 
     /**
@@ -85,8 +115,9 @@ public final class DeterminismRemovalSuggester {
      * Suggests removals for the determinism findings among the given findings.
      *
      * @param findings The audit findings.
-     * @return The suggestions, recommended ones first, in the order they were chosen; each variable appears at most
-     * once.
+     * @return The suggestions: recommended ones first, in the order they were chosen, then the unrecommended
+     * {@link Role#SUGGESTED} ones, then the {@link Role#ALTERNATIVE} ones in finding order. Each variable appears at
+     * most once, in the first role it earns.
      */
     public static List<Suggestion> suggest(List<AuditFinding> findings) {
         List<AuditFinding> relevant = new ArrayList<>();
@@ -116,7 +147,7 @@ public final class DeterminismRemovalSuggester {
 
             if (resolvedBy != null) {
                 if (!removed.contains(candidate) && offered.add(candidate)) {
-                    optional.add(new Suggestion(candidate, f.getCode(),
+                    optional.add(new Suggestion(candidate, f.getCode(), Role.SUGGESTED,
                             reason(f) + " Likely resolved by removing " + resolvedBy + ".", false));
                 }
                 continue;
@@ -124,12 +155,29 @@ public final class DeterminismRemovalSuggester {
 
             if (removed.add(candidate)) {
                 offered.add(candidate);
-                recommended.add(new Suggestion(candidate, f.getCode(), reason(f), true));
+                recommended.add(new Suggestion(candidate, f.getCode(), Role.SUGGESTED, reason(f), true));
+            }
+        }
+
+        // Every other variable named in a determinism finding, offered unrecommended. The greedy pass above has
+        // finished, so `offered` is final and an alternative is emitted only for a variable no finding has already
+        // put on the list in its own right: the recommendations are unaffected by this pass.
+        List<Suggestion> alternatives = new ArrayList<>();
+
+        for (AuditFinding f : relevant) {
+            String candidate = candidate(f);
+            if (candidate == null) continue;
+
+            for (String v : f.getVariables()) {
+                if (v.equals(candidate) || !offered.add(v)) continue;
+                alternatives.add(new Suggestion(v, f.getCode(), Role.ALTERNATIVE,
+                        alternativeReason(f, candidate), false));
             }
         }
 
         List<Suggestion> out = new ArrayList<>(recommended);
         for (Suggestion s : optional) if (!removed.contains(s.variable())) out.add(s);
+        out.addAll(alternatives);
         return out;
     }
 
@@ -182,6 +230,37 @@ public final class DeterminismRemovalSuggester {
                     + nf.format(v.getOrDefault("rSquared", Double.NaN)) + ").";
             case NEAR_DETERMINISM_DISCRETE_CONTINUOUS -> "Nearly a coarsening of " + vars.get(1)
                     + " (eta^2 = " + nf.format(v.getOrDefault("etaSquared", Double.NaN)) + ").";
+            default -> f.getMessage();
+        };
+    }
+
+    /**
+     * The reason line for an {@link Role#ALTERNATIVE} row: what part this variable plays in the finding, and what
+     * removing it in place of the suggested variable does. These lines do not promise that the finding is resolved,
+     * because for a relation with several determiners it may not be.
+     */
+    private static String alternativeReason(AuditFinding f, String candidate) {
+        NumberFormat nf = NumberFormat.getInstance(Locale.US);
+        nf.setMaximumFractionDigits(3);
+        Map<String, Double> v = f.getValues();
+
+        return switch (f.getCode()) {
+            case DUPLICATE_COLUMNS -> "The other column of the duplicate pair with " + candidate + " (r = "
+                    + nf.format(v.getOrDefault("correlation", Double.NaN))
+                    + "); removing either one of the two resolves the finding.";
+            case DETERMINISTIC_RELATION -> "A determiner of " + candidate
+                    + ", cell by cell. Remove this instead if " + candidate
+                    + " is the measured column; the finding is resolved unless the remaining determiners still "
+                    + "determine " + candidate + ".";
+            case NEAR_DETERMINISM_NONLINEAR -> "An input to the near-smooth function for " + candidate
+                    + " (leave-one-out R^2 = " + nf.format(v.getOrDefault("looRSquared", Double.NaN))
+                    + "). Remove this instead if " + candidate + " is the column to keep.";
+            case NEAR_DETERMINISM_LINEAR -> "A determiner in the near-linear relation for " + candidate
+                    + " (R^2 = " + nf.format(v.getOrDefault("rSquared", Double.NaN))
+                    + "); removing one member of a near-collinear cluster may be enough.";
+            case NEAR_DETERMINISM_DISCRETE_CONTINUOUS -> "The continuous variable that " + candidate
+                    + " is nearly a coarsening of (eta^2 = " + nf.format(v.getOrDefault("etaSquared", Double.NaN))
+                    + "). Remove this instead to keep the discrete grouping.";
             default -> f.getMessage();
         };
     }
