@@ -38,6 +38,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static edu.cmu.tetrad.search.utils.SearchCancellation.*;
+
 /**
  * The FCI Targeted Testing (FCIT) algorithm: learns a PAG from observational data
  * with latent variables. BOSS/GRaSP supplies the initial CPDAG; its DAG member is
@@ -904,6 +906,7 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             progressed = false;
 
             do {
+                checkInterrupted();
                 TetradLogger.getInstance().log("\nRound: " + (++round));
             } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
@@ -990,16 +993,27 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
         edgeList.sort(EDGE_ORDER);
         int from = 0;
 
+        // The thread the stop button interrupts; the lookahead tasks poll its flag. See SearchCancellation.
+        final Thread owner = Thread.currentThread();
+
         while (from < edgeList.size()) {
+            checkInterrupted();
+
             final int start = from;
 
             // Parallel search over the tail [start, end). findFirst on an ordered
             // parallel stream returns the LOWEST-index removable edge
             // deterministically, independent of which thread finishes first.
-            java.util.Optional<RemovalHit> hit =
-                    java.util.stream.IntStream.range(start, edgeList.size())
+            java.util.Optional<RemovalHit> hit;
+
+            try {
+                hit = java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
+                                // Cooperative cancellation for the pool; see SearchCancellation. A worker cannot
+                                // see the stop through its own thread, so poll the submitting thread's flag.
+                                checkOwner(owner);
+
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
                                 Node y = e.getNode2();
@@ -1015,12 +1029,16 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
-                                    Thread.currentThread().interrupt();
-                                    throw new RuntimeException(ie);
+                                    // Not Thread.currentThread().interrupt(): that would poison a shared pool
+                                    // worker. See SearchCancellation.
+                                    throw new InterruptedInLookahead(ie);
                                 }
                             })
                             .filter(Objects::nonNull)
                             .findFirst();
+            } catch (InterruptedInLookahead ex) {
+                throw asInterrupted(ex);
+            }
 
             if (hit.isEmpty()) {
                 break;  // no removable edge in the tail -- sweep complete
@@ -1811,6 +1829,10 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
         Edge firstConfirmed = null;
 
         for (DiscriminatingPath dd : ddps) {
+            // Many legs are answered from a cache without entering the sweep, so this loop can run a
+            // long way without reaching any code that checks for itself.
+            checkInterrupted();
+
             List<Node> colliderPath = dd.getColliderPath();
 
             List<Node> spine = new ArrayList<>(colliderPath);

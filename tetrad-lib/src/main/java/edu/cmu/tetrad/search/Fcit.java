@@ -35,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static edu.cmu.tetrad.search.utils.SearchCancellation.*;
+
 /**
  * The FCI Targeted Testing (FCIT) algorithm: learns a PAG from observational data
  * with latent variables. BOSS/GRaSP supplies the initial CPDAG; its DAG member is
@@ -850,10 +852,7 @@ public final class Fcit implements IGraphSearch {
         edgeList.sort(EDGE_ORDER);
         int from = 0;
 
-        // The thread that called search(), which is the thread the stop button interrupts. The lookahead tasks run
-        // on the ForkJoin common pool, whose workers cannot see another thread's interrupt through
-        // Thread.currentThread(), so they poll this thread's flag instead. Reading the flag of another live thread
-        // is a plain read and needs no synchronization.
+        // The thread the stop button interrupts; the lookahead tasks poll its flag. See SearchCancellation.
         final Thread owner = Thread.currentThread();
 
         while (from < edgeList.size()) {
@@ -870,14 +869,9 @@ public final class Fcit implements IGraphSearch {
                 hit = java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
-                                // Cooperative cancellation for the pool. Without this, a stop is noticed only by
-                                // the tasks the submitting thread happens to run itself while joining; tasks on
-                                // pool workers run to completion, and on a dense graph each one is a full
-                                // recursive-blocking search. That is why a stop sometimes appeared to be ignored.
-                                if (owner.isInterrupted()) {
-                                    throw new InterruptedInLookahead(
-                                            new InterruptedException("interrupted during parallel lookahead"));
-                                }
+                                // Cooperative cancellation for the pool; see SearchCancellation. A worker cannot
+                                // see the stop through its own thread, so poll the submitting thread's flag.
+                                checkOwner(owner);
 
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
@@ -894,10 +888,8 @@ public final class Fcit implements IGraphSearch {
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
-                                    // Deliberately NOT Thread.currentThread().interrupt() here. On a common-pool
-                                    // worker that leaves the flag set on a thread shared with the whole JVM, where
-                                    // it resurfaces as a spurious interrupt in unrelated later work. The submitting
-                                    // thread's own flag is the signal; this exception is the delivery.
+                                    // Not Thread.currentThread().interrupt(): that would poison a shared pool
+                                    // worker. See SearchCancellation.
                                     throw new InterruptedInLookahead(ie);
                                 }
                             })
@@ -947,37 +939,6 @@ public final class Fcit implements IGraphSearch {
         return changedThisSweep;
     }
 
-    /**
-     * Cooperative cancellation check for the sequential phases. The parallel lookahead polls the submitting
-     * thread's flag inside its tasks; this covers the stretches between lookaheads -- the round loop, the sweep's
-     * commit path, the saturating step, the detection scan -- each of which can run for a long time on a dense
-     * graph without entering code that checks for itself.
-     *
-     * @throws InterruptedException if the calling thread has been interrupted
-     */
-    private static void checkInterrupted() throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException("interrupted");
-        }
-    }
-
-    /**
-     * The {@link InterruptedException} at the root of a lookahead wrapper. The chain is walked rather than read at
-     * one level because ForkJoinPool may re-wrap in the same class when the throwing thread is not the joining
-     * thread; the guard is against a self-referential or circular cause chain.
-     */
-    private static InterruptedException asInterrupted(InterruptedInLookahead ex) {
-        Throwable t = ex;
-        int guard = 0;
-
-        while (t != null && guard++ < 100) {
-            if (t instanceof InterruptedException ie) return ie;
-            if (t.getCause() == t) break;
-            t = t.getCause();
-        }
-
-        return new InterruptedException("interrupted during parallel lookahead");
-    }
 
     // -------------------------------------------------------------------------
     // The shared sweep (Def. rb-step): one implementation, used by the removal
@@ -2122,23 +2083,6 @@ public final class Fcit implements IGraphSearch {
          * Starts with a complete o-o graph.
          */
         COMPLETE_GRAPH
-    }
-
-    /**
-     * Carries an {@link InterruptedException} out of the parallel lookahead, whose lambda cannot declare a checked
-     * exception. The submitting thread unwraps it and rethrows the InterruptedException, so the stop keeps its type
-     * all the way to the caller. A dedicated type, rather than a bare RuntimeException, so that the unwrapping
-     * cannot turn an unrelated runtime failure into a cancellation. The {@code (Throwable)} constructor is there
-     * for {@link java.util.concurrent.ForkJoinTask}, which re-wraps in the same class when the throwing thread is
-     * not the joining thread.
-     */
-    private static final class InterruptedInLookahead extends RuntimeException {
-
-        private static final long serialVersionUID = 23L;
-
-        InterruptedInLookahead(Throwable cause) {
-            super(cause);
-        }
     }
 
     private record RemovalHit(int index, Edge edge, Set<Node> cond) {

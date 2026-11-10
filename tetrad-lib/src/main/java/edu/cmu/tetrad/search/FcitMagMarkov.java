@@ -35,6 +35,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static edu.cmu.tetrad.search.utils.SearchCancellation.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -516,6 +518,7 @@ public final class FcitMagMarkov implements IGraphSearch {
         int round = 0;
 
         do {
+            checkInterrupted();
             TetradLogger.getInstance().log("\nRound: " + (++round));
         } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
@@ -672,7 +675,8 @@ public final class FcitMagMarkov implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
+            throws InterruptedException {
 
         // This version does parallel lookahead, so that the only time graph rebuilding is done is when
         // edge removals are attempted.
@@ -684,17 +688,28 @@ public final class FcitMagMarkov implements IGraphSearch {
         List<Edge> edgeList = new ArrayList<>(this.pag.getEdges());
         int from = 0;
 
+        // The thread the stop button interrupts; the lookahead tasks poll its flag. See SearchCancellation.
+        final Thread owner = Thread.currentThread();
+
         while (from < edgeList.size()) {
+            checkInterrupted();
+
             final int start = from;
 
             // Parallel search over the tail [start, end). findFirst on an ordered
             // parallel stream returns the LOWEST-index removable edge deterministically,
             // independent of which thread finishes first. Each search reads the live
             // PAG; nothing mutates it during this phase, so concurrent reads are safe.
-            Optional<RemovalHit> hit =
-                    java.util.stream.IntStream.range(start, edgeList.size())
+            Optional<RemovalHit> hit;
+
+            try {
+                hit = java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
+                                // Cooperative cancellation for the pool; see SearchCancellation. A worker cannot
+                                // see the stop through its own thread, so poll the submitting thread's flag.
+                                checkOwner(owner);
+
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
                                 Node y = e.getNode2();
@@ -710,12 +725,16 @@ public final class FcitMagMarkov implements IGraphSearch {
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
-                                    Thread.currentThread().interrupt();
-                                    throw new RuntimeException(ie);
+                                    // Not Thread.currentThread().interrupt(): that would poison a shared pool
+                                    // worker. See SearchCancellation.
+                                    throw new InterruptedInLookahead(ie);
                                 }
                             })
                             .filter(Objects::nonNull)
                             .findFirst();
+            } catch (InterruptedInLookahead ex) {
+                throw asInterrupted(ex);
+            }
 
             if (hit.isEmpty()) {
                 break;  // no removable edge in the tail — sweep complete
@@ -874,7 +893,8 @@ public final class FcitMagMarkov implements IGraphSearch {
     }
 
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type,
-                                     boolean excludeSelectionBias, Set<Triple> initialColliders) {
+                                     boolean excludeSelectionBias, Set<Triple> initialColliders)
+            throws InterruptedException {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
@@ -915,8 +935,9 @@ public final class FcitMagMarkov implements IGraphSearch {
         try {
             markovOk = markovPreserved(magPrev, _mag);
         } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(ie);
+            // Rethrown as-is rather than wrapped: this runs on the search thread, and the caller declares
+            // InterruptedException, so a stop keeps its type all the way out. See SearchCancellation.
+            throw ie;
         }
 
         if (!markovOk) {
@@ -968,7 +989,8 @@ public final class FcitMagMarkov implements IGraphSearch {
     }
 
     private boolean tryToModifyGraph(List<Edge> edges, String type,
-                                     boolean excludeSelectionBias, Set<Triple> initialColliders) {
+                                     boolean excludeSelectionBias, Set<Triple> initialColliders)
+            throws InterruptedException {
         Graph _pag = new EdgeListGraph(pag);
         Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
 
@@ -1014,8 +1036,9 @@ public final class FcitMagMarkov implements IGraphSearch {
         try {
             markovOk = markovPreserved(magPrev, _mag);
         } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(ie);
+            // Rethrown as-is rather than wrapped: this runs on the search thread, and the caller declares
+            // InterruptedException, so a stop keeps its type all the way out. See SearchCancellation.
+            throw ie;
         }
 
         if (!markovOk) {

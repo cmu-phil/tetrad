@@ -36,6 +36,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static edu.cmu.tetrad.search.utils.SearchCancellation.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -864,6 +866,7 @@ public final class FcitSl implements IGraphSearch {
         // against the new state.
         boolean changed;
         do {
+            checkInterrupted();
             TetradLogger.getInstance().log("\nRound: " + (++round));
             changed = removeEdgesRecursively(excludeSelectionBias, false);
             if (!changed && allowClassEscape) {
@@ -1035,6 +1038,10 @@ public final class FcitSl implements IGraphSearch {
         boolean sawIndeterminate = false;
 
         for (DiscriminatingPath dd : ddps) {
+            // Many legs are answered from a cache without entering the sweep, so this loop can run a
+            // long way without reaching any code that checks for itself.
+            checkInterrupted();
+
             List<Node> colliderPath = dd.getColliderPath();
 
             List<Node> spine = new ArrayList<>(colliderPath);
@@ -1266,7 +1273,12 @@ public final class FcitSl implements IGraphSearch {
 
         int from = 0;
 
+        // The thread the stop button interrupts; the lookahead tasks poll its flag. See SearchCancellation.
+        final Thread owner = Thread.currentThread();
+
         while (from < edgeList.size()) {
+            checkInterrupted();
+
             final int start = from;
 
             // Parallel search over the tail [start, end). findFirst on an ordered
@@ -1279,10 +1291,16 @@ public final class FcitSl implements IGraphSearch {
             // against the pre-deletion PAG and {} after), that made the whole search
             // nondeterministic. Evaluating all of them and recording in index order keeps the
             // reach the cache provides while making it a function of the sweep, not the scheduler.
-            List<RemovalHit> hits =
-                    java.util.stream.IntStream.range(start, edgeList.size())
+            List<RemovalHit> hits;
+
+            try {
+                hits = java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
+                                // Cooperative cancellation for the pool; see SearchCancellation. A worker cannot
+                                // see the stop through its own thread, so poll the submitting thread's flag.
+                                checkOwner(owner);
+
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
                                 Node y = e.getNode2();
@@ -1298,13 +1316,17 @@ public final class FcitSl implements IGraphSearch {
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond(), check.pValue());
                                 } catch (InterruptedException ie) {
-                                    Thread.currentThread().interrupt();
-                                    throw new RuntimeException(ie);
+                                    // Not Thread.currentThread().interrupt(): that would poison a shared pool
+                                    // worker. See SearchCancellation.
+                                    throw new InterruptedInLookahead(ie);
                                 }
                             })
                             .filter(Objects::nonNull)
                             .sorted(Comparator.comparingInt(RemovalHit::index))
                             .toList();
+            } catch (InterruptedInLookahead ex) {
+                throw asInterrupted(ex);
+            }
 
             // Record EVERY confirmed separator, in index order. X _||_ Y | S is a fact about the
             // data, so keeping it is sound whichever edge won; discarding the losers' facts costs

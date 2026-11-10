@@ -35,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static edu.cmu.tetrad.search.utils.SearchCancellation.*;
+
 /**
  * The FCI Targeted Testing (FCIT) algorithm: learns a PAG from observational data
  * with latent variables. BOSS/GRaSP supplies the initial CPDAG; its DAG member is
@@ -917,9 +919,12 @@ public final class Fcit2 implements IGraphSearch {
         NongenuineScan lastScan = null;
 
         do {
+            checkInterrupted();
+
             progressed = false;
 
             do {
+                checkInterrupted();
                 TetradLogger.getInstance().log("\nRound: " + rounds.next());
             } while (removeEdgesRecursively(excludeSelectionBias, unshieldedTriples));
 
@@ -949,7 +954,8 @@ public final class Fcit2 implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
+            throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges (recursive-blocking sweep).");
         }
@@ -963,16 +969,27 @@ public final class Fcit2 implements IGraphSearch {
         edgeList.sort(EDGE_ORDER);
         int from = 0;
 
+        // The thread the stop button interrupts; the lookahead tasks poll its flag. See SearchCancellation.
+        final Thread owner = Thread.currentThread();
+
         while (from < edgeList.size()) {
+            checkInterrupted();
+
             final int start = from;
 
             // Parallel search over the tail [start, end). findFirst on an ordered
             // parallel stream returns the LOWEST-index removable edge
             // deterministically, independent of which thread finishes first.
-            Optional<RemovalHit> hit =
-                    java.util.stream.IntStream.range(start, edgeList.size())
+            Optional<RemovalHit> hit;
+
+            try {
+                hit = java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
+                                // Cooperative cancellation for the pool; see SearchCancellation. A worker cannot
+                                // see the stop through its own thread, so poll the submitting thread's flag.
+                                checkOwner(owner);
+
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
                                 Node y = e.getNode2();
@@ -988,12 +1005,16 @@ public final class Fcit2 implements IGraphSearch {
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
-                                    Thread.currentThread().interrupt();
-                                    throw new RuntimeException(ie);
+                                    // Not Thread.currentThread().interrupt(): that would poison a shared pool
+                                    // worker. See SearchCancellation.
+                                    throw new InterruptedInLookahead(ie);
                                 }
                             })
                             .filter(Objects::nonNull)
                             .findFirst();
+            } catch (InterruptedInLookahead ex) {
+                throw asInterrupted(ex);
+            }
 
             if (hit.isEmpty()) {
                 break;  // no removable edge in the tail -- sweep complete
@@ -1376,7 +1397,9 @@ public final class Fcit2 implements IGraphSearch {
      * complete) is treated as a failed candidate and reverted, not a crash.
      */
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias,
-                                     Set<Triple> initialColliders) {
+                                     Set<Triple> initialColliders) throws InterruptedException {
+        checkInterrupted();
+
         Edge _edge = pag.getEdge(x, y);
         if (_edge == null) {
             return false;
@@ -1430,9 +1453,14 @@ public final class Fcit2 implements IGraphSearch {
                 legalPagQuiet = PagLegalityCheck.isLegalPagModuloKnowledge(this.pag, new HashSet<>(selection),
                         knowledge, fciOrient, excludeSelectionBias);
             } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                orientationFailed = true;
-                failureReason = "interrupted during legality check";
+                // An interrupt is not a legality verdict. Treating it as one both continued the sweep as though
+                // the removal had been refused and wrote the interrupted state into illegalStates, where a later
+                // round reads it back as a genuine illegality for a removal that was never actually tested.
+                restorePag(_pag);
+                if (r0r4Strategy != null) {
+                    r0r4Strategy.setSepsetMap(this.sepsets);
+                }
+                throw ie;
             }
         }
 
@@ -1501,7 +1529,10 @@ public final class Fcit2 implements IGraphSearch {
      *
      * @return true iff the saturating step committed (removed at least one edge)
      */
-    private boolean saturatingPass(boolean excludeSelectionBias, Set<Triple> initialColliders) {
+    private boolean saturatingPass(boolean excludeSelectionBias, Set<Triple> initialColliders)
+            throws InterruptedException {
+        checkInterrupted();
+
         List<Edge> confirmed = new ArrayList<>();
 
         for (Edge e : this.pag.getEdges()) {
@@ -1569,8 +1600,14 @@ public final class Fcit2 implements IGraphSearch {
                 legal = PagLegalityCheck.isLegalPagModuloKnowledge(this.pag, new HashSet<>(selection),
                         knowledge, fciOrient, excludeSelectionBias);
             } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                orientationFailed = true;
+                // As in tryToModifyGraph: not a legality verdict. This path also reached the SATURATION REVERTED
+                // warning below, which tells the user to investigate a bug, with a null reason since
+                // failureReason is never set here -- for what was only a stop.
+                restorePag(backup);
+                if (r0r4Strategy != null) {
+                    r0r4Strategy.setSepsetMap(this.sepsets);
+                }
+                throw ie;
             }
         }
 
