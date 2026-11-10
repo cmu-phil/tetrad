@@ -127,7 +127,7 @@ public final class ManualScreenshotHarness {
     /**
      * The least size an editor window is painted at, unless its scene asks for its natural size.
      */
-      private static final int MIN_EDITOR_WIDTH = 900;
+    private static final int MIN_EDITOR_WIDTH = 900;
     private static final int MIN_EDITOR_HEIGHT = 640;
 
     private static final long SEED = 38271L;
