@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.Tetrad;
 import edu.cmu.tetradapp.editor.EditorWindow;
+import edu.cmu.tetradapp.editor.LoadDataDialog;
 import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.model.BayesPmWrapper;
@@ -52,6 +53,7 @@ import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.model.LatentClustersRunner;
 import edu.cmu.tetradapp.model.LinearAdjustmentTotalEffectsModel;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
+import edu.cmu.tetradapp.model.NNEstimatorModel;
 import edu.cmu.tetradapp.model.NoteModel;
 import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.model.SemEstimatorWrapper;
@@ -62,6 +64,9 @@ import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.model.TextBayesUpdateModel;
+import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
+import edu.cmu.tetradapp.model.datamanip.CausalUnmix;
+import edu.cmu.tetradapp.model.datamanip.DataSubsetModel;
 import edu.cmu.tetradapp.model.datamanip.NtadExplorerWrapper;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.session.SessionNode;
@@ -96,7 +101,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * the output directory; the default is "tetrad-manual-screenshots" in the user's home directory, which keeps the output
  * out of this repository. The file names match the image names the manual already refers to, so the output can be
  * copied over docs/_static/images in the manual repo, or that directory can be given as the argument. A second optional
- * argument is a piece of text; only the pictures whose file names contain it are made.
+ * argument is a piece of text, or several separated by commas; only the pictures whose file names contain one of them
+ * are made.
  * <p>
  * The harness opens a real Tetrad window, because the editors need a realized window to lay themselves out, and closes
  * it when done. The simulated data are seeded, so two runs give the same pictures.
@@ -132,6 +138,11 @@ public final class ManualScreenshotHarness {
     private static final String OVERVIEW = "tetrad-interface/overview/";
 
     /**
+     * How many bootstrap samples the bootstrapped searches draw. Enough for the frequency columns to vary.
+     */
+    private static final int BOOTSTRAPS = 20;
+
+    /**
      * The data set the manual's worked example uses, from cmu-phil/example-causal-datasets, kept with the tests so
      * that the example's pictures can be remade without a download.
      */
@@ -154,6 +165,7 @@ public final class ManualScreenshotHarness {
     private DataSet discreteData;
     private DataSet mixedData;
     private DataSet autoMpg;
+    private File autoMpgFile;
 
     private ManualScreenshotHarness(File outDir, String filter) {
         this.outDir = outDir;
@@ -202,6 +214,13 @@ public final class ManualScreenshotHarness {
     }
 
     /**
+     * Something that puts up a dialog, and does not return until the dialog is closed.
+     */
+    private interface DialogTrigger {
+        void run() throws Exception;
+    }
+
+    /**
      * The pictures, keyed by the file each is written to, in palette order.
      */
     private Map<String, Scene> scenes() {
@@ -221,6 +240,34 @@ public final class ManualScreenshotHarness {
             s.open(s.box("Data", "Data2", NtadExplorerWrapper.class, 340, 110, data));
         });
 
+        scenes.put(OVERVIEW + "data-import-dialog.png", s -> {
+            s.data("Data1", this.autoMpg, 140, 110);
+            s.dialog(() -> new LoadDataDialog(this.autoMpgFile).showDataLoaderDialog());
+        });
+        scenes.put(BOX + "data-subset-editor.png", s -> {
+            SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
+            SessionNodeWrapper subset = s.emptyBox("Data", "Data2", 340, 110, data);
+            // The route a double-click takes once "Subset Data" has been chosen for the box.
+            Parameters subsetParams = new Parameters();
+            s.dialog(() -> editorNodeFor(subset).editParameters(DataSubsetModel.class, subsetParams,
+                    new Object[]{data.getSessionNode().getModel(), subsetParams}));
+        });
+        scenes.put(BOX + "causal-unmix.png", s -> {
+            SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
+            SessionNodeWrapper unmix = s.emptyBox("Data", "Data2", 340, 110, data);
+            s.dialog(() -> editorNodeFor(unmix).editParameters(CausalUnmix.class, new Parameters(),
+                    new Object[]{data.getSessionNode().getModel()}));
+        });
+        scenes.put(BOX + "data-audit.png", s -> {
+            s.open(s.data("Auto MPG", this.autoMpg, 140, 110));
+            s.then(window -> chooseMenuItem(window, "Data Audit"), 6000);
+            s.atLeast(1025, 780);
+        });
+        scenes.put(BOX + "nonlinearity-checks.png", s -> {
+            s.open(s.data("Auto MPG", this.autoMpg, 140, 110));
+            s.then(window -> chooseMenuItem(window, "Nonlinearity Checks"), 3000);
+            s.atLeast(1025, 780);
+        });
         scenes.put(BOX + "example-data-plotmatrix.png", s -> {
             s.open(s.data("Auto MPG", this.autoMpg, 140, 110));
             s.then(window -> chooseMenuItem(window, "Plot Matrix"));
@@ -266,6 +313,12 @@ public final class ManualScreenshotHarness {
             s.then(window -> selectTab(window, "Edges"));
         });
 
+        scenes.put(BOX + "bootstrapping.png", s -> {
+            SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
+            s.open(s.bootstrappedSearch("Search1", 340, 110, data));
+            s.then(window -> selectTab(window, "Edges"));
+        });
+
         // ---------------------------------------------------------------- Latent Clusters
         scenes.put(BOX + "latent-clusters-box.png", s -> {
             SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
@@ -281,6 +334,18 @@ public final class ManualScreenshotHarness {
             s.open(s.box("Graph", "Graph2", GraphSelectionWrapper.class, 340, 110, g));
         });
 
+        scenes.put(BOX + "graph-menu.png", s -> {
+            s.open(s.graph("Graph1", 140, 110));
+            s.withMenuOpen("Graph");
+        });
+        // A Graph box fed by a bootstrapped search, turned to its table of edge frequencies.
+        scenes.put(OVERVIEW + "utility-dialog.png", s -> {
+            SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
+            SessionNodeWrapper search = s.bootstrappedSearch("Search1", 340, 110, data);
+            s.open(s.box("Graph", "Graph1", GraphWrapper.class, 540, 110, search));
+            s.then(window -> selectTab(window, "Edges"));
+        });
+
         // ---------------------------------------------------------------- Compare
         scenes.put(BOX + "compare-box.png", s -> {
             SessionNodeWrapper truth = s.graph("Graph1", 140, 110);
@@ -292,6 +357,13 @@ public final class ManualScreenshotHarness {
             SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
             SessionNodeWrapper search = s.search("Search1", 340, 110, true, data);
             s.open(s.box("Compare", "Compare1", MarkovCheckIndTestModel.class, 240, 260, data, search));
+            s.atLeast(1025, 700);
+        });
+
+        scenes.put(BOX + "vertex-checker.png", s -> {
+            SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 110);
+            SessionNodeWrapper search = s.search("Search1", 340, 110, true, data);
+            s.open(s.box("Compare", "Compare1", VertexCheckIndTestModel.class, 240, 260, data, search));
             s.atLeast(1025, 700);
         });
 
@@ -342,11 +414,35 @@ public final class ManualScreenshotHarness {
             s.open(s.box("Estimator", "Estimator1", GeneralizedSemEstimatorWrapper.class, 340, 260, pm, data));
         });
 
+        scenes.put(BOX + "nn-estimator.png", s -> {
+            SessionNodeWrapper g = s.graph("Graph1", 140, 110);
+            SessionNodeWrapper data = s.data("Data1", this.continuousData, 140, 260);
+            s.open(s.box("Estimator", "Estimator1", NNEstimatorModel.class, 340, 260, data, g));
+        });
+        // The whole window: a model simulated from and then estimated, with the estimator open.
+        scenes.put(OVERVIEW + "estimator-overview.png", s -> {
+            SessionNodeWrapper g = s.graph("Graph1", 80, 80);
+            SessionNodeWrapper pm = s.box("PM", "PM1", SemPmWrapper.class, 80, 190, g);
+            SessionNodeWrapper im = s.box("IM", "IM1", SemImWrapper.class, 80, 300, pm);
+            SessionNodeWrapper sim = s.box("Simulation", "Simulation1", Simulation.class, 80, 410, im);
+            s.open(s.box("Estimator", "Estimator1", SemEstimatorWrapper.class, 80, 520, sim, pm));
+            s.atLeast(700, 640);
+            s.wholeWindow();
+        });
+
         // ---------------------------------------------------------------- Updater
         scenes.put(BOX + "updater-box.png", s -> {
             SessionNodeWrapper im = s.im(BayesPmWrapper.class, BayesImWrapper.class);
             s.open(s.box("Updater", "Updater1", TextBayesUpdateModel.class, 540, 260, im));
         });
+        for (String[] updater : new String[][]{{"junction-tree-updater.png", "JunctionTree"},
+                {"row-summing-updater.png", "RowSummingExact"}, {"approximate-updater.png", "Approximate"}}) {
+            scenes.put(BOX + updater[0], s -> {
+                SessionNodeWrapper im = s.im(BayesPmWrapper.class, BayesImWrapper.class);
+                s.open(s.box("Updater", "Updater1", TextBayesUpdateModel.class, 540, 260, im));
+                s.then(window -> chooseInComboBox(window, updater[1]));
+            });
+        }
         scenes.put(BOX + "sem-updater.png", s -> {
             SessionNodeWrapper im = s.im(SemPmWrapper.class, SemImWrapper.class);
             s.open(s.box("Updater", "Updater1", SemUpdaterWrapper.class, 540, 260, im));
@@ -396,6 +492,15 @@ public final class ManualScreenshotHarness {
             s.open(box);
             s.atLeast(1025, 780);
         };
+        scenes.put(BOX + "grid-search-box-data.png", s -> {
+            exampleGridSearch.build(s);
+            s.then(window -> selectTab(window, "Algorithms"));
+        });
+        scenes.put(BOX + "grid-search-box-simulation.png", s -> {
+            s.open(s.box("GridSearch", "Grid Search1", GridSearchModel.class, 140, 110));
+            s.then(window -> selectTab(window, "Simulations"));
+            s.atLeast(1025, 780);
+        });
         WindowAction runExample = window -> {
             selectTab(window, "Comparison");
             // The box is set to this test already, but the editor runs with whatever its own list shows.
@@ -459,7 +564,7 @@ public final class ManualScreenshotHarness {
 
         for (Map.Entry<String, Scene> entry : scenes().entrySet()) {
             String path = entry.getKey();
-            if (!path.contains(this.filter)) {
+            if (!wanted(path)) {
                 continue;
             }
             try {
@@ -491,6 +596,19 @@ public final class ManualScreenshotHarness {
         return failed.isEmpty() ? 0 : 1;
     }
 
+    /**
+     * Whether a picture passes the filter given on the command line: any of its comma-separated pieces of text may
+     * appear in the file name.
+     */
+    private boolean wanted(String path) {
+        for (String piece : this.filter.split(",")) {
+            if (path.contains(piece.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void play(String path, Scene scene) throws Exception {
         // The same seed before every scene, so that a picture does not depend on which scenes ran before it.
         RandomUtil.getInstance().setSeed(SEED);
@@ -503,6 +621,11 @@ public final class ManualScreenshotHarness {
             return null;
         });
 
+        if (stage.dialogTrigger != null) {
+            shootDialog(stage.dialogTrigger, path);
+            return;
+        }
+
         if (stage.target == null) {
             shoot(this.desktop, path);
             return;
@@ -512,7 +635,7 @@ public final class ManualScreenshotHarness {
         try {
             if (stage.roomy) {
                 onEdt(() -> {
-                    giveRoom(window, stage.minWidth, stage.minHeight);
+                    giveRoom(window, stage.minWidth, stage.minHeight, stage.wholeWindow);
                     return null;
                 });
                 settle();
@@ -542,7 +665,7 @@ public final class ManualScreenshotHarness {
             });
             if (newest != null && stage.roomy) {
                 onEdt(() -> {
-                    giveRoom(newest, stage.minWidth, stage.minHeight);
+                    giveRoom(newest, stage.minWidth, stage.minHeight, false);
                     return null;
                 });
             }
@@ -553,7 +676,13 @@ public final class ManualScreenshotHarness {
                 });
                 Thread.sleep(1500);
             }
-            shoot(newest != null ? newest : window, path);
+            if (stage.menuToOpen != null) {
+                shootWithMenuOpen(window, stage.menuToOpen, path);
+            } else if (stage.wholeWindow) {
+                shoot(this.desktop, path);
+            } else {
+                shoot(newest != null ? newest : window, path);
+            }
             if (newest != null) {
                 closeEditor(newest);
             }
@@ -565,15 +694,23 @@ public final class ManualScreenshotHarness {
     /**
      * Many editors open at a size that suits a first look but clips their content, and a user would drag them larger.
      * This enlarges a window to at least the given size, within the desktop.
+     *
+     * @param keepRight whether to put the window against the right edge, clear of boxes on the left of the workbench,
+     *                  for a picture of the whole main window.
      */
-    private void giveRoom(EditorWindow window, int minWidth, int minHeight) {
+    private void giveRoom(EditorWindow window, int minWidth, int minHeight, boolean keepRight) {
         final int leftMargin = 150;
         final int topMargin = 35;
         final int margin = 25;
         Dimension desk = this.desktop.getDesktopPane().getSize();
-        int w = Math.min(Math.max(window.getWidth(), minWidth), desk.width - leftMargin - margin);
-        int h = Math.min(Math.max(window.getHeight(), minHeight), desk.height - topMargin - margin);
-        int x = Math.max(leftMargin, Math.min(window.getX(), desk.width - margin - w));
+        // Against the right edge the window takes exactly the size asked for, so that it stays clear of the boxes.
+        int w = Math.min(keepRight ? minWidth : Math.max(window.getWidth(), minWidth),
+                desk.width - leftMargin - margin);
+        int h = Math.min(keepRight ? minHeight : Math.max(window.getHeight(), minHeight),
+                desk.height - topMargin - margin);
+        int x = keepRight
+                ? desk.width - margin - w
+                : Math.max(leftMargin, Math.min(window.getX(), desk.width - margin - w));
         int y = Math.max(topMargin, Math.min(window.getY(), desk.height - margin - h));
         window.setBounds(x, y, w, h);
         window.validate();
@@ -623,19 +760,22 @@ public final class ManualScreenshotHarness {
     /**
      * Loads the worked example's data as the example says to: mixed, with at most three categories.
      */
-    private static DataSet loadAutoMpg() throws Exception {
-        File file = File.createTempFile("auto-mpg", ".txt");
+    private DataSet loadAutoMpg() throws Exception {
+        // Copied out under its own name, because the data loader dialog shows the name of the file it is given.
+        File dir = Files.createTempDirectory("tetrad-manual-screenshots").toFile();
+        dir.deleteOnExit();
+        File file = new File(dir, AUTO_MPG.substring(AUTO_MPG.lastIndexOf('/') + 1));
+        file.deleteOnExit();
         try (InputStream in = ManualScreenshotHarness.class.getResourceAsStream(AUTO_MPG)) {
             if (in == null) {
                 throw new IllegalStateException("Missing test resource " + AUTO_MPG);
             }
             Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            DataSet data = SimpleDataLoader.loadMixedData(file, "//", '"', "*", true, 3, Delimiter.TAB, false);
-            data.setName("auto-mpg");
-            return data;
-        } finally {
-            Files.deleteIfExists(file.toPath());
         }
+        this.autoMpgFile = file;
+        DataSet data = SimpleDataLoader.loadMixedData(file, "//", '"', "*", true, 3, Delimiter.TAB, false);
+        data.setName("auto-mpg");
+        return data;
     }
 
     /**
@@ -716,6 +856,9 @@ public final class ManualScreenshotHarness {
         private WindowAction action;
         private WindowAction afterPause;
         private WindowAction newWindowAction;
+        private DialogTrigger dialogTrigger;
+        private String menuToOpen;
+        private boolean wholeWindow;
         private long pauseAfterAction = 300;
         private boolean roomy = true;
         private int minWidth = MIN_EDITOR_WIDTH;
@@ -750,6 +893,25 @@ public final class ManualScreenshotHarness {
             return wrapper;
         }
 
+        /**
+         * Adds a box with nothing in it yet, as a box is when first placed and connected.
+         */
+        SessionNodeWrapper emptyBox(String boxType, String name, int centerX, int centerY,
+                                    SessionNodeWrapper... parents) {
+            SessionNodeConfig config = TetradApplicationConfig.getInstance().getSessionNodeConfig(boxType);
+            if (config == null) {
+                throw new IllegalArgumentException("No box of type " + boxType);
+            }
+            SessionNodeWrapper wrapper = new SessionNodeWrapper(new SessionNode(boxType, name, config.getModels()));
+            wrapper.setButtonType(boxType);
+            wrapper.setCenter(centerX, centerY);
+            this.session.addNode(wrapper);
+            for (SessionNodeWrapper parent : parents) {
+                this.session.addEdge(new Edge(parent, wrapper, Endpoint.TAIL, Endpoint.ARROW));
+            }
+            return wrapper;
+        }
+
         SessionNodeWrapper data(String name, DataSet data, int centerX, int centerY) throws Exception {
             SessionNodeWrapper wrapper = box("Data", name, DataWrapper.class, centerX, centerY);
             ((DataWrapper) wrapper.getSessionNode().getModel()).setDataModel(data.copy());
@@ -777,6 +939,21 @@ public final class ManualScreenshotHarness {
                 runner.setAlgorithm(new Fges(new SemBicScore()));
                 runner.execute();
             }
+            return wrapper;
+        }
+
+        /**
+         * A Search box that has run FGES with the SEM BIC score over bootstrap samples, so that its result carries
+         * edge frequencies.
+         */
+        SessionNodeWrapper bootstrappedSearch(String name, int centerX, int centerY, SessionNodeWrapper... parents)
+                throws Exception {
+            SessionNodeWrapper wrapper = search(name, centerX, centerY, false, parents);
+            SessionNode node = wrapper.getSessionNode();
+            node.getParam(GeneralAlgorithmRunner.class).set("numberResampling", BOOTSTRAPS);
+            GeneralAlgorithmRunner runner = (GeneralAlgorithmRunner) node.getModel();
+            runner.setAlgorithm(new Fges(new SemBicScore()));
+            runner.execute();
             return wrapper;
         }
 
@@ -820,6 +997,28 @@ public final class ManualScreenshotHarness {
          */
         void after(WindowAction action) {
             this.afterPause = action;
+        }
+
+        /**
+         * Makes the picture one of a dialog rather than of a box's editor. The trigger is run once the session is on
+         * screen; the dialog it puts up is painted and then closed.
+         */
+        void dialog(DialogTrigger trigger) {
+            this.dialogTrigger = trigger;
+        }
+
+        /**
+         * Paints the editor with the named menu of its menu bar pulled down.
+         */
+        void withMenuOpen(String menu) {
+            this.menuToOpen = menu;
+        }
+
+        /**
+         * Paints the whole main window, with the opened editor in it, rather than the editor alone.
+         */
+        void wholeWindow() {
+            this.wholeWindow = true;
         }
 
         /**
@@ -1131,6 +1330,106 @@ public final class ManualScreenshotHarness {
     // -----------------------------------------------------------------------------------------------------------
 
     /**
+     * Runs something that puts up a modal dialog, paints the dialog, and closes it. The picture is of the dialog's
+     * contents; the title bar belongs to the operating system and is not painted.
+     */
+    private void shootDialog(DialogTrigger trigger, String path) throws Exception {
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        // Not invokeAndWait: a modal dialog does not return until it is closed.
+        SwingUtilities.invokeLater(() -> {
+            try {
+                trigger.run();
+            } catch (Throwable t) {
+                failure.set(t);
+            }
+        });
+
+        JDialog dialog = null;
+        long deadline = System.currentTimeMillis() + 20_000;
+        while (dialog == null && failure.get() == null && System.currentTimeMillis() < deadline) {
+            Thread.sleep(100);
+            dialog = onEdt(() -> {
+                for (Window window : Window.getWindows()) {
+                    if (window instanceof JDialog d && d.isVisible() && d.getWidth() > 0) {
+                        return d;
+                    }
+                }
+                return null;
+            });
+        }
+        if (failure.get() != null) {
+            throw new IllegalStateException(failure.get());
+        }
+        if (dialog == null) {
+            throw new IllegalStateException("No dialog appeared.");
+        }
+
+        JDialog shown = dialog;
+        try {
+            shoot(shown.getRootPane(), path);
+        } finally {
+            onEdt(() -> {
+                shown.setVisible(false);
+                shown.dispose();
+                return null;
+            });
+            settle();
+        }
+    }
+
+    /**
+     * Paints an editor with one of its menus pulled down. The menu is not actually opened: a menu on screen depends on
+     * the window having the keyboard focus, and is drawn by the operating system when it reaches past the window's
+     * edge, neither of which can be relied on here. Instead the editor is painted, and the menu's own list of items
+     * is painted over it where the menu would drop.
+     */
+    private void shootWithMenuOpen(EditorWindow window, String menuName, String path) throws Exception {
+        settle();
+        BufferedImage image = onEdt(() -> {
+            List<JMenuBar> bars = new ArrayList<>();
+            if (window.getJMenuBar() != null) {
+                bars.add(window.getJMenuBar());
+            }
+            collect(window, JMenuBar.class, bars);
+            JMenu menu = null;
+            for (JMenuBar bar : bars) {
+                for (int i = 0; i < bar.getMenuCount(); i++) {
+                    JMenu m = bar.getMenu(i);
+                    if (m != null && menuName.equals(m.getText()) && m.isShowing()) {
+                        menu = m;
+                    }
+                }
+            }
+            if (menu == null) {
+                throw new IllegalStateException("No menu named \"" + menuName + "\"");
+            }
+
+            JPopupMenu popup = menu.getPopupMenu();
+            Dimension size = popup.getPreferredSize();
+            popup.setSize(size);
+            popup.doLayout();
+            Point drop = SwingUtilities.convertPoint(menu, 0, menu.getHeight(), window);
+
+            // The canvas grows if the menu reaches past the window's right or bottom edge.
+            int w = Math.max(window.getWidth(), drop.x + size.width);
+            int h = Math.max(window.getHeight(), drop.y + size.height);
+            BufferedImage img = new BufferedImage((int) Math.ceil(w * SCALE), (int) Math.ceil(h * SCALE),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = img.createGraphics();
+            g.scale(SCALE, SCALE);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            window.paint(g);
+            g.translate(drop.x, drop.y);
+            popup.paint(g);
+            g.dispose();
+            return img;
+        });
+        write(image, path);
+    }
+
+    /**
      * Paints a component, as it is currently laid out, to a PNG under the output directory.
      */
     private void shoot(Component component, String relativePath) throws Exception {
@@ -1152,7 +1451,10 @@ public final class ManualScreenshotHarness {
             g.dispose();
             return img;
         });
+        write(image, relativePath);
+    }
 
+    private void write(BufferedImage image, String relativePath) throws Exception {
         File file = new File(this.outDir, relativePath);
         File parent = file.getParentFile();
         if (!parent.isDirectory() && !parent.mkdirs()) {
