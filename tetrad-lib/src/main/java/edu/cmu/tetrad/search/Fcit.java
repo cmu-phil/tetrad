@@ -92,6 +92,14 @@ import java.util.*;
  *     each parallel lookahead phase records its separator, so the recorded
  *     separator for a pair is a deterministic function of the committed history --
  *     the one-canonical-separator convention.</li>
+ *
+ * <li><b>Cancellation.</b> The search is interruptible, and interruption is reported
+ *     as an {@link InterruptedException} rather than as any kind of search result. The
+ *     caller's interrupt flag is the single source of truth: the sequential phases
+ *     check their own thread at each loop head, and the parallel lookahead's tasks
+ *     poll the flag of the thread that called {@link #search()}, since a pool worker
+ *     cannot observe another thread's interrupt through {@code Thread.currentThread()}.
+ *     No phase converts an interrupt into a legality verdict or memoizes one.</li>
  * </ol>
  *
  * @author josephramsey
@@ -752,9 +760,12 @@ public final class Fcit implements IGraphSearch {
         NongenuineScan lastScan = null;
 
         do {
+            checkInterrupted();
+
             progressed = false;
 
             do {
+                checkInterrupted();
                 TetradLogger.getInstance().log("\nRound: " + (++round));
             } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
@@ -839,16 +850,35 @@ public final class Fcit implements IGraphSearch {
         edgeList.sort(EDGE_ORDER);
         int from = 0;
 
+        // The thread that called search(), which is the thread the stop button interrupts. The lookahead tasks run
+        // on the ForkJoin common pool, whose workers cannot see another thread's interrupt through
+        // Thread.currentThread(), so they poll this thread's flag instead. Reading the flag of another live thread
+        // is a plain read and needs no synchronization.
+        final Thread owner = Thread.currentThread();
+
         while (from < edgeList.size()) {
+            checkInterrupted();
+
             final int start = from;
 
             // Parallel search over the tail [start, end). findFirst on an ordered
             // parallel stream returns the LOWEST-index removable edge
             // deterministically, independent of which thread finishes first.
-            java.util.Optional<RemovalHit> hit =
-                    java.util.stream.IntStream.range(start, edgeList.size())
+            java.util.Optional<RemovalHit> hit;
+
+            try {
+                hit = java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
+                                // Cooperative cancellation for the pool. Without this, a stop is noticed only by
+                                // the tasks the submitting thread happens to run itself while joining; tasks on
+                                // pool workers run to completion, and on a dense graph each one is a full
+                                // recursive-blocking search. That is why a stop sometimes appeared to be ignored.
+                                if (owner.isInterrupted()) {
+                                    throw new InterruptedInLookahead(
+                                            new InterruptedException("interrupted during parallel lookahead"));
+                                }
+
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
                                 Node y = e.getNode2();
@@ -864,12 +894,18 @@ public final class Fcit implements IGraphSearch {
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
-                                    Thread.currentThread().interrupt();
-                                    throw new RuntimeException(ie);
+                                    // Deliberately NOT Thread.currentThread().interrupt() here. On a common-pool
+                                    // worker that leaves the flag set on a thread shared with the whole JVM, where
+                                    // it resurfaces as a spurious interrupt in unrelated later work. The submitting
+                                    // thread's own flag is the signal; this exception is the delivery.
+                                    throw new InterruptedInLookahead(ie);
                                 }
                             })
                             .filter(Objects::nonNull)
                             .findFirst();
+            } catch (InterruptedInLookahead ex) {
+                throw asInterrupted(ex);
+            }
 
             if (hit.isEmpty()) {
                 break;  // no removable edge in the tail -- sweep complete
@@ -909,6 +945,38 @@ public final class Fcit implements IGraphSearch {
         }
 
         return changedThisSweep;
+    }
+
+    /**
+     * Cooperative cancellation check for the sequential phases. The parallel lookahead polls the submitting
+     * thread's flag inside its tasks; this covers the stretches between lookaheads -- the round loop, the sweep's
+     * commit path, the saturating step, the detection scan -- each of which can run for a long time on a dense
+     * graph without entering code that checks for itself.
+     *
+     * @throws InterruptedException if the calling thread has been interrupted
+     */
+    private static void checkInterrupted() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException("interrupted");
+        }
+    }
+
+    /**
+     * The {@link InterruptedException} at the root of a lookahead wrapper. The chain is walked rather than read at
+     * one level because ForkJoinPool may re-wrap in the same class when the throwing thread is not the joining
+     * thread; the guard is against a self-referential or circular cause chain.
+     */
+    private static InterruptedException asInterrupted(InterruptedInLookahead ex) {
+        Throwable t = ex;
+        int guard = 0;
+
+        while (t != null && guard++ < 100) {
+            if (t instanceof InterruptedException ie) return ie;
+            if (t.getCause() == t) break;
+            t = t.getCause();
+        }
+
+        return new InterruptedException("interrupted during parallel lookahead");
     }
 
     // -------------------------------------------------------------------------
@@ -1336,7 +1404,9 @@ public final class Fcit implements IGraphSearch {
      * complete) is treated as a failed candidate and reverted, not a crash.
      */
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias,
-                                     Set<Triple> initialColliders) {
+                                     Set<Triple> initialColliders) throws InterruptedException {
+        checkInterrupted();
+
         Edge _edge = pag.getEdge(x, y);
         if (_edge == null) {
             return false;
@@ -1390,9 +1460,15 @@ public final class Fcit implements IGraphSearch {
                 legalPagQuiet = PagLegalityCheck.isLegalPagModuloKnowledge(this.pag, new HashSet<>(selection),
                         knowledge, fciOrient, excludeSelectionBias);
             } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                orientationFailed = true;
-                failureReason = "interrupted during legality check";
+                // An interrupt is not a legality verdict. Treating it as one did two things: the sweep carried on
+                // as though the removal had been refused, and the interrupted state was written into
+                // illegalStates, where a later round reads it back as a genuine illegality and refuses a removal
+                // that was never actually tested. Restore the graph and let the stop propagate.
+                restorePag(_pag);
+                if (r0r4Strategy != null) {
+                    r0r4Strategy.setSepsetMap(this.sepsets);
+                }
+                throw ie;
             }
         }
 
@@ -1461,7 +1537,10 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true iff the saturating step committed (removed at least one edge)
      */
-    private boolean saturatingPass(boolean excludeSelectionBias, Set<Triple> initialColliders) {
+    private boolean saturatingPass(boolean excludeSelectionBias, Set<Triple> initialColliders)
+            throws InterruptedException {
+        checkInterrupted();
+
         List<Edge> confirmed = new ArrayList<>();
 
         for (Edge e : this.pag.getEdges()) {
@@ -1529,8 +1608,14 @@ public final class Fcit implements IGraphSearch {
                 legal = PagLegalityCheck.isLegalPagModuloKnowledge(this.pag, new HashSet<>(selection),
                         knowledge, fciOrient, excludeSelectionBias);
             } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                orientationFailed = true;
+                // As in tryToModifyGraph: not a legality verdict. Converting it into one also reached the
+                // SATURATION REVERTED warning below, which told the user to investigate a bug -- with a null
+                // reason, since failureReason was never set on this path -- when all that had happened was a stop.
+                restorePag(backup);
+                if (r0r4Strategy != null) {
+                    r0r4Strategy.setSepsetMap(this.sepsets);
+                }
+                throw ie;
             }
         }
 
@@ -1589,6 +1674,10 @@ public final class Fcit implements IGraphSearch {
         Edge firstConfirmed = null;
 
         for (DiscriminatingPath dd : ddps) {
+            // Many legs are answered from verdictCache or foundSepsets without entering the sweep, so this loop
+            // can run a long way without reaching any code that checks for itself.
+            checkInterrupted();
+
             List<Node> colliderPath = dd.getColliderPath();
 
             List<Node> spine = new ArrayList<>(colliderPath);
@@ -2033,6 +2122,23 @@ public final class Fcit implements IGraphSearch {
          * Starts with a complete o-o graph.
          */
         COMPLETE_GRAPH
+    }
+
+    /**
+     * Carries an {@link InterruptedException} out of the parallel lookahead, whose lambda cannot declare a checked
+     * exception. The submitting thread unwraps it and rethrows the InterruptedException, so the stop keeps its type
+     * all the way to the caller. A dedicated type, rather than a bare RuntimeException, so that the unwrapping
+     * cannot turn an unrelated runtime failure into a cancellation. The {@code (Throwable)} constructor is there
+     * for {@link java.util.concurrent.ForkJoinTask}, which re-wraps in the same class when the throwing thread is
+     * not the joining thread.
+     */
+    private static final class InterruptedInLookahead extends RuntimeException {
+
+        private static final long serialVersionUID = 23L;
+
+        InterruptedInLookahead(Throwable cause) {
+            super(cause);
+        }
     }
 
     private record RemovalHit(int index, Edge edge, Set<Node> cond) {
