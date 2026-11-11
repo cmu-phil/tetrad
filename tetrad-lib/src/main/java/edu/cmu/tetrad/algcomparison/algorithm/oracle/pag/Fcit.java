@@ -198,7 +198,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 //        fcit.setUseMarkFlipEscalation(true);
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
 
-//        fcit.setUseMarkFlipEscalation(false);
+        fcit.setUseMarkFlipEscalation(true);
+
         // The warrant for the result, a three-way choice (the saturating step is not a separate switch: it runs
         // exactly when neither gate is on). 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step.
         int correctness = parameters.getInt(Params.FCIT_CORRECTNESS);
@@ -209,7 +210,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             fcit.setRequireNoScoreDrop(true);
             fcit.setUseSaturatingStep(false);
         } else if (correctness == 3) {
-            fcit.setUseMarkFlipEscalation(true);
             fcit.setUseSaturatingStep(false);
         } else {
             throw new IllegalArgumentException("Unknown FCIT correctness option: " + correctness

@@ -170,7 +170,7 @@ public final class PhantomKernelEnumerator12 {
     private static final boolean USE_SATURATING_STEP = false;
     /** Whether Fcit runs mark-flip escalation. Fcit's own default is true, and the
      *  no-escalation ablation is refuted at six observed variables. */
-    private static final boolean USE_MARK_FLIP_ESCALATION = false;
+    private static final boolean USE_MARK_FLIP_ESCALATION = true;
 
     /** Violations are the point of the run; cap generously. */
     private static final int VIOLATION_LOG_MAX = 3000;
@@ -793,7 +793,7 @@ public final class PhantomKernelEnumerator12 {
             fcit.setTimeout(FCIT_TIMEOUT_MS);
             fcit.setUseMarkFlipEscalation(USE_MARK_FLIP_ESCALATION);
             fcit.setUseSaturatingStep(USE_SATURATING_STEP);
-            fcit.setreq
+//            fcit.setRequireImapStates(true);
 
             fcit.setVerbose(false);
             terminal = fcit.search();
