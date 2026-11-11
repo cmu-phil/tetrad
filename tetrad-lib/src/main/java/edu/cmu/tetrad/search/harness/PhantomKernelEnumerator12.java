@@ -164,6 +164,13 @@ public final class PhantomKernelEnumerator12 {
     private static final int RECURSIVE_DEPTH = -1;
     /** Applied consistently to the enumeration projections AND Fcit (see header). */
     private static final boolean EXCLUDE_SELECTION_BIAS = true;
+    /** Whether Fcit runs the saturating step (phase 2). OFF voids the Cor. saturation
+     *  correctness argument, so a run with it off certifies nothing beyond the classes it
+     *  actually analyzed -- which is why it belongs in the resume fingerprint below. */
+    private static final boolean USE_SATURATING_STEP = false;
+    /** Whether Fcit runs mark-flip escalation. Fcit's own default is true, and the
+     *  no-escalation ablation is refuted at six observed variables. */
+    private static final boolean USE_MARK_FLIP_ESCALATION = true;
 
     /** Violations are the point of the run; cap generously. */
     private static final int VIOLATION_LOG_MAX = 3000;
@@ -247,10 +254,11 @@ public final class PhantomKernelEnumerator12 {
         CONFIG_LINE = String.format(
                 "# pke12 config: mode=%s N=%d latent=%d observed=%d "
                         + "timeoutMs=%d depth=%d recDepth=%d "
-                        + "exclSel=%b",
+                        + "exclSel=%b sat=%b markFlip=%b",
                 dagSweep ? "dagsweep" : "magspace", N, NUM_LATENT, OBS,
                 FCIT_TIMEOUT_MS,
-                DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS);
+                DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS,
+                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION);
 
         System.err.println(CONFIG_LINE);
         System.err.printf("threads~%d%n", Runtime.getRuntime().availableProcessors());
@@ -393,8 +401,18 @@ public final class PhantomKernelEnumerator12 {
         }
         long total4 = 1L << (2 * m);   // 4^m
         long numBlocks = (total4 + MAGSPACE_BLOCK_SIZE - 1) / MAGSPACE_BLOCK_SIZE;
+        // The Fcit knobs belong here, not only in CONFIG_LINE. This string is what guards the
+        // checkpoint and keys files, and a class already in the keys file is skipped rather than
+        // re-analyzed. Without the knobs, changing Fcit's configuration leaves the fingerprint
+        // unchanged, so a resume silently skips every class the PREVIOUS configuration analyzed
+        // and the run certifies the new configuration against almost nothing. Adding them makes
+        // stale files throw instead, with the "delete both" message the guard was written for.
         String enumConfig = String.format(
-                "# pke12 magspace-enum config: OBS=%d blockSize=%d", OBS, MAGSPACE_BLOCK_SIZE);
+                "# pke12 magspace-enum config: OBS=%d blockSize=%d "
+                        + "timeoutMs=%d depth=%d recDepth=%d exclSel=%b sat=%b markFlip=%b",
+                OBS, MAGSPACE_BLOCK_SIZE,
+                FCIT_TIMEOUT_MS, DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS,
+                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION);
 
         Set<Long> doneBlocks = loadCheckpoint(checkpointPath, enumConfig);
         // Dedup set keyed by CANONICAL (isomorph-invariant) key: Fcit runs once per
@@ -773,8 +791,8 @@ public final class PhantomKernelEnumerator12 {
             fcit.setDepth(DEPTH);
             fcit.setRecursiveDepth(RECURSIVE_DEPTH);
             fcit.setTimeout(FCIT_TIMEOUT_MS);
-            fcit.setUseMarkFlipEscalation(true);
-            fcit.setUseSaturatingStep(false);
+            fcit.setUseMarkFlipEscalation(USE_MARK_FLIP_ESCALATION);
+            fcit.setUseSaturatingStep(USE_SATURATING_STEP);
 
             fcit.setVerbose(false);
             terminal = fcit.search();
