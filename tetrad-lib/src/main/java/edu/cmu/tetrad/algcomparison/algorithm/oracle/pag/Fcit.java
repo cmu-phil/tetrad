@@ -179,7 +179,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // run self-consistent, but not a no-op. If that is not wanted, drop the wrap for those tests.
         test = new CachedIndependenceQueries(test);
 
-        edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations fcit = new edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations(test, score);
+        edu.cmu.tetrad.search.Fcit fcit = new edu.cmu.tetrad.search.Fcit(test, score);
 
         // BOSS
         fcit.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -229,13 +229,13 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         fcit.setGraspUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.BOSS);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.GRASP);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.SP);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.COMPLETE_GRAPH);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
