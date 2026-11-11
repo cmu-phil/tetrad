@@ -165,6 +165,17 @@ public final class Fcit implements IGraphSearch {
      */
     private final Map<Set<Node>, Long> sweepFailedAt = new java.util.concurrent.ConcurrentHashMap<>();
     /**
+     * Per pair, the universes U = (blocking set) union (common neighbors) whose every subset (up to the depth cap)
+     * has been tested and found dependent for that pair. Unlike {@link #sweepFailedAt} this is a fact about the
+     * data, not the graph: it survives commits and holds on every mark-flip view. With the add and remove caps
+     * unlimited, the candidates the sweep generates for one blocking set are exactly the subsets of its universe,
+     * so a blocking set whose universe is contained in a recorded one can only propose sets already known
+     * dependent, and skipping it leaves the first confirmed separator in canonical order unchanged. Only maximal
+     * universes are kept. Cleared at the start of each search, since the depth cap may change between runs.
+     * Written from the parallel lookahead, one task per pair; the list type covers the sequential callers too.
+     */
+    private final Map<Set<Node>, List<Set<Node>>> exhaustedUniverses = new java.util.concurrent.ConcurrentHashMap<>();
+    /**
      * Memo of candidate states already found ILLEGAL, keyed by
      * (skeleton signature, sepset signature). The from-scratch reorientation and
      * the legality check are together a deterministic function of that pair
@@ -766,6 +777,7 @@ public final class Fcit implements IGraphSearch {
         // from the CPDAG on; deleted pairs always carry a recorded sepset.
         strategy.setSepsetGraph(new EdgeListGraph(this.pag));
 
+        exhaustedUniverses.clear();
         gates.reset();
         gates.setVerbose(verbose);
 
@@ -1024,7 +1036,7 @@ public final class Fcit implements IGraphSearch {
         // the nested enumerations can arrive at the same S by different routes.
         Set<Set<Node>> tried = new HashSet<>();
 
-        SweepOutcome out = searchForSepset(x, y, deadline, tried);
+        SweepOutcome out = searchForSepset(x, y, deadline, tried, true);
         if (out.sepset() != null) {
             return new IndependenceCheck(edge, out.sepset());
         }
@@ -1048,7 +1060,8 @@ public final class Fcit implements IGraphSearch {
      * data-valid separator in the canonical enumeration -- which is what the
      * sepset-retry loop relies on.
      */
-    private SweepOutcome searchForSepset(Node x, Node y, long deadline, Set<Set<Node>> tried)
+    private SweepOutcome searchForSepset(Node x, Node y, long deadline, Set<Set<Node>> tried,
+                                         boolean recordExhaustion)
             throws InterruptedException {
 
         // Shortcut pass: small subsets of the common neighborhood, by increasing
@@ -1069,12 +1082,12 @@ public final class Fcit implements IGraphSearch {
         if (useMarkFlipEscalation) {
             RecursiveBlocking.beginConflictCollection();
             try {
-                live = sweepForSepset(this.pag, x, y, deadline, tried);
+                live = sweepForSepset(this.pag, x, y, deadline, tried, recordExhaustion);
             } finally {
                 conflicts = RecursiveBlocking.endConflictCollection();
             }
         } else {
-            live = sweepForSepset(this.pag, x, y, deadline, tried);
+            live = sweepForSepset(this.pag, x, y, deadline, tried, recordExhaustion);
         }
         if (live.sepset() != null) {
             return live;
@@ -1084,7 +1097,7 @@ public final class Fcit implements IGraphSearch {
         // walk nominates the marks (Rem. mark-flip).
         SweepOutcome flip = new SweepOutcome(null, false);
         if (useMarkFlipEscalation && conflicts != null && !conflicts.isEmpty()) {
-            flip = markFlipEscalation(x, y, conflicts, deadline, tried);
+            flip = markFlipEscalation(x, y, conflicts, deadline, tried, recordExhaustion);
             if (flip.sepset() != null) {
                 return flip;
             }
@@ -1128,7 +1141,9 @@ public final class Fcit implements IGraphSearch {
         tried.add(firstRejected);
 
         while (true) {
-            SweepOutcome next = searchForSepset(x, y, deadline, tried);
+            // false: `tried` is seeded with separators that are independent but gate-rejected, so a
+            // universe swept here is not known to be all-dependent and must not be recorded as such.
+            SweepOutcome next = searchForSepset(x, y, deadline, tried, false);
 
             if (next.sepset() == null) {
                 return false;  // exhausted (or budget-truncated); the edge stays for now
@@ -1161,7 +1176,8 @@ public final class Fcit implements IGraphSearch {
      * traversal and from the tested set -- the coverage-bearing core of the
      * progress lemma.</p>
      */
-    private SweepOutcome sweepForSepset(Graph view, Node x, Node y, long deadline, Set<Set<Node>> tried)
+    private SweepOutcome sweepForSepset(Graph view, Node x, Node y, long deadline, Set<Set<Node>> tried,
+                                        boolean recordExhaustion)
             throws InterruptedException {
 
         boolean sawIndeterminate = false;
@@ -1233,6 +1249,21 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> base = new LinkedHashSet<>(B);
 
+            // Exhausted-universe skip (see exhaustedUniverses). Exact only when the family for a blocking set is
+            // the full power set of its universe (add and remove caps unlimited), when no test budget is counting
+            // `tried`, and when the test answers a repeated query identically (the query cache).
+            final boolean universeMemo = sweepAddMaxSize < 0 && sweepRemoveMaxSize < 0 && maxTestsPerPair < 0
+                    && this.test instanceof CachedIndependenceQueries;
+            Set<Node> universe = null;
+            if (universeMemo) {
+                universe = new HashSet<>(base);
+                universe.addAll(common);
+                if (universeExhausted(x, y, universe)) {
+                    checkCounter.increment("sepset sweep (universe skipped, known exhausted)");
+                    continue;
+                }
+            }
+
             // Removal candidates: the whole base, common neighbors first, each
             // block name-sorted. Removing a common neighbor from the tested set
             // (together with withholding it from traversal via NF) is what lets
@@ -1295,9 +1326,34 @@ public final class Fcit implements IGraphSearch {
                     }
                 }
             }
+
+            // Reached only when both loops ran to completion: every exit for a found separator, the deadline or
+            // the budget returns above. So every subset of the universe within the depth cap is now known
+            // dependent, provided `tried` held nothing but dependent sets on entry (recordExhaustion).
+            if (universeMemo && recordExhaustion) {
+                recordExhaustedUniverse(x, y, universe);
+            }
         }
 
         return new SweepOutcome(null, sawIndeterminate);
+    }
+
+    /** True iff a recorded exhausted universe for the pair contains the given one. */
+    private boolean universeExhausted(Node x, Node y, Set<Node> universe) {
+        List<Set<Node>> recorded = exhaustedUniverses.get(Set.of(x, y));
+        if (recorded == null) return false;
+        for (Set<Node> e : recorded) {
+            if (e.containsAll(universe)) return true;
+        }
+        return false;
+    }
+
+    /** Records an exhausted universe for the pair, keeping only maximal ones. */
+    private void recordExhaustedUniverse(Node x, Node y, Set<Node> universe) {
+        List<Set<Node>> recorded = exhaustedUniverses.computeIfAbsent(Set.of(x, y),
+                k -> new java.util.concurrent.CopyOnWriteArrayList<>());
+        recorded.removeIf(universe::containsAll);
+        recorded.add(universe);
     }
 
     /**
@@ -1354,7 +1410,7 @@ public final class Fcit implements IGraphSearch {
      * untouched.</p>
      */
     private SweepOutcome markFlipEscalation(Node x, Node y, Set<RecursiveBlocking.Mark> conflicts,
-                                            long deadline, Set<Set<Node>> tried)
+                                            long deadline, Set<Set<Node>> tried, boolean recordExhaustion)
             throws InterruptedException {
         List<RecursiveBlocking.Mark> marks = new ArrayList<>(conflicts);
         marks.sort(Comparator
@@ -1375,7 +1431,7 @@ public final class Fcit implements IGraphSearch {
 
             checkCounter.increment("mark-flip escalation (view swept)");
 
-            SweepOutcome out = sweepForSepset(flipped, x, y, deadline, tried);
+            SweepOutcome out = sweepForSepset(flipped, x, y, deadline, tried, recordExhaustion);
             if (out.sepset() != null) {
                 TetradLogger.getInstance().log("MARK-FLIP: separator for " + x + " *-* " + y
                         + " found under distrust of the arrowhead at " + m.at()
@@ -1826,7 +1882,7 @@ public final class Fcit implements IGraphSearch {
 
         Set<Set<Node>> tried = new HashSet<>();
 
-        SweepOutcome live = sweepForSepset(this.pag, m, n, deadlineMs, tried);
+        SweepOutcome live = sweepForSepset(this.pag, m, n, deadlineMs, tried, true);
 
         Set<Node> found = live.sepset();
 
