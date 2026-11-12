@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search.rlcd;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StratifiedRankTests;
@@ -64,6 +65,11 @@ public final class StratifiedChi2RankTest implements RankTester {
     private final List<DataSet> domains;
 
     /**
+     * The per-domain covariance matrices, in the order of the domains; each carries its (effective) sample size.
+     */
+    private final List<ICovarianceMatrix> covariances;
+
+    /**
      * The per-domain sample sizes, parallel to perDomain.
      */
     private final int[] ns;
@@ -77,6 +83,7 @@ public final class StratifiedChi2RankTest implements RankTester {
     public StratifiedChi2RankTest(List<DataSet> domains) {
         if (domains == null || domains.isEmpty()) throw new IllegalArgumentException("No domains given.");
         this.domains = new ArrayList<>(domains);
+        this.covariances = new ArrayList<>();
         this.perDomain = new ArrayList<>();
         this.ns = new int[domains.size()];
 
@@ -91,7 +98,60 @@ public final class StratifiedChi2RankTest implements RankTester {
             }
             this.perDomain.add(new Chi2RankTest(d));
             this.ns[t] = d.getNumRows();
+            this.covariances.add(new CovarianceMatrix(d));
         }
+    }
+
+    private StratifiedChi2RankTest(List<ICovarianceMatrix> covariances, Void marker) {
+        this.domains = null;
+        this.covariances = new ArrayList<>(covariances);
+        this.perDomain = new ArrayList<>();
+        this.ns = new int[covariances.size()];
+
+        List<String> names0 = covariances.get(0).getVariableNames();
+        for (int t = 0; t < covariances.size(); t++) {
+            ICovarianceMatrix c = covariances.get(t);
+            if (c == null) throw new NullPointerException("Domain " + t + " is null.");
+            if (!c.getVariableNames().equals(names0)) {
+                throw new IllegalArgumentException("Domain " + t + " does not have the same variables, in the same "
+                                                   + "order, as domain 0.");
+            }
+            this.perDomain.add(new Chi2RankTest(c, 1.0));
+            this.ns[t] = c.getSampleSize();
+        }
+    }
+
+    /**
+     * Constructs the pooled test from per-domain covariance matrices, for use when the covariance within each domain
+     * is estimated by something other than the sample covariance of complete rows: EM over missing values, a censored
+     * (ceiling) model, or available-case estimation. Each matrix must carry the sample size the statistic is to be
+     * scaled by, which for an EM or censored estimate should be an effective sample size (mean pairwise complete
+     * count, say) rather than the row count. All matrices must have the same variables in the same order.
+     *
+     * @param covariances the per-domain covariance matrices, each with its (effective) sample size.
+     * @return the test.
+     */
+    public static StratifiedChi2RankTest fromCovariances(List<ICovarianceMatrix> covariances) {
+        if (covariances == null || covariances.isEmpty()) throw new IllegalArgumentException("No domains given.");
+        return new StratifiedChi2RankTest(covariances, null);
+    }
+
+    /**
+     * The variable names, common to every domain.
+     *
+     * @return the names.
+     */
+    public List<String> getVariableNames() {
+        return covariances.get(0).getVariableNames();
+    }
+
+    /**
+     * The per-domain covariance matrices, in the order of the domains.
+     *
+     * @return the matrices.
+     */
+    public List<ICovarianceMatrix> getCovariances() {
+        return new ArrayList<>(covariances);
     }
 
     /**
@@ -116,6 +176,10 @@ public final class StratifiedChi2RankTest implements RankTester {
      * @return the per-domain data sets.
      */
     public List<DataSet> getDomains() {
+        if (domains == null) {
+            throw new IllegalStateException("This test was constructed from covariance matrices, not data sets; "
+                                            + "see getCovariances().");
+        }
         return new ArrayList<>(domains);
     }
 
@@ -143,17 +207,17 @@ public final class StratifiedChi2RankTest implements RankTester {
      * @return the within-domain pooled covariance matrix.
      */
     public CovarianceMatrix withinDomainPooledCovariance() {
-        CovarianceMatrix first = new CovarianceMatrix(domains.get(0));
+        ICovarianceMatrix first = covariances.get(0);
         Matrix sum = first.getMatrix().scalarMult(ns[0] - 1.0);
         double weight = ns[0] - 1.0;
 
-        for (int t = 1; t < domains.size(); t++) {
-            sum = sum.plus(new CovarianceMatrix(domains.get(t)).getMatrix().scalarMult(ns[t] - 1.0));
+        for (int t = 1; t < covariances.size(); t++) {
+            sum = sum.plus(covariances.get(t).getMatrix().scalarMult(ns[t] - 1.0));
             weight += ns[t] - 1.0;
         }
 
-        int effectiveN = Math.max(2, getTotalSampleSize() - domains.size());
-        return new CovarianceMatrix(first.getVariables(), sum.scalarMult(1.0 / weight), effectiveN);
+        int effectiveN = Math.max(2, getTotalSampleSize() - covariances.size());
+        return new CovarianceMatrix(new ArrayList<>(first.getVariables()), sum.scalarMult(1.0 / weight), effectiveN);
     }
 
     /**

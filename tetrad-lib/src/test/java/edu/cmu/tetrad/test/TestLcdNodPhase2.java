@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.other.LcdNod;
+import edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -263,6 +264,157 @@ public class TestLcdNodPhase2 {
         assertTrue(graph.isParentOf(domain, l2));
         assertTrue(alg.getReport().contains("stratified RLCD"));
         assertTrue(alg.getReport().contains("Domains (n)"));
+    }
+
+    /**
+     * With missing values and the EM policy, the per-domain covariances come from EM within each domain, RLCD runs on
+     * the pooled rank tests built from them, and Phase 2 runs with its parametric bootstrap; the clear indicator
+     * changes are still found. Without a policy the run is refused with a message naming the options.
+     */
+    @Test
+    public void testTopLevelWithMissingValuesAndEm() {
+        Random rng = new Random(5);
+        boolean[] latentChanges = {false, true, false};
+        boolean[] indicatorChanges = {false, false, true, false, false, false, false, false, true, false, false, false};
+        LcdNodPhase2Harness.Simulation sim = LcdNodPhase2Harness.simulate(1500, 4, latentChanges,
+                indicatorChanges, rng);
+        DataSet data = sim.dataSet.copy();
+        Random holes = new Random(3);
+        for (int r = 0; r < data.getNumRows(); r++) {
+            for (int c = 0; c < data.getNumColumns() - 1; c++) {
+                if (holes.nextDouble() < 0.08) data.setDouble(r, c, Double.NaN);
+            }
+        }
+
+        Parameters parameters = new Parameters();
+        parameters.set(Params.DOMAIN_COLUMN, "domain");
+        parameters.set(Params.ALPHA, 0.01);
+        parameters.set(Params.LCD_NOD_BOOTSTRAPS, 60);
+        parameters.set(Params.SEED, 11L);
+
+        try {
+            new LcdNod().search(data, parameters);
+            fail("missing values without a policy should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("missingDataPolicy"));
+        }
+
+        parameters.set(Params.MISSING_DATA_POLICY, "em");
+        parameters.set(Params.MISSING_ESS_MODE, "meanPairwise");
+        LcdNod alg = new LcdNod();
+        Graph graph = alg.search(data, parameters);
+
+        LcdNodPhase2.Result r = alg.getPhase2Result();
+        assertNotNull(r);
+        assertTrue(r.parametricBootstrap);
+        assertTrue(r.report.contains("parametric bootstrap"));
+        Node domain = graph.getNode("domain");
+        assertTrue(graph.isParentOf(domain, graph.getNode("X3")));
+        assertTrue(graph.isParentOf(domain, graph.getNode("X9")));
+        assertTrue(alg.getReport().contains("ess"));
+    }
+
+    /**
+     * Ceiling censoring within domains: values are clipped at a common ceiling, rlcdCensorCeiling is on, and the run
+     * completes with Phase 2 on RLCD's one-factor part. The censored estimator is stochastic, so only completion and
+     * the strongest indicator change are asserted.
+     */
+    @Test
+    public void testTopLevelWithCensoring() {
+        Random rng = new Random(5);
+        boolean[] latentChanges = {false, true, false};
+        boolean[] indicatorChanges = {false, false, true, false, false, false, false, false, true, false, false, false};
+        LcdNodPhase2Harness.Simulation sim = LcdNodPhase2Harness.simulate(1500, 3, latentChanges,
+                indicatorChanges, rng);
+        DataSet data = sim.dataSet.copy();
+        // Standardize each indicator over the whole data set, then clip at a common ceiling (about the top tenth).
+        int p = data.getNumColumns() - 1;
+        for (int c = 0; c < p; c++) {
+            double sum = 0, sumSq = 0;
+            for (int r = 0; r < data.getNumRows(); r++) {
+                double x = data.getDouble(r, c);
+                sum += x;
+                sumSq += x * x;
+            }
+            double mean = sum / data.getNumRows();
+            double sd = Math.sqrt(sumSq / data.getNumRows() - mean * mean);
+            for (int r = 0; r < data.getNumRows(); r++) data.setDouble(r, c, (data.getDouble(r, c) - mean) / sd);
+        }
+        double ceiling = 1.3;
+        int clipped = 0;
+        for (int r = 0; r < data.getNumRows(); r++) {
+            for (int c = 0; c < p; c++) {
+                if (data.getDouble(r, c) > ceiling) {
+                    data.setDouble(r, c, ceiling);
+                    clipped++;
+                }
+            }
+        }
+        assertTrue("the test needs some censoring to mean anything", clipped > 100);
+
+        Parameters parameters = new Parameters();
+        parameters.set(Params.DOMAIN_COLUMN, "domain");
+        parameters.set(Params.ALPHA, 0.01);
+        parameters.set(Params.LCD_NOD_BOOTSTRAPS, 40);
+        parameters.set(Params.SEED, 11L);
+        parameters.set(Params.RLCD_CENSOR_CEILING, true);
+        parameters.set(Params.RLCD_CEILING_VALUE, ceiling);
+
+        LcdNod alg = new LcdNod();
+        Graph graph = alg.search(data, parameters);
+        assertNotNull(alg.getRlcdGraph());
+        assertTrue(alg.getReport().contains("censored"));
+        Node domain = graph.getNode("domain");
+        assertNotNull(domain);
+        if (alg.getPhase2Result() != null) {
+            assertTrue(graph.isParentOf(domain, graph.getNode("X3"))
+                       || graph.isParentOf(domain, graph.getNode("X9")));
+        }
+    }
+
+    /**
+     * The stratified RLCD wrapper itself now accepts the EM policy, building the pooled test from per-domain EM
+     * covariances, and still refuses testwise deletion with stratification.
+     */
+    @Test
+    public void testStratifiedRlcdWithEm() {
+        Random rng = new Random(9);
+        LcdNodPhase2Harness.Simulation sim = LcdNodPhase2Harness.simulate(1200, 3, new boolean[3],
+                new boolean[12], rng);
+        DataSet data = sim.dataSet;
+        // Integer-coded continuous domain column, as RLCD requires.
+        List<Node> vars = new ArrayList<>(data.getVariables());
+        int dc = vars.size() - 1;
+        double[][] m = new double[data.getNumRows()][vars.size()];
+        Random holes = new Random(4);
+        for (int r = 0; r < data.getNumRows(); r++) {
+            for (int c = 0; c < vars.size(); c++) {
+                m[r][c] = c == dc ? data.getInt(r, c)
+                        : holes.nextDouble() < 0.05 ? Double.NaN : data.getDouble(r, c);
+            }
+        }
+        vars.set(dc, new edu.cmu.tetrad.data.ContinuousVariable("domain"));
+        DataSet cont = new edu.cmu.tetrad.data.BoxDataSet(new edu.cmu.tetrad.data.DoubleDataBox(m), vars);
+
+        Parameters parameters = new Parameters();
+        parameters.set(Params.STRATIFY_BY_DOMAIN, true);
+        parameters.set(Params.DOMAIN_COLUMN, "domain");
+        parameters.set(Params.ALPHA, 0.01);
+        parameters.set(Params.MISSING_DATA_POLICY, "testwise");
+        try {
+            new Rlcd().search(cont, parameters);
+            fail("testwise with stratification should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("testwise"));
+        }
+
+        parameters.set(Params.MISSING_DATA_POLICY, "em");
+        Graph g = new Rlcd().search(cont, parameters);
+        assertNotNull(g);
+        int latents = 0;
+        for (Node n : g.getNodes()) if (n.getNodeType() == edu.cmu.tetrad.graph.NodeType.LATENT) latents++;
+        assertEquals(3, latents);
+        assertNull(g.getNode("domain"));
     }
 
     /**

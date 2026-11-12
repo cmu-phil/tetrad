@@ -462,7 +462,7 @@ public class Rlcd {
             return;
         }
 
-        List<String> domainNames = stratified.getDomains().getFirst().getVariableNames();
+        List<String> domainNames = stratified.getVariableNames();
         List<String> myNames = this.dataSet.getVariableNames();
         if (!domainNames.equals(myNames)) {
             throw new IllegalArgumentException("The stratified test's domains have variables " + domainNames

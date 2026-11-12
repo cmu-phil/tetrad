@@ -34,6 +34,10 @@ import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MvnImputer;
+import edu.cmu.tetrad.data.missing.PairwiseCovarianceEstimator;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
 import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
 import edu.cmu.tetrad.util.StratifiedRankTests;
@@ -175,10 +179,56 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         boolean stratified = parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false);
         boolean anyMissing = new MissingDataAudit(dataSet).anyMissing();
 
-        if (stratified && (censor || spec != null)) {
-            throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with a "
-                                               + "missing-data policy or ceiling censoring: each sets the rank "
-                                               + "test, and only one of them can. Turn one of the two off.");
+        if (stratified && spec != null && (spec.getPolicy() == MissingDataPolicy.TESTWISE
+                                          || spec.getPolicy() == MissingDataPolicy.MULTIPLE_IMPUTATION)) {
+            throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with the "
+                                               + "testwise or multiple-imputation missing-data policies: each sets "
+                                               + "the rank test, and only one of them can. With stratification, use "
+                                               + "\"em\", \"pairwise\" or \"listwise\" (each applied within "
+                                               + "every domain), or ceiling censoring.");
+        }
+
+        if (stratified) {
+            // Stratified (domain-pooled) mode, the Phase 1 upgrade of LCD-NOD (Dong et al., ICML 2026). RLCD
+            // accepts continuous data, so here the domain index is an integer-valued continuous column, named by
+            // the domainColumn parameter; it is removed from the variable list and used only to split the rows.
+            // Missing values and ceiling censoring are handled within each domain: the per-domain covariance is
+            // estimated by the chosen method, and the per-domain rank statistics are pooled as usual.
+            String domainColumn = StratifiedRankTests.resolveDomainColumn(dataSet,
+                    parameters.getString(Params.DOMAIN_COLUMN, "domain"));
+            Node domain = dataSet.getVariable(domainColumn);
+            List<DataSet> perDomain = StratifiedRankTests.split(dataSet, domain);
+
+            int dcol = dataSet.getVariables().indexOf(domain);
+            int[] keep = new int[dataSet.getNumColumns() - 1];
+            int k = 0;
+            for (int j = 0; j < dataSet.getNumColumns(); j++) if (j != dcol) keep[k++] = j;
+            DataSet sub = dataSet.subsetColumns(keep);
+
+            if (anyMissing && !censor && spec == null) {
+                throw new IllegalArgumentException("RLCD: the data have missing values and no missing-data policy "
+                                                   + "is set. With stratification, set missingDataPolicy to "
+                                                   + "\"em\" (recommended), \"pairwise\" or \"listwise\", each "
+                                                   + "applied within every domain, or turn on rlcdCensorCeiling if "
+                                                   + "values sit at a ceiling. Missing: "
+                                                   + TestwiseDeletionRankTest.describe(dataSet));
+            }
+
+            List<ICovarianceMatrix> covariances = perDomainCovariances(perDomain, parameters);
+            StringBuilder sizes = new StringBuilder();
+            for (int t = 0; t < perDomain.size(); t++) {
+                if (!sizes.isEmpty()) sizes.append(", ");
+                sizes.append(perDomain.get(t).getNumRows());
+                if (covariances.get(t).getSampleSize() != perDomain.get(t).getNumRows()) {
+                    sizes.append(" (ess ").append(covariances.get(t).getSampleSize()).append(')');
+                }
+            }
+            TetradLogger.getInstance().log("Stratified RLCD: domain column '" + domainColumn + "' removed from the "
+                                           + "searched variables and used only to split the rows; " + perDomain.size()
+                                           + " domains with n = " + sizes + "; per-domain covariance by "
+                                           + perDomainCovarianceMethod(parameters) + ".");
+
+            return searchStratified(sub, StratifiedChi2RankTest.fromCovariances(covariances), parameters);
         }
 
         if (anyMissing && !censor && spec == null) {
@@ -223,34 +273,6 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             return run(rlcd, parameters);
         }
 
-        if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
-            // Stratified (domain-pooled) mode, the Phase 1 upgrade of LCD-NOD (Dong et al., ICML 2026). RLCD
-            // accepts continuous data, so here the domain index is an integer-valued continuous column, named by
-            // the domainColumn parameter; it is removed from the variable list and used only to split the rows.
-            String domainColumn = StratifiedRankTests.resolveDomainColumn(dataSet,
-                    parameters.getString(Params.DOMAIN_COLUMN, "domain"));
-            Node domain = dataSet.getVariable(domainColumn);
-            List<DataSet> perDomain = StratifiedRankTests.split(dataSet, domain);
-
-            int dcol = dataSet.getVariables().indexOf(domain);
-            int[] keep = new int[dataSet.getNumColumns() - 1];
-            int k = 0;
-            for (int j = 0; j < dataSet.getNumColumns(); j++) if (j != dcol) keep[k++] = j;
-            DataSet sub = dataSet.subsetColumns(keep);
-
-            StringBuilder sizes = new StringBuilder();
-            for (DataSet d : perDomain) {
-                if (!sizes.isEmpty()) sizes.append(", ");
-                sizes.append(d.getNumRows());
-            }
-            TetradLogger.getInstance().log("Stratified RLCD: domain column '" + domainColumn + "' removed from the "
-                                           + "searched variables and used only to split the rows; " + perDomain.size()
-                                           + " domains with n = " + sizes + ".");
-
-            edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(sub);
-            rlcd.setStratifiedRankTest(new StratifiedChi2RankTest(perDomain));
-            return run(rlcd, parameters);
-        }
 
         return run(new edu.cmu.tetrad.search.Rlcd(dataSet), parameters);
     }
@@ -300,6 +322,123 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         }
 
         return graph;
+    }
+
+    /**
+     * Runs stratified RLCD over the given variables with a pooled rank test already built from the per-domain
+     * covariances, with the RLCD parameters applied. Used by this wrapper and by LCD-NOD, which builds the per-domain
+     * covariances once and shares them with its second phase.
+     *
+     * @param sub        the data set over the searched variables (the domain column removed); it supplies the
+     *                   variables, and may contain missing values, since the rank tests and the stage-1 covariance
+     *                   come from the pooled test.
+     * @param stratified the pooled test, over the same variables in the same order.
+     * @param parameters the RLCD parameters.
+     * @return the graph.
+     */
+    public Graph searchStratified(DataSet sub, StratifiedChi2RankTest stratified, Parameters parameters) {
+        edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(sub);
+        rlcd.setStratifiedRankTest(stratified);
+        return run(rlcd, parameters);
+    }
+
+    /**
+     * The per-domain covariance matrices for stratified mode, each carrying the sample size its rank statistics are
+     * scaled by: the sample covariance when the domain is complete and censoring is off; otherwise, by the
+     * parameters, a censored (ceiling) MVN estimate ({@code rlcdCensorCeiling}, {@code rlcdCeilingValue}), an EM
+     * estimate ({@code missingDataPolicy} "em"), an available-case estimate ("pairwise"), or the covariance of the
+     * complete rows ("listwise"). For EM, pairwise and censored estimates the sample size is the effective sample
+     * size by {@code missingEssMode} (mean pairwise complete count by default).
+     *
+     * @param perDomain  the per-domain data sets (domain column removed), as from
+     *                   {@link StratifiedRankTests#split(DataSet, Node)}.
+     * @param parameters the parameters.
+     * @return the covariance matrices, in the order of the domains.
+     */
+    public static List<ICovarianceMatrix> perDomainCovariances(List<DataSet> perDomain, Parameters parameters) {
+        boolean censor = parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false);
+        MissingDataSpec spec = MissingDataUtils.fromParameters(parameters);
+        MissingDataSpec.EffectiveSampleSizeMode essMode = spec == null
+                ? MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE : spec.getEssMode();
+        long seed = parameters.getLong(Params.SEED, -1L);
+
+        List<ICovarianceMatrix> out = new ArrayList<>();
+        for (int t = 0; t < perDomain.size(); t++) {
+            DataSet d = perDomain.get(t);
+            boolean missing = new MissingDataAudit(d).anyMissing();
+
+            if (censor) {
+                double ceiling = parameters.getDouble(Params.RLCD_CEILING_VALUE, 100.0);
+                CensoredMvnCovarianceEstimator estimator = new CensoredMvnCovarianceEstimator(d,
+                        CensoredMvnCovarianceEstimator.commonCeiling(d.getNumColumns(), ceiling), null);
+                if (seed >= 0) estimator.setSeed(seed + t);
+                ICovarianceMatrix cov = estimator.estimate();
+                int ess = effectiveSampleSize(estimator.getPairwiseCounts(), d.getNumRows(), essMode);
+                out.add(new CovarianceMatrix(new ArrayList<>(d.getVariables()), cov.getMatrix(), ess));
+                TetradLogger.getInstance().log("Stratified RLCD, domain " + (t + 1) + ": censored covariance, "
+                                               + estimator.getCensoredCells() + " censored cells, "
+                                               + estimator.getMissingCells() + " missing cells, ess " + ess + ".");
+            } else if (!missing || spec == null) {
+                out.add(new CovarianceMatrix(d));
+            } else {
+                switch (spec.getPolicy()) {
+                    case LISTWISE -> out.add(new CovarianceMatrix(MissingDataUtils.listwiseDelete(d)));
+                    case EM_COVARIANCE -> {
+                        EmCovarianceEstimator estimator = new EmCovarianceEstimator(d);
+                        estimator.setRidge(spec.getEmRidge());
+                        estimator.setTolerance(spec.getEmTolerance());
+                        estimator.setMaxIterations(spec.getEmMaxIterations());
+                        ICovarianceMatrix cov = estimator.estimate();
+                        int ess = effectiveSampleSize(estimator.getPairwiseCounts(), d.getNumRows(), essMode);
+                        out.add(new CovarianceMatrix(new ArrayList<>(d.getVariables()), cov.getMatrix(), ess));
+                        TetradLogger.getInstance().log("Stratified RLCD, domain " + (t + 1) + ": EM covariance, "
+                                                       + estimator.getNumIterations() + " iterations, converged "
+                                                       + estimator.isConverged() + ", ess " + ess + ".");
+                    }
+                    case PAIRWISE_COVARIANCE -> {
+                        ICovarianceMatrix cov = PairwiseCovarianceEstimator.estimate(d);
+                        int ess = effectiveSampleSize(new MissingDataAudit(d).getPairwiseCompleteCounts(),
+                                d.getNumRows(), essMode);
+                        out.add(new CovarianceMatrix(new ArrayList<>(d.getVariables()), cov.getMatrix(), ess));
+                    }
+                    default -> throw new IllegalArgumentException("Stratified RLCD cannot use the missing-data "
+                                                                  + "policy " + spec.getPolicy() + "; use em, "
+                                                                  + "pairwise or listwise.");
+                }
+            }
+        }
+        return out;
+    }
+
+    private static String perDomainCovarianceMethod(Parameters parameters) {
+        if (parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false)) {
+            return "censored MVN estimate at ceiling " + parameters.getDouble(Params.RLCD_CEILING_VALUE, 100.0);
+        }
+        MissingDataSpec spec = MissingDataUtils.fromParameters(parameters);
+        if (spec == null) return "sample covariance";
+        return switch (spec.getPolicy()) {
+            case LISTWISE -> "sample covariance of complete rows";
+            case EM_COVARIANCE -> "EM estimate";
+            case PAIRWISE_COVARIANCE -> "available-case estimate";
+            default -> spec.getPolicy().toString();
+        };
+    }
+
+    private static int effectiveSampleSize(int[][] counts, int n, MissingDataSpec.EffectiveSampleSizeMode mode) {
+        if (mode == MissingDataSpec.EffectiveSampleSizeMode.FULL_N || counts == null) return n;
+        double sum = 0;
+        int pairs = 0;
+        int min = Integer.MAX_VALUE;
+        for (int a = 0; a < counts.length; a++) {
+            for (int b = a + 1; b < counts.length; b++) {
+                sum += counts[a][b];
+                pairs++;
+                min = Math.min(min, counts[a][b]);
+            }
+        }
+        if (pairs == 0) return n;
+        int ess = mode == MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE ? min : (int) Math.round(sum / pairs);
+        return Math.max(2, Math.min(n, ess));
     }
 
     private Graph run(edu.cmu.tetrad.search.Rlcd rlcd, Parameters parameters) {

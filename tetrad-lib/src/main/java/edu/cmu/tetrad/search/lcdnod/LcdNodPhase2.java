@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.lcdnod;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
@@ -109,6 +110,13 @@ public final class LcdNodPhase2 {
     private final List<List<Integer>> blocks;
     private final List<Node> latents;
 
+    /**
+     * In covariance mode: the per-domain covariance matrices, their labels, and the domain node; dataSet is null.
+     */
+    private final List<ICovarianceMatrix> domainCovariances;
+    private final List<String> domainCovarianceLabels;
+    private final Node covarianceDomainNode;
+
     private double alpha = 0.05;
     private int numBootstraps = 100;
     private double changeRatio = 1.5;
@@ -134,17 +142,10 @@ public final class LcdNodPhase2 {
         this.domainColumn = Objects.requireNonNull(domainColumn, "domainColumn");
         this.blocks = Objects.requireNonNull(blocks, "blocks");
         this.latents = Objects.requireNonNull(latents, "latents");
-        if (blocks.size() != latents.size()) {
-            throw new IllegalArgumentException("There are " + blocks.size() + " blocks but " + latents.size()
-                                               + " latent nodes.");
-        }
-        if (blocks.isEmpty()) {
-            throw new IllegalArgumentException("No blocks were given.");
-        }
-        if (blocks.size() > MAX_LATENTS) {
-            throw new IllegalArgumentException("LCD-NOD Phase 2 enumerates the subsets of the latents and is limited "
-                                               + "to " + MAX_LATENTS + " latents; " + blocks.size() + " were given.");
-        }
+        this.domainCovariances = null;
+        this.domainCovarianceLabels = null;
+        this.covarianceDomainNode = null;
+        checkBlocksAndLatents();
         Node domain = dataSet.getVariable(domainColumn);
         if (domain == null) {
             throw new IllegalArgumentException("No column named " + domainColumn + " in the data set.");
@@ -169,6 +170,75 @@ public final class LcdNodPhase2 {
                                                        + " is discrete; the indicators must be continuous.");
                 }
             }
+        }
+    }
+
+    /**
+     * Constructs the procedure from per-domain covariance matrices rather than from rows, for use when the covariance
+     * within each domain has been estimated by something other than the sample covariance of complete rows (EM over
+     * missing values, a censored model). The sample size each matrix carries is used as that domain's sample size.
+     * Without rows there is no nonparametric bootstrap, so the change test's standard errors come from a parametric
+     * bootstrap: rows are drawn from a normal distribution with the domain's covariance and the model refit. This
+     * reflects sampling variability given the covariance but not the added uncertainty of the covariance estimate
+     * itself (from missing values or censoring), so its p-values run somewhat small; the report says so.
+     *
+     * @param domainCovariances the per-domain covariance matrices, all over the same variables in the same order.
+     * @param domainLabels      a label per domain, in the same order.
+     * @param domainNode        the node to stand for the domain variable in the output graph.
+     * @param blocks            for each latent, the indices (into the matrices' variables) of its pure indicators.
+     * @param latents           the latent node for each block, in the same order.
+     */
+    public LcdNodPhase2(List<ICovarianceMatrix> domainCovariances, List<String> domainLabels, Node domainNode,
+                        List<List<Integer>> blocks, List<Node> latents) {
+        this.dataSet = null;
+        this.domainCovariances = new ArrayList<>(Objects.requireNonNull(domainCovariances, "domainCovariances"));
+        this.domainCovarianceLabels = new ArrayList<>(Objects.requireNonNull(domainLabels, "domainLabels"));
+        this.covarianceDomainNode = Objects.requireNonNull(domainNode, "domainNode");
+        this.domainColumn = domainNode.getName();
+        this.blocks = Objects.requireNonNull(blocks, "blocks");
+        this.latents = Objects.requireNonNull(latents, "latents");
+        checkBlocksAndLatents();
+        if (domainCovariances.isEmpty()) throw new IllegalArgumentException("No domain covariances were given.");
+        if (domainCovariances.size() != domainLabels.size()) {
+            throw new IllegalArgumentException("There are " + domainCovariances.size() + " covariance matrices but "
+                                               + domainLabels.size() + " labels.");
+        }
+        List<String> names = domainCovariances.get(0).getVariableNames();
+        for (ICovarianceMatrix c : domainCovariances) {
+            if (!c.getVariableNames().equals(names)) {
+                throw new IllegalArgumentException("The domain covariance matrices must have the same variables in "
+                                                   + "the same order.");
+            }
+        }
+        if (names.contains(domainNode.getName())) {
+            throw new IllegalArgumentException("The domain variable " + domainNode.getName() + " is among the "
+                                               + "covariance variables.");
+        }
+        Set<Integer> seen = new HashSet<>();
+        for (List<Integer> block : blocks) {
+            if (block.isEmpty()) throw new IllegalArgumentException("A block is empty.");
+            for (int col : block) {
+                if (col < 0 || col >= names.size()) {
+                    throw new IllegalArgumentException("Block index out of range: " + col);
+                }
+                if (!seen.add(col)) {
+                    throw new IllegalArgumentException("Variable " + names.get(col) + " is in more than one block.");
+                }
+            }
+        }
+    }
+
+    private void checkBlocksAndLatents() {
+        if (blocks.size() != latents.size()) {
+            throw new IllegalArgumentException("There are " + blocks.size() + " blocks but " + latents.size()
+                                               + " latent nodes.");
+        }
+        if (blocks.isEmpty()) {
+            throw new IllegalArgumentException("No blocks were given.");
+        }
+        if (blocks.size() > MAX_LATENTS) {
+            throw new IllegalArgumentException("LCD-NOD Phase 2 enumerates the subsets of the latents and is limited "
+                                               + "to " + MAX_LATENTS + " latents; " + blocks.size() + " were given.");
         }
     }
 
@@ -280,8 +350,9 @@ public final class LcdNodPhase2 {
      * @throws InterruptedException if interrupted.
      */
     public Graph search() throws InterruptedException {
-        Node domainNode = dataSet.getVariable(domainColumn);
-        int dcol = dataSet.getVariables().indexOf(domainNode);
+        boolean fromCovariances = dataSet == null;
+        Node domainNode = fromCovariances ? covarianceDomainNode : dataSet.getVariable(domainColumn);
+        List<Node> variables = fromCovariances ? domainCovariances.get(0).getVariables() : dataSet.getVariables();
 
         // Indicator columns in block order, and the blocks in fit index space.
         List<Integer> cols = new ArrayList<>();
@@ -298,28 +369,54 @@ public final class LcdNodPhase2 {
         int[] blockOf = new int[p];
         for (int i = 0; i < k; i++) for (int a : fitBlocks[i]) blockOf[a] = i;
 
-        // Rows by domain value, in sorted order of the value.
-        Map<Integer, List<Integer>> rowsByValue = groupRows(dcol);
-        List<Integer> values = new ArrayList<>(rowsByValue.keySet());
-        Collections.sort(values);
-
+        // The domains: label, sample size, covariance over the indicators, and, when rows are available, the rows.
         List<String> labels = new ArrayList<>();
+        List<Integer> ns = new ArrayList<>();
+        List<SimpleMatrix> domainCovs = new ArrayList<>();
         List<double[][]> domainData = new ArrayList<>();
         List<String> droppedDomains = new ArrayList<>();
-        for (int v : values) {
-            List<Integer> rows = rowsByValue.get(v);
-            String label = domainNode instanceof DiscreteVariable dv ? dv.getCategory(v) : Integer.toString(v);
-            if (rows.size() < p + 2) {
-                droppedDomains.add(label + " (" + rows.size() + " rows)");
-                continue;
+
+        if (fromCovariances) {
+            for (int t = 0; t < domainCovariances.size(); t++) {
+                ICovarianceMatrix c = domainCovariances.get(t);
+                String label = domainCovarianceLabels.get(t);
+                if (c.getSampleSize() < p + 2) {
+                    droppedDomains.add(label + " (n = " + c.getSampleSize() + ")");
+                    continue;
+                }
+                SimpleMatrix cov = new SimpleMatrix(p, p);
+                for (int a = 0; a < p; a++) {
+                    for (int b = 0; b < p; b++) cov.set(a, b, c.getValue(cols.get(a), cols.get(b)));
+                }
+                labels.add(label);
+                ns.add(c.getSampleSize());
+                domainCovs.add(cov);
+                domainData.add(null);
             }
-            double[][] d = new double[rows.size()][p];
-            for (int r = 0; r < rows.size(); r++) {
-                int row = rows.get(r);
-                for (int c = 0; c < p; c++) d[r][c] = dataSet.getDouble(row, cols.get(c));
+        } else {
+            // Rows by domain value, in sorted order of the value.
+            int dcol = variables.indexOf(domainNode);
+            Map<Integer, List<Integer>> rowsByValue = groupRows(dcol);
+            List<Integer> values = new ArrayList<>(rowsByValue.keySet());
+            Collections.sort(values);
+
+            for (int v : values) {
+                List<Integer> rows = rowsByValue.get(v);
+                String label = domainNode instanceof DiscreteVariable dv ? dv.getCategory(v) : Integer.toString(v);
+                if (rows.size() < p + 2) {
+                    droppedDomains.add(label + " (" + rows.size() + " rows)");
+                    continue;
+                }
+                double[][] d = new double[rows.size()][p];
+                for (int r = 0; r < rows.size(); r++) {
+                    int row = rows.get(r);
+                    for (int c = 0; c < p; c++) d[r][c] = dataSet.getDouble(row, cols.get(c));
+                }
+                labels.add(label);
+                ns.add(rows.size());
+                domainCovs.add(covariance(d, null));
+                domainData.add(d);
             }
-            labels.add(label);
-            domainData.add(d);
         }
         int numDomains = labels.size();
         if (numDomains < 2) {
@@ -344,26 +441,55 @@ public final class LcdNodPhase2 {
 
         for (int t = 0; t < numDomains; t++) {
             double[][] d = domainData.get(t);
-            sampleSizes[t] = d.length;
-            SimpleMatrix cov = covariance(d, null);
+            sampleSizes[t] = ns.get(t);
+            SimpleMatrix cov = domainCovs.get(t);
             OneFactorFit fit = OneFactorFit.fit(cov, fitBlocks);
             converged[t] = fit.isConverged();
             store(fit, loadings[0], uniques[0], latentCorr[0], t, k);
             double[] warm = fit.getRawParams();
 
             if (verbose) {
-                TetradLogger.getInstance().log("LCD-NOD Phase 2: domain " + labels.get(t) + ", n = " + d.length
+                TetradLogger.getInstance().log("LCD-NOD Phase 2: domain " + labels.get(t) + ", n = " + ns.get(t)
                                                + ", fit " + (fit.isConverged() ? "converged" : "did not converge")
                                                + ", discrepancy " + fit.getDiscrepancy());
             }
 
-            int[] idx = new int[d.length];
-            for (int b = 1; b <= B; b++) {
-                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                for (int r = 0; r < idx.length; r++) idx[r] = random.nextInt(idx.length);
-                SimpleMatrix bcov = covariance(d, idx);
-                OneFactorFit bfit = OneFactorFit.fit(bcov, fitBlocks, warm);
-                store(bfit, loadings[b], uniques[b], latentCorr[b], t, k);
+            if (B == 0) continue;
+
+            if (d != null) {
+                // Nonparametric bootstrap: resample rows within the domain.
+                int[] idx = new int[d.length];
+                for (int b = 1; b <= B; b++) {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                    for (int r = 0; r < idx.length; r++) idx[r] = random.nextInt(idx.length);
+                    SimpleMatrix bcov = covariance(d, idx);
+                    OneFactorFit bfit = OneFactorFit.fit(bcov, fitBlocks, warm);
+                    store(bfit, loadings[b], uniques[b], latentCorr[b], t, k);
+                }
+            } else {
+                // Parametric bootstrap: draw rows from a normal distribution with the domain's covariance.
+                double[][] chol = OneFactorFit.cholesky(toArray(cov));
+                if (chol == null) {
+                    throw new IllegalArgumentException("The covariance matrix of domain " + labels.get(t)
+                                                       + " over the indicators is not positive definite.");
+                }
+                int n = ns.get(t);
+                double[][] rows = new double[n][p];
+                double[] z = new double[p];
+                for (int b = 1; b <= B; b++) {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                    for (int r = 0; r < n; r++) {
+                        for (int c = 0; c < p; c++) z[c] = random.nextGaussian();
+                        for (int a = 0; a < p; a++) {
+                            double sum = 0;
+                            for (int c = 0; c <= a; c++) sum += chol[a][c] * z[c];
+                            rows[r][a] = sum;
+                        }
+                    }
+                    SimpleMatrix bcov = covariance(rows, null);
+                    OneFactorFit bfit = OneFactorFit.fit(bcov, fitBlocks, warm);
+                    store(bfit, loadings[b], uniques[b], latentCorr[b], t, k);
+                }
             }
         }
 
@@ -466,9 +592,9 @@ public final class LcdNodPhase2 {
         // The augmented graph.
         Graph graph = new EdgeListGraph();
         for (Node latent : latents) graph.addNode(latent);
-        for (int c : cols) graph.addNode(dataSet.getVariable(c));
+        for (int c : cols) graph.addNode(variables.get(c));
         for (int i = 0; i < k; i++) {
-            for (int a : fitBlocks[i]) graph.addDirectedEdge(latents.get(i), dataSet.getVariable(cols.get(a)));
+            for (int a : fitBlocks[i]) graph.addDirectedEdge(latents.get(i), variables.get(cols.get(a)));
         }
         if (latentCpdag != null) {
             for (Edge edge : latentCpdag.getEdges()) {
@@ -483,7 +609,7 @@ public final class LcdNodPhase2 {
         }
         for (int a = 0; a < p; a++) {
             if (indicatorDecisions[a].applicable && indicatorDecisions[a].changes) {
-                graph.addDirectedEdge(domainNode, dataSet.getVariable(cols.get(a)));
+                graph.addDirectedEdge(domainNode, variables.get(cols.get(a)));
             }
         }
 
@@ -492,7 +618,8 @@ public final class LcdNodPhase2 {
         res.domainLabels = labels;
         res.sampleSizes = sampleSizes;
         res.indicatorNames = new ArrayList<>();
-        for (int c : cols) res.indicatorNames.add(dataSet.getVariable(c).getName());
+        for (int c : cols) res.indicatorNames.add(variables.get(c).getName());
+        res.parametricBootstrap = fromCovariances;
         res.loadings = loadings[0];
         res.uniques = uniques[0];
         res.latentCorrelations = latentCorr[0];
@@ -814,6 +941,12 @@ public final class LcdNodPhase2 {
         return cov;
     }
 
+    private static double[][] toArray(SimpleMatrix m) {
+        double[][] a = new double[m.getNumRows()][m.getNumCols()];
+        for (int i = 0; i < a.length; i++) for (int j = 0; j < a[i].length; j++) a[i][j] = m.get(i, j);
+        return a;
+    }
+
     private static void store(OneFactorFit fit, double[][] loadings, double[][] uniques, double[][][] corr,
                               int t, int k) {
         loadings[t] = fit.getLoadings();
@@ -932,6 +1065,10 @@ public final class LcdNodPhase2 {
         sb.append("LCD-NOD Phase 2: changes across domains of ").append(domainColumn).append('\n');
         sb.append("Change rule: ").append(numBootstraps > 0
                 ? "bootstrap homogeneity test, B = " + numBootstraps + ", alpha = " + alpha
+                  + (res.parametricBootstrap ? " (parametric bootstrap from the per-domain covariance matrices; "
+                                               + "the uncertainty of those estimates themselves, from missing values "
+                                               + "or censoring, is not included, so p-values run somewhat small)"
+                                             : " (row resampling within domains)")
                 : "ratio threshold " + changeRatio + " on variances (coefficients not examined)").append('\n');
         sb.append("Latent rule: ").append(res.latentRule).append('\n');
         sb.append("Domains (n): ");
@@ -1198,6 +1335,10 @@ public final class LcdNodPhase2 {
          * Domains dropped for having too few rows.
          */
         public List<String> droppedDomains;
+        /**
+         * Whether the bootstrap was parametric (from per-domain covariance matrices) rather than by resampling rows.
+         */
+        public boolean parametricBootstrap;
         /**
          * The text report.
          */

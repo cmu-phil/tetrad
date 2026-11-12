@@ -25,6 +25,11 @@ import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -60,8 +65,11 @@ import java.util.List;
  * <p>
  * The domain column may be discrete, or continuous with whole-number values; every other column must be continuous.
  * RLCD takes only continuous data, so a discrete domain column is recoded as its category index before RLCD sees it.
- * RLCD's parameters apply to Phase 1 except that stratification is always on and the missing-data, censoring,
- * pooled-imputation and stability options, which cannot be combined with stratification, are not offered.
+ * RLCD's parameters apply to Phase 1 except that stratification is always on, and the pooled-imputation, testwise
+ * and stability options are not offered. Missing values and ceiling censoring are handled within each domain: the
+ * covariance of each domain is estimated by the chosen policy (EM, available-case, listwise) or by the censored
+ * model, and those per-domain matrices drive both the pooled rank tests of Phase 1 and the fits of Phase 2, whose
+ * change test then uses a parametric bootstrap (see {@link LcdNodPhase2}).
  *
  * @author josephramsey
  */
@@ -129,18 +137,62 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
 
         // RLCD takes continuous data only: recode a discrete domain column as its category index.
         DataSet continuous = domain instanceof DiscreteVariable ? recodeDomain(dataSet, domain) : dataSet;
+        Node contDomain = continuous.getVariable(domainColumn);
 
-        // Phase 1: stratified RLCD.
-        Parameters p1 = new Parameters(parameters);
-        p1.set(Params.STRATIFY_BY_DOMAIN, true);
-        p1.set(Params.DOMAIN_COLUMN, domainColumn);
-        p1.set(Params.RLCD_CENSOR_CEILING, false);
-        p1.set(Params.RLCD_STABILITY_RUNS, 0);
-        p1.set(Params.POOL_IMPUTATIONS, false);
-        p1.set(Params.MISSING_DATA_POLICY, "default");
+        // Split the rows by domain (the domain column removed) and estimate a covariance within each domain, by
+        // the missing-data policy or censoring if set. These matrices drive both phases.
+        List<DataSet> perDomain = StratifiedRankTests.split(continuous, contDomain);
+        List<String> labels = domainLabels(continuous, contDomain, domain);
+        if (perDomain.size() != labels.size()) {
+            throw new IllegalStateException("Domain split and labels disagree: " + perDomain.size() + " vs "
+                                            + labels.size());
+        }
+
+        boolean anyMissing = new MissingDataAudit(dataSet).anyMissing();
+        boolean censor = parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false);
+        MissingDataSpec spec = MissingDataUtils.fromParameters(parameters);
+        if (anyMissing && !censor && spec == null) {
+            throw new IllegalArgumentException("LCD-NOD: the data have missing values and no missing-data policy is "
+                                               + "set. Set missingDataPolicy to \"em\" (recommended: an EM "
+                                               + "covariance within each domain), \"pairwise\" or \"listwise\", or "
+                                               + "turn on rlcdCensorCeiling if values sit at a ceiling such as 100 "
+                                               + "(missing values are then handled as missing at random within the "
+                                               + "censored model).");
+        }
+        if (spec != null && (spec.getPolicy() == MissingDataPolicy.TESTWISE
+                             || spec.getPolicy() == MissingDataPolicy.MULTIPLE_IMPUTATION)) {
+            throw new IllegalArgumentException("LCD-NOD: the testwise and multiple-imputation policies cannot be "
+                                               + "combined with stratification; use em, pairwise or listwise.");
+        }
+
+        List<ICovarianceMatrix> covariances = Rlcd.perDomainCovariances(perDomain, parameters);
+
+        int dcol = continuous.getVariables().indexOf(contDomain);
+        int[] keep = new int[continuous.getNumColumns() - 1];
+        int kk = 0;
+        for (int j = 0; j < continuous.getNumColumns(); j++) if (j != dcol) keep[kk++] = j;
+        DataSet sub = continuous.subsetColumns(keep);
+
+        StringBuilder sizes = new StringBuilder();
+        for (int t = 0; t < perDomain.size(); t++) {
+            if (t > 0) sizes.append(", ");
+            sizes.append(labels.get(t)).append(" (").append(perDomain.get(t).getNumRows());
+            if (covariances.get(t).getSampleSize() != perDomain.get(t).getNumRows()) {
+                sizes.append(", ess ").append(covariances.get(t).getSampleSize());
+            }
+            sizes.append(')');
+        }
+        String domainsLine = "LCD-NOD: domains " + sizes + "; per-domain covariance by "
+                             + (censor ? "censored MVN estimate at ceiling "
+                                         + parameters.getDouble(Params.RLCD_CEILING_VALUE, 100.0)
+                                : spec == null ? "sample covariance"
+                                : spec.getPolicy().toString().toLowerCase().replace('_', ' ')) + ".";
+        TetradLogger.getInstance().log(domainsLine);
+
+        // Phase 1: stratified RLCD on the per-domain covariances.
         Rlcd rlcd = new Rlcd();
         rlcd.setKnowledge(knowledge);
-        Graph g1 = rlcd.search(continuous, p1);
+        Graph g1 = rlcd.searchStratified(sub, StratifiedChi2RankTest.fromCovariances(covariances), parameters);
         this.rlcdGraph = g1;
 
         // The one-factor part: latents with at least two pure indicators.
@@ -154,7 +206,7 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
                 if (c.getNodeType() == NodeType.LATENT) continue;
                 List<Node> adj = g1.getAdjacentNodes(c);
                 if (adj.size() == 1 && adj.get(0) == l) {
-                    block.add(dataSet.getVariables().indexOf(dataSet.getVariable(c.getName())));
+                    block.add(sub.getVariables().indexOf(sub.getVariable(c.getName())));
                 }
             }
             if (block.size() >= 2) {
@@ -168,13 +220,13 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
         List<String> impure = new ArrayList<>();
         for (Node v : g1.getNodes()) {
             if (v.getNodeType() == NodeType.LATENT) continue;
-            int col = dataSet.getVariables().indexOf(dataSet.getVariable(v.getName()));
+            int col = sub.getVariables().indexOf(sub.getVariable(v.getName()));
             boolean inBlock = false;
             for (List<Integer> b : blocks) if (b.contains(col)) inBlock = true;
             if (!inBlock) impure.add(v.getName());
         }
 
-        StringBuilder sb = new StringBuilder("LCD-NOD Phase 1 (stratified RLCD): ")
+        StringBuilder sb = new StringBuilder(domainsLine).append('\n').append("LCD-NOD Phase 1 (stratified RLCD): ")
                 .append(latents.size() + latentsWithoutPure.size()).append(" latent(s).\n");
         sb.append("Phase 2 covers the one-factor part: ");
         for (int i = 0; i < latents.size(); i++) {
@@ -182,7 +234,7 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
             sb.append(latents.get(i).getName()).append(" (");
             for (int j = 0; j < blocks.get(i).size(); j++) {
                 if (j > 0) sb.append(", ");
-                sb.append(dataSet.getVariable(blocks.get(i).get(j)).getName());
+                sb.append(sub.getVariable(blocks.get(i).get(j)).getName());
             }
             sb.append(')');
         }
@@ -209,8 +261,8 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
             return out;
         }
 
-        // Phase 2.
-        LcdNodPhase2 phase2 = new LcdNodPhase2(dataSet, domainColumn, blocks, latents);
+        // Phase 2, on the same per-domain covariances.
+        LcdNodPhase2 phase2 = new LcdNodPhase2(covariances, labels, domain, blocks, latents);
         phase2.setAlpha(parameters.getDouble(Params.LCD_NOD_CHANGE_ALPHA, 0.05));
         phase2.setNumBootstraps(parameters.getInt(Params.LCD_NOD_BOOTSTRAPS, 100));
         phase2.setChangeRatio(parameters.getDouble(Params.LCD_NOD_CHANGE_RATIO, 1.5));
@@ -243,6 +295,26 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
         this.report = sb + "\n" + phase2.getReport();
         TetradLogger.getInstance().log(report);
         return out;
+    }
+
+    /**
+     * The domain labels in the order of {@link StratifiedRankTests#split(DataSet, Node)}: the distinct whole-number
+     * values of the (continuous) domain column in increasing order, shown as the category names of the original
+     * discrete column when there was one.
+     */
+    private static List<String> domainLabels(DataSet continuous, Node contDomain, Node original) {
+        int dcol = continuous.getVariables().indexOf(contDomain);
+        java.util.TreeSet<Integer> values = new java.util.TreeSet<>();
+        for (int r = 0; r < continuous.getNumRows(); r++) {
+            double x = continuous.getDouble(r, dcol);
+            if (!Double.isNaN(x)) values.add((int) Math.rint(x));
+        }
+        List<String> labels = new ArrayList<>();
+        for (int v : values) {
+            labels.add(original instanceof DiscreteVariable dv && v >= 0 && v < dv.getNumCategories()
+                    ? dv.getCategory(v) : Integer.toString(v));
+        }
+        return labels;
     }
 
     /**
@@ -323,6 +395,13 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
         parameters.add(Params.RLCD_STAGE1_FGES);
         parameters.add(Params.RLCD_STAGE1_NONE);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
+        parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
+        parameters.add(Params.MISSING_EM_RIDGE);
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
+        parameters.add(Params.RLCD_CENSOR_CEILING);
+        parameters.add(Params.RLCD_CEILING_VALUE);
         parameters.add(Params.LCD_NOD_CHANGE_ALPHA);
         parameters.add(Params.LCD_NOD_BOOTSTRAPS);
         parameters.add(Params.LCD_NOD_CHANGE_RATIO);
