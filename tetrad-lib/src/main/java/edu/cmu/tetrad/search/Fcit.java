@@ -350,7 +350,7 @@ public final class Fcit implements IGraphSearch {
      * configuration attempts only the first-found canonical separator per pair
      * and relies on the saturating pass for discharge.
      */
-    private boolean retrySepsetsOnRevert = false;
+    private boolean retrySepsetsOnRevert = true;
     /**
      * Whether the final discriminating-path scan runs. OFF skips detection and
      * the discharge it feeds, so confirmed-spurious legs that neither
