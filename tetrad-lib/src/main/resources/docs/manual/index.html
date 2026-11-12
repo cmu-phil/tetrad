@@ -5099,6 +5099,15 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             (1991), which shrinks the statistic by the disagreement among the imputations. The combining rule is an
             approximation; it assumes values missing at random, and stage 1 still scores at the full sample
             size.</p>
+        <p>With stratifyByDomain on, RLCD runs in stratified (domain-pooled) mode, the Phase 1 setting of LCD-NOD
+            (Dong et al., ICML 2026): the rows are split by the column named by domainColumn, which is removed from
+            the searched variables, every rank statistic is computed within each domain and pooled across domains,
+            and stage 1 is scored on the within-domain covariance, so that the structure is valid even when
+            coefficients, means and noise differ across domains. The domain column may be discrete, in which case
+            the data set is of mixed type and RLCD recodes the column to its category indices; every other column
+            must be continuous. Missing values are then handled within each domain by missingDataPolicy (em,
+            pairwise or listwise), or by rlcdCensorCeiling, with the testwise and multiple-imputation policies not
+            available in this mode.</p>
         <p>RLCD is marked experimental in version 8.0.0: the clique-based stage 1 and the merge and finish rules
             depart from the paper, so its identifiability theorem does not transfer to the implementation as written,
             and several of the newer options are unit-tested but not yet measured at scale.</p>

@@ -415,6 +415,28 @@ public class TestLcdNodPhase2 {
         for (Node n : g.getNodes()) if (n.getNodeType() == edu.cmu.tetrad.graph.NodeType.LATENT) latents++;
         assertEquals(3, latents);
         assertNull(g.getNode("domain"));
+
+        // The same with the discrete domain column: the mixed data set is accepted in stratified mode.
+        DataSet mixed = sim.dataSet.copy();
+        Random holes2 = new Random(4);
+        for (int r = 0; r < mixed.getNumRows(); r++) {
+            for (int c = 0; c < dc; c++) if (holes2.nextDouble() < 0.05) mixed.setDouble(r, c, Double.NaN);
+        }
+        assertTrue(mixed.isMixed());
+        Graph g2 = new Rlcd().search(mixed, parameters);
+        latents = 0;
+        for (Node n : g2.getNodes()) if (n.getNodeType() == edu.cmu.tetrad.graph.NodeType.LATENT) latents++;
+        assertEquals(3, latents);
+
+        // Without stratification, a mixed data set is still refused.
+        Parameters plain = new Parameters(parameters);
+        plain.set(Params.STRATIFY_BY_DOMAIN, false);
+        try {
+            new Rlcd().search(mixed, plain);
+            fail("mixed data without stratification should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("stratifyByDomain"));
+        }
     }
 
     /**

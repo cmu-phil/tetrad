@@ -152,6 +152,47 @@ public final class StratifiedRankTests {
     }
 
     /**
+     * For algorithms that take only continuous data: the data set with a discrete domain column replaced by a
+     * continuous column of its category indices (missing as NaN), under the same name, so that the rows can still be
+     * split by it. A data set whose domain column is already continuous is returned as is. Every column other than
+     * the domain column must be continuous.
+     *
+     * @param dataSet      the data set.
+     * @param domainColumn the name of the domain column.
+     * @return the data set with a continuous domain column.
+     * @throws IllegalArgumentException if some other column is discrete.
+     */
+    public static DataSet withContinuousDomain(DataSet dataSet, String domainColumn) {
+        Node domain = dataSet.getVariable(domainColumn);
+        if (domain == null) {
+            throw new IllegalArgumentException("No column named " + domainColumn + " in the data set.");
+        }
+        for (Node v : dataSet.getVariables()) {
+            if (v != domain && v instanceof edu.cmu.tetrad.data.DiscreteVariable) {
+                throw new IllegalArgumentException(v.getName() + " is discrete. Every column other than the domain "
+                                                   + "column (" + domainColumn + ") must be continuous.");
+            }
+        }
+        if (!(domain instanceof edu.cmu.tetrad.data.DiscreteVariable)) return dataSet;
+
+        int dcol = dataSet.getVariables().indexOf(domain);
+        List<Node> vars = new ArrayList<>(dataSet.getVariables());
+        vars.set(dcol, new edu.cmu.tetrad.data.ContinuousVariable(domain.getName()));
+        double[][] m = new double[dataSet.getNumRows()][vars.size()];
+        for (int r = 0; r < dataSet.getNumRows(); r++) {
+            for (int c = 0; c < vars.size(); c++) {
+                if (c == dcol) {
+                    int v = dataSet.getInt(r, c);
+                    m[r][c] = v < 0 ? Double.NaN : v;
+                } else {
+                    m[r][c] = dataSet.getDouble(r, c);
+                }
+            }
+        }
+        return new edu.cmu.tetrad.data.BoxDataSet(new edu.cmu.tetrad.data.DoubleDataBox(m), vars);
+    }
+
+    /**
      * Splits a data set into one data set per value of a discrete domain column, dropping that column. The domain
      * variable must be discrete, or a continuous column whose values are all integral (batch codes stored as
      * doubles are accepted).

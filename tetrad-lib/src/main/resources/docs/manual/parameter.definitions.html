@@ -7801,8 +7801,8 @@ Source:
         parameter, every rank decision pools the within-domain statistics across domains, and for RLCD the
         first stage is scored on the within-domain covariance. For data gathered in several batches,
         sites, or cohorts whose causal structure is shared but whose coefficients and means may differ by
-        domain. Note for RLCD in the interface: RLCD accepts continuous data, so code the domain index as
-        an integer-valued continuous column. With missing values, RLCD in stratified mode estimates the
+        domain. The domain column may be discrete or a continuous column of whole numbers; for RLCD, which is
+        otherwise a continuous-data method, a discrete domain column is recoded internally. With missing values, RLCD in stratified mode estimates the
         covariance within each domain by the missingDataPolicy ("em", "pairwise" or "listwise"; the
         testwise and multiple-imputation policies cannot be combined with stratification) or, with
         rlcdCensorCeiling on, by the censored model, and pools the per-domain rank statistics from those

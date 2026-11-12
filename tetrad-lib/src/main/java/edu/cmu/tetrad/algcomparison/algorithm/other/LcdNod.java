@@ -127,16 +127,13 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
                 parameters.getString(Params.DOMAIN_COLUMN, "domain"));
         Node domain = dataSet.getVariable(domainColumn);
 
-        for (Node v : dataSet.getVariables()) {
-            if (v != domain && v instanceof DiscreteVariable) {
-                throw new IllegalArgumentException("LCD-NOD: " + v.getName() + " is discrete. Every column other "
-                                                   + "than the domain column (" + domainColumn + ") must be "
-                                                   + "continuous.");
-            }
-        }
-
         // RLCD takes continuous data only: recode a discrete domain column as its category index.
-        DataSet continuous = domain instanceof DiscreteVariable ? recodeDomain(dataSet, domain) : dataSet;
+        DataSet continuous;
+        try {
+            continuous = StratifiedRankTests.withContinuousDomain(dataSet, domainColumn);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("LCD-NOD: " + e.getMessage(), e);
+        }
         Node contDomain = continuous.getVariable(domainColumn);
 
         // Split the rows by domain (the domain column removed) and estimate a covariance within each domain, by
@@ -315,28 +312,6 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
                     ? dv.getCategory(v) : Integer.toString(v));
         }
         return labels;
-    }
-
-    /**
-     * The data set with a discrete domain column replaced by a continuous column of its category indices, under the
-     * same name.
-     */
-    private static DataSet recodeDomain(DataSet dataSet, Node domain) {
-        int dcol = dataSet.getVariables().indexOf(domain);
-        List<Node> vars = new ArrayList<>(dataSet.getVariables());
-        vars.set(dcol, new ContinuousVariable(domain.getName()));
-        double[][] m = new double[dataSet.getNumRows()][vars.size()];
-        for (int r = 0; r < dataSet.getNumRows(); r++) {
-            for (int c = 0; c < vars.size(); c++) {
-                if (c == dcol) {
-                    int v = dataSet.getInt(r, c);
-                    m[r][c] = v < 0 ? Double.NaN : v;
-                } else {
-                    m[r][c] = dataSet.getDouble(r, c);
-                }
-            }
-        }
-        return new BoxDataSet(new DoubleDataBox(m), vars);
     }
 
     /**

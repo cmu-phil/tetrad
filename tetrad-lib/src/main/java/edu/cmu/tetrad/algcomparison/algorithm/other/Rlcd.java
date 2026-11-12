@@ -69,7 +69,7 @@ import java.util.Random;
         name = "RLCD",
         command = "rlcd",
         algoType = AlgType.search_for_structure_over_latents,
-        dataType = DataType.Continuous
+        dataType = {DataType.Continuous, DataType.Mixed}
 )
 @Experimental
 public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
@@ -96,16 +96,35 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
-            throw new IllegalArgumentException("RLCD requires a continuous tabular data set.");
+        if (!(dataModel instanceof DataSet given)) {
+            throw new IllegalArgumentException("RLCD requires a tabular data set.");
         }
 
-        Graph graph = searchOnce(dataSet, parameters);
+        DataSet dataSet = given;
+        if (!dataSet.isContinuous()) {
+            // The one discrete column RLCD can take is the domain column of stratified mode; it is recoded to its
+            // category indices, since RLCD is otherwise a continuous-data method.
+            if (!parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
+                throw new IllegalArgumentException("RLCD requires continuous data. A discrete column is accepted "
+                                                   + "only as the domain column with stratifyByDomain on.");
+            }
+            String domainColumn = StratifiedRankTests.resolveDomainColumn(dataSet,
+                    parameters.getString(Params.DOMAIN_COLUMN, "domain"));
+            try {
+                dataSet = StratifiedRankTests.withContinuousDomain(dataSet, domainColumn);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("RLCD: " + e.getMessage() + " RLCD requires continuous data "
+                                                   + "apart from the domain column.", e);
+            }
+        }
+
+        final DataSet data = dataSet;
+        Graph graph = searchOnce(data, parameters);
 
         int stabilityRuns = parameters.getInt(Params.RLCD_STABILITY_RUNS, 0);
         if (stabilityRuns > 0) {
             stabilitySummary(graph, parameters, stabilityRuns,
-                    random -> searchOnce(dataSet.subsetRows(bootstrapRows(dataSet.getNumRows(), random)), parameters));
+                    random -> searchOnce(data.subsetRows(bootstrapRows(data.getNumRows(), random)), parameters));
         }
 
         return graph;
@@ -490,7 +509,10 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        // Mixed, not Continuous: the search box checks this against the data, and Mixed admits both continuous data
+        // and mixed data (continuous variables plus a discrete domain column, in stratified mode); search() itself
+        // refuses mixed data when stratification is off.
+        return DataType.Mixed;
     }
 
     @Override
