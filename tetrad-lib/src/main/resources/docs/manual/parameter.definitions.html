@@ -3934,6 +3934,60 @@ Source:
             <span id="lambda1_value_type">Double</span></li>
     </ul>
 
+    === lcdNodBootstraps ===
+    <h3 class="parameter_description" id="lcdNodBootstraps">lcdNodBootstraps</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lcdNodBootstraps_short_desc">Bootstraps per domain for the LCD-NOD change test (0 = ratio rule)</span></li>
+        <li>Long
+            Description: <span id="lcdNodBootstraps_long_desc"> The number of within-domain bootstrap
+        resamples LCD-NOD uses to decide whether a residual variance, or a latent's conditional
+        distribution, changes across domains. Rows are resampled within each domain and the one-factor
+        model refit, giving a standard error for each quantity in each domain; Cochran's Q statistic for
+        equality across domains is referred to a chi-square distribution with one degree of freedom fewer
+        than the number of domains, and a change is declared when the p-value is below lcdNodChangeAlpha.
+        When zero, no bootstrap is run and a variance is declared to change when its largest per-domain
+        estimate exceeds its smallest by more than the factor lcdNodChangeRatio. The paper (Dong et al.,
+        ICML 2026) does not specify a finite-sample rule; the bootstrap test is the default here, and 100
+        resamples is usually enough. </span></li>
+        <li>Default Value: <span id="lcdNodBootstraps_default_value">100</span></li>
+        <li>Lower Bound: <span id="lcdNodBootstraps_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="lcdNodBootstraps_upper_bound">100000</span></li>
+        <li>Value Type: <span id="lcdNodBootstraps_value_type">Integer</span></li>
+    </ul>
+
+    === lcdNodChangeAlpha ===
+    <h3 class="parameter_description" id="lcdNodChangeAlpha">lcdNodChangeAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lcdNodChangeAlpha_short_desc">Significance level for the LCD-NOD change test</span></li>
+        <li>Long
+            Description: <span id="lcdNodChangeAlpha_long_desc"> The level at which LCD-NOD's bootstrap
+        homogeneity test declares that a quantity changes across domains. It is separate from alpha, which
+        LCD-NOD uses for the rank tests of its structure-learning step (RLCD in stratified mode). For a latent's
+        conditional distribution with m coefficients, each of the m + 1 components is tested at this level
+        divided by m + 1. Not used when lcdNodBootstraps is zero. </span></li>
+        <li>Default Value: <span id="lcdNodChangeAlpha_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="lcdNodChangeAlpha_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="lcdNodChangeAlpha_upper_bound">1</span></li>
+        <li>Value Type: <span id="lcdNodChangeAlpha_value_type">Double</span></li>
+    </ul>
+
+    === lcdNodChangeRatio ===
+    <h3 class="parameter_description" id="lcdNodChangeRatio">lcdNodChangeRatio</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lcdNodChangeRatio_short_desc">Max/min ratio declaring a change (when lcdNodBootstraps is 0)</span></li>
+        <li>Long
+            Description: <span id="lcdNodChangeRatio_long_desc"> Used by LCD-NOD only when
+        lcdNodBootstraps is zero: a residual variance or calibrated latent conditional variance is declared
+        to change across domains when its largest per-domain estimate exceeds its smallest by more than
+        this factor. Coefficients are not examined under this rule, and a fixed ratio ignores sample size,
+        so this is a quick look rather than a test; it can miss latent changes that the bootstrap test
+        finds. </span></li>
+        <li>Default Value: <span id="lcdNodChangeRatio_default_value">1.5</span></li>
+        <li>Lower Bound: <span id="lcdNodChangeRatio_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="lcdNodChangeRatio_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="lcdNodChangeRatio_value_type">Double</span></li>
+    </ul>
+
     === linearHigh ===
     <h3 class="parameter_description" id="linearHigh">linearHigh</h3>
     <ul class="parameter_description_list">

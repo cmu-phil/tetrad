@@ -962,6 +962,18 @@ public final class Params {
      */
     public static final String LATENT_MEASURED_IMPURE_PARENTS = "latentMeasuredImpureParents";
     /**
+     * Constant <code>LCD_NOD_BOOTSTRAPS="lcdNodBootstraps"</code>
+     */
+    public static final String LCD_NOD_BOOTSTRAPS = "lcdNodBootstraps";
+    /**
+     * Constant <code>LCD_NOD_CHANGE_ALPHA="lcdNodChangeAlpha"</code>
+     */
+    public static final String LCD_NOD_CHANGE_ALPHA = "lcdNodChangeAlpha";
+    /**
+     * Constant <code>LCD_NOD_CHANGE_RATIO="lcdNodChangeRatio"</code>
+     */
+    public static final String LCD_NOD_CHANGE_RATIO = "lcdNodChangeRatio";
+    /**
      * Constant <code>LINEAR_HIGH="linearHigh"</code>
      */
     public static final String LINEAR_HIGH = "linearHigh";
