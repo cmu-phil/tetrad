@@ -210,7 +210,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             fcit.setRequireNoScoreDrop(true);
             fcit.setUseSaturatingStep(false);
         } else if (correctness == 3) {
-            fcit.setUseSaturatingStep(false);
+            fcit.setUseSaturatingStep(true);
         } else {
             throw new IllegalArgumentException("Unknown FCIT correctness option: " + correctness
                     + " (1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step).");
