@@ -91,7 +91,7 @@ import java.util.TreeSet;
  *
  * @author josephramsey
  */
-public final class RlcdIndicat  orEdgeStudy {
+public final class RlcdIndicatorEdgeStudy {
 
     private static final String[] MODELS = {"PAIR", "PAIR_PARENT_CHILD", "PAIR_CHILD_CHILD", "SECOND_CHILD",
             "SHARED_CAUSE"};
