@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -61,6 +62,11 @@ import java.util.Random;
  * The output graph contains the observed variables and the discovered latents, marked as latent nodes. Background
  * knowledge over the observed variables is honored in stage 1, restricts which observed variables may act as parents
  * in stage 2, and restores required observed edges; it cannot refer to the latents.
+ * <p>
+ * The input may be a continuous data set or a covariance matrix with its sample size; both stages are functions of
+ * the covariance matrix and the sample size alone. Over a covariance matrix the options that need rows are refused
+ * with a message: the missing-data policies, ceiling censoring, stratification, and pooled imputations; the stability
+ * summary, which resamples rows, is skipped with a note in the log.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.search.Rlcd
@@ -69,10 +75,10 @@ import java.util.Random;
         name = "RLCD",
         command = "rlcd",
         algoType = AlgType.search_for_structure_over_latents,
-        dataType = {DataType.Continuous, DataType.Mixed}
+        dataType = {DataType.Continuous, DataType.Mixed, DataType.Covariance}
 )
 @Experimental
-public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
+public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -88,16 +94,20 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
     }
 
     /**
-     * Runs RLCD on a continuous data set.
+     * Runs RLCD on a continuous data set or a covariance matrix.
      *
-     * @param dataModel  the data; must be a continuous tabular data set.
+     * @param dataModel  the data: a continuous tabular data set, or a covariance matrix with its sample size.
      * @param parameters the parameters.
      * @return the graph over observed and latent variables.
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
+        if (dataModel instanceof ICovarianceMatrix covariance) {
+            return searchCovariance(covariance, parameters);
+        }
+
         if (!(dataModel instanceof DataSet given)) {
-            throw new IllegalArgumentException("RLCD requires a tabular data set.");
+            throw new IllegalArgumentException("RLCD requires a tabular data set or a covariance matrix.");
         }
 
         DataSet dataSet = given;
@@ -128,6 +138,32 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         }
 
         return graph;
+    }
+
+    /**
+     * One RLCD search over a covariance matrix. The options that need the data rows are refused by name, so that a
+     * setting left on from a run over data does not silently do nothing.
+     */
+    private Graph searchCovariance(ICovarianceMatrix covariance, Parameters parameters) {
+        List<String> needRows = new ArrayList<>();
+        if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) needRows.add("stratifyByDomain");
+        if (parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false)) needRows.add("rlcdCensorCeiling");
+        if (MissingDataUtils.fromParameters(parameters) != null) needRows.add("missingDataPolicy");
+        if (parameters.getBoolean(Params.POOL_IMPUTATIONS, false)) needRows.add("poolImputations");
+        if (!needRows.isEmpty()) {
+            throw new IllegalArgumentException("RLCD: the input is a covariance matrix, which has no rows, so these "
+                                               + "settings cannot apply: " + needRows + ". Turn them off, or give "
+                                               + "RLCD the data set instead.");
+        }
+
+        if (parameters.getInt(Params.RLCD_STABILITY_RUNS, 0) > 0) {
+            TetradLogger.getInstance().log("RLCD: the stability summary resamples rows and is skipped over a "
+                                           + "covariance matrix.");
+        }
+
+        TetradLogger.getInstance().log("RLCD over a covariance matrix, n = " + covariance.getSampleSize()
+                                       + ". Every rank test is calibrated by that sample size.");
+        return run(new edu.cmu.tetrad.search.Rlcd(covariance), parameters);
     }
 
     /**

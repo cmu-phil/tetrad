@@ -1086,6 +1086,105 @@ public class TestRlcd {
         assertTrue(attr.toString(), attr.toString().contains("1 of 3 requested runs completed"));
     }
 
+    /**
+     * A covariance matrix is all RLCD needs: over the latent-over-latents model, which exercises stage 1, the stage-2
+     * cluster search, and the rank-test orientation of the latent edges (the block test over covers), the search over
+     * the sample covariance matrix returns the same graph as the search over the data, and so does the search over
+     * the correlation matrix, since neither stage depends on the scale of the variables.
+     */
+    @Test
+    public void testCovarianceInputMatchesData() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node top = new GraphNode("T0");
+        top.setNodeType(NodeType.LATENT);
+        g.addNode(top);
+        int x = 1;
+        for (int i = 1; i <= 4; i++) {
+            Node t = new GraphNode("T" + i);
+            t.setNodeType(NodeType.LATENT);
+            g.addNode(t);
+            g.addDirectedEdge(top, t);
+            for (int j = 0; j < 3; j++) {
+                Node o = new GraphNode("X" + x++);
+                g.addNode(o);
+                g.addDirectedEdge(t, o);
+            }
+        }
+        DataSet data = simulate(g, 10000, 31L);
+
+        Graph fromData = covarianceRun(new Rlcd(data));
+        Graph fromCov = covarianceRun(new Rlcd(new CovarianceMatrix(data)));
+        Graph fromCorr = covarianceRun(new Rlcd(new edu.cmu.tetrad.data.CorrelationMatrix(data)));
+
+        assertEquals("Covariance input should give the data's graph:\n" + fromData + "\n" + fromCov,
+                fromData, fromCov);
+        assertEquals("Correlation input should give the data's graph:\n" + fromData + "\n" + fromCorr,
+                fromData, fromCorr);
+
+        int latents = 0;
+        for (Node node : fromCov.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents++;
+        assertEquals("Five latents expected: " + fromCov, 5, latents);
+
+        // The wrapper takes the matrix too, and agrees with itself on the data.
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper
+                = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        Parameters params = new Parameters();
+        params.set(Params.RLCD_MAX_K, 2);
+        params.set(Params.ALPHA, 0.01);
+        params.set(Params.SEED, 1L);
+        params.set(Params.RLCD_STABILITY_RUNS, 2); // skipped over a matrix, with a log line, not an error
+        Graph wrapped = wrapper.search(new CovarianceMatrix(data), params);
+        params.set(Params.RLCD_STABILITY_RUNS, 0);
+        assertEquals(wrapper.search(data, params), wrapped);
+        assertNull("No stability summary can be computed from a matrix", wrapped.getAllAttributes().get("RLCD stability"));
+    }
+
+    private static Graph covarianceRun(Rlcd rlcd) throws Exception {
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        return rlcd.search();
+    }
+
+    /**
+     * Over a covariance matrix, the options that need rows are refused by name rather than silently ignored.
+     */
+    @Test
+    public void testCovarianceInputRefusesRowOptions() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 500, 7L);
+        CovarianceMatrix cov = new CovarianceMatrix(data);
+
+        Rlcd rlcd = new Rlcd(cov);
+        try {
+            rlcd.setMissingDataSpec(MissingDataSpec.emCovariance());
+            fail("A missing-data policy needs rows");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("covariance matrix"));
+        }
+        rlcd.setMissingDataSpec(null); // clearing is always allowed
+
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper
+                = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        Parameters params = new Parameters();
+        params.set(Params.STRATIFY_BY_DOMAIN, true);
+        params.set(Params.MISSING_DATA_POLICY, "em");
+        try {
+            wrapper.search(cov, params);
+            fail("Stratification and a missing-data policy need rows");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("stratifyByDomain"));
+            assertTrue(e.getMessage(), e.getMessage().contains("missingDataPolicy"));
+        }
+
+        // A matrix without a sample size cannot calibrate the rank tests.
+        try {
+            new Rlcd(new CovarianceMatrix(cov.getVariables(), cov.getMatrix(), 1));
+            fail("Sample size of 1 should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("sample size"));
+        }
+    }
+
     private static Graph latentGraph(String[][] clusters, String observedEdge) {
         Graph g = new EdgeListGraph();
         int k = 0;

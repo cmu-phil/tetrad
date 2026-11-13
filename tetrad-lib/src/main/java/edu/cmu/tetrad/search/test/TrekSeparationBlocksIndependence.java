@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -133,8 +134,17 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
     // LRUs
     private final LruMap<RKey, Integer> rankCache = new LruMap<>(RANK_CACHE_MAX);
 
+    /**
+     * The block specification, or null when the test was constructed over a covariance matrix.
+     */
     private final BlockSpec blockSpec;
+    /**
+     * The data the test runs on: the block specification's data set, or the covariance matrix.
+     */
+    private final DataModel data;
     private final List<Node> dataVars;
+    private final List<List<Integer>> blocks;
+    private final List<Integer> ranks;
 
     // knobs
     private double alpha = 0.01;
@@ -186,19 +196,66 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
      *                   size).
      */
     public TrekSeparationBlocksIndependence(BlockSpec blockSpec, RankTester rankTester) {
+        this(requireSpec(blockSpec), blockSpec.dataSet(), blockSpec.dataSet().getVariables(),
+                blockSpec.dataSet().getNumRows(),
+                new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix(),
+                blockSpec.blocks(), blockSpec.blockVariables(), blockSpec.ranks(), rankTester);
+    }
+
+    /**
+     * Constructs the test over a covariance matrix instead of a data set. The test is a function of the correlation
+     * matrix and the sample size alone, so this gives the same answers as the test over the data the matrix was
+     * computed from. There is no block specification in this form: {@link #getBlockSpec()} returns null, and
+     * {@link #getData()} returns the matrix.
+     *
+     * @param covariance     the covariance (or correlation) matrix, with its sample size set.
+     * @param blocks         the blocks, as lists of column indices into the matrix's variables.
+     * @param blockVariables one node per block.
+     * @param ranks          the rank of each block.
+     * @param rankTester     the rank test over the matrix's columns, or null for the default engine (Bartlett's Wilks
+     *                       test on the correlation matrix at the sample size).
+     */
+    public TrekSeparationBlocksIndependence(ICovarianceMatrix covariance, List<List<Integer>> blocks,
+                                            List<Node> blockVariables, List<Integer> ranks, RankTester rankTester) {
+        this(null, requireCovariance(covariance), covariance.getVariables(), covariance.getSampleSize(),
+                new CorrelationMatrix(covariance).getMatrix().getSimpleMatrix(), blocks, blockVariables, ranks,
+                rankTester);
+    }
+
+    private static BlockSpec requireSpec(BlockSpec blockSpec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
+        return blockSpec;
+    }
+
+    private static ICovarianceMatrix requireCovariance(ICovarianceMatrix covariance) {
+        if (covariance == null) throw new IllegalArgumentException("covariance == null");
+        return covariance;
+    }
+
+    private TrekSeparationBlocksIndependence(BlockSpec blockSpec, DataModel data, List<Node> dataVars, int n,
+                                             SimpleMatrix S, List<List<Integer>> blocks, List<Node> blockVariables,
+                                             List<Integer> ranks, RankTester rankTester) {
+        if (blocks == null || blockVariables == null || ranks == null) {
+            throw new IllegalArgumentException("blocks, blockVariables, and ranks must be non-null");
+        }
+        if (blocks.size() != blockVariables.size() || blocks.size() != ranks.size()) {
+            throw new IllegalArgumentException("blocks, blockVariables, and ranks must have same size");
+        }
         this.rankTester = rankTester;
 
-        for (Node v : blockSpec.dataSet().getVariables()) {
+        for (Node v : dataVars) {
             if (v instanceof DiscreteVariable) {
                 throw new IllegalArgumentException("TrekSep does not support discrete variables.");
             }
         }
 
         this.blockSpec = blockSpec;
-        this.dataVars = blockSpec.dataSet().getVariables();
+        this.data = data;
+        this.dataVars = dataVars;
+        this.blocks = blocks;
+        this.ranks = ranks;
 
-        this.variables = new ArrayList<>(blockSpec.blockVariables());
+        this.variables = new ArrayList<>(blockVariables);
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int j = 0; j < this.variables.size(); j++) {
             Node v = this.variables.get(j);
@@ -209,15 +266,15 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
         }
         this.nodeHash = nodesHash;
 
-        this.n = blockSpec.dataSet().getNumRows();
+        this.n = n;
         this.nEff = n;
-        this.S = new CorrelationMatrix(blockSpec.dataSet()).getMatrix().getSimpleMatrix();
+        this.S = S;
 
-        final int B = blockSpec.blocks().size();
-        final int D = blockSpec.dataSet().getNumColumns();
+        final int B = blocks.size();
+        final int D = dataVars.size();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
-            List<Integer> cols = blockSpec.blocks().get(b);
+            List<Integer> cols = blocks.get(b);
             if (cols == null || cols.isEmpty()) {
                 allCols[b] = new int[0];
             } else {
@@ -290,13 +347,14 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
     }
 
     /**
-     * Retrieves the data model associated with the current block specification.
+     * Retrieves the data the test runs on: the block specification's data set, or the covariance matrix the test was
+     * constructed over.
      *
-     * @return the DataModel instance representing the data set associated with this block specification
+     * @return the data model.
      */
     @Override
     public DataModel getData() {
-        return blockSpec.dataSet();
+        return data;
     }
 
     /**
@@ -396,7 +454,8 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
     /**
      * Retrieves the block specification associated with this instance.
      *
-     * @return the BlockSpec instance representing the current block specification.
+     * @return the BlockSpec instance representing the current block specification, or null if the test was
+     * constructed over a covariance matrix.
      */
     @Override
     public BlockSpec getBlockSpec() {
@@ -435,7 +494,7 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
         for (Node _z : z) {
             Integer i = nodeHash.get(_z);
             if (i == null) throw new IllegalArgumentException("Conditioning node not found: " + _z);
-            Integer rk = blockSpec.ranks().get(i);
+            Integer rk = ranks.get(i);
             if (rk == null) throw new IllegalStateException(
                     "Missing rank for block index " + i + " (node=" + _z + ")");
             target += rk;
@@ -461,7 +520,7 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
             if (!randomizeSplits) break;
         }
 
-        if (blockSpec.ranks().get(nodeHash.get(x)) == 0 || blockSpec.ranks().get(nodeHash.get(y)) == 0) {
+        if (ranks.get(nodeHash.get(x)) == 0 || ranks.get(nodeHash.get(y)) == 0) {
             boolean indep = true;
 
             return new IndependenceResult(

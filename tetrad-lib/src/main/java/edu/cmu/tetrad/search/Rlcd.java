@@ -94,6 +94,11 @@ import java.util.*;
  * built each edge. And stage 2 is run on a partition only if the paper's condition for the existence of a latent
  * holds somewhere in it (see {@link #setLatentGate(boolean)}). See also {@link RlcdClusterSearch} for the
  * differences inside stage 2.
+ * <p>
+ * Input. The search is constructed over a continuous data set, over several imputations of one ({@link #Rlcd(List)}),
+ * or over a covariance matrix with its sample size ({@link #Rlcd(ICovarianceMatrix)}): both stages are functions of
+ * the covariance matrix and the sample size alone, so a matrix gives the same result as the data it came from; see the
+ * constructor for what is then unavailable.
  *
  * @author josephramsey (translation)
  * @see RlcdClusterSearch
@@ -123,11 +128,21 @@ public class Rlcd {
         NONE
     }
 
+    /**
+     * The data, or null when the search was constructed over a covariance matrix.
+     */
     private final DataSet dataSet;
     /**
-     * The imputations searched over as one; just the data set when there is only one.
+     * The imputations searched over as one; just the data set when there is only one, and empty when the search was
+     * constructed over a covariance matrix.
      */
     private final List<DataSet> imputations;
+    /**
+     * The covariance matrix the search was constructed over, or null when it was constructed over data. Everything
+     * the two stages need is a covariance matrix and a sample size, so the search runs on this alone; the parts that
+     * need rows (missing-value policies, the non-Gaussian two-indicator test) are unavailable.
+     */
+    private final ICovarianceMatrix covariance;
     private final List<Node> variables;
     private RankTester rankTester;
     /**
@@ -183,7 +198,36 @@ public class Rlcd {
         if (!dataSet.isContinuous()) throw new IllegalArgumentException("RLCD requires continuous data.");
         this.dataSet = dataSet;
         this.imputations = List.of(dataSet);
+        this.covariance = null;
         this.variables = new ArrayList<>(dataSet.getVariables());
+    }
+
+    /**
+     * Constructs the search over a covariance (or correlation) matrix with its sample size. Both stages of RLCD are
+     * functions of the covariance matrix and the sample size alone: stage 1 scores it with the SEM BIC score, and
+     * every stage-2 rank test is {@link Chi2RankTest} on its correlation matrix at its sample size, so the result is
+     * the same as from the data the matrix was computed from. What is unavailable: missing-value policies and
+     * censoring (a matrix has no rows), stratified mode (no domain column), and the non-Gaussian two-indicator test of
+     * {@link #setResolveTwoIndicatorLatents(boolean)}, which needs raw columns; with that option on, two-indicator
+     * latents are resolved by knowledge alone.
+     * <p>
+     * The stage-2 search accumulates many rank decisions and treats them as constraints from one population, which is
+     * what they are when the matrix is a sample covariance matrix at the stated sample size. A matrix of some other
+     * kind -- pooled over imputations or domains, shrunk, or assembled from pairwise-available cases -- is accepted
+     * without complaint, and its stated sample size is the only calibration the rank tests get.
+     *
+     * @param covariance the matrix, with its sample size set.
+     */
+    public Rlcd(ICovarianceMatrix covariance) {
+        if (covariance == null) throw new NullPointerException("Covariance matrix is null.");
+        if (covariance.getSampleSize() < 2) {
+            throw new IllegalArgumentException("RLCD: the covariance matrix must carry a sample size of at least 2; "
+                                               + "the rank tests are calibrated by it.");
+        }
+        this.dataSet = null;
+        this.imputations = List.of();
+        this.covariance = covariance;
+        this.variables = new ArrayList<>(covariance.getVariables());
     }
 
     /**
@@ -221,7 +265,18 @@ public class Rlcd {
 
         this.dataSet = first;
         this.imputations = new ArrayList<>(imputations);
+        this.covariance = null;
         this.variables = new ArrayList<>(first.getVariables());
+    }
+
+    /**
+     * Throws if the search was constructed over a covariance matrix, naming the feature that needs rows.
+     */
+    private void requireRows(String feature) {
+        if (covariance != null) {
+            throw new IllegalArgumentException("RLCD: " + feature + " needs the data rows, and this search was "
+                                               + "constructed over a covariance matrix.");
+        }
     }
 
     /**
@@ -284,6 +339,7 @@ public class Rlcd {
         this.testwiseDeletion = false;
         this.missingDataSpec = spec;
         if (spec == null) return;
+        requireRows("a missing-data policy");
 
         if (imputations.size() > 1) {
             throw new IllegalArgumentException("A missing-data policy applies to a single data set with missing "
@@ -369,6 +425,7 @@ public class Rlcd {
      */
     public void setCensoredCovariance(CensoredMvnCovarianceEstimator estimator,
                                       MissingDataSpec.EffectiveSampleSizeMode essMode) {
+        requireRows("a censored covariance estimate");
         if (imputations.size() > 1) {
             throw new IllegalArgumentException("A censored covariance applies to a single data set, not to a set "
                                                + "of imputations.");
@@ -463,7 +520,8 @@ public class Rlcd {
         }
 
         List<String> domainNames = stratified.getVariableNames();
-        List<String> myNames = this.dataSet.getVariableNames();
+        List<String> myNames = new ArrayList<>();
+        for (Node v : variables) myNames.add(v.getName());
         if (!domainNames.equals(myNames)) {
             throw new IllegalArgumentException("The stratified test's domains have variables " + domainNames
                                                + ", but this search was constructed over " + myNames + "; they must "
@@ -701,7 +759,8 @@ public class Rlcd {
         for (Node v : variables) xvars.add(v.getName());
 
         if (rankTester == null) {
-            rankTester = imputations.size() > 1 ? new PooledRankTest(imputations) : new Chi2RankTest(dataSet);
+            rankTester = covariance != null ? new Chi2RankTest(covariance, 1.0)
+                    : imputations.size() > 1 ? new PooledRankTest(imputations) : new Chi2RankTest(dataSet);
         }
 
         // Stage 1.
@@ -1037,9 +1096,13 @@ public class Rlcd {
             if (m == null && (!hasOnlyObservedParentsBesides(graph, x1, lp)
                               || !hasOnlyObservedParentsBesides(graph, x2, lp))) continue;
 
-            // First choice: the non-Gaussian test, when there is a reference cluster to run it against.
+            // First choice: the non-Gaussian test, when there is a reference cluster to run it against. It needs
+            // the raw columns, so over a covariance matrix only knowledge can order the pair.
             TwoIndicatorTest.Answer answer = TwoIndicatorTest.Answer.UNDECIDED;
-            if (m != null) {
+            if (m != null && covariance != null) {
+                log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + ": the non-Gaussian test needs the "
+                    + "data rows and this search runs on a covariance matrix; knowledge alone can order the pair.");
+            } else if (m != null) {
                 List<Node> refs = new ArrayList<>();
                 for (Node c : graph.getChildren(m)) {
                     if (c.getNodeType() != NodeType.LATENT && isPureChildOf(graph, c, m)) refs.add(c);
@@ -1278,8 +1341,9 @@ public class Rlcd {
             blockVars.add(blockVar);
             ranks.add(cover.size());
         }
-        TrekSeparationBlocksIndependence test = new TrekSeparationBlocksIndependence(
-                new BlockSpec(dataSet, blocks, blockVars, ranks), rankTester);
+        TrekSeparationBlocksIndependence test = covariance != null
+                ? new TrekSeparationBlocksIndependence(covariance, blocks, blockVars, ranks, rankTester)
+                : new TrekSeparationBlocksIndependence(new BlockSpec(dataSet, blocks, blockVars, ranks), rankTester);
         test.setAlpha(alpha);
         test.setNumTrials(LATENT_ORIENTATION_SPLIT_TRIALS);
         test.setRandomizeSplits(true, seed == -1 ? 17L : seed);
@@ -1602,11 +1666,14 @@ public class Rlcd {
     }
 
     /**
-     * The covariance matrix stage 1 is scored on: the data set's, or with several imputations the average of
-     * theirs, at the common sample size.
+     * The covariance matrix stage 1 is scored on: the one the search was constructed over, the data set's, or with
+     * several imputations the average of theirs, at the common sample size.
      */
     private CovarianceMatrix stage1Covariance() {
         if (stage1CovarianceOverride != null) return stage1CovarianceOverride;
+        if (covariance != null) {
+            return covariance instanceof CovarianceMatrix cm ? cm : new CovarianceMatrix(covariance);
+        }
         if (testwiseDeletion) {
             stage1CovarianceOverride = listwiseCompleteCovariance();
             return stage1CovarianceOverride;
