@@ -213,8 +213,9 @@ public final class TestFruchtermanReingoldLayout {
     /**
      * The natural edge length must govern the spread of the layout monotonically: on a one-factor measurement model
      * with ten indicators, doubling it from 40 to 80 to 160 must lengthen the mean edge each time, by a factor
-     * between 1.3 and 3 (it is about 2 in practice: edges settle near twice the natural length), and the zero
-     * argument must reproduce the automatic layout exactly.
+     * between 1.2 and 3, and the zero argument must reproduce the automatic layout exactly. The natural length is
+     * the clearance between boxes, so the mean center-to-center edge is about 100 pixels for the boxes plus one to
+     * two times it (about 145, 195 and 335 at 40, 80 and 160).
      */
     @Test
     public void testNaturalEdgeLengthGovernsSpread() {
@@ -229,12 +230,63 @@ public final class TestFruchtermanReingoldLayout {
             Graph g = oneFactor(10);
             LayoutUtil.fruchtermanReingoldLayout(g, length);
             double mean = meanEdgeLength(g);
-            assertTrue("length " + length + " gave mean edge " + mean, mean > length && mean < 3 * length);
+            assertTrue("length " + length + " gave mean edge " + mean, mean > length && mean < 3 * length + 120);
             if (previous > 0) {
                 assertTrue("mean edge should grow with natural length: " + previous + " then " + mean,
-                        mean > 1.3 * previous && mean < 3 * previous);
+                        mean > 1.2 * previous && mean < 3 * previous);
             }
             previous = mean;
+        }
+    }
+
+    /**
+     * Indicators must stay grouped around their own latent at every natural edge length, including ones below the
+     * node box size. Before the forces acted on box clearance, a natural length of 10 on a 59-node measurement model
+     * collapsed each cluster into a pile that the overlap pass then scattered along the axes, and fewer than half
+     * the indicators ended nearer their own latent than any other; the Kamada-Kawai layout did not have the problem.
+     * Nine latents, five with ten indicators and four with two, chained; the test is that at least 95 percent of
+     * indicators have their own latent as the nearest latent, at natural lengths 10, 20, 40 and automatic.
+     */
+    @Test
+    public void testIndicatorsStayWithTheirLatents() {
+        for (double length : new double[]{10, 20, 40, 0}) {
+            Graph g = new EdgeListGraph();
+            List<Node> latents = new ArrayList<>();
+            int x = 1;
+            for (int k = 1; k <= 9; k++) {
+                Node l = new GraphNode("L" + k);
+                l.setNodeType(NodeType.LATENT);
+                g.addNode(l);
+                latents.add(l);
+                int m = k <= 5 ? 10 : 2;
+                for (int i = 0; i < m; i++) {
+                    Node v = new GraphNode("X" + x++);
+                    g.addNode(v);
+                    g.addDirectedEdge(l, v);
+                }
+                if (k > 1) g.addUndirectedEdge(latents.get(k - 2), l);
+            }
+
+            LayoutUtil.fruchtermanReingoldLayout(g, length);
+
+            int ok = 0, total = 0;
+            for (Node l : latents) {
+                for (Node c : g.getChildren(l)) {
+                    total++;
+                    Node nearest = null;
+                    double best = Double.MAX_VALUE;
+                    for (Node m : latents) {
+                        double d = Math.hypot(m.getCenterX() - c.getCenterX(), m.getCenterY() - c.getCenterY());
+                        if (d < best) {
+                            best = d;
+                            nearest = m;
+                        }
+                    }
+                    if (nearest == l) ok++;
+                }
+            }
+            assertTrue("natural length " + length + ": only " + ok + " of " + total
+                       + " indicators are nearest their own latent", ok >= 0.95 * total);
         }
     }
 

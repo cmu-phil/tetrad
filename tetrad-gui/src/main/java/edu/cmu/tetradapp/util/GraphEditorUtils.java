@@ -165,10 +165,11 @@ public class GraphEditorUtils {
 
     /**
      * Pops up a modal editor for the one parameter of the Fruchterman-Reingold layout, the natural edge length: the
-     * distance at which an edge's pull and its endpoints' mutual push balance, so about the length edges settle to.
-     * Edges settle to about twice it in practice. Zero means automatic, 20 + 20 times the graph's average degree,
-     * which spreads a dense graph such as a latent measurement model very widely; 40 to 60 keeps such a graph
-     * compact. The value persists in the user's preferences, keyed "fruchtermanReingoldNaturalEdgeLength".
+     * clearance between two node boxes at which an edge's pull and its endpoints' mutual push balance. Center to
+     * center, edges settle to roughly 100 pixels for the boxes plus two to three times it. Zero means automatic, 20
+     * + 20 times the graph's average degree, which spreads a dense graph such as a latent measurement model very
+     * widely; 20 to 40 keeps such a graph compact. The value persists in the user's preferences, keyed
+     * "fruchtermanReingoldNaturalEdgeLength".
      *
      * @return true if the user clicked OK, false if the dialog was cancelled or closed, in which case the previous
      * value is restored and the caller should skip the layout.
@@ -199,9 +200,10 @@ public class GraphEditorUtils {
         b.add(b1);
 
         Box b2 = Box.createHorizontalBox();
-        JLabel note = new JLabel("<html>Edges settle to about twice this value.<br>Automatic is 20 + 20 &times; "
-                                 + "average degree, which spreads dense graphs widely;<br>40 to 60 keeps a latent "
-                                 + "measurement model compact.</html>");
+        JLabel note = new JLabel("<html>The gap between node boxes at which push and pull balance; edges settle "
+                                 + "to about<br>100 pixels for the boxes plus two to three times this value. "
+                                 + "Automatic is 20 + 20 &times;<br>average degree, which spreads dense graphs "
+                                 + "widely; 20 to 40 keeps a latent measurement model compact.</html>");
         note.setFont(note.getFont().deriveFont(Font.PLAIN, note.getFont().getSize() - 1f));
         b2.add(note);
         b2.add(Box.createHorizontalGlue());

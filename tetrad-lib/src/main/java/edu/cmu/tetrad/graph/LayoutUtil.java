@@ -411,11 +411,12 @@ public class LayoutUtil {
     }
 
     /**
-     * Fruchterman-Reingold with a chosen natural edge length: the distance at which the textbook pull along an edge
-     * and push between its two endpoints balance. Because hubs here repel in proportion to the square root of their
-     * degree and overlapping node boxes are separated afterwards, edges settle to about twice this value in
-     * practice (a natural length of 80 gives mean edge lengths of 150 to 180 pixels on measurement models). Zero or
-     * less means automatic, 20 + 20 times the average degree; 40 to 60 keeps a latent measurement model compact.
+     * Fruchterman-Reingold with a chosen natural edge length: the clearance between two node boxes at which the pull
+     * along an edge and the push between its endpoints balance. Center to center, edges settle to roughly 100 pixels
+     * for the boxes plus two to three times this value (on a 59-node measurement model: 20 gives a mean edge of
+     * about 155 pixels, 40 about 185, 80 about 260); below about 40 the box size takes over and edges shorten little
+     * further, and indicators stay grouped around their latents at every value. Zero or less means automatic, 20 +
+     * 20 times the average degree; 20 to 40 keeps a latent measurement model compact.
      *
      * @param graph             the graph.
      * @param naturalEdgeLength the natural edge length in pixels, or 0 for automatic.
@@ -2759,13 +2760,17 @@ public class LayoutUtil {
      * and attractive force between adjacent nodes.  Includes a linear cooling
      * schedule and early termination when the layout stabilizes.
      * <p>
-     * Two departures from the textbook forces keep edge lengths even. Each
-     * node repels in proportion to the square root of its degree plus one, so
-     * a leaf is pushed less than a hub; and each edge's pull is divided by the
-     * square root of the smaller degree of its two endpoints, so edges inside
-     * densely connected regions relax while an edge to a leaf keeps its full
-     * strength. A final pass separates any node boxes that still overlap, and
-     * components are packed in rows under the largest one.
+     * Three departures from the textbook forces. Each node repels in
+     * proportion to the square root of its degree plus one, so a leaf is
+     * pushed less than a hub; each edge's pull is divided by the square root
+     * of the smaller degree of its two endpoints, so edges inside densely
+     * connected regions relax while an edge to a leaf keeps its full
+     * strength; and both forces act on the clearance between the two nodes'
+     * rendered boxes rather than on the distance between their centers, with
+     * the push scaled by at least the box size, so the equilibrium the forces
+     * find is one with no overlapping boxes whatever natural edge length is
+     * asked for. A final pass separates any node boxes that still overlap,
+     * and components are packed in rows under the largest one.
      *
      * @author josephramsey
      */
@@ -2810,10 +2815,11 @@ public class LayoutUtil {
         private double naturalEdgeLength = 0.0;
 
         /**
-         * Sets the natural edge length, the distance at which an edge's pull and its endpoints' mutual push balance.
-         * Edges settle to about twice it in practice; see {@link LayoutUtil#fruchtermanReingoldLayout(Graph, double)}.
-         * Zero or less means automatic: 20 + 20 times the average degree of the graph, which grows with density
-         * and spreads a dense graph widely.
+         * Sets the natural edge length: the clearance between two node boxes at which an edge's pull and its
+         * endpoints' mutual push balance. Center-to-center, edges settle to roughly 100 pixels for the boxes plus two
+         * to three times this value; below about 40 the box size takes over and edges shorten little further. See
+         * {@link LayoutUtil#fruchtermanReingoldLayout(Graph, double)}. Zero or less means automatic: 20 + 20 times
+         * the average degree of the graph, which grows with density and spreads a dense graph widely.
          *
          * @param naturalEdgeLength the length in pixels, or 0 for automatic.
          */
@@ -2838,9 +2844,27 @@ public class LayoutUtil {
         private double leftmostX = -50.;
 
         /**
-         * Gap in pixels kept between node boxes by the overlap pass.
+         * Gap in pixels kept between node boxes by the overlap pass, and the padding the clearance is measured from.
          */
         private static final double BOX_GAP = 12.0;
+
+        /**
+         * Smallest clearance the forces are evaluated at, in pixels: boxes that overlap repel as if this far apart,
+         * which with the temperature clamp pushes them apart in a few iterations without a numerical blow-up.
+         */
+        private static final double MIN_CLEARANCE = 1.0;
+
+        /**
+         * Half the rendered width and height of each node in the current component, from the estimated node size.
+         */
+        private double[] halfWidth;
+        private double[] halfHeight;
+
+        /**
+         * The distance the repulsion is scaled by: the natural edge length, but never less than the mean padded
+         * box size of the component.
+         */
+        private double repulsionDistance = 100;
 
         /**
          * Gap in pixels between components, across and down.
@@ -2932,6 +2956,20 @@ public class LayoutUtil {
                 this.edges()[i][1] = u;
             }
 
+            // Half the rendered box of each node, so the forces act on the clearance between boxes rather than
+            // on the distance between centers; see clearance().
+            NodeSize size = estimatedNodeSize();
+            this.halfWidth = new double[numNodes];
+            this.halfHeight = new double[numNodes];
+
+            double meanBox = 0.0;
+
+            for (int v = 0; v < numNodes; v++) {
+                this.halfWidth[v] = size.width(nodes.get(v)) / 2.;
+                this.halfHeight[v] = size.height(nodes.get(v)) / 2.;
+                meanBox += (this.halfWidth[v] + this.halfHeight[v] + BOX_GAP) / numNodes;
+            }
+
             // Degrees within the component, with parallel edges collapsed.
             int[] degree = new int[numNodes];
 
@@ -2966,6 +3004,11 @@ public class LayoutUtil {
                     / (double) this.graph.getNumNodes();
 
             setOptimalDistance(this.naturalEdgeLength > 0 ? this.naturalEdgeLength : 20.0 + 20.0 * avgDegree);
+
+            // The push between two boxes is scaled by at least the box size, whatever natural edge length was asked
+            // for: a short natural length should shorten the edges, not let a ring of ten indicators be pulled into
+            // their latent's box, where the overlap pass would have to scatter them.
+            this.repulsionDistance = Math.max(getOptimalDistance(), meanBox);
             initTemperature();
 
             for (int iter = 0; iter < numIterations(); iter++) {
@@ -2996,7 +3039,7 @@ public class LayoutUtil {
                         }
 
                         double repulsiveForce =
-                                fr(norm) * charge[u] * charge[v];
+                                fr(clearance(deltaX, deltaY, norm, u, v)) * charge[u] * charge[v];
 
                         nodeDisposition()[v][0] +=
                                 (deltaX / norm) * repulsiveForce;
@@ -3021,7 +3064,7 @@ public class LayoutUtil {
                         norm = 0.1;
                     }
 
-                    double attractiveForce = fa(norm) / edgeSlack[j];
+                    double attractiveForce = fa(clearance(deltaX, deltaY, norm, u, v)) / edgeSlack[j];
                     double attractX = (deltaX / norm) * attractiveForce;
                     double attractY = (deltaY / norm) * attractiveForce;
 
@@ -3172,19 +3215,40 @@ public class LayoutUtil {
 
             for (int i = 0; i < componentNodes.size(); i++) {
                 Node node = componentNodes.get(i);
-                node.setCenterX((int) nodePosition()[i][0]);
-                node.setCenterY((int) nodePosition()[i][1]);
+                node.setCenterX((int) Math.round(nodePosition()[i][0]));
+                node.setCenterY((int) Math.round(nodePosition()[i][1]));
             }
         }
 
         //============================PRIVATE METHODS=========================//
+
+        /**
+         * The clearance between the padded boxes of nodes u and v along the line between their centers: the
+         * center distance less the part of it that lies inside the two boxes (each padded by half of BOX_GAP), and
+         * at least MIN_CLEARANCE. The forces act on this rather than on the center distance, so that the natural
+         * edge length is a gap between boxes and the equilibrium the forces find is one the overlap pass has no
+         * reason to disturb. Without this, a natural edge length below the box size collapses the component into a
+         * pile that the overlap pass then shoves apart along the axes, scattering indicators away from their
+         * latents (observed with lengths of 10 to 20 pixels on a 59-node measurement model).
+         */
+        private double clearance(double deltaX, double deltaY, double norm, int u, int v) {
+            double sx = this.halfWidth[u] + this.halfWidth[v] + BOX_GAP;
+            double sy = this.halfHeight[u] + this.halfHeight[v] + BOX_GAP;
+            double s = TMath.sqrt((deltaX / sx) * (deltaX / sx) + (deltaY / sy) * (deltaY / sy));
+
+            // The padded boxes, summed, form a rectangle; s < 1 means the centers are closer than the boxes allow in
+            // the elliptical approximation of it, and s = 1 means touching. The boundary lies at norm / s from either
+            // center, so the clearance is what is left of the center distance beyond it.
+            if (s <= 1.0) return MIN_CLEARANCE;
+            return Math.max(MIN_CLEARANCE, norm * (1.0 - 1.0 / s));
+        }
 
         private double fa(double d) {
             return (d * d) / getOptimalDistance();
         }
 
         private double fr(double d) {
-            return -(getOptimalDistance() * getOptimalDistance()) / d;
+            return -(this.repulsionDistance * this.repulsionDistance) / d;
         }
 
         private double norm(double x, double y) {
