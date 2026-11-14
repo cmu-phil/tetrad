@@ -157,6 +157,11 @@ public class Rlcd {
      */
     private boolean testwiseDeletion = false;
     private MissingDataSpec missingDataSpec = null;
+    /**
+     * The sample size the default rank test and stage 1 are calibrated by, or -1 for the number of rows (or the
+     * matrix's own sample size); see {@link #setEffectiveSampleSize(int)}.
+     */
+    private int effectiveSampleSize = -1;
     private double alpha = 0.01;
     private double[] alphaByRank = null;
     private int maxK = 3;
@@ -286,6 +291,56 @@ public class Rlcd {
      */
     public void setRankTester(RankTester rankTester) {
         this.rankTester = rankTester;
+    }
+
+    /**
+     * Sets the sample size that every rank test and the stage-1 score are calibrated by, in place of the number of
+     * rows (or, over a covariance matrix, the matrix's own sample size). Both stages of RLCD are functions of the
+     * covariance matrix and the sample size alone, and the rank statistics are proportional to the sample size, so
+     * this is the one knob that scales every decision of the search at once.
+     * <p>
+     * Two uses. (1) Rows that are not independent -- repeated respondents, retakes, clustered sampling -- carry less
+     * information than their count; the design-effect-corrected count is the sample size to give here. (2) On a large
+     * sample, exact rank tests reject every approximate rank deficiency, and the search then finds no clusters at
+     * small cover sizes and climbs to large ones, slowly. A sample size below the row count makes a deficiency
+     * acceptable in proportion to the size of the canonical correlations that break it, which is a tolerance for
+     * approximate fit, chosen by the user and reported in the log. The two uses are different claims, and the log
+     * line records only the number.
+     * <p>
+     * Applies to the default rank test ({@link Chi2RankTest} over the sample covariance) and to stage 1. It does not
+     * apply with several imputations, where the pooled test sets its own calibration (an exception), and it is
+     * ignored, with a log line, when a rank test with its own sample size is installed by
+     * {@link #setMissingDataSpec}, {@link #setCensoredCovariance}, {@link #setStratifiedRankTest} or
+     * {@link #setRankTester}.
+     *
+     * @param effectiveSampleSize the sample size, at least 2, or -1 to use the row count.
+     */
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        if (effectiveSampleSize != -1 && effectiveSampleSize < 2) {
+            throw new IllegalArgumentException("RLCD: the effective sample size must be at least 2, or -1 for the "
+                                               + "sample size of the data; got " + effectiveSampleSize + ".");
+        }
+        if (effectiveSampleSize != -1 && imputations.size() > 1) {
+            throw new IllegalArgumentException("RLCD: an effective sample size cannot be set over several "
+                                               + "imputations; the pooled rank test is calibrated by the "
+                                               + "imputations' disagreement.");
+        }
+        this.effectiveSampleSize = effectiveSampleSize;
+    }
+
+    /**
+     * The covariance matrix the default rank test and stage 1 run on: the given matrix or the sample covariance of
+     * the data, carrying the effective sample size when one is set.
+     */
+    private CovarianceMatrix defaultCovariance() {
+        CovarianceMatrix cov;
+        if (covariance != null) {
+            cov = covariance instanceof CovarianceMatrix cm ? cm : new CovarianceMatrix(covariance);
+        } else {
+            cov = new CovarianceMatrix(dataSet);
+        }
+        if (effectiveSampleSize == -1 || effectiveSampleSize == cov.getSampleSize()) return cov;
+        return new CovarianceMatrix(new ArrayList<>(cov.getVariables()), cov.getMatrix(), effectiveSampleSize);
     }
 
     /**
@@ -759,8 +814,22 @@ public class Rlcd {
         for (Node v : variables) xvars.add(v.getName());
 
         if (rankTester == null) {
-            rankTester = covariance != null ? new Chi2RankTest(covariance, 1.0)
-                    : imputations.size() > 1 ? new PooledRankTest(imputations) : new Chi2RankTest(dataSet);
+            if (imputations.size() > 1) {
+                rankTester = new PooledRankTest(imputations);
+            } else {
+                CovarianceMatrix cov = defaultCovariance();
+                rankTester = new Chi2RankTest(cov, 1.0);
+                if (effectiveSampleSize != -1) {
+                    int actual = covariance != null ? covariance.getSampleSize() : dataSet.getNumRows();
+                    TetradLogger.getInstance().log("RLCD: effective sample size " + effectiveSampleSize + " in place "
+                                                   + "of " + actual + "; every rank test and the stage-1 score are "
+                                                   + "calibrated by it.");
+                }
+            }
+        } else if (effectiveSampleSize != -1) {
+            TetradLogger.getInstance().log("RLCD: the effective sample size " + effectiveSampleSize + " is ignored; "
+                                           + "the rank test in use (" + rankTester.getClass().getSimpleName()
+                                           + ") carries its own sample size.");
         }
 
         // Stage 1.
@@ -1671,17 +1740,15 @@ public class Rlcd {
      */
     private CovarianceMatrix stage1Covariance() {
         if (stage1CovarianceOverride != null) return stage1CovarianceOverride;
-        if (covariance != null) {
-            return covariance instanceof CovarianceMatrix cm ? cm : new CovarianceMatrix(covariance);
-        }
+        if (covariance != null) return defaultCovariance();
         if (testwiseDeletion) {
             stage1CovarianceOverride = listwiseCompleteCovariance();
             return stage1CovarianceOverride;
         }
 
-        CovarianceMatrix first = new CovarianceMatrix(dataSet);
-        if (imputations.size() == 1) return first;
+        if (imputations.size() == 1) return defaultCovariance();
 
+        CovarianceMatrix first = new CovarianceMatrix(dataSet);
         Matrix sum = first.getMatrix();
 
         for (int i = 1; i < imputations.size(); i++) {

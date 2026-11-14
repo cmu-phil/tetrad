@@ -1185,6 +1185,169 @@ public class TestRlcd {
         }
     }
 
+    /**
+     * An effective sample size on data is the same search as the sample covariance carrying that sample size: through
+     * the search class, and through the wrapper on data and on a matrix. With -1 nothing changes.
+     */
+    @Test
+    public void testEffectiveSampleSizeMatchesMatrixAtThatSize() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 2000, 41L);
+        CovarianceMatrix cov = new CovarianceMatrix(data);
+        CovarianceMatrix at500 = new CovarianceMatrix(cov.getVariables(), cov.getMatrix(), 500);
+
+        Rlcd onData = new Rlcd(data);
+        onData.setEffectiveSampleSize(500);
+        Graph fromData = covarianceRun(onData);
+        Graph fromMatrix = covarianceRun(new Rlcd(at500));
+        assertEquals("Data at ess 500 should equal the matrix at n = 500:\n" + fromData + "\n" + fromMatrix,
+                fromMatrix, fromData);
+
+        Rlcd onMatrix = new Rlcd(cov);
+        onMatrix.setEffectiveSampleSize(500);
+        assertEquals("A matrix at n = 2000 with ess 500 should equal the matrix at n = 500",
+                fromMatrix, covarianceRun(onMatrix));
+
+        Rlcd unset = new Rlcd(data);
+        unset.setEffectiveSampleSize(-1);
+        assertEquals("-1 should leave the search as it is", covarianceRun(new Rlcd(data)), covarianceRun(unset));
+
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper
+                = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        Parameters params = new Parameters();
+        params.set(Params.RLCD_MAX_K, 2);
+        params.set(Params.ALPHA, 0.01);
+        params.set(Params.SEED, 1L);
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 500);
+        assertEquals("Wrapper on data with effectiveSampleSize 500", fromMatrix, wrapper.search(data, params));
+        assertEquals("Wrapper on the matrix with effectiveSampleSize 500", fromMatrix, wrapper.search(cov, params));
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, -1);
+        assertEquals("Wrapper default is the sample size as it is", covarianceRun(new Rlcd(data)),
+                wrapper.search(data, params));
+    }
+
+    /**
+     * The effective sample size is refused where it would double-count: above the sample size, below 2, with a
+     * missing-data policy, and with pooled imputations.
+     */
+    @Test
+    public void testEffectiveSampleSizeRefusals() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 500, 43L);
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper
+                = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        Parameters params = new Parameters();
+        params.set(Params.RLCD_MAX_K, 2);
+
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 501);
+        try {
+            wrapper.search(data, params);
+            fail("ess above the sample size should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("exceeds"));
+        }
+        try {
+            wrapper.search(new CovarianceMatrix(data), params);
+            fail("ess above the matrix's sample size should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("exceeds"));
+        }
+
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 1);
+        try {
+            wrapper.search(data, params);
+            fail("ess of 1 should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("at least 2"));
+        }
+
+        DataSet missing = data.copy();
+        for (int i = 0; i < 50; i++) missing.setDouble(i, 0, Double.NaN);
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 200);
+        params.set(Params.MISSING_DATA_POLICY, "em");
+        try {
+            wrapper.search(missing, params);
+            fail("ess with a missing-data policy should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("cannot be combined"));
+        }
+
+        List<DataSet> imputations = new MvnImputer(MissingDataSpec.emCovariance()).impute(missing, 3, 5L);
+        try {
+            new Rlcd(imputations).setEffectiveSampleSize(200);
+            fail("ess over several imputations should be refused");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("imputations"));
+        }
+    }
+
+    /**
+     * In stratified mode the per-domain sample sizes are scaled in proportion, so the pooled statistic is calibrated
+     * as if the whole sample had the effective size; and the stratified wrapper runs with it.
+     */
+    @Test
+    public void testEffectiveSampleSizeStratifiedScalesDomains() throws Exception {
+        DataSet d1 = simulate(twoLatentGraph(), 600, 47L);
+        DataSet d2 = simulate(twoLatentGraph(), 400, 53L);
+        Parameters params = new Parameters();
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 250);
+
+        List<edu.cmu.tetrad.data.ICovarianceMatrix> scaled
+                = edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd.perDomainCovariances(List.of(d1, d2), params);
+        assertEquals(150, scaled.get(0).getSampleSize());
+        assertEquals(100, scaled.get(1).getSampleSize());
+        edu.cmu.tetrad.util.Matrix s1 = new CovarianceMatrix(d1).getMatrix();
+        for (int i = 0; i < s1.getNumRows(); i++) {
+            for (int j = 0; j < s1.getNumColumns(); j++) {
+                assertEquals("Only the sample size changes", s1.get(i, j), scaled.get(0).getMatrix().get(i, j), 1e-12);
+            }
+        }
+
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, -1);
+        List<edu.cmu.tetrad.data.ICovarianceMatrix> plain
+                = edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd.perDomainCovariances(List.of(d1, d2), params);
+        assertEquals(600, plain.get(0).getSampleSize());
+        assertEquals(400, plain.get(1).getSampleSize());
+
+        // Through the wrapper: the two data sets stacked, with a domain column.
+        int p = d1.getNumColumns();
+        List<Node> vars = new ArrayList<>(d1.getVariables());
+        vars.add(new ContinuousVariable("domain"));
+        DoubleDataBox box = new DoubleDataBox(1000, p + 1);
+        for (int i = 0; i < 1000; i++) {
+            DataSet src = i < 600 ? d1 : d2;
+            int row = i < 600 ? i : i - 600;
+            for (int j = 0; j < p; j++) box.set(i, j, src.getDouble(row, j));
+            box.set(i, p, i < 600 ? 0.0 : 1.0);
+        }
+        DataSet stacked = new BoxDataSet(box, vars);
+
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper
+                = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        params.set(Params.RLCD_MAX_K, 2);
+        params.set(Params.ALPHA, 0.01);
+        params.set(Params.SEED, 1L);
+        params.set(Params.STRATIFY_BY_DOMAIN, true);
+        params.set(Params.DOMAIN_COLUMN, "domain");
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 500);
+        // The two domains were simulated with different coefficients. Stage 1 on the within-domain pooled covariance
+        // then returns a sparse graph whose clique partition leaves indicators out, and the search finds nothing
+        // (observed Nov 2026; the pooled rank tests themselves accept the true clusters). Skipping stage 1 isolates
+        // what this test is about: the stratified rank stages at the scaled sample sizes.
+        params.set(Params.RLCD_STAGE1_NONE, true);
+        Graph g = wrapper.search(stacked, params);
+        int latents = 0;
+        for (Node node : g.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents++;
+        assertEquals("Two latents expected from stratified RLCD at ess 500: " + g, 2, latents);
+        assertNull("The domain column is not a searched variable", g.getNode("domain"));
+
+        params.set(Params.EFFECTIVE_SAMPLE_SIZE, 1001);
+        try {
+            wrapper.search(stacked, params);
+            fail("ess above the total row count should be refused in stratified mode");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("exceeds"));
+        }
+    }
+
     private static Graph latentGraph(String[][] clusters, String observedEdge) {
         Graph g = new EdgeListGraph();
         int k = 0;

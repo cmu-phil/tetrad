@@ -370,6 +370,7 @@ public class LcdNod implements Algorithm, AcceptsKnowledge {
         parameters.add(Params.RLCD_STAGE1_FGES);
         parameters.add(Params.RLCD_STAGE1_NONE);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
         parameters.add(Params.MISSING_ESS_MODE);
         parameters.add(Params.MISSING_EM_RIDGE);

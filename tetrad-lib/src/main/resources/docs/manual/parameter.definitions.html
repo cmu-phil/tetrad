@@ -1971,7 +1971,14 @@ Source:
                     The effective sample size, or -1 if the true sample size is to be used.
                     </span></li>
         <li>Long Description: <span id="effectiveSampleSize_long_desc">
-                    The effective sample size, or -1 is the true sample size is to be used.
+                    The effective sample size, or -1 if the true sample size is to be used. Rows that are not
+                    independent (repeated respondents, retakes, clustered sampling) carry less information than
+                    their count, and the design-effect-corrected count is the number to give here. For RLCD and
+                    LCD-NOD this sample size also calibrates every rank test and the stage-1 score, and a value below
+                    the row count acts as a tolerance for approximate rank deficiency on a large sample; in stratified
+                    mode each domain's sample size is scaled in proportion. It is refused above the actual sample
+                    size, and with a missing-data policy, ceiling censoring or pooled imputations, which set sample
+                    sizes of their own.
         </span></li>
         <li>Default Value: <span id="effectiveSampleSize_default_value">-1</span></li>
         <li>Lower Bound: <span id="effectiveSampleSize_lower_bound">-1</span></li>

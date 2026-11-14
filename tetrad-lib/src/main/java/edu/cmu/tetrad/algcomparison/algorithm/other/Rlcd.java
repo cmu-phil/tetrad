@@ -161,9 +161,48 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
                                            + "covariance matrix.");
         }
 
+        int ess = effectiveSampleSize(parameters, covariance.getSampleSize());
         TetradLogger.getInstance().log("RLCD over a covariance matrix, n = " + covariance.getSampleSize()
-                                       + ". Every rank test is calibrated by that sample size.");
-        return run(new edu.cmu.tetrad.search.Rlcd(covariance), parameters);
+                                       + (ess == -1 ? ". Every rank test is calibrated by that sample size."
+                : ", effective sample size " + ess + ". Every rank test is calibrated by the effective sample size."));
+        edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(covariance);
+        rlcd.setEffectiveSampleSize(ess);
+        return run(rlcd, parameters);
+    }
+
+    /**
+     * The effectiveSampleSize parameter checked against the actual sample size: -1 (the default) for the actual size,
+     * otherwise a value from 2 up to the actual size. A value above the actual size is refused rather than used: it
+     * would claim more information than the data hold, and a typo in a sample size of 770 against 19697 rows should
+     * not pass silently.
+     */
+    private static int effectiveSampleSize(Parameters parameters, int actual) {
+        int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE, -1);
+        if (ess == -1) return -1;
+        if (ess < 2) {
+            throw new IllegalArgumentException("RLCD: effectiveSampleSize must be at least 2, or -1 for the sample "
+                                               + "size of the data; got " + ess + ".");
+        }
+        if (ess > actual) {
+            throw new IllegalArgumentException("RLCD: effectiveSampleSize " + ess + " exceeds the sample size "
+                                               + actual + ". An effective sample size can only discount the data; "
+                                               + "set it to -1 to use the sample size as it is.");
+        }
+        return ess;
+    }
+
+    /**
+     * Refuses an effective sample size in the configurations where the sample size is already set per query from
+     * the data's own pairwise-complete counts (missing-data policies, ceiling censoring) or by the imputations'
+     * disagreement (pooled imputations): two discounts of the same N would not mean anything definite.
+     */
+    private static void refuseEffectiveSampleSizeWith(Parameters parameters, String feature) {
+        if (parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE, -1) != -1) {
+            throw new IllegalArgumentException("RLCD: effectiveSampleSize cannot be combined with " + feature + ", "
+                                               + "which sets the sample size of each rank test from the data (see "
+                                               + "missingEssMode). Set effectiveSampleSize to -1, or turn " + feature
+                                               + " off.");
+        }
     }
 
     /**
@@ -302,6 +341,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
         }
 
         if (!stratified && censor) {
+            refuseEffectiveSampleSizeWith(parameters, "rlcdCensorCeiling");
             edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
             double ceiling = parameters.getDouble(Params.RLCD_CEILING_VALUE, 100.0);
             CensoredMvnCovarianceEstimator estimator = new CensoredMvnCovarianceEstimator(dataSet,
@@ -317,6 +357,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
         }
 
         if (!stratified && spec != null && anyMissing) {
+            refuseEffectiveSampleSizeWith(parameters, "a missing-data policy");
             if (spec.getPolicy() == MissingDataPolicy.MULTIPLE_IMPUTATION) {
                 List<DataSet> imputations = new MvnImputer(spec).impute(dataSet, spec.getNumImputations(),
                         parameters.getLong(Params.SEED));
@@ -328,8 +369,12 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
             return run(rlcd, parameters);
         }
 
-
-        return run(new edu.cmu.tetrad.search.Rlcd(dataSet), parameters);
+        // Complete data, one sample: the sample covariance at the row count, or at the effective sample size when
+        // one is set (dependent rows, or a tolerance for approximate rank deficiency on a large sample; see
+        // edu.cmu.tetrad.search.Rlcd#setEffectiveSampleSize).
+        edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
+        rlcd.setEffectiveSampleSize(effectiveSampleSize(parameters, dataSet.getNumRows()));
+        return run(rlcd, parameters);
     }
 
     /**
@@ -353,6 +398,8 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
                                                + "imputations: the strata must be independent samples, and "
                                                + "imputations share their rows. Turn one of the two off.");
         }
+
+        refuseEffectiveSampleSizeWith(parameters, "pooled imputations");
 
         List<DataSet> dataSets = new ArrayList<>();
 
@@ -404,6 +451,12 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
      * estimate ({@code missingDataPolicy} "em"), an available-case estimate ("pairwise"), or the covariance of the
      * complete rows ("listwise"). For EM, pairwise and censored estimates the sample size is the effective sample
      * size by {@code missingEssMode} (mean pairwise complete count by default).
+     * <p>
+     * When {@code effectiveSampleSize} is set (complete data only; it is refused with a missing-data policy or
+     * censoring, which set per-query sample sizes of their own), each domain's sample size is scaled by the ratio of
+     * the effective sample size to the total row count, so the pooled statistic is calibrated as if the whole sample
+     * had that size while the domains keep their relative weights; see
+     * {@link edu.cmu.tetrad.search.Rlcd#setEffectiveSampleSize(int)} for what the number means.
      *
      * @param perDomain  the per-domain data sets (domain column removed), as from
      *                   {@link StratifiedRankTests#split(DataSet, Node)}.
@@ -416,6 +469,14 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
         MissingDataSpec.EffectiveSampleSizeMode essMode = spec == null
                 ? MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE : spec.getEssMode();
         long seed = parameters.getLong(Params.SEED, -1L);
+
+        int totalRows = 0;
+        for (DataSet d : perDomain) totalRows += d.getNumRows();
+        int overallEss = effectiveSampleSize(parameters, totalRows);
+        if (overallEss != -1) {
+            if (censor) refuseEffectiveSampleSizeWith(parameters, "rlcdCensorCeiling");
+            if (spec != null) refuseEffectiveSampleSizeWith(parameters, "a missing-data policy");
+        }
 
         List<ICovarianceMatrix> out = new ArrayList<>();
         for (int t = 0; t < perDomain.size(); t++) {
@@ -462,6 +523,24 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
                 }
             }
         }
+        return overallEss == -1 ? out : rescaleSampleSizes(out, overallEss, totalRows);
+    }
+
+    /**
+     * The same matrices with each sample size scaled by ess over total, rounded, and at least 2. The relative weights
+     * of the domains in the pooled statistic are unchanged; its calibration is that of a sample of size ess.
+     */
+    static List<ICovarianceMatrix> rescaleSampleSizes(List<ICovarianceMatrix> covariances, int ess, int total) {
+        List<ICovarianceMatrix> out = new ArrayList<>();
+        StringBuilder sizes = new StringBuilder();
+        for (ICovarianceMatrix cov : covariances) {
+            int scaled = Math.max(2, (int) Math.round(cov.getSampleSize() * (double) ess / total));
+            out.add(new CovarianceMatrix(new ArrayList<>(cov.getVariables()), cov.getMatrix(), scaled));
+            if (!sizes.isEmpty()) sizes.append(", ");
+            sizes.append(cov.getSampleSize()).append(" -> ").append(scaled);
+        }
+        TetradLogger.getInstance().log("Stratified RLCD: effective sample size " + ess + " of " + total
+                                       + " rows; per-domain sample sizes scaled in proportion: " + sizes + ".");
         return out;
     }
 
@@ -592,6 +671,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations, Take
         parameters.add(Params.DOMAIN_COLUMN);
         parameters.add(Params.POOL_IMPUTATIONS);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.SEED);
         parameters.add(Params.VERBOSE);
         return parameters;
