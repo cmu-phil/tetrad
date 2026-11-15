@@ -384,24 +384,11 @@ public final class Fci implements IGraphSearch {
                     continue;
                 }
 
-                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
-                d.remove(x);
-                d.remove(y);
-                removeLaterTierVariables(d, x, y);
-                if (test.checkIndependence(x, y, d).isIndependent()) {
-                    if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
-                    pag.removeEdge(x, y);
-                }
-
-                if (pag.isAdjacentTo(x, y)) {
-                    d = new HashSet<>(pag.paths().possibleDsep(y, 3));
-                    d.remove(x);
-                    d.remove(y);
-                    removeLaterTierVariables(d, x, y);
-                    if (test.checkIndependence(x, y, d).isIndependent()) {
-                        if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
-                        pag.removeEdge(x, y);
-                    }
+                // CPS (2000, p. 188): remove x *-* y if x _||_ y | S for some subset S of Possible-D-Sep(x) \ {x, y}
+                // or of Possible-D-Sep(y) \ {x, y}. Earlier versions tested only the whole set, which can fail when
+                // the set contains a common descendant that opens a collider path; see removeByPossibleDsep.
+                if (!removeByPossibleDsep(pag, x, x, y)) {
+                    removeByPossibleDsep(pag, y, x, y);
                 }
             }
 
@@ -410,15 +397,16 @@ public final class Fci implements IGraphSearch {
             if (verbose) TetradLogger.getInstance().log("Re-applying R0 after possible-dsep (" + r0ColliderRule + ").");
             fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes(), excludeSelectionBias);
             orientR0(pag, this.sepsets);
-            fciOrient.finalOrientation(pag, excludeSelectionBias);
 
             // Refresh unshielded triples after structural changes
             unshieldedTriples = collectUnshieldedTriplesAsGraphTriples(pag);
         }
 
-        // Proceed with the remaining FCI orientation rules as usual
+        // Final orientation rules (R1-R4, plus R5-R10 if the complete rule set is used). These apply whether or not
+        // the possible-dsep stage ran; previously the call sat inside the branch above, so with possible-dsep turned
+        // off the output carried only background-knowledge and R0 marks.
         if (verbose) TetradLogger.getInstance().log("Starting final FCI orientation.");
-
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
         if (verbose) TetradLogger.getInstance().log("Finished final FCI orientation.");
 
         if (guaranteePag) {
@@ -695,6 +683,61 @@ public final class Fci implements IGraphSearch {
      * @param x The first endpoint of the edge under test.
      * @param y The second endpoint of the edge under test.
      */
+    /**
+     * Tries to remove the edge x *-* y by conditioning on subsets of Possible-D-Sep(a) \ {x, y}, where a is x or y,
+     * in order of increasing size up to {@code depth} (-1 = unlimited). Subsets lying inside adj(x) \ {y} or adj(y) \
+     * {x} were already tested by FAS and are skipped. If depth is bounded and the pool is larger than depth, the
+     * whole pool is tried last, so no removal made by earlier versions (which tested only the whole pool) is lost.
+     * The first separating set found is recorded in the sepset map, so that R0 can use it after the stage.
+     *
+     * @param pag the graph being searched
+     * @param a   the endpoint whose Possible-D-Sep set supplies the pool
+     * @param x   one endpoint of the edge
+     * @param y   the other endpoint of the edge
+     * @return true if the edge was removed
+     * @throws InterruptedException if interrupted
+     */
+    private boolean removeByPossibleDsep(Graph pag, Node a, Node x, Node y) throws InterruptedException {
+        List<Node> pool = pag.paths().possibleDsep(a, 3);
+        pool.remove(x);
+        pool.remove(y);
+        Set<Node> admissible = new HashSet<>(pool);
+        removeLaterTierVariables(admissible, x, y);
+        pool.retainAll(admissible);
+
+        Set<Node> adjX = new HashSet<>(pag.getAdjacentNodes(x));
+        adjX.remove(y);
+        Set<Node> adjY = new HashSet<>(pag.getAdjacentNodes(y));
+        adjY.remove(x);
+
+        SublistGenerator gen = new SublistGenerator(pool.size(), depth);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            Set<Node> s = GraphUtils.asSet(choice, pool);
+            if (adjX.containsAll(s) || adjY.containsAll(s)) continue; // FAS already tested these
+            if (tryRemoveByPossibleDsep(pag, x, y, s)) return true;
+        }
+
+        if (depth != -1 && pool.size() > depth) {
+            Set<Node> s = new HashSet<>(pool);
+            if (!(adjX.containsAll(s) || adjY.containsAll(s))) {
+                return tryRemoveByPossibleDsep(pag, x, y, s);
+            }
+        }
+
+        return false;
+    }
+
+    private boolean tryRemoveByPossibleDsep(Graph pag, Node x, Node y, Set<Node> s) throws InterruptedException {
+        if (!test.checkIndependence(x, y, s).isIndependent()) return false;
+        if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible-dsep; sepset = " + s);
+        pag.removeEdge(x, y);
+        this.sepsets.set(x, y, s);
+        return true;
+    }
+
     private void removeLaterTierVariables(Set<Node> d, Node x, Node y) {
         if (knowledge == null || knowledge.getNumTiers() == 0) return;
 

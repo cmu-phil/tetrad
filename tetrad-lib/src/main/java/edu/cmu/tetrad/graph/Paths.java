@@ -66,20 +66,6 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Adds a node to a set within the given map. If there is no set associated with the specified node, a new set is
-     * created and added to the map.
-     *
-     * @param previous The map containing sets of nodes.
-     * @param b        The node to be added to the set.
-     * @param c        The node associated with the set in the map.
-     */
-    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
-        previous.computeIfAbsent(c, k -> new HashSet<>());
-        Set<Node> list = previous.get(c);
-        list.add(b);
-    }
-
-    /**
      * Get the prefix for a list of nodes up to a specified index.
      *
      * @param pi The list of nodes.
@@ -1852,25 +1838,25 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Identifies and returns a list of possible d-separating nodes relative to a specified node in the graph. The
-     * search is constrained by the specified maximum path length.
+     * Returns Possible-D-Sep(x) as defined in Causation, Prediction, and Search (2000, p. 188): v is in the set iff v
+     * != x and there is a path from x to v on which every interior node is either a collider or lies in a triangle
+     * with its two neighbors on the path. The search is a breadth-first search over directed edge states (a, b), as
+     * in pcalg's qreach, constrained by the specified maximum path length.
+     * <p>
+     * Earlier versions additionally required that some predecessor of v on the search path have a potentially
+     * directed path to x or to v. That condition is not part of the published definition and made the set too small:
+     * it could omit the only variables that separate a nonadjacent pair, so that FCI kept a false adjacency.
      *
      * @param x                         the target node for which possible d-separating nodes are to be identified
      * @param maxPossibleDsepPathLength the maximum allowable path length for determining d-separating nodes; a value of
      *                                  -1 indicates no explicit limit
-     * @return a sorted list of nodes that are potential d-separators for the specified node, ordered in descending
-     * order
+     * @return a sorted list of nodes that are potential d-separators for the specified node
      */
     public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
-
-        // Removing the second argument y to bring this in line with CPS 2000 p. 188.
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
-
-        Map<Node, Set<Node>> previous = new HashMap<>();
-        previous.put(x, new HashSet<>());
 
         OrderedPair<Node> e = null;
         int distance = 0;
@@ -1884,7 +1870,6 @@ public class Paths implements TetradSerializable {
             }
             Q.offer(edge);
             V.add(edge);
-            addToSet(previous, b, x);
             msep.add(b);
         }
 
@@ -1902,9 +1887,7 @@ public class Paths implements TetradSerializable {
             Node a = t.getFirst();
             Node b = t.getSecond();
 
-            if (existOnePathWithPossibleParents(previous, b, x, b)) {
-                msep.add(b);
-            }
+            msep.add(b);
 
             for (Node c : graph.getAdjacentNodes(b)) {
                 if (c == a) {
@@ -1913,8 +1896,6 @@ public class Paths implements TetradSerializable {
                 if (c == x) {
                     continue;
                 }
-
-                addToSet(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
 
@@ -1964,7 +1945,6 @@ public class Paths implements TetradSerializable {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    if (choice.length < 2) continue;
                     Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
@@ -1982,7 +1962,7 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleDsep = possibleDsep(a, -1);
+                    List<Node> possibleDsep = possibleDsep(b, -1);
                     possibleDsep.remove(a);
                     possibleDsep.remove(b);
 
@@ -1990,7 +1970,6 @@ public class Paths implements TetradSerializable {
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
-                        if (choice.length < 2) continue;
                         Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
@@ -2007,29 +1986,6 @@ public class Paths implements TetradSerializable {
                 }
             }
         }
-    }
-
-    private boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b) {
-        if (w == x) {
-            return true;
-        }
-
-        Set<Node> p = previous.get(w);
-        if (p == null) {
-            return false;
-        }
-
-        for (Node r : p) {
-            if (r == b || r == x) {
-                continue;
-            }
-
-            if ((existsPotentiallyDirectedPath(r, x)) || existsPotentiallyDirectedPath(r, b)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
