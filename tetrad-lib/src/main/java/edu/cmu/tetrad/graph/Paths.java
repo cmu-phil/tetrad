@@ -1353,148 +1353,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    /**
-     * Retrieves the set of nodes that are connected to the given node {@code y} and are also present in the set of
-     * nodes {@code z}.
-     *
-     * @param y The node for which to find the connected nodes.
-     * @param z The set of nodes to be considered for connecting nodes.
-     * @return The set of nodes that are connected to {@code y} and present in {@code z}.
-     */
-    public Set<Node> getMConnectedVars(Node y, Set<Node> z) {
-        Set<Node> Y = new HashSet<>();
-
-        class EdgeNode {
-
-            private final Edge edge;
-            private final Node node;
-
-            public EdgeNode(Edge edge, Node node) {
-                this.edge = edge;
-                this.node = node;
-            }
-
-            public int hashCode() {
-                return this.edge.hashCode() + this.node.hashCode();
-            }
-
-            public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
-                    throw new IllegalArgumentException();
-                }
-                return _o.edge == this.edge && _o.node == this.node;
-            }
-        }
-
-        Queue<EdgeNode> Q = new ArrayDeque<>();
-        Set<EdgeNode> V = new HashSet<>();
-
-        for (Edge edge : graph.getEdges(y)) {
-            EdgeNode edgeNode = new EdgeNode(edge, y);
-            Q.offer(edgeNode);
-            V.add(edgeNode);
-            Y.add(edge.getDistalNode(y));
-        }
-
-        while (!Q.isEmpty()) {
-            EdgeNode t = Q.poll();
-
-            Edge edge1 = t.edge;
-            Node a = t.node;
-            Node b = edge1.getDistalNode(a);
-
-            for (Edge edge2 : graph.getEdges(b)) {
-                Node c = edge2.getDistalNode(b);
-                if (c == a) {
-                    continue;
-                }
-
-                if (reachable(edge1, edge2, a, z)) {
-                    EdgeNode u = new EdgeNode(edge2, b);
-
-                    if (!V.contains(u)) {
-                        V.add(u);
-                        Q.offer(u);
-                        Y.add(c);
-                    }
-                }
-            }
-        }
-
-        return Y;
-    }
-
-    /**
-     * <p>getMConnectedVars.</p>
-     *
-     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z         a {@link java.util.Set} object
-     * @param ancestors a {@link java.util.Map} object
-     * @return a {@link java.util.Set} object
-     */
-    public Set<Node> getMConnectedVars(Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
-        Set<Node> Y = new HashSet<>();
-
-        class EdgeNode {
-
-            private final Edge edge;
-            private final Node node;
-
-            public EdgeNode(Edge edge, Node node) {
-                this.edge = edge;
-                this.node = node;
-            }
-
-            public int hashCode() {
-                return this.edge.hashCode() + this.node.hashCode();
-            }
-
-            public boolean equals(Object o) {
-                if (!(o instanceof EdgeNode _o)) {
-                    throw new IllegalArgumentException();
-                }
-                return _o.edge == this.edge && _o.node == this.node;
-            }
-        }
-
-        Queue<EdgeNode> Q = new ArrayDeque<>();
-        Set<EdgeNode> V = new HashSet<>();
-
-        for (Edge edge : graph.getEdges(y)) {
-            EdgeNode edgeNode = new EdgeNode(edge, y);
-            Q.offer(edgeNode);
-            V.add(edgeNode);
-            Y.add(edge.getDistalNode(y));
-        }
-
-        while (!Q.isEmpty()) {
-            EdgeNode t = Q.poll();
-
-            Edge edge1 = t.edge;
-            Node a = t.node;
-            Node b = edge1.getDistalNode(a);
-
-            for (Edge edge2 : graph.getEdges(b)) {
-                Node c = edge2.getDistalNode(b);
-                if (c == a) {
-                    continue;
-                }
-
-                if (reachable(edge1, edge2, a, z, ancestors)) {
-                    EdgeNode u = new EdgeNode(edge2, b);
-
-                    if (!V.contains(u)) {
-                        V.add(u);
-                        Q.offer(u);
-                        Y.add(c);
-                    }
-                }
-            }
-        }
-
-        return Y;
-    }
-
     private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z) {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
@@ -2090,11 +1948,16 @@ public class Paths implements TetradSerializable {
      * @param x                    a {@link Node} object
      * @param y                    a {@link Node} object
      * @param z                    a {@link Set} object
-     * @param excludeSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                             treated as X-&gt;L&lt;-Y.
+     * @param excludeSelectionBias no longer used; the same rule is applied to DAGs, CPDAGs, MAGs and PAGs. Kept for
+     *                             source compatibility.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean excludeSelectionBias) {
+        // Underline triples make passage depend on the full triple, so the collapsed search doesn't apply.
+        if (graph.getUnderLines().isEmpty()) {
+            return mConnectedFast(x, y, z, null);
+        }
+
         class EdgeNode {
 
             private final Edge edge;
@@ -2163,7 +2026,7 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!excludeSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                    if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
                         if (Edges.isUndirectedEdge(edge2)) {
                             edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                         } else if (Edges.isNondirectedEdge(edge2)) {
@@ -2354,12 +2217,18 @@ public class Paths implements TetradSerializable {
      * @param x         a {@link Node} object
      * @param y         a {@link Node} object
      * @param z         a {@link Set} object
-     * @param ancestors a {@link Map} object
-     * @param isPag     whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
-     *                  X-&gt;L&lt;-Y.
+     * @param ancestors a map from each node to its descendants, the node itself included, as returned by
+     *                  {@link #getDescendantsMap()}. (The parameter name is historical.)
+     * @param isPag     no longer used; the same rule is applied to DAGs, CPDAGs, MAGs and PAGs. Kept for source
+     *                  compatibility.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
+        // Underline triples make passage depend on the full triple, so the collapsed search doesn't apply.
+        if (graph.getUnderLines().isEmpty()) {
+            return mConnectedFast(x, y, z, ancestors);
+        }
+
         class EdgeNode {
 
             private final Edge edge;
@@ -2427,17 +2296,11 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (isPag) {
-                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                            if (Edges.isNondirectedEdge(edge2)) {
-                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                            }
-                        }
-                    } else {
-                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                            if (Edges.isNondirectedEdge(edge2)) {
-                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
-                            }
+                    if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                        if (Edges.isUndirectedEdge(edge2)) {
+                            edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
+                        } else if (Edges.isNondirectedEdge(edge2)) {
+                            edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                         }
                     }
 
@@ -2452,6 +2315,191 @@ public class Paths implements TetradSerializable {
         }
 
         return false;
+    }
+
+    /**
+     * Linear-time m-connection check, equivalent to the (edge, node) reachability search in the two
+     * {@code isMConnectedTo} methods whenever the graph has no underline triples.
+     * <p>
+     * In the (edge, node) search, what happens after arriving at b from a along edge1 depends only on (i) the endpoint
+     * of edge1 at b, and (ii) a itself, through the rule that the walk may not step straight back to a. So states are
+     * collapsed to (b, endpoint at b). The no-step-back rule is kept exactly by remembering the first node from which
+     * each state was reached: the first arrival expands to every neighbor except that node, and an arrival from a
+     * second, different node expands only to the neighbor that was skipped. Each state is therefore expanded at most
+     * twice, and the search is O(V + E) per query instead of O(sum of squared degrees).
+     * <p>
+     * The collider test "b is an ancestor of some member of z" is answered once per node per query. If no descendants
+     * map is given, the ancestors of z are found by a single backward sweep, done only if a collider is met.
+     *
+     * <p>
+     * An undirected (---) or nondirected (o-o) edge entered straight after an arrowhead is read as pointing forward.
+     * Without this, X-&gt;Y---Z&lt;-W in a CPDAG, or X*-&gt;Y o-o Z&lt;-*W in a PAG, is wrongly taken to be open.
+     *
+     * @param descendants map from each node to its (reflexive) descendants, or null to compute ancestors of z from
+     *                    the graph.
+     */
+    private boolean mConnectedFast(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> descendants) {
+        if (x == y) {
+            return true;
+        }
+
+        final int numMarks = Endpoint.values().length;
+
+        class State {
+            Edge[] edges;
+            Node[] firstFrom = new Node[numMarks];
+            boolean[] fromSeveral = new boolean[numMarks];
+            boolean inZ;
+            int colliderOpen = -1; // -1 unknown, 0 no, 1 yes
+        }
+
+        // One queued expansion: at node, entered with endpoint mark; either all neighbors but skip, or only "only".
+        class Visit {
+            final Node node;
+            final State state;
+            final Endpoint mark;
+            final Node skip;
+            final Node only;
+
+            Visit(Node node, State state, Endpoint mark, Node skip, Node only) {
+                this.node = node;
+                this.state = state;
+                this.mark = mark;
+                this.skip = skip;
+                this.only = only;
+            }
+        }
+
+        Map<Node, State> states = new HashMap<>();
+        ArrayDeque<Visit> Q = new ArrayDeque<>();
+        Set<Node> ancestorsOfZ = null;
+
+        Node from = x;
+        Edge[] edges = graph.getEdges(x).toArray(new Edge[0]);
+        Endpoint mark = null;
+        Node skip = null;
+        Node only = null;
+        State s = null;
+
+        while (true) {
+            for (Edge edge2 : edges) {
+                Node c = edge2.getDistalNode(from);
+
+                if (s == null) {
+                    // Initial step from x: every edge is taken, and adjacency means m-connection.
+                    if (c == y) {
+                        return true;
+                    }
+                } else {
+                    if (only == null ? c == skip : c != only) {
+                        continue;
+                    }
+
+                    boolean collider = mark == Endpoint.ARROW && edge2.getProximalEndpoint(from) == Endpoint.ARROW;
+
+                    if (collider) {
+                        if (s.colliderOpen == -1) {
+                            boolean open;
+
+                            if (descendants != null) {
+                                open = false;
+                                Set<Node> desc = descendants.get(from);
+
+                                if (desc.size() <= z.size()) {
+                                    for (Node d : desc) {
+                                        if (z.contains(d)) {
+                                            open = true;
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    for (Node _z : z) {
+                                        if (desc.contains(_z)) {
+                                            open = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            } else if (s.inZ) {
+                                open = true;
+                            } else {
+                                if (ancestorsOfZ == null) {
+                                    ancestorsOfZ = new HashSet<>(z);
+                                    ArrayDeque<Node> q = new ArrayDeque<>(z);
+
+                                    while (!q.isEmpty()) {
+                                        for (Node p : graph.getParents(q.poll())) {
+                                            if (ancestorsOfZ.add(p)) {
+                                                q.add(p);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                open = ancestorsOfZ.contains(from);
+                            }
+
+                            s.colliderOpen = open ? 1 : 0;
+                        }
+
+                        if (s.colliderOpen == 0) {
+                            continue;
+                        }
+                    } else if (s.inZ) {
+                        continue;
+                    }
+
+                    if (c == y) {
+                        return true;
+                    }
+                }
+
+                // Endpoint with which the walk arrives at c. As in the (edge, node) search, an undirected or
+                // nondirected edge entered after an arrowhead is read as pointing forward.
+                Endpoint arrive = edge2.getProximalEndpoint(c);
+
+                if (s != null && mark == Endpoint.ARROW
+                    && (Edges.isUndirectedEdge(edge2) || Edges.isNondirectedEdge(edge2))) {
+                    arrive = Endpoint.ARROW;
+                }
+
+                State t = states.get(c);
+
+                if (t == null) {
+                    t = new State();
+                    t.inZ = z.contains(c);
+                    states.put(c, t);
+                }
+
+                int m = arrive.ordinal();
+
+                if (t.firstFrom[m] == null) {
+                    t.firstFrom[m] = from;
+                    Q.offer(new Visit(c, t, arrive, from, null));
+                } else if (!t.fromSeveral[m] && t.firstFrom[m] != from) {
+                    t.fromSeveral[m] = true;
+                    Q.offer(new Visit(c, t, arrive, null, t.firstFrom[m]));
+                }
+            }
+
+            Visit v = Q.poll();
+
+            if (v == null) {
+                return false;
+            }
+
+            from = v.node;
+            s = v.state;
+            mark = v.mark;
+            skip = v.skip;
+            only = v.only;
+
+            if (s.edges == null) {
+                s.edges = graph.getEdges(from).toArray(new Edge[0]);
+            }
+
+            edges = s.edges;
+        }
     }
 
     /**
