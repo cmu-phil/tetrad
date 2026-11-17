@@ -36,6 +36,7 @@ import edu.cmu.tetrad.search.score.MagRicfBicScorer;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,12 +57,26 @@ import java.util.Set;
  * <li><b>Guarantee I-map.</b> {@link #setRequireImapStates(boolean)}. A candidate passes iff every nonadjacent
  * pair of its Zhang MAG that is not already uncertified in the committed state has a test-confirmed separator at
  * {@link #setImapAlpha(double) imapAlpha}: a known separator that m-separates the pair in the MAG, or failing
- * that, the recursive-blocking separator in the MAG, tested once and cached if independent. Pairs uncertified in
- * the committed state are exempt, so a violation that predates the move cannot veto every later move. PROVED:
- * with it, every committed state asserts no independence the test has not confirmed. CONJECTURED, not proved:
- * that the gated search never stalls short of the true PAG (the generalized-Meek-for-projections conjecture,
- * exhaustively supported at five and six observed variables, open in general). OBSERVED on data (2026-10-21):
- * with imapAlpha equal to the removal alpha the gate reduced accuracy, each false "dependent" vetoing a correct
+ * that, the recursive-blocking separator in the MAG, tested once and cached if independent. If recursive
+ * blocking returns none, or always when {@link #setRecursiveBlockingSeparators(boolean)} is false, the pair's
+ * ancestors in the MAG are used, pruned to an inclusion-minimal separator; they m-separate every nonadjacent
+ * pair of a MAG (Richardson and Spirtes 2002), so a miss by recursive blocking is no longer a veto. Pairs
+ * uncertified in the committed state are exempt, so a violation that predates the move cannot veto every later
+ * move. PROVED: with it, every nonadjacent pair of every committed
+ * state, exempt pairs aside, has one m-separator the test has confirmed. That one confirmed separator per pair
+ * makes the state an I-map of the test is a further step: PROVED under an oracle when the separator is the
+ * pair's whole ancestor set (pairwise and global Markov coincide for maximal ancestral graphs and compositional
+ * graphoids; Sadeghi and Lauritzen 2014); CHECKED exhaustively through five observed variables under an oracle
+ * for an arbitrary separator per pair, which covers every separator this gate tests, not proved; NOT
+ * implied on data, where the test's verdicts need not form a compositional graphoid. CONJECTURED, not proved:
+ * that from every I-map state other than the true PAG some single removal admits an I-map orientation of the
+ * reduced skeleton (the weak form of the generalized Meek conjecture for projections, exhaustively supported at
+ * five and six observed variables, open in general). Even granting it, the gated search can stall short of the
+ * true PAG, for two reasons. The gate tries the orientations its recorded separators induce, not every
+ * orientation. And the conjecture promises some removal, not each one: with truth 3-&gt;0, 3-&gt;1, 0-&gt;2,
+ * 1-&gt;4, 0&lt;-&gt;4, 1&lt;-&gt;2 and the I-map state that adds 0-1 and 2-4, removing 2-4 first leaves a
+ * skeleton with no I-map at all, though {0, 1} separates the pair; removing 0-1 first does not.
+ * OBSERVED on data (2026-10-21): with imapAlpha equal to the removal alpha the gate reduced accuracy, each false "dependent" vetoing a correct
  * move; the smaller default imapAlpha is the response.</li>
  * <li><b>Score step.</b> {@link #setUseScoreStep(boolean)} with {@link #setGateScore(Score)}. The candidate's
  * Zhang MAG is scored by RICF BIC and passes iff its score exceeds the committed score by more than
@@ -107,6 +122,7 @@ public final class CorrectnessGates {
     private final Set<Set<Node>> refutedSeeds = new HashSet<>();
     private Set<Set<Node>> baselineUncertified = new HashSet<>();
     private int imapCandidates = 0, imapVetoes = 0, imapTests = 0, imapIndeterminate = 0;
+    private boolean recursiveBlockingSeparators = true;
 
     // ---- Score step ----
     private boolean useScoreStep = false;
@@ -199,6 +215,21 @@ public final class CorrectnessGates {
             throw new IllegalArgumentException("imapAlpha must be in (0, 1): " + imapAlpha);
         }
         this.imapAlpha = imapAlpha;
+    }
+
+    /**
+     * Sets how the I-map gate picks the separator it tests for a pair with no usable known separator. True (the
+     * default, and the behavior before this option existed) uses the separator recursive blocking returns, with
+     * the pair's pruned ancestor set as the fallback when it returns none. That search is unbounded here and was
+     * measured at seconds per pair on 20-variable MAGs. False skips it and always uses the pair's ancestors in
+     * the candidate MAG, pruned in name order to an inclusion-minimal separator: always available in a MAG,
+     * deterministic, and about a millisecond. The two can test different separators, so on data they can give
+     * different verdicts.
+     *
+     * @param recursiveBlockingSeparators false to use the pruned ancestor set only. Default true.
+     */
+    public void setRecursiveBlockingSeparators(boolean recursiveBlockingSeparators) {
+        this.recursiveBlockingSeparators = recursiveBlockingSeparators;
     }
 
     /**
@@ -528,20 +559,34 @@ public final class CorrectnessGates {
             if (mag.paths().isMSeparatedFrom(x, z, sep, false)) return true;
         }
 
-        Set<Node> d;
-        try {
-            RecursiveBlocking.BlockingResult b = RecursiveBlocking.blockPathsRecursively(
-                    mag, x, z, Set.of(), Set.of(), -1, -1, -1, 1, true);
-            d = (b == null || b.indeterminate() || b.blockingSet() == null) ? null : new HashSet<>(b.blockingSet());
-        } catch (Exception e) {
-            d = null;
+        // The separator to test: recursive blocking's, or the pair's pruned ancestors when that is switched off or
+        // returns nothing. A nonadjacent pair of a MAG is always m-separated by its ancestors, so the second route
+        // cannot miss; the first is unbounded here and was measured at seconds per pair on 20-variable MAGs.
+        Set<Node> d = null;
+
+        if (recursiveBlockingSeparators) {
+            try {
+                RecursiveBlocking.BlockingResult b = RecursiveBlocking.blockPathsRecursively(
+                        mag, x, z, Set.of(), Set.of(), -1, -1, -1, 1, true);
+                d = (b == null || b.indeterminate() || b.blockingSet() == null) ? null : new HashSet<>(b.blockingSet());
+            } catch (Exception e) {
+                // An interrupt is not a verdict: do not let it be absorbed as "no separator found".
+                if (e instanceof InterruptedException || Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("Interrupted in the I-map gate.");
+                }
+                d = null;
+            }
+
+            if (d != null && !mag.paths().isMSeparatedFrom(x, z, d, false)) d = null;
         }
 
-        if (d == null || !mag.paths().isMSeparatedFrom(x, z, d, false)) {
+        if (d == null) d = ancestorSeparator(mag, x, z);
+
+        if (d == null) {
             imapIndeterminate++;
             if (verbose && what != null) {
-                TetradLogger.getInstance().log("\tI-map gate: no separator found for " + x + ", " + z
-                        + " in the candidate MAG (" + what + "); vetoed.");
+                TetradLogger.getInstance().log("\tI-map gate: " + x + ", " + z + " are nonadjacent but not separated "
+                        + "by their ancestors, so the candidate's Zhang MAG is not maximal (" + what + "); vetoed.");
             }
             return false;
         }
@@ -557,6 +602,31 @@ public final class CorrectnessGates {
 
         knownSeparators.computeIfAbsent(key, k -> new ArrayList<>()).add(d);
         return true;
+    }
+
+    /**
+     * The ancestors of x and z in the MAG, less x and z, pruned in name order to an inclusion-minimal m-separator
+     * of the pair. In a maximal ancestral graph the unpruned set m-separates every nonadjacent pair (Richardson
+     * and Spirtes 2002), and pruning keeps a set only while it still separates, so the result is a separator
+     * whenever the graph is a MAG. Deterministic; one linear-time m-separation query per ancestor.
+     *
+     * @return the separator, or null if the pair's ancestors do not m-separate it (the graph is not a MAG).
+     */
+    private static Set<Node> ancestorSeparator(Graph mag, Node x, Node z) {
+        Set<Node> d = new HashSet<>(mag.paths().getAncestors(List.of(x, z)));
+        d.remove(x);
+        d.remove(z);
+        if (!mag.paths().isMSeparatedFrom(x, z, d, false)) return null;
+
+        List<Node> order = new ArrayList<>(d);
+        order.sort(Comparator.comparing(Node::getName));
+
+        for (Node n : order) {
+            d.remove(n);
+            if (!mag.paths().isMSeparatedFrom(x, z, d, false)) d.add(n);
+        }
+
+        return d;
     }
 
     // ---- Score step internals ----

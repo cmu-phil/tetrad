@@ -1116,15 +1116,20 @@ public final class Fcit implements IGraphSearch {
      * becomes "first in canonical order that both separates AND commits" --
      * still a deterministic function of the committed history.
      *
-     * <p>Rationale: the reachability theorem guarantees that SOME legal
-     * orientation of the reduced skeleton exists, but the reorientation here is
-     * a function of the recorded separators, so the one orientation induced by
-     * the first-found separator can fail the gate while the orientation induced
-     * by a different data-valid separator passes it. This loop searches the
-     * pair's separator family instead of giving up after the first. It
-     * realizes the existential over THIS pair's separators only; separators
-     * committed for other pairs stay fixed, so it narrows, not closes, the gap
-     * between existence and realization.</p>
+     * <p>Rationale: the weak form of the generalized Meek conjecture (unproved;
+     * see {@link CorrectnessGates}) says that from an I-map state SOME single
+     * removal admits an I-map orientation of the reduced skeleton. The
+     * reorientation here is a function of the recorded separators, so the one
+     * orientation induced by the first-found separator can fail the gate while
+     * the orientation induced by a different data-valid separator passes it.
+     * This loop searches the pair's separator family instead of giving up
+     * after the first. It realizes the existential over THIS pair's separators
+     * only; separators committed for other pairs stay fixed, so it narrows, not
+     * closes, the gap between existence and realization. The conjecture does
+     * not say that THIS pair's removal has an I-map orientation at the current
+     * state: a pair with a data-valid separator can have none until another
+     * edge is removed first, so exhausting the family is not by itself a
+     * defect.</p>
      *
      * <p>A definite exhaustion here is deliberately NOT cached in
      * {@link #sweepFailedAt}: separators for the pair exist -- none of them
@@ -2236,6 +2241,17 @@ public final class Fcit implements IGraphSearch {
      */
     public void setImapAlpha(double imapAlpha) {
         gates.setImapAlpha(imapAlpha);
+    }
+
+    /**
+     * Sets how the I-map gate picks the separator it tests; see
+     * {@link CorrectnessGates#setRecursiveBlockingSeparators(boolean)}. True (the default) is the behavior before
+     * this option existed; false always uses the pair's pruned ancestor set, which is bounded and deterministic.
+     *
+     * @param recursiveBlockingSeparators false to use the pruned ancestor set only. Default true.
+     */
+    public void setImapRecursiveBlockingSeparators(boolean recursiveBlockingSeparators) {
+        gates.setRecursiveBlockingSeparators(recursiveBlockingSeparators);
     }
 
     /**

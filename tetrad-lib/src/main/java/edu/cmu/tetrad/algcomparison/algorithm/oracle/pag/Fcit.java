@@ -200,6 +200,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         fcit.setUseMarkFlipEscalation(true);
 
+        fcit.setImapRecursiveBlockingSeparators(false);
+
         // The warrant for the result, a three-way choice (the saturating step is not a separate switch: it runs
         // exactly when neither gate is on). 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step.
         int correctness = parameters.getInt(Params.FCIT_CORRECTNESS);
