@@ -1886,9 +1886,10 @@ public class SessionNode implements Node {
                 }
             }
 
-            if (constructorTypes.length == 0) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "UI models shouldn't have blank constructors. " +
-                        "This one did: " + modelClass.getName());
+            // A constructor with no arguments builds the model of a box that has no parent boxes, such as an empty
+            // SEM IM to load a file into. It is not a fallback for a box whose parents have no models yet; there,
+            // the model cannot be created.
+            if (constructorTypes.length == 0 && !this.parents.isEmpty()) {
                 continue;
             }
 

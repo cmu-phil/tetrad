@@ -1030,6 +1030,67 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * Sets the intercepts of the given nodes in one pass, leaving the intercepts of the other nodes as they are. The
+     * result is the same as calling {@link #setIntercept(Node, double)} for each node in turn, without the work of
+     * recalculating every mean for every node.
+     *
+     * @param intercepts the new intercepts, by node.
+     * @throws UnsupportedOperationException if the SEM model is cyclic
+     */
+    public void setIntercepts(Map<Node, Double> intercepts) {
+        if (isCyclic()) {
+            throw new UnsupportedOperationException("Setting and getting of "
+                    + "intercepts is supported for acyclic SEMs only.");
+        }
+
+        // A causal order of the variables, by their directed edges alone; correlated errors do not bear on it.
+        SemGraph semGraph = getSemPm().getGraph();
+        Map<Node, List<Node>> parents = new HashMap<>();
+
+        for (Node node : getVariableNodes()) {
+            List<Node> _parents = new ArrayList<>(semGraph.getParents(node));
+            _parents.removeIf(parent -> parent.getNodeType() == NodeType.ERROR);
+            parents.put(node, _parents);
+        }
+
+        List<Node> remaining = new ArrayList<>(getVariableNodes());
+        List<Node> tierOrdering = new ArrayList<>();
+        Set<Node> placed = new HashSet<>();
+
+        while (!remaining.isEmpty()) {
+            for (Iterator<Node> i = remaining.iterator(); i.hasNext(); ) {
+                Node node = i.next();
+
+                if (placed.containsAll(parents.get(node))) {
+                    tierOrdering.add(node);
+                    placed.add(node);
+                    i.remove();
+                }
+            }
+        }
+
+        // All of the current intercepts need to be read before any mean is changed.
+        double[] _intercepts = new double[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            Node node = tierOrdering.get(i);
+            Double intercept = intercepts.get(node);
+            _intercepts[i] = intercept != null ? intercept : getIntercept(node);
+        }
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            Node node = tierOrdering.get(i);
+            double mean = _intercepts[i];
+
+            for (Node parent : parents.get(node)) {
+                mean += getEdgeCoef(parent, node) * getMean(parent);
+            }
+
+            setMean(node, mean);
+        }
+    }
+
+    /**
      * Calculates the intercept for a given node.
      *
      * @param node the node for which to calculate the intercept

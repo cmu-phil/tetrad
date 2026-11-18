@@ -34,6 +34,7 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
+import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
@@ -59,6 +60,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 /**
  * Edits a SEM instantiated model.
@@ -262,6 +264,27 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
      */
     public void displaySemIm(SemIm updatedSem, int tabSelectionIndex, int matrixSelection) {
         this.oneEditorPanel.displaySemIm(updatedSem, tabSelectionIndex, matrixSelection);
+    }
+
+    /**
+     * Replaces the SEM IM being edited with the given one, in the wrapper as well as in the display, so that the new
+     * SEM IM is the one the session has.
+     */
+    private void replaceSemIm(SemIm semIm, String graphicalEditorTitle, String tabularEditorTitle) {
+        this.wrapper.replaceSemIm(semIm);
+
+        // A lavaan file has no node positions, and an XML file has none if the graph was never laid out.
+        LayoutUtil.defaultLayoutConditional(this.wrapper.getSemIm().getSemPm().getGraph());
+
+        // The menus as well as the tabs depend on the model, so the whole display is rebuilt.
+        this.targetPanel.removeAll();
+        this.oneEditorPanel = new OneEditor(this.wrapper, graphicalEditorTitle, tabularEditorTitle,
+                TabbedPaneDefault.GRAPHICAL);
+        this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
+        this.targetPanel.revalidate();
+        this.targetPanel.repaint();
+
+        firePropertyChange("modelChanged", null, null);
     }
 
     private Component getComp() {
@@ -735,6 +758,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private JCheckBoxMenuItem meansItem;
         private JCheckBoxMenuItem interceptsItem;
         private JMenuItem errorTerms;
+        private JMenuItem loadSemFromXml;
+        private JMenuItem loadSemFromLavaan;
 
         public OneEditor(SemImWrapper wrapper, String graphicalEditorTitle, String tabularEditorTitle,
                          TabbedPaneDefault tabbedPaneDefault) {
@@ -818,6 +843,18 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 SemIm semIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
                 exportSemImToLavaan(JOptionUtils.getCenteringFrame(), semIm, outfile);
             });
+
+            file.addSeparator();
+            this.loadSemFromXml = new JMenuItem("Load SEM from XML...");
+            this.loadSemFromXml.setToolTipText("Replaces this SEM IM with one saved by Save SEM as XML.");
+            this.loadSemFromXml.addActionListener(e -> loadSemIm(false));
+            file.add(this.loadSemFromXml);
+
+            this.loadSemFromLavaan = new JMenuItem("Load SEM from Lavaan...");
+            this.loadSemFromLavaan.setToolTipText("Replaces this SEM IM with one read from lavaan model syntax, "
+                    + "taking the parameter values from the numbers in the syntax.");
+            this.loadSemFromLavaan.addActionListener(e -> loadSemIm(true));
+            file.add(this.loadSemFromLavaan);
 
             JCheckBoxMenuItem covariances
                     = new JCheckBoxMenuItem("Show standard deviations");
@@ -1009,6 +1046,51 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         //========================PRIVATE METHODS===========================//
 
+        /**
+         * Asks the user for a file and replaces the SEM IM being edited with the one in the file, read as lavaan model
+         * syntax or else as the XML that "Save SEM as XML" writes.
+         */
+        private void loadSemIm(boolean lavaan) {
+            JFileChooser chooser = new JFileChooser(Preferences.userRoot().get("fileSaveLocation", ""));
+            chooser.setDialogTitle(lavaan ? "Load SEM IM from Lavaan..." : "Load SEM IM from XML...");
+
+            if (chooser.showOpenDialog(getComp()) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+
+            File file = chooser.getSelectedFile();
+            Preferences.userRoot().put("fileSaveLocation", file.getParent());
+
+            SemIm semIm;
+            List<String> warnings = new ArrayList<>();
+
+            try {
+                if (lavaan) {
+                    SemLavaanParser.Result result = SemLavaanParser.parse(file);
+                    semIm = result.semIm();
+                    warnings = result.warnings();
+                } else {
+                    semIm = SemXmlParser.getSemIm(new Builder().build(file).getRootElement());
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "That file could not be read as a SEM IM in " + (lavaan ? "lavaan" : "XML") + " format:\n"
+                                + e.getMessage(), "Load SEM IM", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            SemImEditor.this.replaceSemIm(semIm, this.graphicalEditorTitle, this.tabularEditorTitle);
+
+            if (!warnings.isEmpty()) {
+                JTextArea text = new JTextArea(String.join("\n\n", warnings), 12, 60);
+                text.setLineWrap(true);
+                text.setWrapStyleWord(true);
+                text.setEditable(false);
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), new JScrollPane(text),
+                        "The SEM IM was loaded, with these notes", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
         public void exportSemImToLavaan(Window parent, SemIm semIm, File file) {
             SemLavaanOptionsDialog dialog = new SemLavaanOptionsDialog(parent);
             dialog.showDialog();
@@ -1166,6 +1248,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         public void setEditable(boolean editable) {
             graphicalEditor().setEditable(editable);
             tabularEditor().setEditable(editable);
+            this.loadSemFromXml.setEnabled(editable);
+            this.loadSemFromLavaan.setEnabled(editable);
             this.editable = editable;
         }
     }

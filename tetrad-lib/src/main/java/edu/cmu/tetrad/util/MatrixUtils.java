@@ -914,7 +914,8 @@ public final class MatrixUtils {
         if (m == null) {
             result = MatrixUtils.nullMessage();
         } else {
-            TextTable textTable = new TextTable(m.length + 1, m[0].length + 1);
+            // A matrix with no rows has no columns either, as for a model with no variables.
+            TextTable textTable = new TextTable(m.length + 1, (m.length == 0 ? 0 : m[0].length) + 1);
 
             for (int i = 0; i < variables.size(); i++) {
                 textTable.setToken(0, i + 1, variables.get(i));

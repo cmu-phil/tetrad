@@ -109,10 +109,13 @@ public class SemXmlRenderer {
         Element marginalErrorElement = new Element(SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION);
         Element normal;
 
+        // The error terms are named in the file, so they need to be in the graph while it is written; the graph is
+        // the model's own, so it is put back as it was afterward.
         SemGraph semGraph = semIm.getSemPm().getGraph();
+        boolean showErrorTerms = semGraph.isShowErrorTerms();
         semGraph.setShowErrorTerms(true);
 
-        for (Node node : SemXmlRenderer.getExogenousNodes(semGraph)) {
+        for (Node node : SemXmlRenderer.getExogenousNodes(semIm)) {
 //            Node graphNode = semGraph.getChildren(node).getFirst();
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
@@ -120,13 +123,17 @@ public class SemXmlRenderer {
             normal.addAttribute(new Attribute(SemXmlConstants.VARIANCE, Double.toString(semIm.getParamValue(node, node))));
             marginalErrorElement.appendChild(normal);
         }
+
+        semGraph.setShowErrorTerms(showErrorTerms);
         return marginalErrorElement;
     }
 
-    private static List<Node> getExogenousNodes(SemGraph graph) {
+    private static List<Node> getExogenousNodes(SemIm semIm) {
+        SemGraph graph = semIm.getSemPm().getGraph();
         List<Node> exogenousNodes = new ArrayList<>();
 
-        for (Node node : graph.getNodes()) {
+        // One error term per variable; going through all of the nodes of the graph would list each one twice.
+        for (Node node : semIm.getVariableNodes()) {
             exogenousNodes.add(graph.getExogenous(node));
         }
 
@@ -145,7 +152,7 @@ public class SemXmlRenderer {
                 normal = new Element(SemXmlConstants.NORMAL);
                 normal.addAttribute(new Attribute(SemXmlConstants.NODE_1, param.getNodeA().getName()));
                 normal.addAttribute(new Attribute(SemXmlConstants.NODE_2, param.getNodeB().getName()));
-                normal.addAttribute(new Attribute(SemXmlConstants.COVARIANCE, Double.toString(param.getStartingValue())));
+                normal.addAttribute(new Attribute(SemXmlConstants.COVARIANCE, Double.toString(semIm.getParamValue(param))));
                 jointErrorElement.appendChild(normal);
             }
         }

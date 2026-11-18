@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.model;
 
 //import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
@@ -75,6 +76,18 @@ public class SemImWrapper implements SessionModel {
     private String modelSourceName;
 
     //============================CONSTRUCTORS==========================//
+
+    /**
+     * Constructs a wrapper holding an empty SEM IM, for a session IM node with no parents. This is what makes "SEM
+     * Instantiated Model" appear in the model chooser when an IM node is created without a PM parent. The intended use
+     * is to fill the model afterward with File &gt; Load SEM from XML or Load SEM from Lavaan in the editor.
+     * <p>
+     * There are no arguments, not even Parameters, since there is nothing to parameterize, so the session does not
+     * show the SEM IM parameter editor for it.
+     */
+    public SemImWrapper() {
+        setSemIm(new SemIm(new SemPm(new EdgeListGraph())));
+    }
 
     /**
      * <p>Constructor for SemImWrapper.</p>
@@ -204,6 +217,23 @@ public class SemImWrapper implements SessionModel {
      */
     public SemIm getSemIm() {
         return this.semIms.get(getModelIndex());
+    }
+
+    /**
+     * Replaces the SEM IM currently selected in this wrapper with a copy of the given one, for instance one loaded from
+     * a file, leaving any other models in the wrapper as they are.
+     *
+     * @param semIm the new SEM IM.
+     */
+    public void replaceSemIm(SemIm semIm) {
+        if (semIm == null) {
+            throw new NullPointerException("The SEM IM must not be null.");
+        }
+
+        // The list may be shared with the simulation it came from, so it is copied, not changed.
+        this.semIms = new ArrayList<>(this.semIms);
+        this.semIms.set(getModelIndex(), new SemIm(semIm));
+        log(getModelIndex(), getSemIm());
     }
 
     private void setSemIm(SemIm updatedSemIm) {
