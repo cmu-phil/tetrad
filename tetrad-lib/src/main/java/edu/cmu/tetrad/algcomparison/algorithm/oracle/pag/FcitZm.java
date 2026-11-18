@@ -173,9 +173,10 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         // The warrant for the result, the three-way choice shared with FCIT and the *-FCI family: 1 = Guarantee
-        // I-map, 2 = Score step, 3 = Saturating step. The saturating pass runs exactly when neither gate is on.
+        // I-map, 2 = Score step, 3 = Neither. The saturating pass runs iff neither gate is on and
+        // useSaturatingStep is on.
         search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS),
-                parameters.getDouble(Params.IMAP_ALPHA));
+                parameters.getDouble(Params.IMAP_ALPHA), parameters.getBoolean(Params.USE_SATURATING_STEP));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
@@ -259,6 +260,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.USE_SATURATING_STEP);
         params.add(Params.IMAP_ALPHA);
         params.add(Params.TEST_TIMEOUT);
 

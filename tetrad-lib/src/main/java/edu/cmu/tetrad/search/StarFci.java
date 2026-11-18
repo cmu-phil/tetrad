@@ -114,7 +114,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * {@code BfciBryanScore} forks of this class and merged back here, may be placed after the legality certificate
  * on every gated move (the edge visits of Passes 0 to 2 and the saturating batches). They are the same three-way
  * choice the FCIT wrapper exposes as {@code fcitCorrectness}, and the wrappers for every subclass key the
- * saturating step off whenever one of them is on:
+ * saturating step off whenever one of them is on (with neither on, {@code useSaturatingStep} decides):
  * <ol>
  * <li><b>Guarantee I-map</b> ({@link #setRequireImapStates(boolean)}): a legal candidate commits only if every
  * nonadjacent pair of its Zhang MAG has a test-confirmed separator at {@link #setImapAlpha(double) imapAlpha}, pairs
@@ -127,10 +127,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * <li><b>Score step</b> ({@link #setUseScoreStep(boolean)}, {@link #setGateScore(Score)}): a legal candidate's Zhang
  * MAG is scored by RICF BIC and commits only if the score strictly improves on the committed score (non-decreasing
  * in Pass 0, where no edge is removed). Linear-Gaussian only: it requires a {@link SemBicScore} on a covariance
- * matrix with zero structure prior, so that the DAG and MAG scores are on one scale. Note that this is a stricter
- * rule than FCIT's "no score drop", which accepts a non-decreasing score everywhere.</li>
- * <li><b>Saturating step</b> ({@link #setUseSaturatingStep(boolean)}): neither gate; stalled pairs are removed
- * jointly at the end, as described above. This is the oracle-correct configuration under the GFCI assumptions.</li>
+ * matrix with zero structure prior, so that the DAG and MAG scores are on one scale. FCIT and FCIT-ZM share this
+ * rule through {@link CorrectnessGates}, and never accept a tie.</li>
+ * <li><b>Neither</b>: no gate. With {@link #setUseSaturatingStep(boolean)} on (the default), stalled pairs are
+ * removed jointly at the end, as described above; this is the oracle-correct configuration under the GFCI
+ * assumptions. With it off the search stops at the single-edge fixpoint and has no correctness warrant.</li>
  * </ol>
  * Defaults differ by entry point, deliberately. This class's own defaults are option 3 (no gate, saturating step
  * on), the configuration proved correct in the oracle, so direct callers and the existing oracle tests see the
@@ -832,10 +833,8 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
-     * Applies one of the three correctness options shared with FCIT's {@code fcitCorrectness}: 1 = Guarantee I-map
-     * (I-map gate on, saturating step off), 2 = Score step (score step on with the given score, saturating step
-     * off), 3 = Saturating step (both gates off, saturating step on). This is the single place the three options
-     * are interpreted for every subclass, so the wrappers cannot drift.
+     * Applies one of the three correctness options shared with FCIT's {@code fcitCorrectness}, with the saturating
+     * step on under option 3; see {@link #setCorrectnessOption(int, Score, double, boolean)}.
      *
      * @param option    1, 2, or 3.
      * @param score     the SEM BIC score of the data, consulted only for option 2 (may be null otherwise).
@@ -844,7 +843,25 @@ public abstract class StarFci implements IGraphSearch {
      *                                  cannot use (which includes every non-continuous data type).
      */
     public void setCorrectnessOption(int option, Score score, double imapAlpha) {
-        setUseSaturatingStep(gates.applyOption(option, score, imapAlpha));
+        setCorrectnessOption(option, score, imapAlpha, true);
+    }
+
+    /**
+     * Applies one of the three correctness options shared with FCIT's {@code fcitCorrectness}: 1 = Guarantee I-map
+     * (I-map gate on, saturating step off), 2 = Score step (score step on with the given score, saturating step
+     * off), 3 = Neither (both gates off, saturating step as given). This is the single place the three options
+     * are interpreted for every subclass, so the wrappers cannot drift.
+     *
+     * @param option         1, 2, or 3.
+     * @param score          the SEM BIC score of the data, consulted only for option 2 (may be null otherwise).
+     * @param imapAlpha      the I-map gate alpha, consulted only for option 1.
+     * @param saturatingStep whether the saturating step runs, consulted only for option 3. Option 3 with false
+     *                       has no correctness warrant.
+     * @throws IllegalArgumentException if the option is unknown, or option 2 is chosen with a score the score step
+     *                                  cannot use (which includes every non-continuous data type).
+     */
+    public void setCorrectnessOption(int option, Score score, double imapAlpha, boolean saturatingStep) {
+        setUseSaturatingStep(gates.applyOption(option, score, imapAlpha) && saturatingStep);
     }
 
     /**

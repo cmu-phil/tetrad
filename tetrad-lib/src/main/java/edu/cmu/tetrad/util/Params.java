@@ -626,8 +626,10 @@ public final class Params {
      * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. The warrant for the result, a three-way choice
      * shared by FCIT, FCIT-ZM, and the *-FCI family (BFCI, GFCI, SP-FCI, GRaSP-FCI): 1 = Guarantee I-map (the I-map gate;
      * saturating step off), 2 = Score step (the RICF-BIC score gate; saturating step off; continuous data only),
-     * 3 = Saturating step (no extra gate; the joint-removal discharge of Cor. saturation runs). The key keeps
-     * its original name so that saved FCIT sessions continue to read it. See {@code CorrectnessGates.applyOption}.
+     * 3 = Neither (no extra gate; the joint-removal discharge of Cor. saturation runs iff
+     * {@link #USE_SATURATING_STEP} is on, which is its default, so a stored 3 means what it always has). The key
+     * keeps its original name so that saved FCIT sessions continue to read it. See
+     * {@code CorrectnessGates.applyOption}.
      */
     public static final String FCIT_CORRECTNESS = "fcitCorrectness";
     /**
@@ -2046,8 +2048,9 @@ public final class Params {
      * Constant <code>USE_SATURATING_STEP="useSaturatingStep"</code>. For the gated *-FCI variants: after the
      * single-edge passes, jointly remove the still-adjacent pairs that have a test-confirmed separator but whose
      * single removals the legality gate rejected. Needed for correctness in the oracle (a reachable state can
-     * have no legal single removal); default true. Not offered by BFCI-Bryan or FCIT, whose wrappers run the step
-     * iff {@link #REQUIRE_IMAP_STATES} is off, nor by BFCI-Bryan-Score, which has no saturating step.
+     * have no legal single removal); default true. In FCIT, FCIT-ZM and the *-FCI wrappers it is consulted only
+     * when {@link #FCIT_CORRECTNESS} is 3 (Neither); options 1 and 2 never run the step. Turning it off under
+     * option 3 leaves the search with no correctness warrant.
      */
     public static final String USE_SATURATING_STEP = "useSaturatingStep";
     /**

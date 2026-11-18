@@ -128,7 +128,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS), score,
-                parameters.getDouble(Params.IMAP_ALPHA));
+                parameters.getDouble(Params.IMAP_ALPHA), parameters.getBoolean(Params.USE_SATURATING_STEP));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setOut(System.out);
 
@@ -185,6 +185,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.FCIT_CORRECTNESS);
+        parameters.add(Params.USE_SATURATING_STEP);
         parameters.add(Params.IMAP_ALPHA);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.NUM_THREADS);

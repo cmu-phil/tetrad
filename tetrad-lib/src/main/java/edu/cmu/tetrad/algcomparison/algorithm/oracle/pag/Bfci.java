@@ -153,7 +153,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
         search.setCorrectnessOption(parameters.getInt(Params.FCIT_CORRECTNESS), score,
-                parameters.getDouble(Params.IMAP_ALPHA));
+                parameters.getDouble(Params.IMAP_ALPHA), parameters.getBoolean(Params.USE_SATURATING_STEP));
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         return search.search();
@@ -216,6 +216,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // Parameters
         params.add(Params.NUM_STARTS);
         params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.USE_SATURATING_STEP);
         params.add(Params.IMAP_ALPHA);
 
         return params;

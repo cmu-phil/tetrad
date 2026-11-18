@@ -3279,8 +3279,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             orientation. The fcitCorrectness parameter chooses the warrant the search relies on: 1 = Guarantee I-map
             (every committed state must be an I-map of the test at imapAlpha; the default), 2 = Score step (every
             removal must strictly improve a RICF BIC score on the Zhang MAG; continuous data with a SEM BIC score
-            required), or 3 = Saturating step (the configuration proved correct in the oracle under the GFCI
-            assumptions). Because the default is new and has not yet been measured at scale on real data, BFCI is
+            required), or 3 = Neither. Under option 3 the useSaturatingStep parameter says whether the saturating
+            step runs; with it on, the default, this is the configuration proved correct in the oracle under the GFCI
+            assumptions, and with it off the search has no correctness warrant. Because the default is new and has not yet been measured at scale on real data, BFCI is
             marked experimental in this version. The former BFCI-Bryan and BFCI-Bryan-Score entries are retired;
             they correspond to options 1 or 3 and to option 2 of this algorithm.</p>
 
@@ -3302,7 +3303,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and BOSS, together with
-        <a href="#fcitCorrectness">fcitCorrectness</a> and <a href="#imapAlpha">imapAlpha</a>.</p>
+        <a href="#fcitCorrectness">fcitCorrectness</a>, <a href="#useSaturatingStep">useSaturatingStep</a> and
+        <a href="#imapAlpha">imapAlpha</a>.</p>
 
     <h3>The BFCI-Bryan Algorithm</h3>
 
@@ -3312,7 +3314,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <p>Retired in version 8.0.0. BFCI-Bryan was an experimental arm whose gated removal step, sepset re-selection,
             and I-map gate have been merged into the shipping BFCI and the rest of the *-FCI family (see BFCI, above).
             Its behavior with requireImapStates on is BFCI with fcitCorrectness = 1; with it off, BFCI with
-            fcitCorrectness = 3. The class is kept, unregistered, only so that sessions saved with it continue to
+            fcitCorrectness = 3 and the saturating step on. The class is kept, unregistered, only so that sessions saved with it continue to
             load; such a session re-runs through BFCI with the equivalent option. The usePass0 and reharvestSepsets
             options were not carried over and are ignored.</p>
     </div>
@@ -4940,12 +4942,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <div id="fcit-zm">
         <p>FCIT-ZM is a variant of FCIT (see) in which every proposed change is judged on the MAG side. A score-based search (BOSS or GRaSP) supplies a seed CPDAG whose unshielded colliders are taken as sound and are recalled, rather than recomputed, throughout. A recursive path-blocking search then proposes single-edge deletions, each committed only when the candidate graph projects to a legal Zhang MAG; a final saturating pass removes any test-separable adjacency the single-edge phase left standing.</p>
-        <p>Two commit routes are available: reorienting the PAG directly, leaving endpoints as circles until a rule commits them (the default), or projecting through the Zhang MAG and back to its canonical PAG (the route described as FCIT-ZM in the reachability analysis). Either way the returned graph is certified as a legal PAG, modulo background knowledge when knowledge is supplied: its implied MAG is legal and the graph equals the canonical PAG of that MAG. As of version 8.0.0 FCIT-ZM also takes the fcitCorrectness choice shared with FCIT and the *-FCI family: 1 = Guarantee I-map (the default), 2 = Score step, or 3 = Saturating step; the saturating pass runs only under option 3. Requires both a test and a score. Experimental.</p>
+        <p>Two commit routes are available: reorienting the PAG directly, leaving endpoints as circles until a rule commits them (the default), or projecting through the Zhang MAG and back to its canonical PAG (the route described as FCIT-ZM in the reachability analysis). Either way the returned graph is certified as a legal PAG, modulo background knowledge when knowledge is supplied: its implied MAG is legal and the graph equals the canonical PAG of that MAG. As of version 8.0.0 FCIT-ZM also takes the fcitCorrectness choice shared with FCIT and the *-FCI family: 1 = Guarantee I-map (the default), 2 = Score step, or 3 = Neither; the saturating pass runs only under option 3, and there only if useSaturatingStep is on (the default). Requires both a test and a score. Experimental.</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, excludeSelectionBias, <a href="#fcitCorrectness">fcitCorrectness</a>, <a href="#imapAlpha">imapAlpha</a>, <a href="#testTimeout">testTimeout</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, excludeSelectionBias, <a href="#fcitCorrectness">fcitCorrectness</a>, <a href="#useSaturatingStep">useSaturatingStep</a>, <a href="#imapAlpha">imapAlpha</a>, <a href="#testTimeout">testTimeout</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
 
     <h3>The FCIT-SL Algorithm</h3>
 

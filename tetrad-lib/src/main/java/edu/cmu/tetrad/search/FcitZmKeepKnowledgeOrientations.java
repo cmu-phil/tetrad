@@ -2086,7 +2086,7 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
     }
 
     /**
-     * Sets whether the saturating pass runs (option 3 of the three-way correctness choice). Default true.
+     * Sets whether the saturating pass runs. Default true.
      *
      * @param useSaturatingStep true to run it.
      */
@@ -2095,15 +2095,28 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
     }
 
     /**
-     * Applies one of the three correctness options shared with FCIT and the *-FCI family: 1 = Guarantee I-map
-     * (I-map gate on, saturating pass off), 2 = Score step (score step on, saturating pass off), 3 = Saturating
-     * step (both gates off, saturating pass on). The score step uses the score given at construction.
+     * Applies one of the three correctness options shared with FCIT and the *-FCI family, with the saturating pass
+     * on under option 3; see {@link #setCorrectnessOption(int, double, boolean)}.
      *
      * @param option    1, 2, or 3.
      * @param imapAlpha the I-map gate alpha, consulted only for option 1.
      */
     public void setCorrectnessOption(int option, double imapAlpha) {
-        this.useSaturatingStep = gates.applyOption(option, score, imapAlpha);
+        setCorrectnessOption(option, imapAlpha, true);
+    }
+
+    /**
+     * Applies one of the three correctness options shared with FCIT and the *-FCI family: 1 = Guarantee I-map
+     * (I-map gate on, saturating pass off), 2 = Score step (score step on, saturating pass off), 3 = Neither
+     * (both gates off, saturating pass as given). The score step uses the score given at construction.
+     *
+     * @param option         1, 2, or 3.
+     * @param imapAlpha      the I-map gate alpha, consulted only for option 1.
+     * @param saturatingStep whether the saturating pass runs, consulted only for option 3. Option 3 with false
+     *                       has no correctness warrant.
+     */
+    public void setCorrectnessOption(int option, double imapAlpha, boolean saturatingStep) {
+        this.useSaturatingStep = gates.applyOption(option, score, imapAlpha) && saturatingStep;
     }
 
     /**

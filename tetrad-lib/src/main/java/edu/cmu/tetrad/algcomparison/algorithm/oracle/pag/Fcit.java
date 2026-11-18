@@ -202,8 +202,10 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         fcit.setImapRecursiveBlockingSeparators(false);
 
-        // The warrant for the result, a three-way choice (the saturating step is not a separate switch: it runs
-        // exactly when neither gate is on). 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step.
+        // The warrant for the result, a three-way choice: 1 = Guarantee I-map, 2 = Score step (each removal must
+        // strictly raise the RICF BIC; the setter keeps its historical name), 3 = Neither. Options 1 and 2 never
+        // run the saturating step; under option 3 it runs iff useSaturatingStep is on (the default). Option 3
+        // with the step off has no correctness warrant; it is there to measure what the step contributes.
         int correctness = parameters.getInt(Params.FCIT_CORRECTNESS);
         if (correctness == 1) {
             fcit.setRequireImapStates(true);
@@ -212,10 +214,10 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             fcit.setRequireNoScoreDrop(true);
             fcit.setUseSaturatingStep(false);
         } else if (correctness == 3) {
-            fcit.setUseSaturatingStep(true);
+            fcit.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
         } else {
             throw new IllegalArgumentException("Unknown FCIT correctness option: " + correctness
-                    + " (1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step).");
+                    + " (1 = Guarantee I-map, 2 = Score step, 3 = Neither).");
         }
         fcit.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
 
@@ -427,6 +429,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
         params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.USE_SATURATING_STEP);
         params.add(Params.IMAP_ALPHA);
 
         // General

@@ -85,9 +85,13 @@ import java.util.Set;
  * on 2026-11-08 over FCIT's earlier non-decreasing rule so that all three searches agree. Linear-Gaussian only:
  * a {@link SemBicScore} on a covariance matrix with zero structure prior is required, so that the DAG and MAG
  * scores are on one scale.</li>
- * <li><b>Saturating step.</b> Neither gate; the search runs its own joint-removal step for pairs that have a
- * separator but no legal single removal. Not a gate, so not implemented here; {@link #applyOption} returns
- * whether the caller should turn its saturating step on, which is exactly when neither gate is on.</li>
+ * <li><b>Neither.</b> No gate. Whether the search then runs its saturating step (its own joint-removal step for
+ * pairs that have a separator but no legal single removal) is a separate switch, {@code useSaturatingStep} in
+ * the wrappers, consulted only under this option; options 1 and 2 never run the step. The step is not a gate, so
+ * it is not implemented here; {@link #applyOption} returns whether the caller may run it, which is exactly when
+ * neither gate is on. With the step on this is the configuration proved correct in the oracle; with it off the
+ * search has no correctness warrant at all, and is there to measure how often the single-edge fixpoint alone
+ * misses the true PAG.</li>
  * </ol>
  *
  * <p><b>Seeds.</b> The I-map check trusts a separator recorded in the trial sepset map unless the pair is a
@@ -145,12 +149,13 @@ public final class CorrectnessGates {
     // ---- configuration ----
 
     /**
-     * Applies one of the three correctness options and reports whether the caller's saturating step should run.
+     * Applies one of the three correctness options and reports whether the caller's saturating step may run.
      *
-     * @param option    1 = Guarantee I-map, 2 = Score step, 3 = Saturating step.
+     * @param option    1 = Guarantee I-map, 2 = Score step, 3 = Neither.
      * @param score     the SEM BIC score of the data, consulted only for option 2 (may be null otherwise).
      * @param imapAlpha the I-map gate alpha, consulted only for option 1.
-     * @return true iff the saturating step should be on, which is exactly option 3.
+     * @return true iff the saturating step may be on, which is exactly option 3; the caller then consults its
+     * own saturating-step switch.
      * @throws IllegalArgumentException if the option is unknown, or option 2 is chosen with a score the score step
      *                                  cannot use (which includes every non-continuous data type).
      */
@@ -174,7 +179,7 @@ public final class CorrectnessGates {
                 return true;
             }
             default -> throw new IllegalArgumentException("Unknown correctness option: " + option
-                                                          + " (1 = Guarantee I-map, 2 = Score step, 3 = Saturating step).");
+                                                          + " (1 = Guarantee I-map, 2 = Score step, 3 = Neither).");
         }
     }
 
@@ -261,7 +266,7 @@ public final class CorrectnessGates {
     }
 
     /**
-     * Reports whether either gate is on; when neither is, the saturating step runs.
+     * Reports whether either gate is on; when neither is, the saturating step runs if its switch is on.
      *
      * @return whether either gate is on.
      */

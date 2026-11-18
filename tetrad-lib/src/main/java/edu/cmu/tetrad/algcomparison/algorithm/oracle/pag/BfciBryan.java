@@ -128,6 +128,9 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
         // runs the same code. Map this class's stored parameters onto the three-way correctness option and run BFCI.
         Parameters p = new Parameters(parameters);
         p.set(Params.FCIT_CORRECTNESS, parameters.getBoolean(Params.REQUIRE_IMAP_STATES) ? 1 : 3);
+        // This class ran the saturating step exactly when requireImapStates was off; pin that, whatever a stored
+        // useSaturatingStep says, now that option 3 consults it.
+        p.set(Params.USE_SATURATING_STEP, true);
         if (!parameters.getBoolean(Params.USE_PASS_0) || parameters.getBoolean(Params.REHARVEST_SEPSETS)) {
             TetradLogger.getInstance().log("BFCI-Bryan: the usePass0 and reharvestSepsets options were not carried "
                                            + "into the consolidated BFCI; Pass 0 always runs and no re-harvest is "
