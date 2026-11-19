@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static edu.cmu.tetrad.search.utils.SearchCancellation.*;
 
@@ -358,6 +359,12 @@ public final class Fcit implements IGraphSearch {
      * removed.
      */
     private boolean detectionEnabled = true;
+    /**
+     * Diagnostic observer of committed states, or null. Called once after every commit (single-edge removal or
+     * saturating pass) with a copy of the committed PAG. Observation only: it cannot veto or alter a commit. Used
+     * by the oracle harnesses to audit intermediate states against the truth.
+     */
+    private Consumer<Graph> commitListener = null;
     /**
      * Before invoking recursive blocking for a pair, test subsets of the pair's
      * common neighborhood by increasing size up to this cap; -1 disables the
@@ -1591,6 +1598,7 @@ public final class Fcit implements IGraphSearch {
         this.sepsets = scratch;
         graphVersion++;
         gates.committed(this.pag, this.sepsets);
+        if (commitListener != null) commitListener.accept(new EdgeListGraph(this.pag));
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + " (" + type + "), sepset = " + b);
@@ -1778,6 +1786,7 @@ public final class Fcit implements IGraphSearch {
         this.sepsets = scratch;
         graphVersion++;
         gates.committed(this.pag, this.sepsets);
+        if (commitListener != null) commitListener.accept(new EdgeListGraph(this.pag));
 
         TetradLogger.getInstance().log("Saturating step committed: " + confirmed.size()
                 + " edge(s) removed.");
@@ -2176,6 +2185,18 @@ public final class Fcit implements IGraphSearch {
      */
     public void setDetectionEnabled(boolean detectionEnabled) {
         this.detectionEnabled = detectionEnabled;
+    }
+
+    /**
+     * Sets a diagnostic observer that receives a copy of the PAG after every commit (each single-edge removal and
+     * each saturating pass that commits). Observation only: the observer cannot veto or change a commit, and the
+     * default is none. The oracle harnesses use it to audit intermediate states, e.g. whether each committed state
+     * is an I-map of the truth.
+     *
+     * @param commitListener the observer, or null for none.
+     */
+    public void setCommitListener(Consumer<Graph> commitListener) {
+        this.commitListener = commitListener;
     }
 
     /**

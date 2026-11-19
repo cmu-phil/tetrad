@@ -183,6 +183,24 @@ public final class PhantomKernelEnumerator12 {
     /** Print an analysis progress line every this many PAGs. */
     private static final int PROGRESS_EVERY = 250;
 
+    /** Further labellings of each class to run Fcit on, beyond the one representative the
+     *  enumeration happens to keep: 0 = none (the historical behaviour), k &gt; 0 = k random
+     *  relabellings (seeded by the class key), -1 = all OBS! of them. Fcit's trajectory is a
+     *  function of the node names (name-sorted edge and candidate order, and the GRaSP start),
+     *  so one labelling per class tests one trajectory per class; whether the single-edge phase
+     *  stalls is a question about every trajectory. Relabellings that are automorphisms repeat
+     *  the same labelled graph; they are run anyway. In the resume fingerprint. */
+    private static final int RELABELLINGS_PER_CLASS = 0;
+    /** Whether every state Fcit commits is audited for being an I-map of the truth: for each pair that is
+     *  nonadjacent in the Zhang MAG of the committed PAG and each conditioning set, if the pair is
+     *  m-separated in that MAG it must be m-separated in the true MAG (brute force over all subsets, so
+     *  exact and independent of any pairwise lemma). Observation only: a non-I-map intermediate never
+     *  changes the run and is not a terminal violation; it is counted and logged separately as
+     *  NON_IMAP_INTERMEDIATE. The question it answers: does the PAG legality check alone keep FCIT's
+     *  states inside the I-maps, as the I-map gate would? In the resume fingerprint, since a class skipped
+     *  on resume was never audited. */
+    private static final boolean AUDIT_IMAP_INTERMEDIATES = false;
+
     // ── Magspace enumeration checkpointing ──────────────────────────────────
     // Only magspace needs this: its 4^C(OBS,2) sweep hits 2^30 candidates already
     // at OBS=6 (1024x the OBS=5 sweep), which does not finish in one sitting on a
@@ -259,11 +277,12 @@ public final class PhantomKernelEnumerator12 {
         CONFIG_LINE = String.format(
                 "# pke12 config: mode=%s N=%d latent=%d observed=%d "
                         + "timeoutMs=%d depth=%d recDepth=%d "
-                        + "exclSel=%b sat=%b markFlip=%b retry=%b",
+                        + "exclSel=%b sat=%b markFlip=%b retry=%b relabel=%d imapAudit=%b",
                 dagSweep ? "dagsweep" : "magspace", N, NUM_LATENT, OBS,
                 FCIT_TIMEOUT_MS,
                 DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS,
-                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION, RETRY_SEPSETS_ON_REVERT);
+                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION, RETRY_SEPSETS_ON_REVERT,
+                RELABELLINGS_PER_CLASS, AUDIT_IMAP_INTERMEDIATES);
 
         System.err.println(CONFIG_LINE);
         System.err.printf("threads~%d%n", Runtime.getRuntime().availableProcessors());
@@ -281,6 +300,8 @@ public final class PhantomKernelEnumerator12 {
                 + "\n# legend:"
                 + "\n#   EQUIVALENT_NOT_EXACT       -- Markov-equivalent to G* but not edge-identical"
                 + "\n#   SKELETON_MATCH_ORIENT_DIFF -- same skeleton, non-equivalent orientation error"
+                + "\n#   NON_IMAP_INTERMEDIATE      -- not a terminal verdict: a state Fcit committed on the way"
+                + "\n#                                 whose Zhang MAG is not an I-map of the truth (audit)"
                 + "\n#   SKELETON_DIFF              -- adjacencies differ (extra = undeletable spurious,"
                 + "\n#                                 missing = over-deletion)"
                 + "\n#   ERROR                      -- Fcit threw or timed out";
@@ -359,6 +380,7 @@ public final class PhantomKernelEnumerator12 {
                         // same name-sorted map relabels mag and pag identically.
                         Graph mag = canonicalEdgeOrder(relabelToCanon(GraphTransforms.dagToMag(dag)));
                         analyzeInline(total, mag, canon);
+                        analyzeRelabellings(total, mag, canonicalKey(canon));
                     }
                 } catch (Exception ignore) {
                     // A model that will not project is not a true PAG; skip it.
@@ -414,10 +436,12 @@ public final class PhantomKernelEnumerator12 {
         // stale files throw instead, with the "delete both" message the guard was written for.
         String enumConfig = String.format(
                 "# pke12 magspace-enum config: OBS=%d blockSize=%d "
-                        + "timeoutMs=%d depth=%d recDepth=%d exclSel=%b sat=%b markFlip=%b retry=%b",
+                        + "timeoutMs=%d depth=%d recDepth=%d exclSel=%b sat=%b markFlip=%b retry=%b "
+                        + "relabel=%d imapAudit=%b",
                 OBS, MAGSPACE_BLOCK_SIZE,
                 FCIT_TIMEOUT_MS, DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS,
-                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION, RETRY_SEPSETS_ON_REVERT);
+                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION, RETRY_SEPSETS_ON_REVERT,
+                RELABELLINGS_PER_CLASS, AUDIT_IMAP_INTERMEDIATES);
 
         Set<Long> doneBlocks = loadCheckpoint(checkpointPath, enumConfig);
         // Dedup set keyed by CANONICAL (isomorph-invariant) key: Fcit runs once per
@@ -469,6 +493,7 @@ public final class PhantomKernelEnumerator12 {
                         // The representative pair is (this labelling's mag, its pag):
                         // same CANON nodes, consistent by construction.
                         analyzeInline(total, canonicalEdgeOrder(mag), canon);
+                        analyzeRelabellings(total, mag, key);
                         blockNewKeys.add(key);
                     }
                 } catch (Exception ignore) {
@@ -484,9 +509,13 @@ public final class PhantomKernelEnumerator12 {
             appendCheckpoint(checkpointPath, b);
 
             System.err.printf("  block %d (%d/%d visited) | +%d new this block | %d classes so far | "
-                            + "EXACT=%d viol=%d | %.1f min%n",
+                            + "EXACT=%d viol=%d%s | %.1f min%n",
                     b, oi + 1, numBlocks, blockNewKeys.size(), seen.size(),
                     total.exact.sum(), violationCount(total),
+                    AUDIT_IMAP_INTERMEDIATES
+                            ? String.format(" | commits=%d nonImap=%d", total.commitsAudited.sum(),
+                            total.commitsNotImap.sum() + total.commitsNoZhangMag.sum())
+                            : "",
                     (System.currentTimeMillis() - ANALYSIS_T0) / 60000.0);
         }
         keyOut.close();
@@ -593,6 +622,67 @@ public final class PhantomKernelEnumerator12 {
     // commit path and the legality check's round-trip prong (PKE9/PKE10 convention).
     private static Graph pagOfMag(Graph mag) throws InterruptedException {
         return new MagToPag(mag).convert(false, EXCLUDE_SELECTION_BIAS);
+    }
+
+    /** Runs Fcit on further labellings of the class whose enumerated member is {@code mag}
+     *  (see {@link #RELABELLINGS_PER_CLASS}). Each relabelling permutes which CANON name each
+     *  vertex carries, re-projects the PAG from the relabelled MAG so oracle and reference
+     *  stay consistent, and goes through {@link #analyzeInline} like any other model, so it
+     *  is counted and logged under its own positional key. */
+    private static void analyzeRelabellings(Result r, Graph mag, String classKey) {
+        if (RELABELLINGS_PER_CLASS == 0) return;
+
+        List<int[]> perms = new ArrayList<>();
+        int[] identity = new int[OBS];
+        for (int i = 0; i < OBS; i++) identity[i] = i;
+
+        if (RELABELLINGS_PER_CLASS < 0) {
+            allPermutations(identity.clone(), 0, perms);
+            perms.remove(0); // the identity, already analyzed
+        } else {
+            Random rnd = new Random(classKey.hashCode());
+            for (int k = 0; k < RELABELLINGS_PER_CLASS; k++) {
+                int[] p = identity.clone();
+                for (int i = OBS - 1; i > 0; i--) {
+                    int j = rnd.nextInt(i + 1);
+                    int t = p[i]; p[i] = p[j]; p[j] = t;
+                }
+                perms.add(p);
+            }
+        }
+
+        Map<String, Integer> index = new HashMap<>();
+        for (int i = 0; i < OBS; i++) index.put(CANON.get(i).getName(), i);
+
+        for (int[] p : perms) {
+            if (STOP.get()) return;
+            try {
+                Graph relabelled = new EdgeListGraph(CANON);
+                for (Edge e : mag.getEdges()) {
+                    Node a = CANON.get(p[index.get(e.getNode1().getName())]);
+                    Node b = CANON.get(p[index.get(e.getNode2().getName())]);
+                    relabelled.addEdge(new Edge(a, b, e.getEndpoint1(), e.getEndpoint2()));
+                }
+                Graph m2 = canonicalEdgeOrder(relabelled);
+                analyzeInline(r, m2, canonicalEdgeOrder(pagOfMag(m2)));
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    /** All permutations of {@code a}, identity first (Heap-free recursive swap order). */
+    private static void allPermutations(int[] a, int k, List<int[]> out) {
+        if (k == a.length) {
+            out.add(a.clone());
+            return;
+        }
+        for (int i = k; i < a.length; i++) {
+            int t = a[k]; a[k] = a[i]; a[i] = t;
+            allPermutations(a, k + 1, out);
+            t = a[k]; a[k] = a[i]; a[i] = t;
+        }
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -799,6 +889,9 @@ public final class PhantomKernelEnumerator12 {
             fcit.setUseMarkFlipEscalation(USE_MARK_FLIP_ESCALATION);
             fcit.setUseSaturatingStep(USE_SATURATING_STEP);
             fcit.setRetrySepsetsOnRevert(RETRY_SEPSETS_ON_REVERT);
+            if (AUDIT_IMAP_INTERMEDIATES) {
+                fcit.setCommitListener(pag -> auditCommit(r, modelId, trueMag, pag));
+            }
 //            fcit.setRequireImapStates(true);
 
             fcit.setVerbose(false);
@@ -842,6 +935,79 @@ public final class PhantomKernelEnumerator12 {
 
         violationLog.write(violationEntry(bucket, modelId, trueMag, truePag, term,
                 diffDetail(term, truePag)));
+    }
+
+    // ── intermediate-state audit (see AUDIT_IMAP_INTERMEDIATES) ──
+
+    /** Audits one committed state: is the Zhang MAG of the committed PAG an I-map of the true MAG?
+     *  Counts the commit, and on a failure counts it, writes one NON_IMAP_INTERMEDIATE entry naming
+     *  the first offending pair and conditioning set, and marks the model as having had one. */
+    private static void auditCommit(Result r, String modelId, Graph trueMag, Graph committedPag) {
+        r.commitsAudited.increment();
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(committedPag);
+        } catch (Exception ex) {
+            mag = null;
+        }
+        if (mag == null) {
+            r.commitsNoZhangMag.increment();
+            violationLog.write("# NON_IMAP_INTERMEDIATE " + modelId + " : committed PAG has no Zhang MAG; PAG = "
+                    + positionalKey(committedPag) + "\n");
+            return;
+        }
+        String witness;
+        try {
+            witness = firstNonImapWitness(mag, trueMag);
+        } catch (Exception ex) {
+            r.commitsAuditError.increment();
+            return;
+        }
+        if (witness != null) {
+            r.commitsNotImap.increment();
+            violationLog.write("# NON_IMAP_INTERMEDIATE " + modelId + " : committed PAG = "
+                    + positionalKey(committedPag) + " ; Zhang MAG = " + positionalKey(mag)
+                    + " ; " + witness + "\n");
+        }
+    }
+
+    /** Brute-force I-map check of {@code mag} against {@code truth}: for every pair nonadjacent in
+     *  {@code mag} and every subset S of the remaining nodes, m-separation in {@code mag} must imply
+     *  m-separation in {@code truth}. Returns a description of the first failure, or null if none.
+     *  Exact; cost is 2^(OBS-2) m-separation queries per nonadjacent pair, trivial through OBS = 8. */
+    private static String firstNonImapWitness(Graph mag, Graph truth) throws InterruptedException {
+        MsepTest cand = new MsepTest(new EdgeListGraph(mag));
+        MsepTest tru = new MsepTest(new EdgeListGraph(truth));
+        List<Node> vs = new ArrayList<>(cand.getVariables());
+        vs.sort(Comparator.comparing(Node::getName));
+        for (int i = 0; i < vs.size(); i++) {
+            for (int j = i + 1; j < vs.size(); j++) {
+                Node x = vs.get(i), y = vs.get(j);
+                if (mag.isAdjacentTo(mag.getNode(x.getName()), mag.getNode(y.getName()))) continue;
+                List<Node> rest = new ArrayList<>(vs);
+                rest.remove(x);
+                rest.remove(y);
+                for (int mask = 0; mask < (1 << rest.size()); mask++) {
+                    Set<Node> s = new HashSet<>(), st = new HashSet<>();
+                    for (int b = 0; b < rest.size(); b++) {
+                        if ((mask & (1 << b)) != 0) {
+                            s.add(rest.get(b));
+                            st.add(tru.getVariable(rest.get(b).getName()));
+                        }
+                    }
+                    if (cand.checkIndependence(x, y, s).isIndependent()
+                            && !tru.checkIndependence(tru.getVariable(x.getName()), tru.getVariable(y.getName()), st)
+                            .isIndependent()) {
+                        List<String> names = new ArrayList<>();
+                        for (Node n : s) names.add(n.getName());
+                        Collections.sort(names);
+                        return x.getName() + " _||_ " + y.getName() + " | " + names
+                               + " holds in the committed MAG but not in the truth";
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     // ── comparison helpers (verbatim PKE8) ──
@@ -1015,10 +1181,26 @@ public final class PhantomKernelEnumerator12 {
         sb.append(String.format("    of which edges missing         : %d%n", t.skeletonMissing.sum()));
         sb.append(String.format("  ERROR (threw / timed out)        : %d%s%n", error,
                 error > 0 ? "   *** see violation log ***" : ""));
+        if (AUDIT_IMAP_INTERMEDIATES) {
+            long notImap = t.commitsNotImap.sum(), noMag = t.commitsNoZhangMag.sum();
+            sb.append("---- INTERMEDIATE STATES (every commit, audited against the true MAG) ----\n");
+            sb.append(String.format("commits audited                    : %d%n", t.commitsAudited.sum()));
+            sb.append(String.format("  NOT an I-map of the truth        : %d%s%n", notImap,
+                    notImap > 0 ? "   *** legality admitted a non-I-map state; see NON_IMAP_INTERMEDIATE ***" : ""));
+            sb.append(String.format("  no Zhang MAG                     : %d%n", noMag));
+            sb.append(String.format("  audit errors                     : %d%n", t.commitsAuditError.sum()));
+            sb.append(notImap + noMag == 0
+                    ? "Every committed state was an I-map of the truth: on this population the legality check alone "
+                      + "kept FCIT inside the I-maps.\n"
+                    : "Some committed state was not an I-map of the truth: legality alone does not confine FCIT to "
+                      + "I-maps on this population.\n");
+        }
         sb.append("---- THE ANSWER ----\n");
         sb.append(violations == 0
                 ? "Fcit recovers G* EXACTLY on all " + t.pagsScanned.sum()
-                + " distinct true PAGs analyzed this run at this scope ("
+                + (RELABELLINGS_PER_CLASS == 0 ? " distinct true PAGs"
+                : " labelled true PAGs (classes times labellings, automorphic repeats included)")
+                + " analyzed this run at this scope ("
                 + (MODE.startsWith("dag")
                 ? "dagsweep N=" + N + " |L|=" + NUM_LATENT
                 : "ALL PAGs on " + OBS + " observed variables") + ").\n"
@@ -1094,5 +1276,10 @@ public final class PhantomKernelEnumerator12 {
         final LongAdder error = new LongAdder();
         final LongAdder skeletonExtra = new LongAdder();
         final LongAdder skeletonMissing = new LongAdder();
+        // Intermediate-state audit (AUDIT_IMAP_INTERMEDIATES); not terminal violations.
+        final LongAdder commitsAudited = new LongAdder();
+        final LongAdder commitsNotImap = new LongAdder();
+        final LongAdder commitsNoZhangMag = new LongAdder();
+        final LongAdder commitsAuditError = new LongAdder();
     }
 }
