@@ -2447,6 +2447,19 @@ Source:
             <span id="fcitCorrectness_value_type">Integer</span></li>
     </ul>
 
+    === fcitMaxMarkFlips ===
+    <h3 class="parameter_description" id="fcitMaxMarkFlips">fcitMaxMarkFlips</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fcitMaxMarkFlips_short_desc">
+                    Speed cap: maximum mark-flip views tried per edge (16 = default, -1 = unlimited, 0 = none)
+        </span></li>
+        <li>Long Description: <span id="fcitMaxMarkFlips_long_desc">When FCIT's separator sweep on the current graph finds no separating set for an edge, it repeats the sweep on views of the graph that each distrust one arrowhead the failed sweep relied on. This parameter caps how many such views are tried per edge: 16 is the default, -1 is unlimited, and 0 tries none. Every true edge pays for every view, so lowering the cap is the strongest speed lever for larger models; in small oracle trials a cap of 4 was roughly three to four times faster. The price is that a separating set hidden behind an arrowhead that was not tried is missed, leaving an extra edge. Any value other than the default is outside the configuration that has been exhaustively checked, and with 0 the search is known to return wrong graphs at six observed variables.</span></li>
+        <li>Default Value: <span id="fcitMaxMarkFlips_default_value">16</span></li>
+        <li>Lower Bound: <span id="fcitMaxMarkFlips_lower_bound">-1</span></li>
+        <li>Upper Bound: <span id="fcitMaxMarkFlips_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="fcitMaxMarkFlips_value_type">Integer</span></li>
+    </ul>
+
     === fcitSlAllowClassEscape ===
     <h3 class="parameter_description" id="fcitSlAllowClassEscape">
         fcitSlAllowClassEscape</h3>
@@ -2479,6 +2492,19 @@ Source:
             Bound: <span id="fcitStartsWith_upper_bound">4</span></li>
         <li>Value
             Type: <span id="fcitStartsWith_value_type">Integer</span></li>
+    </ul>
+
+    === fcitSweepNfMaxSize ===
+    <h3 class="parameter_description" id="fcitSweepNfMaxSize">fcitSweepNfMaxSize</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fcitSweepNfMaxSize_short_desc">
+                    Speed cap: maximum size of not-followed sets in the separator sweep (-1 = unlimited, the default)
+        </span></li>
+        <li>Long Description: <span id="fcitSweepNfMaxSize_long_desc">For each edge, FCIT's separator sweep proposes candidate separating sets by running its blocking search once for every subset of a pool of ambiguous nodes that the search is told not to pass through. With the default of -1 every subset is used, which is two to the power of the pool size per view. A cap of k uses only the subsets of size at most k. The candidate family is then smaller, so a separating set can be missed, leaving an extra edge, and any value other than -1 is outside the configuration that has been exhaustively checked. In small oracle trials this cap alone saved little time, because the large subsets it removes are the cheap ones; the mark-flip cap, fcitMaxMarkFlips, was the stronger lever.</span></li>
+        <li>Default Value: <span id="fcitSweepNfMaxSize_default_value">-1</span></li>
+        <li>Lower Bound: <span id="fcitSweepNfMaxSize_lower_bound">-1</span></li>
+        <li>Upper Bound: <span id="fcitSweepNfMaxSize_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="fcitSweepNfMaxSize_value_type">Integer</span></li>
     </ul>
 
     === fDegree ===

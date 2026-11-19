@@ -636,9 +636,8 @@ public final class Params {
      * Constant <code>FCIT_SWEEP_NF_MAX_SIZE="fcitSweepNfMaxSize"</code>. Cap on the size of the not-followed
      * subsets FCIT's separator sweep enumerates per view; -1, the default, is unlimited and is the certified
      * configuration. A cap of k replaces 2^n recursive-blocking calls per view with the subsets of size at most
-     * k, at the price of a smaller candidate family, so a separator can be missed. Settable from code only: the
-     * FCIT wrapper reads it with an explicit default, and it is deliberately absent from the wrapper's parameter
-     * list and from the parameter definitions, so it is not offered in a settings dialog. See
+     * k, at the price of a smaller candidate family, so a separator can be missed. Offered in the FCIT settings
+     * since November 2026, for trying capped configurations. See
      * {@code edu.cmu.tetrad.search.Fcit#setSweepNfMaxSize(int)}.
      */
     public static final String FCIT_SWEEP_NF_MAX_SIZE = "fcitSweepNfMaxSize";
@@ -646,7 +645,7 @@ public final class Params {
      * Constant <code>FCIT_MAX_MARK_FLIPS="fcitMaxMarkFlips"</code>. Cap on the number of mark-flip views FCIT
      * tries per pair when the live-view sweep finds no separator; the default is 16, -1 is unlimited, 0 tries
      * none. Fewer views means fewer repeats of the sweep, at the price of missing a separator hidden behind a
-     * mark that was not tried. Settable from code only, as for {@link #FCIT_SWEEP_NF_MAX_SIZE}. See
+     * mark that was not tried. Offered in the FCIT settings, as for {@link #FCIT_SWEEP_NF_MAX_SIZE}. See
      * {@code edu.cmu.tetrad.search.Fcit#setMaxMarkFlips(int)}.
      */
     public static final String FCIT_MAX_MARK_FLIPS = "fcitMaxMarkFlips";

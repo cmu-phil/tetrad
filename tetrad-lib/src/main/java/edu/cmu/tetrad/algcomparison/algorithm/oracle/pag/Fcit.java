@@ -266,12 +266,11 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // B no longer applies -- missed separators fall through to the completion layer, which is slower, so an
         // over-aggressive cap can be a net loss. Measure.
         //
-        // The not-followed cap and the mark-flip cap below are the two knobs read from Parameters, for studies of
-        // what capping costs. They are code-only: each is read with its uncapped default, and neither is in
-        // getParameters() or the parameter definitions, so no settings dialog offers them and a session that never
-        // set them runs exactly as before.
-        fcit.setSweepNfMaxSize(parameters.getInt(Params.FCIT_SWEEP_NF_MAX_SIZE, -1));  // -1 = unlimited
-        fcit.setMaxMarkFlips(parameters.getInt(Params.FCIT_MAX_MARK_FLIPS, 16));       // Fcit's own default
+        // The not-followed cap and the mark-flip cap below are the two knobs read from Parameters, and the two
+        // offered in the settings, for trying capped configurations. Their defaults (-1, unlimited; and 16, Fcit's
+        // own default) are the uncapped search, so a session that never set them runs exactly as before.
+        fcit.setSweepNfMaxSize(parameters.getInt(Params.FCIT_SWEEP_NF_MAX_SIZE));
+        fcit.setMaxMarkFlips(parameters.getInt(Params.FCIT_MAX_MARK_FLIPS));
 //        fcit.setSweepAddMaxSize(2);       // default -1 (unlimited)
 //        fcit.setSweepRemoveMaxSize(2);   // default -1 (unlimited)
 
@@ -405,12 +404,12 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     /**
      * Retrieves the list of parameters used by the algorithm.
      *
-     * <p>The thoroughness knobs of {@link #runSearch} are intentionally absent: each of them changes what the
+     * <p>Most thoroughness knobs of {@link #runSearch} are intentionally absent: each of them changes what the
      * algorithm is guaranteed to find, which is a decision that belongs in code next to its justification rather than
      * in a settings dialog. To expose one, add a {@link Params} constant, a description in the parameter properties
-     * file, a line here, and a {@code parameters.get...} call in place of the commented setter. Two of them,
-     * {@link Params#FCIT_SWEEP_NF_MAX_SIZE} and {@link Params#FCIT_MAX_MARK_FLIPS}, are readable from a
-     * {@link Parameters} object set in code, for studies, but are still not listed here.</p>
+     * file, a line here, and a {@code parameters.get...} call in place of the commented setter. Two of them are
+     * exposed this way, {@link Params#FCIT_SWEEP_NF_MAX_SIZE} and {@link Params#FCIT_MAX_MARK_FLIPS}; their
+     * defaults are the uncapped search, and any other value is outside the certified configuration.</p>
      *
      * @return The list of parameters used by the algorithm.
      */
@@ -435,6 +434,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
+        params.add(Params.FCIT_SWEEP_NF_MAX_SIZE);
+        params.add(Params.FCIT_MAX_MARK_FLIPS);
         params.add(Params.FCIT_CORRECTNESS);
         params.add(Params.USE_SATURATING_STEP);
         params.add(Params.IMAP_ALPHA);
