@@ -171,6 +171,11 @@ public final class PhantomKernelEnumerator12 {
     /** Whether Fcit runs mark-flip escalation. Fcit's own default is true, and the
      *  no-escalation ablation is refuted at six observed variables. */
     private static final boolean USE_MARK_FLIP_ESCALATION = true;
+    /** Whether a reverted single-edge removal goes on through the pair's other test-confirmed
+     *  separators until one commits. Set here explicitly, not inherited: Fcit's default went from
+     *  false to true on 2026-11-12, and with the saturating step off this is the only discharge
+     *  left for a pair whose first-found separator does not commit. In the resume fingerprint. */
+    private static final boolean RETRY_SEPSETS_ON_REVERT = false;
 
     /** Violations are the point of the run; cap generously. */
     private static final int VIOLATION_LOG_MAX = 3000;
@@ -254,11 +259,11 @@ public final class PhantomKernelEnumerator12 {
         CONFIG_LINE = String.format(
                 "# pke12 config: mode=%s N=%d latent=%d observed=%d "
                         + "timeoutMs=%d depth=%d recDepth=%d "
-                        + "exclSel=%b sat=%b markFlip=%b",
+                        + "exclSel=%b sat=%b markFlip=%b retry=%b",
                 dagSweep ? "dagsweep" : "magspace", N, NUM_LATENT, OBS,
                 FCIT_TIMEOUT_MS,
                 DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS,
-                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION);
+                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION, RETRY_SEPSETS_ON_REVERT);
 
         System.err.println(CONFIG_LINE);
         System.err.printf("threads~%d%n", Runtime.getRuntime().availableProcessors());
@@ -409,10 +414,10 @@ public final class PhantomKernelEnumerator12 {
         // stale files throw instead, with the "delete both" message the guard was written for.
         String enumConfig = String.format(
                 "# pke12 magspace-enum config: OBS=%d blockSize=%d "
-                        + "timeoutMs=%d depth=%d recDepth=%d exclSel=%b sat=%b markFlip=%b",
+                        + "timeoutMs=%d depth=%d recDepth=%d exclSel=%b sat=%b markFlip=%b retry=%b",
                 OBS, MAGSPACE_BLOCK_SIZE,
                 FCIT_TIMEOUT_MS, DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS,
-                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION);
+                USE_SATURATING_STEP, USE_MARK_FLIP_ESCALATION, RETRY_SEPSETS_ON_REVERT);
 
         Set<Long> doneBlocks = loadCheckpoint(checkpointPath, enumConfig);
         // Dedup set keyed by CANONICAL (isomorph-invariant) key: Fcit runs once per
@@ -793,6 +798,7 @@ public final class PhantomKernelEnumerator12 {
             fcit.setTimeout(FCIT_TIMEOUT_MS);
             fcit.setUseMarkFlipEscalation(USE_MARK_FLIP_ESCALATION);
             fcit.setUseSaturatingStep(USE_SATURATING_STEP);
+            fcit.setRetrySepsetsOnRevert(RETRY_SEPSETS_ON_REVERT);
 //            fcit.setRequireImapStates(true);
 
             fcit.setVerbose(false);

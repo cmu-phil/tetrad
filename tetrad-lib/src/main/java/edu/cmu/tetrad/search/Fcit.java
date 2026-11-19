@@ -346,11 +346,11 @@ public final class Fcit implements IGraphSearch {
      * Whether, after a gated single-edge removal reverts, the search continues
      * through the pair's remaining data-valid separators in canonical order
      * until one commits or the family exhausts (see
-     * {@link #retrySepsetsUntilCommit}). Default false: the certified
-     * configuration attempts only the first-found canonical separator per pair
-     * and relies on the saturating pass for discharge.
+     * {@link #retrySepsetsUntilCommit}). With it
+     * off, only the first-found canonical separator per pair is attempted and
+     * discharge is left to the saturating pass (if used).
      */
-    private boolean retrySepsetsOnRevert = true;
+    private boolean retrySepsetsOnRevert = false;
     /**
      * Whether the final discriminating-path scan runs. OFF skips detection and
      * the discharge it feeds, so confirmed-spurious legs that neither
@@ -2196,7 +2196,7 @@ public final class Fcit implements IGraphSearch {
      * Changes trajectories; re-certify (PKE12) before trusting a configuration
      * with this on.
      *
-     * @param retrySepsetsOnRevert false by default.
+     * @param retrySepsetsOnRevert true by default.
      */
     public void setRetrySepsetsOnRevert(boolean retrySepsetsOnRevert) {
         this.retrySepsetsOnRevert = retrySepsetsOnRevert;
