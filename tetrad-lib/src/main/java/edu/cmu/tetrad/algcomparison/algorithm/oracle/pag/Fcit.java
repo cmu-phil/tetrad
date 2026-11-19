@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -164,10 +164,10 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // BOSS's own: with an m-separation oracle, the BES step is what guarantees that the CPDAG of the true DAG
         // is returned, so warn if it has been turned off rather than refuse the run.
         if (test instanceof MsepTest && parameters.getInt(Params.FCIT_STARTS_WITH) == 1
-            && !parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE)) {
+                && !parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE)) {
             TetradLogger.getInstance().log("FCIT with a d-separation oracle and a BOSS start: the BES step is off, "
-                                           + "so BOSS is not guaranteed to return the CPDAG of the true DAG; turn "
-                                           + "useBes on for an exact oracle run.");
+                    + "so BOSS is not guaranteed to return the CPDAG of the true DAG; turn "
+                    + "useBes on for an exact oracle run.");
         }
 
         // Tier-0 optimization (output-identical): the sweep retests the same (x, y, S) across the two proposal views,
@@ -266,9 +266,14 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // B no longer applies -- missed separators fall through to the completion layer, which is slower, so an
         // over-aggressive cap can be a net loss. Measure.
         //
-//         fcit.setSweepNfMaxSize(3);        // default -1 (unlimited)
-//         fcit.setSweepAddMaxSize(2);       // default -1 (unlimited)
-//         fcit.setSweepRemoveMaxSize(-1);   // default -1 (unlimited)
+        // The not-followed cap and the mark-flip cap below are the two knobs read from Parameters, for studies of
+        // what capping costs. They are code-only: each is read with its uncapped default, and neither is in
+        // getParameters() or the parameter definitions, so no settings dialog offers them and a session that never
+        // set them runs exactly as before.
+        fcit.setSweepNfMaxSize(parameters.getInt(Params.FCIT_SWEEP_NF_MAX_SIZE, -1));  // -1 = unlimited
+        fcit.setMaxMarkFlips(parameters.getInt(Params.FCIT_MAX_MARK_FLIPS, 16));       // Fcit's own default
+//        fcit.setSweepAddMaxSize(2);       // default -1 (unlimited)
+//        fcit.setSweepRemoveMaxSize(2);   // default -1 (unlimited)
 
         // --- Second proposal view ---------------------------------------------------------------------------
         //
@@ -403,7 +408,9 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      * <p>The thoroughness knobs of {@link #runSearch} are intentionally absent: each of them changes what the
      * algorithm is guaranteed to find, which is a decision that belongs in code next to its justification rather than
      * in a settings dialog. To expose one, add a {@link Params} constant, a description in the parameter properties
-     * file, a line here, and a {@code parameters.get...} call in place of the commented setter.</p>
+     * file, a line here, and a {@code parameters.get...} call in place of the commented setter. Two of them,
+     * {@link Params#FCIT_SWEEP_NF_MAX_SIZE} and {@link Params#FCIT_MAX_MARK_FLIPS}, are readable from a
+     * {@link Parameters} object set in code, for studies, but are still not listed here.</p>
      *
      * @return The list of parameters used by the algorithm.
      */

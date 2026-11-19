@@ -166,6 +166,18 @@ public final class Fcit implements IGraphSearch {
      */
     private final Map<Set<Node>, Long> sweepFailedAt = new java.util.concurrent.ConcurrentHashMap<>();
     /**
+     * The positive counterpart of {@link #sweepFailedAt}: pairs whose search found a separator, with the separator
+     * and the graph version at which it was found. The search is a function of the graph, so while the version is
+     * unchanged a repeat search returns this same separator, and reading it back changes no result. It matters
+     * after a reverted removal, when the rest of the edge list is searched again on an unchanged graph: without
+     * this, every speculative search that found a separator but lost to an earlier edge is repeated in full,
+     * mark-flip views included. An entry is a fact about one graph version only, never a cross-round record;
+     * {@link #foundSepsets} remains winner-only. Concurrent because the parallel lookahead writes it, one task
+     * per pair. Cleared at the start of each search. With a wall-clock timeout a repeat search is not reproducible
+     * in any case; the stored separator is still test-confirmed.
+     */
+    private final Map<Set<Node>, FoundAt> sweepFoundAt = new java.util.concurrent.ConcurrentHashMap<>();
+    /**
      * Per pair, the universes U = (blocking set) union (common neighbors) whose every subset (up to the depth cap)
      * has been tested and found dependent for that pair. Unlike {@link #sweepFailedAt} this is a fact about the
      * data, not the graph: it survives commits and holds on every mark-flip view. With the add and remove caps
@@ -785,6 +797,7 @@ public final class Fcit implements IGraphSearch {
         strategy.setSepsetGraph(new EdgeListGraph(this.pag));
 
         exhaustedUniverses.clear();
+        sweepFoundAt.clear();
         gates.reset();
         gates.setVerbose(verbose);
 
@@ -1033,6 +1046,14 @@ public final class Fcit implements IGraphSearch {
             return null;
         }
 
+        // Likewise if it already found a separator at this graph version: the repeat search would return the
+        // same set. This is what a losing speculative search leaves behind for the next phase after a revert.
+        FoundAt foundAt = sweepFoundAt.get(Set.of(x, y));
+        if (foundAt != null && foundAt.version() == graphVersion) {
+            checkCounter.increment("separator search (reused, graph unchanged)");
+            return new IndependenceCheck(edge, foundAt.sepset());
+        }
+
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
         // shared across every RB call and every view below.
         final long deadline = (timeout < 0L)
@@ -1045,6 +1066,7 @@ public final class Fcit implements IGraphSearch {
 
         SweepOutcome out = searchForSepset(x, y, deadline, tried, true);
         if (out.sepset() != null) {
+            sweepFoundAt.put(Set.of(x, y), new FoundAt(graphVersion, out.sepset()));
             return new IndependenceCheck(edge, out.sepset());
         }
 
@@ -2343,6 +2365,12 @@ public final class Fcit implements IGraphSearch {
     }
 
     private record IndependenceCheck(Edge edge, Set<Node> cond) {
+    }
+
+    /**
+     * A separator found for a pair, and the graph version it was found at; see {@link #sweepFoundAt}.
+     */
+    private record FoundAt(long version, Set<Node> sepset) {
     }
 
     /**
