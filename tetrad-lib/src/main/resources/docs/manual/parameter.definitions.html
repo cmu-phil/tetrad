@@ -2507,6 +2507,19 @@ Source:
         <li>Value Type: <span id="fcitSweepNfMaxSize_value_type">Integer</span></li>
     </ul>
 
+    === fcitTrianglesOnly ===
+    <h3 class="parameter_description" id="fcitTrianglesOnly">fcitTrianglesOnly</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fcitTrianglesOnly_short_desc">
+                    Yes if edges are tested for removal only when they lie in a triangle of the initial graph
+        </span></li>
+        <li>Long Description: <span id="fcitTrianglesOnly_long_desc">FCIT starts from the graph found by a score-based search and then removes edges by conditional independence testing. With this option, an edge is tested for removal only if its two nodes have a common neighbor in that initial graph; an edge in no such triangle is kept without testing. If the initial graph is a minimal I-map of a distribution faithful to a model without selection bias, every extra edge in it lies in a triangle, so under those assumptions nothing removable is skipped and the search is only faster. On data the assumptions hold approximately, and the option also keeps the tests from removing an untested edge, so the result can differ from the unrestricted search. The triangles are those of the initial graph, not of the graph as it changes. The argument does not cover background knowledge or selection bias, and the option has no effect when the search starts from the complete graph.</span></li>
+        <li>Default Value: <span id="fcitTrianglesOnly_default_value">false</span></li>
+        <li>Lower Bound: <span id="fcitTrianglesOnly_lower_bound"></span></li>
+        <li>Upper Bound: <span id="fcitTrianglesOnly_upper_bound"></span></li>
+        <li>Value Type: <span id="fcitTrianglesOnly_value_type">Boolean</span></li>
+    </ul>
+
     === fDegree ===
     <h3 class="parameter_description" id="fDegree">fDegree</h3>
     <ul class="parameter_description_list">

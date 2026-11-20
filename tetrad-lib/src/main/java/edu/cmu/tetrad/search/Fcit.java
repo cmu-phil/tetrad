@@ -416,6 +416,19 @@ public final class Fcit implements IGraphSearch {
      * the cap keeps a deterministic prefix.
      */
     private int maxMarkFlips = 16;
+    /**
+     * If true, an adjacency is searched for a separator only if it lies in a triangle of the initial graph G_0,
+     * that is, only if its two nodes have a common neighbour in G_0. See {@link #setTrianglesOnly(boolean)} for the
+     * warrant and its limits. False by default.
+     */
+    private boolean trianglesOnly = false;
+    /**
+     * The pairs adjacent in G_0 with no common neighbour in G_0, when {@link #trianglesOnly} is set; empty
+     * otherwise. Fixed at the start of the search and only read after that, including by the parallel lookahead.
+     * The triangles are those of G_0 and not of the current graph on purpose: a spurious adjacency can lose its
+     * triangle when another spurious adjacency is removed first, and must stay eligible.
+     */
+    private Set<Set<Node>> noInitialTriangle = Set.of();
 
     /**
      * FCIT constructor.
@@ -790,6 +803,14 @@ public final class Fcit implements IGraphSearch {
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
+        this.noInitialTriangle = trianglesOnly ? pairsInNoTriangle(this.pag) : Set.of();
+
+        if (trianglesOnly && verbose) {
+            TetradLogger.getInstance().log("Triangles only: " + noInitialTriangle.size() + " of "
+                                           + this.pag.getNumEdges() + " initial adjacencies lie in no triangle of the"
+                                           + " initial graph and will not be tested for removal.");
+        }
+
         // P1 ("recorded, not live"): unrecorded R4 endpoint separators are
         // computed against the frozen initial Markov PAG G_0, never the live
         // mid-reorientation graph. Such pairs are exactly the ones non-adjacent
@@ -1021,6 +1042,11 @@ public final class Fcit implements IGraphSearch {
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
+
+        // Triangles only: an adjacency in no triangle of G_0 is taken as genuine and never searched.
+        if (noInitialTriangle.contains(Set.of(x, y))) {
+            return null;
+        }
 
         // A committed sepset for a still-adjacent pair should be impossible
         // (pairs never re-adjoin, and scratch discipline discards reverted
@@ -1905,6 +1931,11 @@ public final class Fcit implements IGraphSearch {
 
         Set<Node> key = Set.of(m, n);
 
+        // Triangles only: as in the removal phase, an adjacency in no triangle of G_0 is taken as genuine.
+        if (noInitialTriangle.contains(key)) {
+            return LegVerdict.NOT_SPURIOUS;
+        }
+
         // Cheapest signal first: a separator already confirmed for this pair is
         // a data fact; the adjacency is spurious.
         if (foundSepsets.containsKey(key)) {
@@ -2316,6 +2347,51 @@ public final class Fcit implements IGraphSearch {
      */
     public void setMaxMarkFlips(int maxMarkFlips) {
         this.maxMarkFlips = maxMarkFlips;
+    }
+
+    /**
+     * Sets whether an adjacency is searched for a separator only if it lies in a triangle of the initial graph
+     * G_0 (the PAG of the start DAG), that is, only if its two nodes have a common neighbour there.
+     *
+     * <p>Warrant. PROVED (project note fcit-triangle-restriction, November 2026; not yet independently checked):
+     * if the distribution is faithful to a MAG without selection bias and the start DAG is a minimal I-map of it,
+     * then every adjacency of the start DAG that is not in the MAG lies in a triangle of the start DAG. So an
+     * adjacency in no triangle of G_0 is genuine, and under an oracle skipping it changes nothing but the time
+     * spent. CHECKED: no exception in 24,341 extra adjacencies over 6,000 random models and orderings under the
+     * m-separation oracle.
+     *
+     * <p>Limits. The triangles must be those of G_0, not of the current graph. On data the premise is only
+     * approximate: the start DAG need not be a minimal I-map, and the restriction then also stops the tests from
+     * removing a genuine-looking adjacency that a test would call independent, so results can differ from the
+     * unrestricted search. The proof does not cover background knowledge, which can keep the start DAG from being
+     * a minimal I-map, or selection bias. With the complete-graph start every adjacency is in a triangle and the
+     * setting has no effect.
+     *
+     * @param trianglesOnly true to restrict the separator search to triangles of the initial graph; false by
+     *                      default.
+     */
+    public void setTrianglesOnly(boolean trianglesOnly) {
+        this.trianglesOnly = trianglesOnly;
+    }
+
+    /**
+     * The adjacent pairs of the given graph whose two nodes have no common neighbour in it.
+     */
+    private static Set<Set<Node>> pairsInNoTriangle(Graph graph) {
+        Set<Set<Node>> pairs = new HashSet<>();
+
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+            Set<Node> common = new HashSet<>(graph.getAdjacentNodes(x));
+            common.retainAll(graph.getAdjacentNodes(y));
+
+            if (common.isEmpty()) {
+                pairs.add(Set.of(x, y));
+            }
+        }
+
+        return Set.copyOf(pairs);
     }
 
     /**

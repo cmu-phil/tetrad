@@ -642,6 +642,12 @@ public final class Params {
      */
     public static final String FCIT_SWEEP_NF_MAX_SIZE = "fcitSweepNfMaxSize";
     /**
+     * Constant <code>FCIT_TRIANGLES_ONLY="fcitTrianglesOnly"</code>. Whether FCIT tests an adjacency for removal
+     * only if it lies in a triangle of the initial graph. False by default. See
+     * {@code edu.cmu.tetrad.search.Fcit#setTrianglesOnly(boolean)}.
+     */
+    public static final String FCIT_TRIANGLES_ONLY = "fcitTrianglesOnly";
+    /**
      * Constant <code>FCIT_MAX_MARK_FLIPS="fcitMaxMarkFlips"</code>. Cap on the number of mark-flip views FCIT
      * tries per pair when the live-view sweep finds no separator; the default is 16, -1 is unlimited, 0 tries
      * none. Fewer views means fewer repeats of the sweep, at the price of missing a separator hidden behind a

@@ -271,6 +271,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // own default) are the uncapped search, so a session that never set them runs exactly as before.
         fcit.setSweepNfMaxSize(parameters.getInt(Params.FCIT_SWEEP_NF_MAX_SIZE));
         fcit.setMaxMarkFlips(parameters.getInt(Params.FCIT_MAX_MARK_FLIPS));
+        fcit.setTrianglesOnly(parameters.getBoolean(Params.FCIT_TRIANGLES_ONLY));
 //        fcit.setSweepAddMaxSize(2);       // default -1 (unlimited)
 //        fcit.setSweepRemoveMaxSize(2);   // default -1 (unlimited)
 
@@ -436,6 +437,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.TEST_TIMEOUT);
         params.add(Params.FCIT_SWEEP_NF_MAX_SIZE);
         params.add(Params.FCIT_MAX_MARK_FLIPS);
+        params.add(Params.FCIT_TRIANGLES_ONLY);
         params.add(Params.FCIT_CORRECTNESS);
         params.add(Params.USE_SATURATING_STEP);
         params.add(Params.IMAP_ALPHA);
