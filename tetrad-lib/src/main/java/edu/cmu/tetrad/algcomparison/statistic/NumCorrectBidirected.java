@@ -30,7 +30,14 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.Serial;
 
 /**
- * Counts the number of X&lt;-&gt;Y edges for which a latent confounder of X and Y exists.
+ * Counts the X&lt;-&gt;Y edges of the estimated graph for which X and Y have a direct latent common parent in the
+ * true DAG, that is, a latent L with X &lt;- L -&gt; Y.
+ *
+ * <p>This is not a count of correct bidirected edges, and until November 2026 its abbreviation, "&lt;-&gt;
+ * Correct", wrongly suggested it was. A bidirected edge of the true PAG is missed here when its latent trek is
+ * longer (a latent with a latent parent) or passes through a measured node; an estimated X&lt;-&gt;Y is counted
+ * here when X and Y share a latent parent even if X also causes Y; and the count is zero when the true graph
+ * supplied has no latent nodes. For agreement with the true PAG use {@link BidirectedTP}.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -40,7 +47,7 @@ public class NumCorrectBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Counts the number of bidirectional edges for which a latent confounder of X and Y exists.
+     * Counts the estimated bidirected edges whose two nodes have a direct latent common parent in the true DAG.
      */
     public NumCorrectBidirected() {
     }
@@ -52,7 +59,7 @@ public class NumCorrectBidirected implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "<-> Correct";
+        return "#X<->Y,X<-L->Y";
     }
 
     /**
@@ -62,18 +69,19 @@ public class NumCorrectBidirected implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Number of bidirected edges for which a latent confounder exists";
+        return "# X<->Y in estimated where X<-L->Y in true for a latent L (direct latent common parent)";
     }
 
     /**
-     * Returns the number of bidirected edges for which a latent confounder exists.
+     * Returns the number of estimated bidirected edges whose two nodes have a direct latent common parent in the
+     * true DAG.
      *
      * @param trueDag The true DAG.
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
      * @param parameters The parameters
-     * @return The number of bidirected edges with a latent confounder.
+     * @return The number of estimated bidirected edges with a direct latent common parent in the true DAG.
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {

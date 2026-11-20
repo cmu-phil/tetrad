@@ -59,6 +59,12 @@ public final class StatsListStatisticsChooser {
      * The parameter key under which the chosen statistic abbreviations are stored.
      */
     public static final String STATISTICS_KEY = "statsListStatistics";
+    /**
+     * Old abbreviation to current abbreviation, for statistics renamed after sessions may have stored a choice of
+     * them. Choices are stored by abbreviation, so without this a renamed statistic would silently drop out of a
+     * saved session's table.
+     */
+    private static final Map<String, String> RENAMED = Map.of("<-> Correct", "#X<->Y,X<-L->Y");
 
     /**
      * The statistic catalog, built once on first use.
@@ -148,6 +154,13 @@ public final class StatsListStatisticsChooser {
         for (Object value : params.getValues(STATISTICS_KEY)) {
             if (value != null) {
                 chosen.add(value.toString());
+            }
+        }
+
+        // A statistic renamed since the choice was stored stays selected, under its new abbreviation.
+        for (Map.Entry<String, String> renamed : RENAMED.entrySet()) {
+            if (chosen.contains(renamed.getKey())) {
+                chosen.add(renamed.getValue());
             }
         }
 
