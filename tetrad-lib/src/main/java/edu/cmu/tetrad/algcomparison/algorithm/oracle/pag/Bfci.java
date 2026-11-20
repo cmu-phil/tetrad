@@ -145,6 +145,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setTrianglesOnly(parameters.getBoolean(Params.FCIT_TRIANGLES_ONLY));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
 
@@ -210,6 +211,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.LV_HEURISTIC_ONLY);
         params.add(Params.DO_POSSIBLE_DSEP);
+        params.add(Params.FCIT_TRIANGLES_ONLY);
         params.add(Params.VERBOSE);
         params.add(Params.LOG_FINAL_ORIENTATIONS);
 

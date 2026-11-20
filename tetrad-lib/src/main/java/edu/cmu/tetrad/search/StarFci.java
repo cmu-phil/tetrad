@@ -217,6 +217,12 @@ public abstract class StarFci implements IGraphSearch {
      */
     private boolean useSaturatingStep = true;
     /**
+     * If true, Passes 1 and 2 visit an adjacency only if it lies in a triangle of the initial graph, that is,
+     * only if its two nodes have a common neighbour in the initializer's graph. See
+     * {@link #setTrianglesOnly(boolean)} for the warrant and its limits. Default false.
+     */
+    private boolean trianglesOnly = false;
+    /**
      * If true, returns dagToPag of the initializer's DAG representative with no edge removal (the "LV heuristic"
      * of the paper's experiments). Default false.
      */
@@ -323,6 +329,17 @@ public abstract class StarFci implements IGraphSearch {
             }
         }
 
+        // Triangles only: the adjacencies of the initial graph whose two nodes have no common neighbour there,
+        // by node name. Fixed here, on the initial graph and not the current one: an extra adjacency can lose
+        // its triangle when another extra adjacency is removed first, and must stay eligible.
+        Set<Set<String>> noInitialTriangle = trianglesOnly ? pairsInNoTriangle(pag) : Set.of();
+
+        if (trianglesOnly && verbose) {
+            TetradLogger.getInstance().log("Triangles only: " + noInitialTriangle.size() + " of "
+                    + pag.getNumEdges() + " initial adjacencies lie in no triangle of the initial graph and"
+                    + " will not be tested for removal.");
+        }
+
         if (verbose) {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal (sepset projection, "
                     + "sepset re-selection" + gates.describeActive()
@@ -347,6 +364,7 @@ public abstract class StarFci implements IGraphSearch {
                 Node a = edge.getNode1();
                 Node b = edge.getNode2();
                 if (!pag.isAdjacentTo(a, b)) continue;
+                if (noInitialTriangle.contains(Set.of(a.getName(), b.getName()))) continue;
 
                 List<List<Node>> pools = new ArrayList<>();
                 pools.add(adjPool(pag, a, b));
@@ -371,6 +389,7 @@ public abstract class StarFci implements IGraphSearch {
                     Node a = edge.getNode1();
                     Node b = edge.getNode2();
                     if (!pag.isAdjacentTo(a, b)) continue;
+                    if (noInitialTriangle.contains(Set.of(a.getName(), b.getName()))) continue;
 
                     List<List<Node>> pools = new ArrayList<>();
                     pools.add(dsepPool(pag, a, b));
@@ -930,6 +949,49 @@ public abstract class StarFci implements IGraphSearch {
      */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
+    }
+
+    /**
+     * Sets whether Passes 1 and 2 visit an adjacency only if it lies in a triangle of the initial graph, that
+     * is, only if its two nodes have a common neighbour in the initializer's graph. The saturating step needs no
+     * change: it removes only pairs for which a pass found a separator.
+     *
+     * <p>Warrant, as for {@code Fcit#setTrianglesOnly(boolean)}. PROVED (project note fcit-triangle-restriction,
+     * November 2026; not yet independently checked): if the distribution is faithful to a MAG without selection
+     * bias and the initial DAG is a minimal I-map of it, every adjacency of the initial DAG that is not in the
+     * MAG lies in a triangle of the initial DAG. So an adjacency in no such triangle is genuine, and under an
+     * oracle skipping it changes nothing but the time spent.
+     *
+     * <p>Limits. The triangles are those of the initial graph, not of the current one. On data the premise is
+     * only approximate, and the restriction then also keeps the tests from removing an untested adjacency, so
+     * results can differ from the unrestricted search. The proof does not cover background knowledge, which can
+     * keep the initial DAG from being a minimal I-map, or selection bias.
+     *
+     * @param trianglesOnly true to restrict test-based removal to triangles of the initial graph; false by
+     *                      default.
+     */
+    public void setTrianglesOnly(boolean trianglesOnly) {
+        this.trianglesOnly = trianglesOnly;
+    }
+
+    /**
+     * The adjacent pairs of the given graph whose two nodes have no common neighbour in it, by node name.
+     */
+    private static Set<Set<String>> pairsInNoTriangle(Graph graph) {
+        Set<Set<String>> pairs = new HashSet<>();
+
+        for (Edge edge : graph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+            Set<Node> common = new HashSet<>(graph.getAdjacentNodes(x));
+            common.retainAll(graph.getAdjacentNodes(y));
+
+            if (common.isEmpty()) {
+                pairs.add(Set.of(x.getName(), y.getName()));
+            }
+        }
+
+        return Set.copyOf(pairs);
     }
 
     /**

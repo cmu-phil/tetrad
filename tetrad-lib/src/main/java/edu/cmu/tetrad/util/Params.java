@@ -643,8 +643,9 @@ public final class Params {
     public static final String FCIT_SWEEP_NF_MAX_SIZE = "fcitSweepNfMaxSize";
     /**
      * Constant <code>FCIT_TRIANGLES_ONLY="fcitTrianglesOnly"</code>. Whether FCIT tests an adjacency for removal
-     * only if it lies in a triangle of the initial graph. False by default. See
-     * {@code edu.cmu.tetrad.search.Fcit#setTrianglesOnly(boolean)}.
+     * only if it lies in a triangle of the initial graph. False by default. Shared with BFCI, as
+     * {@link #FCIT_CORRECTNESS} is. See {@code edu.cmu.tetrad.search.Fcit#setTrianglesOnly(boolean)} and
+     * {@code edu.cmu.tetrad.search.StarFci#setTrianglesOnly(boolean)}.
      */
     public static final String FCIT_TRIANGLES_ONLY = "fcitTrianglesOnly";
     /**
