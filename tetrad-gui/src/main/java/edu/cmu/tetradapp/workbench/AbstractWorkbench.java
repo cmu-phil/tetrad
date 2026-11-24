@@ -173,8 +173,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private List<DisplayNode> dragNodes;
     /**
-     * True if the selected nodes have been moved as a group since the current drag started, so that releasing
-     * the mouse snaps the group to the grid only after an actual drag.
+     * True if the mouse has moved a node, or the selected nodes as a group, since the current drag started, so
+     * that releasing the mouse snaps to the grid only after an actual drag and a plain click moves nothing.
      */
     private boolean dragGroupMoved;
     /**
@@ -3206,11 +3206,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
 
             case AbstractWorkbench.ADD_NODE:
-                if (!isAllowDoubleClickActions()) {
-                    return;
-                }
+                if (source instanceof DisplayNode) {
 
-                if (source == this) {
+                    // A node may be dragged in this mode too (see handleMouseDragged), so its drag has to be
+                    // started here. It was not, and the drag then ran on the click point and the drag group left
+                    // over from the last drag in SELECT_MOVE: the first mouse movement threw the node by the
+                    // difference between the two click points, and could carry the old group along with it.
+                    startNodeDrag(loc);
+                } else if (source == this && isAllowDoubleClickActions()) {
                     addNode(loc);
                 }
 
@@ -3257,8 +3260,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     private void handleMouseReleased(MouseEvent e) {
         Object source = e.getSource();
+        int mode = this.workbenchMode;
 
-        switch (this.workbenchMode) {
+        // A node dragged in ADD_NODE mode (see handleMousePressed) is dropped the way it is in SELECT_MOVE.
+        if (mode == AbstractWorkbench.ADD_NODE && source instanceof DisplayNode) {
+            mode = AbstractWorkbench.SELECT_MOVE;
+        }
+
+        switch (mode) {
             case AbstractWorkbench.SELECT_MOVE:
                 if (source == this) {
                     finishRubberband();
@@ -3270,7 +3279,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     // nodes were selected was not snapped.
                     if (dragNodes != null && !dragNodes.contains(source)) {
                         snapSingleNodeFromNegative(source);
-                        snapNodeToGrid((DisplayNode) source);
+
+                        // Only after an actual drag, as for a group below, so that a plain click on a node that
+                        // is off the grid (a pasted or cloned node, say) does not move it.
+                        if (this.dragGroupMoved) {
+                            snapNodeToGrid((DisplayNode) source);
+                            this.dragGroupMoved = false;
+                        }
+
                         scrollRectToVisible(((DisplayNode) source).getBounds());
                     } else if (dragNodes != null) {
                         snapDragGroupFromNegative();
@@ -3304,6 +3320,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     this.layoutBeforeDrag = null;
+
+                    // The drag is over. Nothing of it is kept, so that mouse movement can only ever move nodes
+                    // between a press that started a drag and its release; see dragNodes().
+                    this.dragNodes = null;
+                    this.clickPoint = null;
                 }
                 break;
 
@@ -3574,6 +3595,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         int newY = node.getLocation().y + deltaY;
 
         node.setLocation(newX, newY);
+        this.dragGroupMoved = true;
     }
 
     /**

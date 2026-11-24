@@ -228,7 +228,21 @@ public final class SessionEditorNode extends DisplayNode {
 
         Node model = getModelNode();
         if (model != null && model.getCenterX() != -1 && model.getCenterY() != -1) {
-            setLocation(model.getCenterX() - getWidth() / 2, model.getCenterY() - getHeight() / 2);
+
+            // The model center is in unzoomed coordinates and the display is at the workbench's zoom, so the
+            // display center is the model center times the zoom, as in AbstractWorkbench.placeDisplayNode. Placing
+            // the node at the model center itself was right only at 100%: at any other zoom the node jumped
+            // there, and setLocation then wrote that place back divided by the zoom, so that each model created
+            // or destroyed (and each rename) moved the box again and changed the layout that gets saved.
+            int centerX = model.getCenterX();
+            int centerY = model.getCenterY();
+            double scale = getScale();
+
+            setLocation((int) Math.round(centerX * scale) - getWidth() / 2,
+                    (int) Math.round(centerY * scale) - getHeight() / 2);
+
+            // setLocation wrote the model center back from the rounded display center; restore it exactly.
+            model.setCenter(centerX, centerY);
         }
 
         repaint();
