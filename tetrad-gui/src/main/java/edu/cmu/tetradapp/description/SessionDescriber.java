@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Makes a {@link SessionDescription} of a session: its boxes, their connections and locations, and the choices and
@@ -61,6 +62,12 @@ import java.util.Map;
  * @author Claude
  */
 public final class SessionDescriber {
+
+    /**
+     * The fields every box has, which are written from the session itself and not by a model describer.
+     */
+    private static final Set<String> BOX_FIELDS = Set.of(BoxDescription.TYPE, BoxDescription.MODEL,
+            BoxDescription.PARENTS, BoxDescription.LOCATION);
 
     /**
      * The describers, by model class.
@@ -147,10 +154,20 @@ public final class SessionDescriber {
             out.field(BoxDescription.TYPE, boxType);
         }
 
-        String modelName = modelName(boxType, model);
+        // A box built from a session description, and not yet given a model, is described by the description it
+        // was built from, so that describing a session that is only partly rebuilt loses nothing.
+        BoxDescription kept = PendingDescription.standsInForModel(node) ? PendingDescription.get(node) : null;
 
-        if (modelName != null) {
-            out.field(BoxDescription.MODEL, modelName);
+        if (kept != null) {
+            if (kept.get(BoxDescription.MODEL) != null) {
+                out.field(BoxDescription.MODEL, kept.get(BoxDescription.MODEL));
+            }
+        } else {
+            String modelName = modelName(boxType, model);
+
+            if (modelName != null) {
+                out.field(BoxDescription.MODEL, modelName);
+            }
         }
 
         // Parents in the same order as the boxes are listed.
@@ -170,7 +187,15 @@ public final class SessionDescriber {
 
         out.field(BoxDescription.LOCATION, wrapper.getCenterX() + ", " + wrapper.getCenterY());
 
-        if (model != null) {
+        if (kept != null) {
+            for (BoxDescription.Item item : kept.getItems()) {
+                if (item instanceof BoxDescription.Block block) {
+                    out.block(block.name(), String.join("\n", block.lines()));
+                } else if (item instanceof BoxDescription.Field field && !BOX_FIELDS.contains(field.key())) {
+                    out.field(field.key(), field.value());
+                }
+            }
+        } else if (model != null) {
             describerFor(model.getClass()).describe(model, node, out);
         }
 
@@ -200,7 +225,7 @@ public final class SessionDescriber {
      */
     private static String modelName(String boxType, Object model) {
         if (model == null) {
-            return "none yet";
+            return PendingDescription.NO_MODEL;
         }
 
         Class<?> modelClass = model.getClass();

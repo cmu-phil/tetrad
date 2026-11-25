@@ -225,6 +225,75 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         return this;
     }
 
+    /**
+     * Sets the selections remembered on the given runner so that the algorithm chooser, guided or classic, opens on
+     * the given algorithm, test and score, as it would for a session saved with them selected. Used when a session
+     * is rebuilt from a session description; see {@link edu.cmu.tetradapp.description.PendingDescription}. Added
+     * 2026-11-25.
+     * <p>
+     * The chooser lists only what its questions admit, so the questions are set to admit the algorithm: latent
+     * variables "either way", time series and knowledge not required, and the experimental switch on if the
+     * algorithm, test or score is experimental. The family is the first of linear Gaussian, mixed and general that
+     * both the test and the score belong to, and "all" if there is none. The test and the score are remembered for
+     * every family, so they are still chosen if the chooser moves to another family because the data require it.
+     * If the data do not allow the test or score at all, the chooser falls back to its defaults, as it does for any
+     * remembered choice that is no longer listed.
+     *
+     * @param runner    the runner of the search box.
+     * @param algorithm the algorithm.
+     * @param test      the test of independence, or null if none.
+     * @param score     the score, or null if none.
+     */
+    public static void seedSelection(GeneralAlgorithmRunner runner,
+                                     AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> algorithm,
+                                     AnnotatedClass<TestOfIndependence> test, AnnotatedClass<Score> score) {
+        Map<String, Object> sel = runner.getUserAlgoSelections();
+        Parameters parameters = runner.getParameters();
+        String name = algorithm.annotation().name();
+
+        String family = FAMILY_ALL;
+
+        for (String candidate : List.of(FAMILY_LINEAR_GAUSSIAN, FAMILY_MIXED, FAMILY_GENERAL)) {
+            if ((test != null || score != null)
+                && (test == null || familyPasses(test.clazz(), candidate))
+                && (score == null || familyPasses(score.clazz(), candidate))) {
+                family = candidate;
+                break;
+            }
+        }
+
+        sel.put(ALGO_PARAM, name);
+        sel.put(ALGO_TYPE_PARAM, "all");
+        sel.put(LATENT_PARAM, LatentChoice.ANY.name());
+        sel.put(TIME_SERIES_PARAM, false);
+        sel.put(KNOWLEDGE_PARAM, false);
+        sel.put(DATASET_FILTER, family);
+
+        if (algorithm.clazz().isAnnotationPresent(Experimental.class)
+            || (test != null && test.clazz().isAnnotationPresent(Experimental.class))
+            || (score != null && score.clazz().isAnnotationPresent(Experimental.class))) {
+            sel.put(EXPERIMENTAL_PARAM, true);
+        }
+
+        // The remembered test and score names take precedence over the remembered commands, so they must go.
+        sel.remove(IND_TEST_PARAM);
+        sel.remove(SCORE_PARAM);
+
+        parameters.set(UI_ALGO, name);
+        parameters.set(UI_DATA_FILTER, family);
+        parameters.set(UI_KNOWLEDGE, false);
+
+        for (String f : List.of(FAMILY_LINEAR_GAUSSIAN, FAMILY_MIXED, FAMILY_GENERAL, FAMILY_ALL)) {
+            if (test != null) {
+                parameters.set(UI_IND_TEST + "." + f, test.annotation().command());
+            }
+
+            if (score != null) {
+                parameters.set(UI_SCORE + "." + f, score.annotation().command());
+            }
+        }
+    }
+
     @Override
     public void refresh() {
         this.defaultIndTestModels.clear();

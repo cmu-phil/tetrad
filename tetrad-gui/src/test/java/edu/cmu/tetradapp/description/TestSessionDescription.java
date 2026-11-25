@@ -73,12 +73,12 @@ import static org.junit.Assert.*;
  */
 public class TestSessionDescription {
 
-    private static final LocalDate DATE = LocalDate.of(2026, 11, 25);
+    static final LocalDate DATE = LocalDate.of(2026, 11, 25);
 
     /**
      * Adds a box of the given type to the session, as the session workbench does.
      */
-    private static SessionNodeWrapper addBox(SessionWrapper session, String boxType, String name, int x, int y) {
+    static SessionNodeWrapper addBox(SessionWrapper session, String boxType, String name, int x, int y) {
         Class<?>[] modelClasses = TetradApplicationConfig.getInstance().getSessionNodeConfig(boxType).getModels();
         SessionNode node = new SessionNode(boxType, name, modelClasses);
 
@@ -93,11 +93,11 @@ public class TestSessionDescription {
         return wrapper;
     }
 
-    private static void connect(SessionWrapper session, SessionNodeWrapper from, SessionNodeWrapper to) {
+    static void connect(SessionWrapper session, SessionNodeWrapper from, SessionNodeWrapper to) {
         assertTrue(session.addEdge(new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW)));
     }
 
-    private static DataSet simulate() throws Exception {
+    static DataSet simulate() throws Exception {
         RandomUtil.getInstance().setSeed(3847L);
         Graph graph = new EdgeListGraph();
         Node x1 = new GraphNode("X1");
@@ -120,7 +120,7 @@ public class TestSessionDescription {
      * Builds a session of the kind a user builds for real data: data, knowledge, a search with two settings
      * changed, a graph extracted from the search, a graph drawn by hand, a note, and a box left empty.
      */
-    private static SessionWrapper buildSession() throws Exception {
+    static SessionWrapper buildSession() throws Exception {
         SessionWrapper session = new SessionWrapper(new Session("study.tet"));
 
         SessionNodeWrapper data = addBox(session, "Data", "Data1", 100, 100);

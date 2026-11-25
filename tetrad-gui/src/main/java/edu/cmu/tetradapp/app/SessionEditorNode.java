@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
+import edu.cmu.tetradapp.description.PendingDescription;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.editor.ParameterEditor;
@@ -476,6 +477,11 @@ public final class SessionEditorNode extends DisplayNode {
 
             @Override
             public void modelCreated(SessionEvent sessionEvent) {
+
+                // A box built from a session description takes what the description said about it (the algorithm,
+                // the knowledge) once it has a model to take it. Does nothing for any other box. Added 2026-11-25.
+                PendingDescription.apply(sessionNode);
+
                 sessionEditorNode.adjustToModel();
 
                 // This code is here to allow multiple editor windows to be
@@ -1162,6 +1168,14 @@ public final class SessionEditorNode extends DisplayNode {
         // exception.
         if ((modelClasses == null) || (modelClasses.length == 0)) {
             return null;
+        }
+
+        // A box built from a session description is given the model the description names, if that model can be
+        // made from the box's parents, without asking. Added 2026-11-25.
+        Class<?> described = PendingDescription.modelClass(sessionNode);
+
+        if (described != null && Arrays.asList(modelClasses).contains(described)) {
+            return described;
         }
 
         // Choose a single model class either by asking the user or by just
