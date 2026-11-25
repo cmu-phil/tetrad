@@ -566,8 +566,12 @@ public class Boss implements SuborderSearch {
 
         if (insertionScores[originalPosition] + 1e-6 > insertionScores[bestPosition]) return false;
 
-        if (bestPosition > originalPosition) bestPosition--;
-
+        // No adjustment of bestPosition here. In this method the node being moved has no slot of its own: the
+        // forward scan passes over it without advancing the index, so slot j means "before the j-th of the other
+        // nodes", which is exactly where add(j, ...) puts the node once it has been removed. (The sequential
+        // method counts the node's own place as a slot, and so must step back by one when moving right.) From
+        // 2026-3-9 to 2026-11-25 the sequential method's adjustment was applied here too, which put every
+        // rightward move one place short of the slot just found to be best, sometimes lowering the score.
         suborder.remove(nodeToMove);
         suborder.add(bestPosition, nodeToMove);
 

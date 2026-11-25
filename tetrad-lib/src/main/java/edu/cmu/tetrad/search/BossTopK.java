@@ -715,9 +715,14 @@ public class BossTopK implements SuborderSearchTopK {
      * @param lastValidSlot The highest valid slot index.
      * @param originalSlot The slot the node currently occupies.
      * @param bestSlot     The pursued best slot (unadjusted).
+     * @param ownSlot      True if the node's own place counts as a slot, as in the sequential betterMutation, so
+     *                     that a slot to the right of it is one more than the position to insert at once the node
+     *                     has been removed; false if it does not, as in betterMutationAsync, where a slot is that
+     *                     position already.
      */
     private void maybeDefer(List<Node> prefix, List<Node> suborder, Node nodeToMove,
-                            double[] slotScores, int lastValidSlot, int originalSlot, int bestSlot) {
+                            double[] slotScores, int lastValidSlot, int originalSlot, int bestSlot,
+                            boolean ownSlot) {
         if (this.delta <= 0.0) return;
         if (this.runCount >= this.maxRuns) return;
 
@@ -731,7 +736,7 @@ public class BossTopK implements SuborderSearchTopK {
                 // Build the alternative ordering with nodeToMove at slot j (mirroring the move's index adjustment).
                 List<Node> alt = new ArrayList<>(suborder);
                 alt.remove(nodeToMove);
-                int pos = (j > originalSlot) ? j - 1 : j;
+                int pos = (ownSlot && j > originalSlot) ? j - 1 : j;
                 if (pos < 0) pos = 0;
                 if (pos > alt.size()) pos = alt.size();
                 alt.add(pos, nodeToMove);
@@ -900,11 +905,17 @@ public class BossTopK implements SuborderSearchTopK {
 
         if (insertionScores[originalPosition] + 1e-6 > insertionScores[bestPosition]) return false;
 
-        // Split: defer near-tied alternative orderings (uses unadjusted slot indices).
-        maybeDefer(prefix, suborder, nodeToMove, insertionScores, lastValidIndex, originalPosition, bestPosition);
+        // Split: defer near-tied alternative orderings. In this method the node being moved has no slot of its
+        // own, hence the "false"; see below.
+        maybeDefer(prefix, suborder, nodeToMove, insertionScores, lastValidIndex, originalPosition, bestPosition,
+                false);
 
-        if (bestPosition > originalPosition) bestPosition--;
-
+        // No adjustment of bestPosition here. In this method the node being moved has no slot of its own: the
+        // forward scan passes over it without advancing the index, so slot j means "before the j-th of the other
+        // nodes", which is exactly where add(j, ...) puts the node once it has been removed. (The sequential
+        // method counts the node's own place as a slot, and so must step back by one when moving right.) Until
+        // 2026-11-25 the sequential method's adjustment was applied here too, which put every rightward move one
+        // place short of the slot just found to be best; the same error was in Boss, from which this was copied.
         suborder.remove(nodeToMove);
         suborder.add(bestPosition, nodeToMove);
 
@@ -985,8 +996,9 @@ public class BossTopK implements SuborderSearchTopK {
             return false;
         }
 
-        // Split: defer near-tied alternative orderings (uses unadjusted slot indices).
-        maybeDefer(prefix, suborder, nodeToMove, scores, lastValidIndex, originalPosition, bestPosition);
+        // Split: defer near-tied alternative orderings (uses unadjusted slot indices). In this method the node
+        // being moved has a slot of its own, hence the "true".
+        maybeDefer(prefix, suborder, nodeToMove, scores, lastValidIndex, originalPosition, bestPosition, true);
 
         if (bestPosition > originalPosition) {
             bestPosition--;

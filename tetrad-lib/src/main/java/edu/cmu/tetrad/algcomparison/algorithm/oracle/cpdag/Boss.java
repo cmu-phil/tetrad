@@ -96,7 +96,10 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) {
         long seed = parameters.getLong(Params.SEED);
-        parameters.set(Params.NUM_THREADS, 4);
+
+        // The number of threads is the user's to set. From 2024-2-25 to 2026-11-25 a line here set it to 4 on every
+        // run, in the parameters themselves, so that whatever was asked for was ignored and the parameter read 4
+        // afterward.
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
