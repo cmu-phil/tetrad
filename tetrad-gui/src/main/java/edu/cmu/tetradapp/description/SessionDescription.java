@@ -138,11 +138,10 @@ public final class SessionDescription {
      * @return the names of its parents, in the order written.
      */
     public List<String> getParentNames(BoxDescription box) {
-        List<String> parents = new ArrayList<>();
         String value = box.get(BoxDescription.PARENTS);
 
         if (value == null || value.isBlank()) {
-            return parents;
+            return new ArrayList<>();
         }
 
         Set<String> names = new HashSet<>();
@@ -151,6 +150,20 @@ public final class SessionDescription {
             names.add(b.getName());
         }
 
+        return splitNames(value, names);
+    }
+
+    /**
+     * Splits a list of names separated by commas, where a name may itself contain a comma, by matching against the
+     * names that are known: pieces between commas are joined until they spell a known name, the longest that can be
+     * made. A piece that matches no known name is returned as it stands.
+     *
+     * @param value the names, separated by commas.
+     * @param names the known names.
+     * @return the names, in the order written.
+     */
+    static List<String> splitNames(String value, Set<String> names) {
+        List<String> found = new ArrayList<>();
         String[] pieces = value.split(",", -1);
         int i = 0;
 
@@ -176,15 +189,15 @@ public final class SessionDescription {
             }
 
             if (matched != null) {
-                parents.add(matched);
+                found.add(matched);
                 i = matchedEnd + 1;
             } else {
-                parents.add(pieces[i].strip());
+                found.add(pieces[i].strip());
                 i++;
             }
         }
 
-        return parents;
+        return found;
     }
 
     /**

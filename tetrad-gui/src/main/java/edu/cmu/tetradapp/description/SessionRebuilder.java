@@ -21,7 +21,9 @@
 package edu.cmu.tetradapp.description;
 
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.data.DiscretizationSpec;
 import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.app.SessionNodeConfig;
@@ -39,6 +41,7 @@ import edu.cmu.tetradapp.session.SessionNode;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +54,8 @@ import java.util.Map;
  * What is restored, and when:
  * <ul>
  * <li>Boxes, their names, types, locations and connections: at once.</li>
- * <li>Parameters whose values were changed: at once, into each box's parameter object, where the box's model will
- * find them when it is made.</li>
+ * <li>Parameters whose values were changed, and settings that have no registered default: at once, into each box's
+ * parameter object, where the box's model will find them when it is made.</li>
  * <li>Notes, and graphs drawn by hand: at once, since these need no data.</li>
  * <li>Which model a box holds, a search's algorithm, test and score, and knowledge: kept on the box, and applied
  * when the user gives the box a model; see {@link PendingDescription}.</li>
@@ -233,6 +236,64 @@ public final class SessionRebuilder {
                 problems.add(name + ": the value " + changed.value() + " of the parameter \"" + changed.name()
                              + "\" could not be read, so it was not set.");
             }
+        }
+
+        // Settings with no registered default: each says what kind of value it is.
+        for (String setting : box.getAll(StandardDescribers.SETTING)) {
+            int equals = setting.indexOf(" = ");
+
+            if (equals <= 0) {
+                problems.add(name + ": the setting \"" + setting + "\" could not be read, so it was not set.");
+                continue;
+            }
+
+            try {
+                parameters.set(setting.substring(0, equals).strip(), SettingLiteral.read(setting.substring(equals + 3)));
+            } catch (IllegalArgumentException e) {
+                problems.add(name + ": the setting \"" + setting + "\" was not set. " + e.getMessage());
+            }
+        }
+
+        // Settings that take several lines.
+        for (BoxDescription.Item item : box.getItems()) {
+            if (!(item instanceof BoxDescription.Block block)) {
+                continue;
+            }
+
+            if (block.name().startsWith(StandardDescribers.LIST_BLOCK)) {
+                parameters.set(block.name().substring(StandardDescribers.LIST_BLOCK.length()).strip(),
+                        (Object) new ArrayList<>(block.lines()));
+            } else if (block.name().startsWith(StandardDescribers.TEXT_BLOCK)) {
+                parameters.set(block.name().substring(StandardDescribers.TEXT_BLOCK.length()).strip(),
+                        String.join("\n", block.lines()));
+            } else if (block.name().startsWith(StandardDescribers.VALUES_BLOCK)) {
+                parameters.set(block.name().substring(StandardDescribers.VALUES_BLOCK.length()).strip(),
+                        block.lines().toArray(new String[0]));
+            }
+        }
+
+        // What the description says it could not hold, the user has to set again.
+        for (String setting : box.getAll(StandardDescribers.NOT_DESCRIBED)) {
+            problems.add(name + ": the setting \"" + setting + "\" is of a kind a description cannot hold; set it "
+                         + "again in the box.");
+        }
+
+        // How each variable is discretized, as the discretization box keeps it.
+        List<String> discretize = box.getAll(StandardDescribers.DISCRETIZE);
+
+        if (!discretize.isEmpty()) {
+            Map<Node, DiscretizationSpec> specs = new HashMap<>();
+
+            for (String line : discretize) {
+                try {
+                    StandardDescribers.readDiscretizeLine(line, specs);
+                } catch (IllegalArgumentException e) {
+                    problems.add(name + ": the discretization \"" + line + "\" was not set, since "
+                                 + e.getMessage());
+                }
+            }
+
+            parameters.set("discretizationSpecs", (Object) specs);
         }
 
         return parameters;

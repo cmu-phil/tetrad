@@ -30,11 +30,15 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.model.NoteModel;
+import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
+import edu.cmu.tetradapp.model.datamanip.DiscretizationWrapper;
 import edu.cmu.tetradapp.session.SessionNode;
 
 import java.time.LocalDate;
@@ -53,8 +57,9 @@ import java.util.Set;
  * Every box gets its type, model, parents and location. What else is said about a box depends on its model. A
  * {@link ModelDescriber} registered for the model's class, or for the nearest superclass that has one, describes
  * the model; a model with no describer of its own gets the general one, which lists the parameters of the box whose
- * values differ from their defaults. So every box is described to some degree, and more can be said about a kind of
- * model by registering a describer for it.
+ * values differ from their defaults, and the settings the box keeps under names that have no registered default.
+ * So every box is described to some degree, and more can be said about a kind of model by registering a describer
+ * for it.
  * <p>
  * Describing a session reads it and changes nothing in it.
  *
@@ -82,6 +87,14 @@ public final class SessionDescriber {
         register(DataWrapper.class, StandardDescribers::describeData);
         register(KnowledgeBoxModel.class, StandardDescribers::describeKnowledge);
         register(NoteModel.class, StandardDescribers::describeNote);
+        register(Simulation.class, StandardDescribers::describeSimulation);
+        register(DiscretizationWrapper.class, StandardDescribers::describeDiscretization);
+        register(RegressionRunner.class, (model, node, out) -> StandardDescribers.describeRegression(
+                ((RegressionRunner) model).getTargetName(), ((RegressionRunner) model).getRegressorNames(),
+                model, node, out));
+        register(LogisticRegressionRunner.class, (model, node, out) -> StandardDescribers.describeRegression(
+                ((LogisticRegressionRunner) model).getTargetName(),
+                ((LogisticRegressionRunner) model).getRegressorNames(), model, node, out));
         register(GraphWrapper.class, (model, node, out)
                 -> StandardDescribers.describeGraph(((GraphWrapper) model).getGraph(), model, node, out));
         register(DagWrapper.class, (model, node, out)

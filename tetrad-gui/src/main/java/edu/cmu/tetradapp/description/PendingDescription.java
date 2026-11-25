@@ -51,7 +51,9 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.model.NoteModel;
+import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.session.SessionNode;
 
@@ -59,6 +61,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,6 +269,28 @@ public final class PendingDescription {
                     applyKnowledge(box, knowledgeModel);
                 } else if (model instanceof NoteModel noteModel) {
                     applyNote(box, noteModel);
+                } else if (model instanceof RegressionRunner runner) {
+                    String target = regressionTarget(box, runner.getVariableNames());
+                    List<String> regressors = regressors(box, runner.getVariableNames());
+
+                    if (target != null) {
+                        runner.setTargetName(target);
+                    }
+
+                    if (!regressors.isEmpty()) {
+                        runner.setRegressorName(regressors);
+                    }
+                } else if (model instanceof LogisticRegressionRunner runner) {
+                    String target = regressionTarget(box, runner.getVariableNames());
+                    List<String> regressors = regressors(box, runner.getVariableNames());
+
+                    if (target != null) {
+                        runner.setTargetName(target);
+                    }
+
+                    if (!regressors.isEmpty()) {
+                        runner.setRegressorName(regressors);
+                    }
                 } else if (model instanceof GraphWrapper || model instanceof DagWrapper
                            || model instanceof SemGraphWrapper) {
                     applyGraph(name, box, model, notes);
@@ -410,6 +435,31 @@ public final class PendingDescription {
         }
 
         model.setKnowledge(knowledge);
+    }
+
+    /**
+     * Returns the target a regression box's description names, if the data have a variable of that name.
+     */
+    private static String regressionTarget(BoxDescription box, List<String> variableNames) {
+        String target = box.get(StandardDescribers.TARGET);
+        return target != null && variableNames != null && variableNames.contains(target) ? target : null;
+    }
+
+    /**
+     * Returns the regressors a regression box's description names, leaving out any the data have no variable for.
+     * Names are separated by commas and may themselves contain commas, so they are matched against the names of
+     * the data's variables.
+     */
+    private static List<String> regressors(BoxDescription box, List<String> variableNames) {
+        String value = box.get(StandardDescribers.REGRESSORS);
+
+        if (value == null || variableNames == null) {
+            return new ArrayList<>();
+        }
+
+        List<String> regressors = SessionDescription.splitNames(value, new HashSet<>(variableNames));
+        regressors.retainAll(variableNames);
+        return regressors;
     }
 
     /**
