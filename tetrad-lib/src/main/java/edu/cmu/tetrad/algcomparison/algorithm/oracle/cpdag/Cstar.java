@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -134,10 +135,6 @@ public class Cstar implements Algorithm, TakesScoreWrapper, TakesIndependenceWra
 
         String targetNames = parameters.getString(Params.TARGETS);
 
-        if (targetNames.trim().equalsIgnoreCase("")) {
-            throw new IllegalStateException("Please specify target name(s).");
-        }
-
         if (targetNames.trim().equalsIgnoreCase("all")) {
             for (String name : dataSet.getVariableNames()) {
                 Node variable = dataSet.getVariable(name);
@@ -149,27 +146,11 @@ public class Cstar implements Algorithm, TakesScoreWrapper, TakesIndependenceWra
                 possibleEffects.add(variable);
             }
         } else {
-            String string = parameters.getString(Params.TARGETS);
-            String[] _targets;
-
-            if (string.contains(",")) {
-                _targets = string.split(",");
-            } else {
-                _targets = string.split(" ");
-            }
-
-            for (String _target : _targets) {
-                if (_target.trim().isEmpty()) {
-                    continue;
-                }
-
-                Node variable = dataSet.getVariable(_target);
-
-                if (variable == null) {
-                    throw new NullPointerException("Variable " + _target + " is not in the dataset.");
-                }
-
-                possibleEffects.add(variable);
+            try {
+                possibleEffects.addAll(RequiredInputs.targets("CStaR", targetNames, dataSet.getVariables()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(e.getMessage()
+                        + "\nFor CStaR, 'all' may be given instead, to use every variable as a target.");
             }
         }
 

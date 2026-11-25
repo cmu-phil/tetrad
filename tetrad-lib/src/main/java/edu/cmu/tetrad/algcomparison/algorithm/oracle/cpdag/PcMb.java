@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -110,21 +111,7 @@ public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, Accep
 
     @NotNull
     private List<Node> targets(IndependenceTest test, String targetString) {
-        String[] _targets;
-
-        if (targetString.contains(",")) {
-            _targets = targetString.split(",");
-        } else {
-            _targets = targetString.split(" ");
-        }
-
-        List<Node> targets = new ArrayList<>();
-
-        for (String _target : _targets) {
-            targets.add(test.getVariable(_target));
-        }
-
-        return targets;
+        return RequiredInputs.targets("PC-MB", targetString, test.getVariables());
     }
 
     /**

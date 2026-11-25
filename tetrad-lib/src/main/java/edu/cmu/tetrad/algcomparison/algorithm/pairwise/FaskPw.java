@@ -22,6 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -97,9 +98,9 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
 
-        if (this.externalGraph == null) {
-            this.externalGraph = this.algorithm.search(dataSet, parameters);
-        }
+        // The graph is asked for afresh at every run. It used to be kept from the first run, so that a later run, on
+        // other data or after setExternalGraph, still oriented the first run's graph.
+        this.externalGraph = RequiredInputs.graphSource("FASK-PW", this.algorithm).search(dataSet, parameters);
 
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
@@ -134,7 +135,7 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public String getDescription() {
-        return "RSkew" + (this.algorithm != null ? " with initial graph from "
+        return "FASK-PW" + (this.algorithm != null ? " with initial graph from "
                                                    + this.algorithm.getDescription() : "");
     }
 
@@ -176,8 +177,7 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
-            throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
-                                               + "will orient the edges in the input graph using the data.");
+            throw new IllegalArgumentException(RequiredInputs.graphSourceMessage("FASK-PW"));
         }
 
         this.algorithm = algorithm;

@@ -22,6 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -96,7 +97,7 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
 
-        Graph graph = this.algorithm.search(dataSet, parameters);
+        Graph graph = RequiredInputs.graphSource("SkewE", this.algorithm).search(dataSet, parameters);
 
         if (graph != null) {
             this.externalGraph = graph;
@@ -175,8 +176,7 @@ public class SkewE extends AbstractBootstrapAlgorithm implements Algorithm, Take
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
-            throw new IllegalArgumentException("This SkewE algorithm needs both data and a graph source as inputs; it \n"
-                                               + "will orient the edges in the input graph using the data.");
+            throw new IllegalArgumentException(RequiredInputs.graphSourceMessage("SkewE"));
         }
 
         this.algorithm = algorithm;

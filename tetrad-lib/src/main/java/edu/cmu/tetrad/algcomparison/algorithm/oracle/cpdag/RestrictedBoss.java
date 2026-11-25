@@ -22,6 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -101,32 +102,11 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm
 //            throw new IllegalArgumentException("Expecting a dataset.");
 //        }
 
-        String string = parameters.getString(Params.TARGETS);
-        String[] _targets;
-
-        if (string.contains(",")) {
-            _targets = string.split(",");
-        } else {
-            _targets = string.split(" ");
-        }
-
-        List<Node> targets = new ArrayList<>();
-
-        for (String _target : _targets) {
-            Node variable = dataModel.getVariable(_target);
-
-            if (variable == null) {
-                continue;
-            }
-
-            targets.add(variable);
-        }
-
-        for (Node node : targets) {
-            if (node == null) {
-                throw new IllegalArgumentException("Targets need to be specified correctly.");
-            }
-        }
+        // A name that is not a variable in the data is refused. It used to be dropped without a word, so that a
+        // misspelled target, or the second name in "X1, X2", silently left the search with fewer targets, and no
+        // targets at all ended in an array-index error.
+        List<Node> targets = RequiredInputs.targets("Restricted-BOSS", parameters.getString(Params.TARGETS),
+                dataModel.getVariables());
 
         System.out.println("targets: " + targets);
 

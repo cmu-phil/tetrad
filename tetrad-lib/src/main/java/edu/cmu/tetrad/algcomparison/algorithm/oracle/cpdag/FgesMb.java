@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -106,26 +107,8 @@ public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, Acc
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
-        String string = parameters.getString(Params.TARGETS);
-        String[] _targets;
-
-        if (string.contains(",")) {
-            _targets = string.split(",");
-        } else {
-            _targets = string.split(" ");
-        }
-
-        List<Node> myTargets = new ArrayList<>();
-
-        for (String _target : _targets) {
-            Node variable = dataModel.getVariable(_target);
-
-            if (variable == null) {
-                throw new IllegalArgumentException("Target not in data: " + _target);
-            }
-
-            myTargets.add(variable);
-        }
+        List<Node> myTargets = RequiredInputs.targets("FGES-MB", parameters.getString(Params.TARGETS),
+                dataModel.getVariables());
 
         this.targets = myTargets;
 
