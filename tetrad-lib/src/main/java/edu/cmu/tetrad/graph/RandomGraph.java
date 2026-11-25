@@ -449,8 +449,8 @@ public class RandomGraph {
      * @param numLatentConfounders The number of latent confounders in the graph.
      * @param alpha                The parameter alpha for generating node degrees in the graph.
      * @param beta                 The parameter beta for generating node degrees in the graph.
-     * @param delta_in             The parameter delta_in for generating node degrees in the graph.
-     * @param delta_out            The parameter delta_out for generating node degrees in the graph.
+     * @param delta_in             The parameter delta_in for generating node degrees in the graph; 0 or more.
+     * @param delta_out            The parameter delta_out for generating node degrees in the graph; 0 or more.
      * @return A randomly generated scale-free graph.
      */
     public static Graph randomScaleFreeGraph(int numNodes, int numLatentConfounders, double alpha, double beta, double delta_in, double delta_out) {
@@ -489,11 +489,12 @@ public class RandomGraph {
             throw new IllegalArgumentException("alpha + beta must be < 1.");
         }
 
-        if (delta_in <= 0) {
-            throw new IllegalArgumentException("delta_in must be > 0.");
+        // The model allows a delta of 0; see chooseNode for the one case that needs care.
+        if (delta_in < 0) {
+            throw new IllegalArgumentException("delta_in must be >= 0.");
         }
-        if (delta_out <= 0) {
-            throw new IllegalArgumentException("delta_out must be > 0.");
+        if (delta_out < 0) {
+            throw new IllegalArgumentException("delta_out must be >= 0.");
         }
 
         Map<Node, Set<Node>> parents = new HashMap<>();
@@ -546,10 +547,21 @@ public class RandomGraph {
         return G;
     }
 
+    /**
+     * Chooses a node with probability in proportion to its degree plus delta.
+     * <p>
+     * With a delta of 0 and no edges yet, every weight is zero and the proportions are not defined. This happens at
+     * the start, since the graph is grown from one node with no edges. A node is then chosen uniformly, which is
+     * what the proportions tend to as delta goes to 0. With a positive delta nothing here differs from before.
+     */
     private static int chooseNode(int[] distribution, double delta) {
         double cumsum = 0.0;
         double psum = sum(distribution) + delta * distribution.length;
         double r = RandomUtil.getInstance().nextDouble();
+
+        if (psum == 0.0) {
+            return (int) (r * distribution.length);
+        }
 
         for (int i = 0; i < distribution.length; i++) {
             cumsum += (distribution[i] + delta) / psum;

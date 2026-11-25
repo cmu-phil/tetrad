@@ -123,4 +123,29 @@ public class TestScaleFreeTab {
         assertEquals(3.0, values.get(3).getValue(), 0.0);
         assertEquals(4.0, values.get(4).getValue(), 0.0);
     }
+
+    /**
+     * A delta may be set to 0 in the tab and may not be set below it: a negative value is not taken, and the field
+     * and the parameters keep what they had.
+     */
+    @Test
+    public void testADeltaMayBeZeroButNotLess() {
+        Parameters parameters = new Parameters();
+        List<DoubleTextField> values = fields(new RandomDagScaleFreeEditor(parameters), DoubleTextField.class,
+                new ArrayList<>());
+
+        values.get(3).setValue(0.0);
+        values.get(4).setValue(0.0);
+        assertEquals(0.0, parameters.getDouble("scaleFreeDeltaIn"), 0.0);
+        assertEquals(0.0, parameters.getDouble("scaleFreeDeltaOut"), 0.0);
+
+        values.get(3).setValue(0.5);
+        values.get(4).setValue(0.75);
+        values.get(3).setValue(-1.0);
+        values.get(4).setValue(-0.001);
+        assertEquals(0.5, values.get(3).getValue(), 0.0);
+        assertEquals(0.75, values.get(4).getValue(), 0.0);
+        assertEquals(0.5, parameters.getDouble("scaleFreeDeltaIn"), 0.0);
+        assertEquals(0.75, parameters.getDouble("scaleFreeDeltaOut"), 0.0);
+    }
 }

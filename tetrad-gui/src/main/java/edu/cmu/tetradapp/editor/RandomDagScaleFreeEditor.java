@@ -116,12 +116,21 @@ class RandomDagScaleFreeEditor extends JPanel {
         scaleFreeGammaField.setEnabled(false);
         this.setGamma();
 
+        // A delta may be 0 but not less; a value the graph maker would refuse is not taken.
         scaleFreeDeltaInField.setFilter((value, oldValue) -> {
+            if (!(value >= 0)) {
+                return oldValue;
+            }
+
             RandomDagScaleFreeEditor.this.setScaleFreeDeltaIn(value);
             return value;
         });
 
         scaleFreeDeltaOutField.setFilter((value, oldValue) -> {
+            if (!(value >= 0)) {
+                return oldValue;
+            }
+
             setScaleFreeDeltaOut(value);
             return value;
         });

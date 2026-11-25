@@ -251,4 +251,33 @@ public class TestRegisteredDefaultsHonored {
             assertEquals(0.0, ParamDescriptions.getInstance().get(name).getLowerBoundDouble(), 0.0);
         }
     }
+
+    /**
+     * A delta of 0 is allowed, as the registered lower bound says and as the model has it. It used to be refused,
+     * since the graph is grown from one node with no edges, where a delta of 0 leaves nothing to choose a node by.
+     * A negative delta is refused, with a message that says what is allowed.
+     */
+    @Test
+    public void testScaleFreeDeltaOfZero() {
+        RandomUtil.getInstance().setSeed(41L);
+
+        for (double[] deltas : new double[][]{{0.0, 0.2}, {0.2, 0.0}, {0.0, 0.0}}) {
+            for (int i = 0; i < 50; i++) {
+                Graph graph = RandomGraph.randomScaleFreeGraph(20, 0, 0.2, 0.6, deltas[0], deltas[1]);
+
+                assertEquals(20, graph.getNumNodes());
+                assertTrue("The graph has too few edges to join its nodes.", graph.getNumEdges() >= 19);
+                assertTrue("The graph has a directed cycle.", !graph.paths().existsDirectedCycle());
+            }
+        }
+
+        for (double[] deltas : new double[][]{{-0.1, 0.2}, {0.2, -0.1}}) {
+            try {
+                RandomGraph.randomScaleFreeGraph(20, 0, 0.2, 0.6, deltas[0], deltas[1]);
+                fail("A negative delta should be refused.");
+            } catch (IllegalArgumentException e) {
+                assertTrue(e.getMessage(), e.getMessage().endsWith("must be >= 0."));
+            }
+        }
+    }
 }
