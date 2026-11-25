@@ -523,7 +523,7 @@ public final class PendingDescription {
         return open < 0 ? null : value.substring(open + 1, value.length() - 1).strip();
     }
 
-    private static AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> findAlgorithm(String command) {
+    static AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> findAlgorithm(String command) {
         for (AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> candidate
                 : AlgorithmAnnotations.getInstance().getAnnotatedClasses()) {
             if (command.equals(candidate.annotation().command())) {
@@ -534,7 +534,7 @@ public final class PendingDescription {
         return null;
     }
 
-    private static AnnotatedClass<TestOfIndependence> findTest(String command) {
+    static AnnotatedClass<TestOfIndependence> findTest(String command) {
         for (AnnotatedClass<TestOfIndependence> candidate
                 : TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses()) {
             if (command.equals(candidate.annotation().command())) {
@@ -545,7 +545,7 @@ public final class PendingDescription {
         return null;
     }
 
-    private static AnnotatedClass<Score> findScore(String command) {
+    static AnnotatedClass<Score> findScore(String command) {
         for (AnnotatedClass<Score> candidate : ScoreAnnotations.getInstance().getAnnotatedClasses()) {
             if (command.equals(candidate.annotation().command())) {
                 return candidate;

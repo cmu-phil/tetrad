@@ -179,6 +179,9 @@ final class TetradMenuBar extends JMenuBar {
 
         // Builds a skeletal session, without data, from such a description; see LoadSessionDescriptionAction.
         fileMenu.add(new JMenuItem(new LoadSessionDescriptionAction()));
+
+        // A Python program that reruns the session's searches through py-tetrad; see SavePyTetradScriptAction.
+        fileMenu.add(new JMenuItem(new SavePyTetradScriptAction()));
         fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 

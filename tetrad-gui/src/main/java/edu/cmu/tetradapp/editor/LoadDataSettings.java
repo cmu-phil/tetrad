@@ -76,20 +76,80 @@ public final class LoadDataSettings extends JPanel {
      */
     public static final String KEY_FILE = "File";
 
-    // The other keys of those settings: the labels this panel shows.
-    private static final String KEY_FIRST_ROW = "First row variable names";
-    private static final String KEY_FILE_TYPE = "Data file type";
-    private static final String KEY_METADATA = "Metadata JSON file";
-    private static final String KEY_DATA_TYPE = "Data type";
-    private static final String KEY_DELIMITER = "Value delimiter";
-    private static final String KEY_CASE_COLUMN = "Case column to exclude/ignore";
-    private static final String KEY_COMMENT = "Comment marker";
-    private static final String KEY_QUOTE = "Quote character";
-    private static final String KEY_MISSING = "Missing value marker";
+    // The other keys of those settings: the labels this panel shows. They are public so that what is written with
+    // them can be read by name elsewhere, as the py-tetrad script writer does.
 
-    // The starts of two values that carry something the user typed.
-    private static final String MIXED_PREFIX = "Mixed, max discrete categories ";
-    private static final String COLUMN_LABELED_PREFIX = "Column labeled ";
+    /**
+     * The key of whether the first row holds the variable names: "Yes" or "No".
+     */
+    public static final String KEY_FIRST_ROW = "First row variable names";
+
+    /**
+     * The key of the kind of file: tabular data, or covariance data as a lower triangle or as a square.
+     */
+    public static final String KEY_FILE_TYPE = "Data file type";
+
+    /**
+     * The key of the name of the metadata file, present only if one was given.
+     */
+    public static final String KEY_METADATA = "Metadata JSON file";
+
+    /**
+     * The key of the kind of data: "Continuous", "Discrete", or {@link #MIXED_PREFIX} followed by a number.
+     */
+    public static final String KEY_DATA_TYPE = "Data type";
+
+    /**
+     * The key of the delimiter: "Whitespace", or one of "Comma", "Space", "Tab", "Colon", "Semicolon", "Pipe".
+     */
+    public static final String KEY_DELIMITER = "Value delimiter";
+
+    /**
+     * The key of the case column left out: "None", "First column", or {@link #COLUMN_LABELED_PREFIX} followed by
+     * the column's name.
+     */
+    public static final String KEY_CASE_COLUMN = "Case column to exclude/ignore";
+
+    /**
+     * The key of the comment marker.
+     */
+    public static final String KEY_COMMENT = "Comment marker";
+
+    /**
+     * The key of the quote character: a double quote, a single quote, or "None".
+     */
+    public static final String KEY_QUOTE = "Quote character";
+
+    /**
+     * The key of the missing value marker, "None" if there is none.
+     */
+    public static final String KEY_MISSING = "Missing value marker";
+
+    /**
+     * The start of the value given for mixed data; the greatest number of categories a discrete variable may
+     * have follows it.
+     */
+    public static final String MIXED_PREFIX = "Mixed, max discrete categories ";
+
+    /**
+     * The start of the value given when a case column is left out by name; the name follows it.
+     */
+    public static final String COLUMN_LABELED_PREFIX = "Column labeled ";
+
+    /**
+     * The value given for tabular data.
+     */
+    public static final String FILE_TYPE_TABULAR = "Tabular data";
+
+    /**
+     * The value given for covariance data written as a lower triangle.
+     */
+    public static final String FILE_TYPE_COVARIANCE_LOWER = "Covariance data (lower triangle)";
+
+    /**
+     * The value given for covariance data written as a square.
+     */
+    public static final String FILE_TYPE_COVARIANCE_SQUARE = "Covariance data (square)";
 
     @Serial
     private static final long serialVersionUID = -7597768949622586036L;
@@ -366,9 +426,9 @@ public final class LoadDataSettings extends JPanel {
         // File type: Tabular/Covariance
         Box fileTypeBox = Box.createHorizontalBox();
 
-        this.tabularRadioButton = new JRadioButton("Tabular data");
-        this.covarianceLowerTriangleRadioButton = new JRadioButton("Covariance data (lower triangle)");
-        this.covarianceSquareRadioButton = new JRadioButton("Covariance data (square)");
+        this.tabularRadioButton = new JRadioButton(FILE_TYPE_TABULAR);
+        this.covarianceLowerTriangleRadioButton = new JRadioButton(FILE_TYPE_COVARIANCE_LOWER);
+        this.covarianceSquareRadioButton = new JRadioButton(FILE_TYPE_COVARIANCE_SQUARE);
 
         // We need to group the radio buttons, otherwise all can be selected
         ButtonGroup fileTypeBtnGrp = new ButtonGroup();
