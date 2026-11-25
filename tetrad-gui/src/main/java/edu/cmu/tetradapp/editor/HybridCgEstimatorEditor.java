@@ -522,9 +522,11 @@ public final class HybridCgEstimatorEditor extends JPanel {
     private static double computeCgBicScore(edu.cmu.tetrad.data.DataModel dataModel,
                                             edu.cmu.tetrad.graph.Graph graph,
                                             edu.cmu.tetrad.util.Parameters params) {
-        // penaltyDiscount = 1.0 → standard BIC
-        double penalty = params.getDouble("penaltyDiscount", 1.0);
-        boolean discretize = params.getBoolean("discretize", false);
+        // Standard BIC: a penalty discount of 1, and no discretizing of continuous parents. These are fixed for this
+        // display and are not read from the parameters; nothing in this box sets them, and reading them with these
+        // values as defaults disagreed with the registered defaults of the parameters of the same names.
+        final double penalty = 1.0;
+        final boolean discretize = false;
 
         DataSet mixedDataSet = SimpleDataLoader.getMixedDataSet(dataModel);
 

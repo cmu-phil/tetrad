@@ -199,7 +199,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * @return the alpha or -1.0 if the params aren't set.
      */
     public double getAlpha() {
-        return alpha;//this.params.getDouble("alpha", 0.001);
+        return alpha;//this.params.getDouble("alpha");
     }
 
     /**

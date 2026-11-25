@@ -49,7 +49,7 @@ public class RandomMimic implements RandomGraph {
      */
     @Override
     public Graph createGraph(Parameters parameters) {
-        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges");
         int numSharedParents = parameters.getInt("mimicNumSharedParents", 0);
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);

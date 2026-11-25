@@ -251,13 +251,13 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                 MarkovBlanketSearchEditor.this.algorithmRunner.getParams().set("targetName", s);
             }
         });
-        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 4,
+        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha"), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter((value, oldValue) -> {
             try {
                 getParams().set("alpha", 0.001);
                 Preferences.userRoot().putDouble("alpha",
-                        getParams().getDouble("alpha", 0.001));
+                        getParams().getDouble("alpha"));
                 return value;
             } catch (Exception e) {
                 return oldValue;

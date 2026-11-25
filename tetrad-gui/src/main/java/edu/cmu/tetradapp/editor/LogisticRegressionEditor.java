@@ -137,7 +137,7 @@ public class LogisticRegressionEditor extends JPanel {
 
         //this.modelParameters.setFont(new Font("Monospaced", Font.PLAIN, 12));
         executeButton.addActionListener((e) -> {
-            regressionRunner.setAlpha(paramsPanel.getParams().getDouble("alpha", 0.001));
+            regressionRunner.setAlpha(paramsPanel.getParams().getDouble("alpha"));
             regressionRunner.execute();
             //  modelParameters.setText(regRunner.getReport());
             print(regressionRunner.getResult(), regressionRunner.getAlpha());

@@ -49,9 +49,9 @@ public class RandomTwoFactorMim implements RandomGraph {
      */
     @Override
     public Graph createGraph(Parameters parameters) {
-        int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
-        int maxStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
-        int numChildrenPerGroup = parameters.getInt("mimNumChildrenPerGroup", 3);
+        int numStructuralNodes = parameters.getInt("mimNumStructuralNodes");
+        int maxStructuralEdges = parameters.getInt("mimNumStructuralEdges");
+        int numChildrenPerGroup = parameters.getInt("mimNumChildrenPerGroup");
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);

@@ -171,7 +171,7 @@ public class PythonGin implements Algorithm {
         String indepTest =  "kci";//parameters.getString(GIN_INDEP_TEST, "kci");
         if (indepTest == null || indepTest.isBlank()) indepTest = "kci";
 
-        double alpha = parameters.getDouble(Params.ALPHA, 0.05);
+        double alpha = parameters.getDouble(Params.ALPHA);
 
         File csvFile = null;
         try {

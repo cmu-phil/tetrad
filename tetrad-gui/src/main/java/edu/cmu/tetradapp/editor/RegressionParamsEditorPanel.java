@@ -157,7 +157,7 @@ class RegressionParamsEditorPanel extends JPanel {
         JScrollPane pane = RegressionParamsEditorPanel.createScrollPane(RegressionParamsEditorPanel.getSourceList(), new Dimension(100, 350 + height));
         vBox1.add(pane);
         vBox1.add(Box.createVerticalStrut(10));
-        vBox1.add(buildAlphaArea(this.params.getDouble("alpha", 0.001)));
+        vBox1.add(buildAlphaArea(this.params.getDouble("alpha")));
         vBox1.add(Box.createVerticalStrut(10));
         vBox1.add(buildSortButton());
         vBox1.add(Box.createVerticalGlue());

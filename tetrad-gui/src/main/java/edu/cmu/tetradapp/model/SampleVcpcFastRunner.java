@@ -393,7 +393,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params != null) {
-            return params.getBoolean(Params.GUARANTEE_CPDAG, false);
+            return params.getBoolean(Params.GUARANTEE_CPDAG);
         }
         return false;
     }

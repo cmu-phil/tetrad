@@ -119,14 +119,14 @@ final class IndTestChooser {
     private IndependenceTest getMixedTest(DataSet dataSet, Parameters params, IndTestType testType) {
 
         if (IndTestType.MIXED_MLR == testType) {
-            return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha", 0.001), false);
+            return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha"), false);
         }
 //        else if (IndTestType.LINEAR_REGRESSION == testType) {
-//            return new IndTestRegression(dataSet, params.getDouble("alpha", 0.001));
+//            return new IndTestRegression(dataSet, params.getDouble("alpha"));
 //        }
         else {
             params.set("indTestType", IndTestType.MIXED_MLR);
-            return new IndTestMultinomialLogisticRegression(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestMultinomialLogisticRegression(dataSet, params.getDouble("alpha"));
         }
     }
 
@@ -136,31 +136,31 @@ final class IndTestChooser {
                     params.getDouble(Params.SCALING_FACTOR), params.getInt(Params.BASIS_TYPE),
                     params.getDouble(Params.BASIS_SCALE), params.getInt(Params.TRUNCATION_LIMIT));
         } else if (IndTestType.FISHER_Z == testType) {
-            return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestFisherZ(dataSet, params.getDouble("alpha"));
         } else if (IndTestType.SEM_BIC == testType) {
             return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));
         } else {
             params.set("indTestType", IndTestType.FISHER_Z);
-            return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestFisherZ(dataSet, params.getDouble("alpha"));
         }
     }
 
     private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets, Parameters params, IndTestType testType) {
 //        if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
-//            return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha", 0.001));
+//            return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha"));
 //        }
 
         if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<>();
             for (DataSet dataModel : dataSets) {
-                independenceTests.add(new IndTestFisherZ(dataModel, params.getDouble("alpha", 0.001)));
+                independenceTests.add(new IndTestFisherZ(dataModel, params.getDouble("alpha")));
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
         }
 
         if (IndTestType.FISHER == testType) {
-            return new IndTestFisherZFisherPValue(dataSets, params.getDouble("alpha", 0.001));
+            return new IndTestFisherZFisherPValue(dataSets, params.getDouble("alpha"));
         }
 
         if (IndTestType.SEM_BIC == testType) {
@@ -177,22 +177,22 @@ final class IndTestChooser {
         throw new IllegalArgumentException("Unsupported test type: " + testType);
 
 //        {
-//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getDouble("alpha", 0.001));
+//            return new IndTestFisherZConcatenateResiduals(dataSets, params.getDouble("alpha"));
 //        }
     }
 
     private IndependenceTest getDiscreteTest(DataSet dataDiscrete, Parameters params, IndTestType testType) {
         if (IndTestType.G_SQUARE == testType) {
-            return new IndTestGSquare(dataDiscrete, params.getDouble("alpha", 0.001));
+            return new IndTestGSquare(dataDiscrete, params.getDouble("alpha"));
         }
         if (IndTestType.CHI_SQUARE == testType) {
-            return new IndTestChiSquare(dataDiscrete, params.getDouble("alpha", 0.001));
+            return new IndTestChiSquare(dataDiscrete, params.getDouble("alpha"));
         }
         if (IndTestType.MIXED_MLR == testType) {
-            return new IndTestMultinomialLogisticRegression(dataDiscrete, params.getDouble("alpha", 0.001));
+            return new IndTestMultinomialLogisticRegression(dataDiscrete, params.getDouble("alpha"));
         } else {
             params.set("indTestType", IndTestType.CHI_SQUARE);
-            return new IndTestChiSquare(dataDiscrete, params.getDouble("alpha", 0.001));
+            return new IndTestChiSquare(dataDiscrete, params.getDouble("alpha"));
         }
     }
 
@@ -204,7 +204,7 @@ final class IndTestChooser {
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix, Parameters params) {
-        return new IndTestFisherZ(covMatrix, params.getDouble("alpha", 0.001));
+        return new IndTestFisherZ(covMatrix, params.getDouble("alpha"));
     }
 
     /**

@@ -58,7 +58,7 @@ class DiscDetIndepParamsEditor extends JComponent {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        this.alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
+        this.alphaField = new DoubleTextField(params.getDouble("alpha"), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
 
         this.alphaField.setFilter((value, oldValue) -> {

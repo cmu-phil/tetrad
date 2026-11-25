@@ -124,9 +124,12 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, AcceptsKnowledge 
             throw new IllegalArgumentException("Testing data must be discrete.");
         }
 
-        int row = parameters.getInt(Params.INSTANCE_ROW, 0);
+        // The instance row is given counting from 1, as the parameter is registered; rows here count from 0.
+        int instanceRow = parameters.getInt(Params.INSTANCE_ROW);
+        int row = instanceRow - 1;
         if (row < 0 || row >= testing.getNumRows()) {
-            throw new IllegalArgumentException("Instance row out of range: " + row);
+            throw new IllegalArgumentException("Instance row out of range: " + instanceRow + ". It must be from 1 to "
+                                               + testing.getNumRows() + ".");
         }
 
         // Align columns by name and remap discrete categories if label order differs

@@ -49,7 +49,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
         this.paramsPureClusters = paramsPureClusters;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha"), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
         alphaField.setFilter((value, oldValue) -> {

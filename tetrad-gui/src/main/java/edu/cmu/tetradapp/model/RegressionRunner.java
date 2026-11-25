@@ -257,7 +257,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
                 regressors.add(_dataSet.getVariable(regressorName));
             }
 
-            double alpha = this.params.getDouble("alpha", 0.001);
+            double alpha = this.params.getDouble("alpha");
             regression.setAlpha(alpha);
 
             this.result = regression.regress(target, regressors);
@@ -271,7 +271,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
                 regressors.add(covariances.getVariable(regressorName));
             }
 
-            double alpha = this.params.getDouble("alpha", 0.001);
+            double alpha = this.params.getDouble("alpha");
             regression.setAlpha(alpha);
 
             this.result = regression.regress(target, regressors);

@@ -95,9 +95,9 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, AcceptsKnowle
             throw new IllegalArgumentException("PCMCI requires a DataSet.");
         }
 
-        final int maxLag = TMath.max(1, parameters.getInt(Params.TIME_LAG, 1));
+        final int maxLag = TMath.max(1, parameters.getInt(Params.TIME_LAG));
         final int maxCondSize = parameters.getInt(Params.DEPTH, 3);
-        final double alpha = parameters.getDouble(Params.ALPHA, 0.05);
+        final double alpha = parameters.getDouble(Params.ALPHA);
         final boolean verbose = parameters.getBoolean(Params.VERBOSE, false);
 
         // Build lagged dataset (this also constructs consistent Knowledge for the lagged space).

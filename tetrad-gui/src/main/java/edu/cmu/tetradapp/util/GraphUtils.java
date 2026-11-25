@@ -70,7 +70,7 @@ public class GraphUtils {
         boolean randomGraphConnected = parameters.getBoolean("randomGraphConnected", connected);
         int randomGraphMaxDegree = parameters.getInt("randomGraphMaxDegree", 6);
         boolean graphChooseFixed = parameters.getBoolean("graphChooseFixed", false);
-        int numStructuralNodes = parameters.getInt("mimNumStructuralNodes", 3);
+        int numStructuralNodes = parameters.getInt("mimNumStructuralNodes");
         int numSharedParents = parameters.getInt("mimicNumSharedParents", 0);
          int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
         int measurementModelDegree = parameters.getInt("mimNumChildrenPerLatents", 3);

@@ -77,7 +77,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
      */
     public void setup() {
         DoubleTextField alphaField = new DoubleTextField(
-                this.params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
+                this.params.getDouble("alpha"), 4, NumberFormatUtil.getInstance().getNumberFormat());
         alphaField.setFilter((value, oldValue) -> {
             try {
                 getParams().set("alpha", 0.001);
@@ -133,7 +133,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         }
 
         this.params.set("varNames", varNames);
-        alphaField.setValue(this.params.getDouble("alpha", 0.001));
+        alphaField.setValue(this.params.getDouble("alpha"));
 
         Box b = Box.createVerticalBox();
 

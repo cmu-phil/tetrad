@@ -359,7 +359,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
 
         Parameters params = getParams();
 
-        search.setAlpha(params.getDouble("alpha", 0.001));
+        search.setAlpha(params.getDouble("alpha"));
         search.setBeamWidth(params.getInt("beamWidth", 5));
         search.setHighPValueAlpha(params.getDouble("zeroEdgeP", 0.05));
         this.graph = search.search();

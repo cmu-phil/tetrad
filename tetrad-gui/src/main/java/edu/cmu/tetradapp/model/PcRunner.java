@@ -270,7 +270,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isGuaranteeCpdag() {
-        return getParams().getBoolean(Params.GUARANTEE_CPDAG, false);
+        return getParams().getBoolean(Params.GUARANTEE_CPDAG);
     }
 
 }

@@ -49,8 +49,8 @@ public class RandomMim implements RandomGraph {
      */
     @Override
     public Graph createGraph(Parameters parameters) {
-        String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs", "5:5(1)");
-        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges", 3);
+        String latentGroupSpecs = parameters.getString("mimLatentGroupSpecs");
+        int numStructuralEdges = parameters.getInt("mimNumStructuralEdges");
         int metaEdgeConnectionType = parameters.getInt(Params.META_EDGE_CONNECTION_TYPE);
         int numLatentMeasuredImpureParents = parameters.getInt("mimLatentMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);

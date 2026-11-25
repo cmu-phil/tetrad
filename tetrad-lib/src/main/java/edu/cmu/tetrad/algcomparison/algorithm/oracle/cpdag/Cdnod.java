@@ -93,7 +93,7 @@ public class Cdnod extends AbstractBootstrapAlgorithm implements Algorithm, Acce
         boolean stable = parameters.getBoolean(Params.STABLE_FAS, true);
         int depth = parameters.getInt(Params.DEPTH, -1);
         boolean verbose = parameters.getBoolean(Params.VERBOSE, false);
-        double alpha = parameters.getDouble(Params.ALPHA, 0.05);
+        double alpha = parameters.getDouble(Params.ALPHA);
 
         // If/when you add it to Params, wire it here.
         double maxPMargin = 0.0; // parameters.getDouble(Params.MAXP_MARGIN, 0.0);

@@ -151,7 +151,7 @@ public class ClFisherZPython implements IndependenceWrapper {
         String serverScriptPath = null;
 
         if (parameters != null) {
-            String raw = parameters.getString(Params.PYTHON_CI_SERVER, "");
+            String raw = parameters.getString(Params.PYTHON_CI_SERVER);
             if (raw != null) {
                 raw = raw.trim();
                 if (!raw.isEmpty() && !USE_BUNDLED.equals(raw)) {

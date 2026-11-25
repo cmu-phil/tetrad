@@ -67,17 +67,11 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         DataSet data = (DataSet) dataModel;
 
-        // Defaults
-        final double ridgeDefault = 1e-6;
-        final double penDefault = 1.0;
-
-        // Read params (with robust fallbacks)
-        final double penDiscount = parameters.getDouble(Params.PENALTY_DISCOUNT, penDefault);
+        // Read params; a parameter that is not set takes its registered default.
+        final double penDiscount = parameters.getDouble(Params.PENALTY_DISCOUNT);
         final boolean verbose = parameters.getBoolean(Params.VERBOSE, false);
 
-        // NUM_RESTARTS is the common key in Tetrad; fall back to NUM_STARTS if that’s what your spec uses
-        final int restarts = parameters.getInt(Params.NUM_STARTS,
-                parameters.getInt(Params.NUM_STARTS, 10));
+        final int restarts = parameters.getInt(Params.NUM_STARTS);
 
         final int maxParents = 20;//parameters.getInt(Params.MAX_PARENTS, 20);
 
@@ -85,8 +79,7 @@ public class Cam extends AbstractBootstrapAlgorithm implements Algorithm,
         final int pnsTopK = TMath.min(10, TMath.max(1, data.getNumColumns() - 1));//parameters.getInt(Params.PNS_TOP_K,
 //                TMath.min(10, TMath.max(1, data.getNumColumns() - 1)));
 
-        // Ridge: use a dedicated param if present; otherwise tiny default
-        final double ridge = parameters.getDouble(Params.GIN_RIDGE, ridgeDefault);
+        final double ridge = parameters.getDouble(Params.GIN_RIDGE);
 
         // Build search
         edu.cmu.tetrad.search.Cam cam = new edu.cmu.tetrad.search.Cam(data)

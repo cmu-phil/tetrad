@@ -53,7 +53,6 @@ class RandomMimParamsEditor extends JPanel {
 
     // ---- Defaults ----------------------------------------------------------
     private static final int D_NUM_STRUCTURAL_EDGES = 5;
-    private static final String D_LATENT_GROUP_SPECS = "5:5(1)";
     private static final int D_ZERO = 0;
 
     /**
@@ -86,7 +85,7 @@ class RandomMimParamsEditor extends JPanel {
 
         // Latent group specs (validated by parser, and re-clamps structural edges if needed)
         final StringTextField latentGroupSpecs = new StringTextField(
-                parameters.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS), 20
+                parameters.getString(K_LATENT_GROUP_SPECS), 20
         );
         latentGroupSpecs.setFilter((value, oldValue) -> {
             try {
@@ -203,7 +202,7 @@ class RandomMimParamsEditor extends JPanel {
     // ---- Helpers -----------------------------------------------------------
 
     private static int computeMaxEdgesFromSpecs(Parameters p) {
-        String raw = p.getString(K_LATENT_GROUP_SPECS, D_LATENT_GROUP_SPECS);
+        String raw = p.getString(K_LATENT_GROUP_SPECS);
         String cleaned = normalizeSpecs(raw);
         List<RandomMim.LatentGroupSpec> specs =
                 RandomMim.parseLatentGroupSpecs(cleaned);

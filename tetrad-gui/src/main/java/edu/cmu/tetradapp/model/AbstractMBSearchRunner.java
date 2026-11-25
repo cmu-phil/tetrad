@@ -188,24 +188,24 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         IndTestType type = (IndTestType) this.params.get("indTestType", IndTestType.FISHER_Z);
         if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
             if (IndTestType.FISHER_Z == type) {
-                return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
+                return new IndTestFisherZ(this.source, this.params.getDouble("alpha"));
             }
 //            else if (IndTestType.LINEAR_REGRESSION == type) {
-//                return new IndTestRegression(this.source, this.params.getDouble("alpha", 0.001));
+//                return new IndTestRegression(this.source, this.params.getDouble("alpha"));
 //            }
             else {
                 this.params.set("indTestType", IndTestType.FISHER_Z);
-                return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
+                return new IndTestFisherZ(this.source, this.params.getDouble("alpha"));
             }
         }
         if (this.source.isDiscrete()) {
             if (IndTestType.G_SQUARE == type) {
-                return new IndTestGSquare(this.source, this.params.getDouble("alpha", 0.001));
+                return new IndTestGSquare(this.source, this.params.getDouble("alpha"));
             }
             if (IndTestType.CHI_SQUARE != type) {
                 this.params.set("indTestType", IndTestType.CHI_SQUARE);
             }
-            return new IndTestChiSquare(this.source, this.params.getDouble("alpha", 0.001));
+            return new IndTestChiSquare(this.source, this.params.getDouble("alpha"));
         }
 
         throw new IllegalStateException("Cannot find Independence for Data source.");

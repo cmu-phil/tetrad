@@ -158,7 +158,7 @@ public class GeneralAdditiveModel implements Simulation {
             }
         }
 
-        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS, false)) {
+        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
             dataSet = DataTransforms.shuffleColumns(dataSet);
         }
 
@@ -382,7 +382,7 @@ public class GeneralAdditiveModel implements Simulation {
     private DataSet runModel(Graph graph, Parameters parameters) {
         int[] hiddenDimensions = parseHiddenDimensions(parameters.getString(Params.HIDDEN_DIMENSIONS));
 
-        double inputScale = parameters.getDouble(Params.INPUT_SCALE, 1.0);
+        double inputScale = parameters.getDouble(Params.INPUT_SCALE);
         int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         // Keep the same default activation as the additive-noise simulator.
