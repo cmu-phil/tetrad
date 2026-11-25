@@ -156,7 +156,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
 
-        if (getParams().getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+        if (getParams().getString("bayesPmInitializationMode").equals("trinary")) {
             trinary.setSelected(true);
             this.lowerBoundField.setEnabled(false);
             this.upperBoundField.setEnabled(false);

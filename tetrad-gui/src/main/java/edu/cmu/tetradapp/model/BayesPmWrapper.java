@@ -92,10 +92,10 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
+        } else if (params.getString("bayesPmInitializationMode").equals("range")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
@@ -164,10 +164,10 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(new BayesPm(graph, bayesPm, lowerBound, upperBound));
-        } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
+        } else if (params.getString("bayesPmInitializationMode").equals("range")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
@@ -201,14 +201,14 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "range").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("bayesPmInitializationMode", "range").equals("range")) {
+        } else if (params.getString("bayesPmInitializationMode").equals("range")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("bayesPmInitializationMode", "range").equals("copy")) {
+        } else if (params.getString("bayesPmInitializationMode").equals("copy")) {
 //            setBayesPm(graph, pm, lowerBound, upperBound);
         }else {
             throw new IllegalStateException("Unrecognized type.");
@@ -245,14 +245,14 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "range").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("bayesPmInitializationMode", "range").equals("range")) {
+        } else if (params.getString("bayesPmInitializationMode").equals("range")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, bayesPm, lowerBound, upperBound);
-        }else if (params.getString("bayesPmInitializationMode", "range").equals("copy")) {
+        }else if (params.getString("bayesPmInitializationMode").equals("copy")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, bayesPm, lowerBound, upperBound);
@@ -422,9 +422,9 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode").equals("trinary")) {
             lowerBound = upperBound = 3;
-        } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
+        } else if (params.getString("bayesPmInitializationMode").equals("range")) {
             lowerBound = params.getInt("lowerBoundNumVals", 2);
             upperBound = params.getInt("upperBoundNumVals", 4);
         } else {
@@ -457,7 +457,7 @@ public class BayesPmWrapper implements SessionModel {
             int lowerBound;
             int upperBound;
 
-            String string = params.getString("bayesPmInitializationMode", "trinary");
+            String string = params.getString("bayesPmInitializationMode");
 
             if (string.equals("trinary")) {
                 lowerBound = upperBound = 3;

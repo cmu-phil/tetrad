@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
@@ -111,6 +112,34 @@ public class TestBayesPmCategoryRange {
         assertEquals(Set.of(6),
                 categoryCounts(new BayesPmWrapper(new DagWrapper(new Dag(dag)), before, range(6, 6))));
         assertEquals(Set.of(6), categoryCounts(new BayesPmWrapper(dag, before.getBayesPm(), range(6, 6))));
+    }
+
+    /**
+     * With nothing set, every kind of parent gives three categories each. That is the registered default of the
+     * choice, and what the parameter editor starts from. A graph box as parent used to give 2 to 4, since its
+     * constructors alone took a range when the choice was not set.
+     */
+    @Test
+    public void testNothingSetMeansThreeCategoriesEach() {
+        assertEquals("trinary",
+                ParamDescriptions.getInstance().get("bayesPmInitializationMode").getDefaultValue());
+
+        Graph dag = dag();
+        BayesPmWrapper before = new BayesPmWrapper(new DagWrapper(new Dag(dag)), new Parameters());
+
+        assertEquals(Set.of(3), categoryCounts(new BayesPmWrapper(new GraphWrapper(dag), new Parameters())));
+        assertEquals(Set.of(3), categoryCounts(new BayesPmWrapper(new DagWrapper(new Dag(dag)), new Parameters())));
+        assertEquals(Set.of(3), categoryCounts(new BayesPmWrapper(dag, new Parameters())));
+        assertEquals(Set.of(3), categoryCounts(new BayesPmWrapper(new GraphWrapper(dag), before, new Parameters())));
+        assertEquals(Set.of(3),
+                categoryCounts(new BayesPmWrapper(new DagWrapper(new Dag(dag)), before, new Parameters())));
+        assertEquals(Set.of(3), categoryCounts(new BayesPmWrapper(dag, before.getBayesPm(), new Parameters())));
+
+        // The ends of a range play no part until a range is chosen.
+        Parameters ends = new Parameters();
+        ends.set("lowerBoundNumVals", 6);
+        ends.set("upperBoundNumVals", 6);
+        assertEquals(Set.of(3), categoryCounts(new BayesPmWrapper(new GraphWrapper(dag), ends)));
     }
 
     @Test
