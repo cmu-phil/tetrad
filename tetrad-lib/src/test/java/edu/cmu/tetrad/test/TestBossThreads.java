@@ -148,4 +148,82 @@ public class TestBossThreads {
             assertEquals("Data set " + rep + ": the graph differs with the number of threads.", graphs[0], graphs[1]);
         }
     }
+    /**
+     * Runs BOSS Top-K with splitting and returns the models it kept, best first, each as its score and its
+     * permutation. The scores are written out exactly, since the two thread settings should now agree to the last
+     * bit.
+     */
+    private static List<String> topKModels(DataSet data, int numThreads, Knowledge knowledge, double delta,
+                                           boolean byCpdag) throws Exception {
+        BossTopK boss = new BossTopK(score(data));
+        boss.setNumThreads(numThreads);
+        boss.setUseDataOrder(true);
+        PermutationSearchTopK search = new PermutationSearchTopK(boss, 5, delta);
+        search.setMaxRuns(200);
+        search.setDedupByCpdag(byCpdag);
+        if (knowledge != null) {
+            search.setKnowledge(knowledge);
+        }
+        search.search(true);
+
+        List<String> models = new ArrayList<>();
+        for (int i = 0; i < search.getNumModels(); i++) {
+            models.add(Double.toHexString(search.getModelScore(i)) + " "
+                       + java.util.Arrays.toString(search.getModelPermutation(i)));
+        }
+        return models;
+    }
+
+    /**
+     * With splitting (a delta above zero), BOSS Top-K sets near-tied orderings aside and runs them later, best
+     * first. Which orderings were set aside, and in what order they were run, used to depend on the number of
+     * threads, for two reasons. The two move methods added up each slot's total in a different order, so the totals
+     * differed in the last bit, and the split compares them exactly. And the one-thread method also set aside the
+     * ordering it was moving away from. So the list of models kept differed with the number of threads.
+     */
+    @Test
+    public void testTopKWithSplittingKeepsTheSameModelsWhateverTheNumberOfThreads() throws Exception {
+        for (int numVariables : new int[]{12, 25}) {
+            for (int rep = 0; rep < 6; rep++) {
+                DataSet data = data(numVariables, 7400L + 31L * numVariables + rep);
+
+                assertEquals(numVariables + " variables, data set " + rep
+                             + ": the models kept differ with the number of threads.",
+                        topKModels(data, 1, null, 2.0, false), topKModels(data, 4, null, 2.0, false));
+            }
+        }
+    }
+
+    /**
+     * The same with models identified by their CPDAGs, and with a wider split.
+     */
+    @Test
+    public void testTopKWithSplittingByCpdag() throws Exception {
+        for (int rep = 0; rep < 6; rep++) {
+            DataSet data = data(12, 8500L + rep);
+
+            assertEquals("Data set " + rep + ": the models kept differ with the number of threads.",
+                    topKModels(data, 1, null, 5.0, true), topKModels(data, 4, null, 5.0, true));
+        }
+    }
+
+    /**
+     * The same with required edges. A required edge rules out some of the places a node may be moved to. The
+     * one-thread method never finished the totals for those places, and the several-thread method did and could set
+     * such an ordering aside; neither looks at them now.
+     */
+    @Test
+    public void testTopKWithSplittingAndRequiredEdges() throws Exception {
+        for (int rep = 0; rep < 8; rep++) {
+            DataSet data = data(16, 9600L + rep);
+            List<Node> variables = data.getVariables();
+            Knowledge knowledge = new Knowledge();
+            knowledge.setRequired(variables.get(0).getName(), variables.get(3).getName());
+            knowledge.setRequired(variables.get(5).getName(), variables.get(9).getName());
+            knowledge.setRequired(variables.get(9).getName(), variables.get(12).getName());
+
+            assertEquals("Data set " + rep + ": the models kept differ with the number of threads.",
+                    topKModels(data, 1, knowledge, 2.0, false), topKModels(data, 4, knowledge, 2.0, false));
+        }
+    }
 }

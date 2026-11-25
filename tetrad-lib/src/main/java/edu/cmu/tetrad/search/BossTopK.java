@@ -712,6 +712,8 @@ public class BossTopK implements SuborderSearchTopK {
      * @param suborder     The current order (node to move still in place).
      * @param nodeToMove   The node being moved.
      * @param slotScores   Total permutation scores indexed by insertion slot.
+     * @param firstValidSlot The lowest valid slot index. Slots below it would put the node ahead of one that
+     *                     knowledge requires to precede it; the sequential method does not complete their totals.
      * @param lastValidSlot The highest valid slot index.
      * @param originalSlot The slot the node currently occupies.
      * @param bestSlot     The pursued best slot (unadjusted).
@@ -721,15 +723,19 @@ public class BossTopK implements SuborderSearchTopK {
      *                     position already.
      */
     private void maybeDefer(List<Node> prefix, List<Node> suborder, Node nodeToMove,
-                            double[] slotScores, int lastValidSlot, int originalSlot, int bestSlot,
-                            boolean ownSlot) {
+                            double[] slotScores, int firstValidSlot, int lastValidSlot, int originalSlot,
+                            int bestSlot, boolean ownSlot) {
         if (this.delta <= 0.0) return;
         if (this.runCount >= this.maxRuns) return;
 
         double best = slotScores[bestSlot];
 
-        for (int j = 0; j <= lastValidSlot; j++) {
+        for (int j = firstValidSlot; j <= lastValidSlot; j++) {
             if (j == bestSlot || j == originalSlot) continue;
+
+            // Where the node has a slot of its own, the slot just after it is the same ordering again: the node
+            // stays where it is. It is excluded like the original slot, for the same reason.
+            if (ownSlot && j == originalSlot + 1) continue;
 
             double diff = best - slotScores[j];
             if (diff > 0.0 && diff < this.delta) {
@@ -875,29 +881,39 @@ public class BossTopK implements SuborderSearchTopK {
 
         if (this.resetAfterBM) this.gsts.get(nodeToMove).reset();
 
-        // ---- Accumulate relative scores from right (with nodeToMove) ----
-        double runningScoreSum = 0.0;
-        for (int j = lastValidIndex - 1; j >= 0; j--) {
-            runningScoreSum += scoreWithNode[j];
-            insertionScores[j] += runningScoreSum;
-        }
+        // The two running sums are added to each slot in the order the sequential method adds them: the nodes to
+        // the left first, then the nodes to the right. Floating-point addition depends on the order, and the split
+        // (maybeDefer) compares slot totals exactly and ranks the deferred orderings by them, so with the sums
+        // added the other way round the two methods deferred different orderings and ran them in a different
+        // order. The totals are now the same to the last bit whatever the number of threads.
 
         // ---- Accumulate relative scores from left (without nodeToMove) ----
-        runningScoreSum = 0.0;
+        double runningScoreSum = 0.0;
         for (int j = 0; j < lastValidIndex; j++) {
             runningScoreSum += scoreWithoutNode[j];
             insertionScores[j + 1] += runningScoreSum;
         }
 
+        // ---- Accumulate relative scores from right (with nodeToMove) ----
+        runningScoreSum = 0.0;
+        for (int j = lastValidIndex - 1; j >= 0; j--) {
+            runningScoreSum += scoreWithNode[j];
+            insertionScores[j] += runningScoreSum;
+        }
+
         // ---- Backward constraint scan to find the best insertion position ----
         int bestPosition = originalPosition;
+        int firstValidIndex = 0; // the lowest slot the knowledge allows
 
         for (int j = lastValidIndex; j >= 0; j--) {
 
             // Constraint: neighborNode must precede nodeToMove.
             if (j < suborder.size()) {
                 Node neighborNode = suborder.get(j);
-                if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) break;
+                if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) {
+                    firstValidIndex = j + 1;
+                    break;
+                }
             }
 
             if (insertionScores[j] + 1e-6 > insertionScores[bestPosition]) bestPosition = j;
@@ -907,8 +923,8 @@ public class BossTopK implements SuborderSearchTopK {
 
         // Split: defer near-tied alternative orderings. In this method the node being moved has no slot of its
         // own, hence the "false"; see below.
-        maybeDefer(prefix, suborder, nodeToMove, insertionScores, lastValidIndex, originalPosition, bestPosition,
-                false);
+        maybeDefer(prefix, suborder, nodeToMove, insertionScores, firstValidIndex, lastValidIndex, originalPosition,
+                bestPosition, false);
 
         // No adjustment of bestPosition here. In this method the node being moved has no slot of its own: the
         // forward scan passes over it without advancing the index, so slot j means "before the j-th of the other
@@ -996,9 +1012,15 @@ public class BossTopK implements SuborderSearchTopK {
             return false;
         }
 
+        // The backward pass stopped at 'index', either at slot 0 or at the first slot to the right of a node that
+        // knowledge requires to precede nodeToMove. Slots below it are ruled out, and their totals were never
+        // completed.
+        int firstValidIndex = index;
+
         // Split: defer near-tied alternative orderings (uses unadjusted slot indices). In this method the node
         // being moved has a slot of its own, hence the "true".
-        maybeDefer(prefix, suborder, nodeToMove, scores, lastValidIndex, originalPosition, bestPosition, true);
+        maybeDefer(prefix, suborder, nodeToMove, scores, firstValidIndex, lastValidIndex, originalPosition,
+                bestPosition, true);
 
         if (bestPosition > originalPosition) {
             bestPosition--;
