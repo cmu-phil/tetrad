@@ -83,6 +83,11 @@ public final class LoadDataDialog extends JPanel {
     private final DataModelList dataModelList;
 
     /**
+     * The settings to open with, in place of the usual ones, or null; see {@link #setInitialSettings(Map)}.
+     */
+    private Map<String, String> initialSettings;
+
+    /**
      * The settings each file was loaded with, by the name of the data model made from it.
      */
     private final Map<String, Map<String, String>> loadSettings = new LinkedHashMap<>();
@@ -270,6 +275,18 @@ public final class LoadDataDialog extends JPanel {
 
         // Advanced settings
         this.advancedSettingsBox = this.loadDataSettings.advancedSettings();
+
+        // Start from the settings a file was read with before, if the caller knows them, and say so where the
+        // user will see it, so that settings that are not this dialog's usual ones do not come as a surprise.
+        // Added 2026-11-25.
+        if (this.initialSettings != null && !this.loadDataSettings.applySettings(this.initialSettings).isEmpty()) {
+            String source = this.initialSettings.get(LoadDataSettings.KEY_FILE);
+            String note = " - filled in as recorded for " + (source == null ? "this file" : source);
+            this.basicSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(
+                    "Basic Settings (apply to all files)" + note), new EmptyBorder(5, 5, 5, 5)));
+            this.advancedSettingsBox.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(
+                    "Advanced Settings (apply to all files)" + note), new EmptyBorder(5, 5, 5, 5)));
+        }
 
         // Contains file list and format/options
         Box settingsContainer = Box.createVerticalBox();
@@ -961,6 +978,17 @@ public final class LoadDataDialog extends JPanel {
      */
     public DataModelList getDataModels() {
         return this.dataModelList;
+    }
+
+    /**
+     * Gives the settings this dialog should open with, in place of its usual ones: those a file was read with
+     * before, as {@link LoadDataSettings#describeSettings(File)} gives them. To be called before
+     * {@link #showDataLoaderDialog()}. The user can still change any of them.
+     *
+     * @param initialSettings the settings, or null for the dialog's usual ones.
+     */
+    public void setInitialSettings(Map<String, String> initialSettings) {
+        this.initialSettings = initialSettings;
     }
 
     /**

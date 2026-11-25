@@ -85,8 +85,11 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     /**
      * For each data set of this box that was loaded from a file, how the file was read: the file's name and the
      * settings chosen in the load dialog, as text, by the name of the data set. Kept so that a session description
-     * can say how the data were loaded. It holds only maps and strings, so no class is needed to read it. Added
-     * 2026-11-25; absent from sessions saved earlier, which read it as null (serialVersionUID is pinned).
+     * can say how the data were loaded, and so that the load dialog can open on the same settings when a file of
+     * that name is loaded into this box again. In a session built from a session description it also holds, for
+     * files not loaded yet, the settings the description gives. It holds only maps and strings, so no class is
+     * needed to read it. Added 2026-11-25; absent from sessions saved earlier, which read it as null
+     * (serialVersionUID is pinned).
      *
      * @serial May be null.
      */
@@ -570,7 +573,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Returns how the data set of the given name was read from its file, if it was loaded from a file in this box
-     * and that was recorded.
+     * and that was recorded, or how a session description says a file of that name is to be read.
      *
      * @param dataSetName the name of the data set.
      * @return the file's name and the load settings, as text, in the order the load dialog shows them, or null if

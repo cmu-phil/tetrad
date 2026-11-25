@@ -44,6 +44,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.SessionNodeConfig;
 import edu.cmu.tetradapp.app.SessionNodeModelConfig;
 import edu.cmu.tetradapp.app.TetradApplicationConfig;
+import edu.cmu.tetradapp.editor.LoadDataSettings;
 import edu.cmu.tetradapp.editor.search.GuidedAlgorithmCard;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -58,6 +59,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -245,8 +247,11 @@ public final class PendingDescription {
             return notes;
         }
 
-        // A data box keeps its description until data are loaded into it; see standsInForModel.
+        // A data box keeps its description until data are loaded into it; see standsInForModel. Meanwhile it is
+        // told how the description says its files were read, so that the load dialog can open on those settings.
         if (awaitsData(node)) {
+            DataWrapper wrapper = (DataWrapper) model;
+            describedLoadSettings(box).forEach(wrapper::setLoadSettings);
             return notes;
         }
 
@@ -277,6 +282,43 @@ public final class PendingDescription {
         }
 
         return notes;
+    }
+
+    /**
+     * Returns how the description of a data box says each of its files was read: for each data set that has a
+     * "File" field, the fields from there up to the data set's shape, by the name of the data set. These are the
+     * fields {@link edu.cmu.tetradapp.editor.LoadDataSettings#describeSettings} gives and
+     * {@link StandardDescribers#describeData} writes between a data set's name and its shape.
+     *
+     * @param box the description of a data box.
+     * @return the load settings, by data set name; empty if the description records none.
+     */
+    static Map<String, Map<String, String>> describedLoadSettings(BoxDescription box) {
+        Map<String, Map<String, String>> all = new LinkedHashMap<>();
+        String dataSet = null;
+        Map<String, String> settings = null;
+
+        for (BoxDescription.Item item : box.getItems()) {
+            if (!(item instanceof BoxDescription.Field field)) {
+                continue;
+            }
+
+            if (field.key().equals(StandardDescribers.DATA_SET)) {
+                dataSet = field.value();
+                settings = new LinkedHashMap<>();
+            } else if (field.key().equals(StandardDescribers.SHAPE)) {
+                if (dataSet != null && settings.containsKey(LoadDataSettings.KEY_FILE)) {
+                    all.put(dataSet, settings);
+                }
+
+                dataSet = null;
+                settings = null;
+            } else if (settings != null) {
+                settings.put(field.key(), field.value());
+            }
+        }
+
+        return all;
     }
 
     /**

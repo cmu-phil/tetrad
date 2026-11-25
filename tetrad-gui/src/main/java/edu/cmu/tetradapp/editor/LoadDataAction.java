@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -105,6 +106,19 @@ final class LoadDataAction extends AbstractAction {
 
         // Show the data loader dialog to preview data ata and set their parameters
         LoadDataDialog loadData = new LoadDataDialog(files);
+
+        // If this box knows how one of these files was read before - because it was loaded here earlier, or because
+        // the session was built from a session description that says - open the dialog on those settings. The
+        // dialog applies one set of settings to all its files, so the first file with a record decides. Added
+        // 2026-11-25.
+        for (File file : files) {
+            Map<String, String> recorded = this.dataEditor.getDataWrapper().getLoadSettings(file.getName());
+
+            if (recorded != null) {
+                loadData.setInitialSettings(recorded);
+                break;
+            }
+        }
         try {
             loadData.showDataLoaderDialog();
         } catch (IOException ex) {

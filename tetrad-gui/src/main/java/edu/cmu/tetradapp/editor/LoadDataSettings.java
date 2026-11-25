@@ -71,6 +71,26 @@ import java.util.prefs.Preferences;
  */
 public final class LoadDataSettings extends JPanel {
 
+    /**
+     * The key, in the settings {@link #describeSettings(File)} gives, of the name of the file loaded.
+     */
+    public static final String KEY_FILE = "File";
+
+    // The other keys of those settings: the labels this panel shows.
+    private static final String KEY_FIRST_ROW = "First row variable names";
+    private static final String KEY_FILE_TYPE = "Data file type";
+    private static final String KEY_METADATA = "Metadata JSON file";
+    private static final String KEY_DATA_TYPE = "Data type";
+    private static final String KEY_DELIMITER = "Value delimiter";
+    private static final String KEY_CASE_COLUMN = "Case column to exclude/ignore";
+    private static final String KEY_COMMENT = "Comment marker";
+    private static final String KEY_QUOTE = "Quote character";
+    private static final String KEY_MISSING = "Missing value marker";
+
+    // The starts of two values that carry something the user typed.
+    private static final String MIXED_PREFIX = "Mixed, max discrete categories ";
+    private static final String COLUMN_LABELED_PREFIX = "Column labeled ";
+
     @Serial
     private static final long serialVersionUID = -7597768949622586036L;
 
@@ -228,6 +248,14 @@ public final class LoadDataSettings extends JPanel {
      * The missing value: other radio button.
      */
     private StringTextField missingStringField;
+
+    /**
+     * The "None" choice for the quote character and the "Other" choice for the missing value marker. Fields, as the
+     * other choices are, so that {@link #applySettings(Map)} can select them.
+     */
+    private JRadioButton noneQuoteRadioButton;
+
+    private JRadioButton missingValueOtherRadioButton;
 
     //================================CONSTRUCTOR=======================//
 
@@ -898,7 +926,7 @@ public final class LoadDataSettings extends JPanel {
         // Quote Character
         Box quoteCharBox = Box.createHorizontalBox();
 
-        JRadioButton noneQuoteRadioButton = new JRadioButton("None");
+        this.noneQuoteRadioButton = new JRadioButton("None");
         this.doubleQuoteRadioButton = new JRadioButton("\"");
         this.singleQuoteRadioButton = new JRadioButton("'");
 
@@ -955,7 +983,7 @@ public final class LoadDataSettings extends JPanel {
 
         this.missingValueStarRadioButton = new JRadioButton("*");
         this.missingValueQuestionRadioButton = new JRadioButton("?");
-        JRadioButton missingValueOtherRadioButton = new JRadioButton("Other: ");
+        this.missingValueOtherRadioButton = new JRadioButton("Other: ");
 
         ButtonGroup missingDataMarkerBtnGrp = new ButtonGroup();
         missingDataMarkerBtnGrp.add(this.missingValueStarRadioButton);
@@ -1320,6 +1348,7 @@ public final class LoadDataSettings extends JPanel {
      * can be matched against the panel by eye. Settings that do not bear on the chosen file type are left out, as
      * is the metadata file if none was chosen. Only the name of a file is given, not its path. Added 2026-11-25 for
      * session descriptions; see {@link edu.cmu.tetradapp.model.DataWrapper#getLoadSettings(String)}.
+     * {@link #applySettings(Map)} reads these back.
      *
      * @param file the file loaded.
      * @return the settings, in the order this panel shows them.
@@ -1328,66 +1357,204 @@ public final class LoadDataSettings extends JPanel {
         Map<String, String> settings = new LinkedHashMap<>();
         boolean tabular = this.tabularRadioButton.isSelected();
 
-        settings.put("File", file.getName());
+        settings.put(KEY_FILE, file.getName());
 
         if (tabular) {
-            settings.put("First row variable names", isVarNamesFirstRow() ? "Yes" : "No");
+            settings.put(KEY_FIRST_ROW, isVarNamesFirstRow() ? "Yes" : "No");
         }
 
         if (tabular) {
-            settings.put("Data file type", "Tabular data");
+            settings.put(KEY_FILE_TYPE, this.tabularRadioButton.getText());
         } else if (this.covarianceLowerTriangleRadioButton.isSelected()) {
-            settings.put("Data file type", "Covariance data (lower triangle)");
+            settings.put(KEY_FILE_TYPE, this.covarianceLowerTriangleRadioButton.getText());
         } else {
-            settings.put("Data file type", "Covariance data (square)");
+            settings.put(KEY_FILE_TYPE, this.covarianceSquareRadioButton.getText());
         }
 
         if (tabular && this.metadataFile != null) {
-            settings.put("Metadata JSON file", this.metadataFile.getName());
+            settings.put(KEY_METADATA, this.metadataFile.getName());
         }
 
         if (tabular) {
             if (this.contRadioButton.isSelected()) {
-                settings.put("Data type", "Continuous");
+                settings.put(KEY_DATA_TYPE, "Continuous");
             } else if (this.discRadioButton.isSelected()) {
-                settings.put("Data type", "Discrete");
+                settings.put(KEY_DATA_TYPE, "Discrete");
             } else {
-                settings.put("Data type", "Mixed, max discrete categories " + getMaxNumOfDiscCategories());
+                settings.put(KEY_DATA_TYPE, MIXED_PREFIX + getMaxNumOfDiscCategories());
             }
         }
 
         if (this.whitespaceDelimiterRadioButton.isSelected()) {
-            settings.put("Value delimiter", "Whitespace");
+            settings.put(KEY_DELIMITER, "Whitespace");
         } else {
-            settings.put("Value delimiter", String.valueOf(this.singleCharDelimiterComboBox.getSelectedItem()));
+            settings.put(KEY_DELIMITER, String.valueOf(this.singleCharDelimiterComboBox.getSelectedItem()));
         }
 
         if (tabular) {
             if (this.idUnlabeledFirstColRadioButton.isSelected()) {
-                settings.put("Case column to exclude/ignore", "First column");
+                settings.put(KEY_CASE_COLUMN, "First column");
             } else if (this.idLabeledColRadioButton.isSelected()) {
-                settings.put("Case column to exclude/ignore", "Column labeled " + this.idStringField.getText());
+                settings.put(KEY_CASE_COLUMN, COLUMN_LABELED_PREFIX + this.idStringField.getText());
             } else {
-                settings.put("Case column to exclude/ignore", "None");
+                settings.put(KEY_CASE_COLUMN, "None");
             }
         }
 
-        settings.put("Comment marker", getCommentMarker());
+        settings.put(KEY_COMMENT, getCommentMarker());
 
         if (this.doubleQuoteRadioButton.isSelected()) {
-            settings.put("Quote character", "\"");
+            settings.put(KEY_QUOTE, "\"");
         } else if (this.singleQuoteRadioButton.isSelected()) {
-            settings.put("Quote character", "'");
+            settings.put(KEY_QUOTE, "'");
         } else {
-            settings.put("Quote character", "None");
+            settings.put(KEY_QUOTE, "None");
         }
 
         if (tabular) {
             String marker = getMissingDataMarker();
-            settings.put("Missing value marker", marker == null || marker.isBlank() ? "None" : marker);
+            settings.put(KEY_MISSING, marker == null || marker.isBlank() ? "None" : marker);
         }
 
         return settings;
+    }
+
+    /**
+     * Sets this panel's controls to the given settings, as {@link #describeSettings(File)} gives them, so that a
+     * file can be loaded again the way it was loaded before. To be called once the panel's controls exist, that is,
+     * after {@link #basicSettings()} and {@link #advancedSettings()}. A setting that is absent, or whose value is
+     * not one this panel offers, leaves its control as it is. The metadata file is not set, since only its name is
+     * recorded. Buttons are clicked rather than merely selected, so that the panel enables and disables its other
+     * controls as it does when a user clicks. Added 2026-11-25.
+     *
+     * @param settings the settings, by the labels this panel shows; may be null, which does nothing.
+     * @return the labels of the settings that were applied, in the order this panel shows them.
+     */
+    public List<String> applySettings(Map<String, String> settings) {
+        List<String> applied = new ArrayList<>();
+
+        if (settings == null) {
+            return applied;
+        }
+
+        // The file type first, since it decides which of the other controls are enabled.
+        String fileType = settings.get(KEY_FILE_TYPE);
+
+        for (JRadioButton button : List.of(this.tabularRadioButton, this.covarianceLowerTriangleRadioButton,
+                this.covarianceSquareRadioButton)) {
+            if (button.getText().equals(fileType)) {
+                click(button);
+                applied.add(KEY_FILE_TYPE);
+            }
+        }
+
+        String firstRow = settings.get(KEY_FIRST_ROW);
+
+        if ("Yes".equals(firstRow) || "No".equals(firstRow)) {
+            click("Yes".equals(firstRow) ? this.firstRowVarNamesYesRadioButton : this.firstRowVarNamesNoRadioButton);
+            applied.add(KEY_FIRST_ROW);
+        }
+
+        String dataType = settings.get(KEY_DATA_TYPE);
+
+        if ("Continuous".equals(dataType)) {
+            click(this.contRadioButton);
+            applied.add(KEY_DATA_TYPE);
+        } else if ("Discrete".equals(dataType)) {
+            click(this.discRadioButton);
+            applied.add(KEY_DATA_TYPE);
+        } else if (dataType != null && dataType.startsWith(MIXED_PREFIX)) {
+            try {
+                int max = Integer.parseInt(dataType.substring(MIXED_PREFIX.length()).strip());
+                click(this.mixedRadioButton);
+                this.maxNumOfDiscCategoriesField.setValue(max);
+                applied.add(KEY_DATA_TYPE);
+            } catch (NumberFormatException e) {
+                // Not a number: leave the data type as it is.
+            }
+        }
+
+        String delimiter = settings.get(KEY_DELIMITER);
+
+        if ("Whitespace".equals(delimiter)) {
+            click(this.whitespaceDelimiterRadioButton);
+            applied.add(KEY_DELIMITER);
+        } else if (delimiter != null) {
+            for (int i = 0; i < this.singleCharDelimiterComboBox.getItemCount(); i++) {
+                if (delimiter.equals(String.valueOf(this.singleCharDelimiterComboBox.getItemAt(i)))) {
+                    click(this.singleCharDelimiterRadioButton);
+                    this.singleCharDelimiterComboBox.setSelectedIndex(i);
+                    applied.add(KEY_DELIMITER);
+                }
+            }
+        }
+
+        String caseColumn = settings.get(KEY_CASE_COLUMN);
+
+        if ("None".equals(caseColumn)) {
+            click(this.idNoneRadioButton);
+            applied.add(KEY_CASE_COLUMN);
+        } else if ("First column".equals(caseColumn)) {
+            click(this.idUnlabeledFirstColRadioButton);
+            applied.add(KEY_CASE_COLUMN);
+        } else if (caseColumn != null && caseColumn.startsWith(COLUMN_LABELED_PREFIX)
+                   && this.idLabeledColRadioButton.isEnabled()) {
+            click(this.idLabeledColRadioButton);
+            this.idStringField.setValue(caseColumn.substring(COLUMN_LABELED_PREFIX.length()));
+            applied.add(KEY_CASE_COLUMN);
+        }
+
+        String comment = settings.get(KEY_COMMENT);
+
+        if ("//".equals(comment)) {
+            click(this.commentDoubleSlashRadioButton);
+            applied.add(KEY_COMMENT);
+        } else if ("#".equals(comment)) {
+            click(this.commentPondRadioButton);
+            applied.add(KEY_COMMENT);
+        } else if (comment != null && !comment.isBlank()) {
+            click(this.commentOtherRadioButton);
+            this.commentStringField.setValue(comment);
+            applied.add(KEY_COMMENT);
+        }
+
+        String quote = settings.get(KEY_QUOTE);
+
+        if ("\"".equals(quote)) {
+            click(this.doubleQuoteRadioButton);
+            applied.add(KEY_QUOTE);
+        } else if ("'".equals(quote)) {
+            click(this.singleQuoteRadioButton);
+            applied.add(KEY_QUOTE);
+        } else if ("None".equals(quote)) {
+            click(this.noneQuoteRadioButton);
+            applied.add(KEY_QUOTE);
+        }
+
+        String missing = settings.get(KEY_MISSING);
+
+        if ("*".equals(missing)) {
+            click(this.missingValueStarRadioButton);
+            applied.add(KEY_MISSING);
+        } else if ("?".equals(missing)) {
+            click(this.missingValueQuestionRadioButton);
+            applied.add(KEY_MISSING);
+        } else if (missing != null) {
+            click(this.missingValueOtherRadioButton);
+            this.missingStringField.setValue("None".equals(missing) ? "" : missing);
+            applied.add(KEY_MISSING);
+        }
+
+        return applied;
+    }
+
+    /**
+     * Clicks a radio button if it is enabled and not already selected, without the pause a visible click makes.
+     */
+    private static void click(JRadioButton button) {
+        if (button.isEnabled() && !button.isSelected()) {
+            button.doClick(0);
+        }
     }
 
     /**

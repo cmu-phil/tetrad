@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.app.SessionNodeConfig;
 import edu.cmu.tetradapp.app.TetradApplicationConfig;
+import edu.cmu.tetradapp.editor.LoadDataSettings;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -241,7 +242,7 @@ public final class SessionRebuilder {
      * Says what remains for the user to do for a box that could not be given a model yet.
      */
     private static String toDo(String name, BoxDescription box, SessionNode node) {
-        List<String> files = box.getAll("File");
+        List<String> files = box.getAll(LoadDataSettings.KEY_FILE);
 
         if (files.isEmpty()) {
             files = box.getAll(StandardDescribers.DATA_SET);

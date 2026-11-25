@@ -45,7 +45,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static edu.cmu.tetradapp.description.TestSessionDescription.DATE;
 import static org.junit.Assert.*;
@@ -185,6 +187,38 @@ public class TestSessionRebuilder {
         for (String name : List.of("Data1", "Knowledge1", "Search1", "Result graph", "Graph1", "Note1", "Search2")) {
             assertEquals(description.getBox(name), now.getBox(name));
         }
+    }
+
+    /**
+     * A rebuilt data box is told how the description says its file was read, so that the load dialog can open on
+     * those settings; and it still describes itself from the description until the file is loaded.
+     */
+    @Test
+    public void testDataBoxIsToldHowItsFileWasRead() throws Exception {
+        SessionWrapper original = TestSessionDescription.buildSession();
+        Map<String, String> settings = new LinkedHashMap<>();
+        settings.put("File", "study.csv");
+        settings.put("Data file type", "Tabular data");
+        settings.put("Value delimiter", "Semicolon");
+        settings.put("Missing value marker", "NA");
+        ((DataWrapper) node(original, "Data1").getModel()).setLoadSettings("study.csv", settings);
+
+        SessionDescription description = describeAndRead(original);
+        assertEquals(Map.of("study.csv", settings),
+                PendingDescription.describedLoadSettings(description.getBox("Data1")));
+
+        SessionWrapper rebuilt = SessionRebuilder.rebuild(description, "study.tet").session();
+        makeModel(rebuilt, "Data1");
+        DataWrapper wrapper = (DataWrapper) node(rebuilt, "Data1").getModel();
+
+        assertEquals(settings, wrapper.getLoadSettings("study.csv"));
+        assertEquals(new ArrayList<>(settings.keySet()), new ArrayList<>(wrapper.getLoadSettings("study.csv").keySet()));
+        assertNull(wrapper.getLoadSettings("other.csv"));
+        assertEquals(description.getBox("Data1"), new SessionDescriber().describe(rebuilt, DATE).getBox("Data1"));
+
+        // A data box whose description records no file has nothing to be told.
+        assertTrue(PendingDescription.describedLoadSettings(
+                describeAndRead(TestSessionDescription.buildSession()).getBox("Data1")).isEmpty());
     }
 
     /**
