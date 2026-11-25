@@ -29,6 +29,7 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -39,8 +40,12 @@ import java.util.prefs.Preferences;
 /**
  * Saves a py-tetrad script for the frontmost session: a Python program that loads the session's data, sets up its
  * knowledge and runs its searches with the settings they have. The script is written from the same description of
- * the session that Save Session Description writes. What the script does not cover is said in the script, and is
- * shown after it is saved. Saving a script does not change the session and does not count as saving it.
+ * the session that Save Session Description writes.
+ * <p>
+ * Such a script covers less than a session does, so before anything is saved the user is shown what this one would
+ * hold: which boxes are written as code, which are left to be written by hand, which searches will not run, which
+ * boxes are left out, and what a script of this kind is in general. The user may cancel there. Saving a script does
+ * not change the session and does not count as saving it.
  *
  * @author Claude (Anthropic)
  * @see PyTetradScript
@@ -72,7 +77,8 @@ final class SavePyTetradScriptAction extends AbstractAction {
     /**
      * {@inheritDoc}
      * <p>
-     * Asks where to save the script for the frontmost session, saves it there, and says what it does not cover.
+     * Shows what the script for the frontmost session would hold and, unless the user cancels, asks where to save
+     * it and saves it there.
      */
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -92,6 +98,10 @@ final class SavePyTetradScriptAction extends AbstractAction {
             exception.printStackTrace(System.err);
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "The script could not be written: " + exception);
+            return;
+        }
+
+        if (!confirmed(result.preview(sessionWrapper.getName()))) {
             return;
         }
 
@@ -117,41 +127,55 @@ final class SavePyTetradScriptAction extends AbstractAction {
             return;
         }
 
-        StringBuilder message = new StringBuilder("A py-tetrad script for session \"" + sessionWrapper.getName()
-                                                  + "\" was saved to\n" + file.getAbsolutePath());
+        int byHand = result.count(PyTetradScript.Fate.BY_HAND);
+        String message = "A py-tetrad script for session \"" + sessionWrapper.getName() + "\" was saved to\n"
+                         + file.getAbsolutePath();
 
-        if (!result.notes().isEmpty()) {
-            message.append("\n\nThe script does not cover everything in the session:");
-
-            for (String note : result.notes()) {
-                message.append("\n\n").append(wrapped(note));
-            }
+        if (byHand > 0) {
+            message += "\n\nIt will stop at " + (byHand == 1 ? "the step" : "each of the " + byHand + " steps")
+                       + " left for you to write by hand. " + (byHand == 1 ? "It is" : "They are")
+                       + " marked in the script.";
         }
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), message.toString(), "py-tetrad Script Saved",
-                result.notes().isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), message, "py-tetrad Script Saved",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
-     * Breaks text between words so that a dialog showing it is not very wide.
+     * Shows what the script would hold, and asks whether to go on and save it.
+     *
+     * @param preview what the script would hold, as text.
+     * @return true if the user chose to save the script.
      */
-    private static String wrapped(String text) {
-        StringBuilder out = new StringBuilder();
-        int column = 0;
+    private static boolean confirmed(String preview) {
+        String save = "Save Script...";
+        int choice = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), previewComponent(preview),
+                "Save Session as py-tetrad Script", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null,
+                new Object[]{save, "Cancel"}, save);
+        return choice == 0;
+    }
 
-        for (String word : text.split(" ")) {
-            if (column > 0 && column + 1 + word.length() > 90) {
-                out.append("\n");
-                column = 0;
-            } else if (column > 0) {
-                out.append(" ");
-                column++;
-            }
+    /**
+     * The text of what the script would hold, in a scrolling area sized so that a long session does not make the
+     * dialog taller than the screen.
+     *
+     * @param preview the text.
+     * @return the component to show.
+     */
+    static JComponent previewComponent(String preview) {
+        JTextArea area = new JTextArea(preview);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setCaretPosition(0);
+        area.setMargin(new Insets(8, 10, 8, 10));
 
-            out.append(word);
-            column += word.length();
-        }
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        return out.toString();
+        FontMetrics metrics = area.getFontMetrics(area.getFont());
+        int lines = Math.min(30, Math.max(14, preview.split("\n", -1).length + 6));
+        scroll.setPreferredSize(new Dimension(metrics.charWidth('n') * 96, metrics.getHeight() * lines));
+        return scroll;
     }
 }

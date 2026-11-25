@@ -104,6 +104,11 @@ public final class PyTetradScript {
 
     private final StringBuilder body = new StringBuilder();
     private final List<String> notWritten = new ArrayList<>();
+
+    /**
+     * What becomes of each box, in the order the boxes are met.
+     */
+    private final List<Box> plan = new ArrayList<>();
     private boolean readsTabular;
     private boolean readsCovariance;
     private boolean usesJInt;
@@ -157,6 +162,9 @@ public final class PyTetradScript {
                 search(box);
             } else if (!needed.contains(box.getName())) {
                 leftOut.add(title(box));
+                this.plan.add(new Box(title(box), Fate.LEFT_OUT,
+                        PendingDescription.NO_MODEL.equals(box.get(BoxDescription.MODEL)) ? "The box is empty."
+                                : ""));
             } else if (KNOWLEDGE_BOX.equals(type)) {
                 knowledge(box);
             } else if (DATA_BOX.equals(type) && this.description.getParentNames(box).isEmpty()) {
@@ -166,6 +174,8 @@ public final class PyTetradScript {
             } else {
                 // A box of another kind that a search takes as input; the search says so where it stands.
                 leftOut.add(title(box));
+                this.plan.add(new Box(title(box), Fate.LEFT_OUT,
+                        "A search takes it as input, and that search is not written."));
             }
         }
 
@@ -186,7 +196,7 @@ public final class PyTetradScript {
                       + ".");
         }
 
-        return new Result(script.toString(), notes);
+        return new Result(script.toString(), notes, List.copyOf(this.plan));
     }
 
     private void collectAncestors(String boxName, Set<String> into) {
@@ -367,9 +377,11 @@ public final class PyTetradScript {
         List<String> lines = box.getBlock(StandardDescribers.NOTE_BLOCK);
 
         if (lines == null || lines.stream().allMatch(String::isBlank)) {
+            this.plan.add(new Box(title(box), Fate.LEFT_OUT, "The note is empty."));
             return;
         }
 
+        this.plan.add(new Box(title(box), Fate.WRITTEN, "Its text, as a comment."));
         heading(box);
 
         for (String line : lines) {
@@ -501,6 +513,7 @@ public final class PyTetradScript {
 
         call(variable + " = " + function, arguments);
         this.provides.put(box.getName(), Provides.DATA);
+        this.plan.add(new Box(title(box), Fate.WRITTEN, "Reads the file " + quoted(file) + "."));
     }
 
     /**
@@ -519,6 +532,7 @@ public final class PyTetradScript {
                 .append(")\n");
         this.provides.put(box.getName(), Provides.DATA);
         this.notWritten.add(title(box) + ": to be written by hand. " + why);
+        this.plan.add(new Box(title(box), Fate.BY_HAND, why));
     }
 
     /**
@@ -532,6 +546,7 @@ public final class PyTetradScript {
         if (lines == null) {
             this.body.append("# The knowledge in this box was empty, so the searches below are given none.\n");
             this.provides.put(box.getName(), Provides.NO_KNOWLEDGE);
+            this.plan.add(new Box(title(box), Fate.WRITTEN, "Its knowledge is empty, so no search is given any."));
             return;
         }
 
@@ -551,6 +566,7 @@ public final class PyTetradScript {
         this.body.append(variable).append(" = SimpleDataLoader.loadKnowledge(StringReader(").append(variable)
                 .append("_text), DelimiterType.WHITESPACE, \"//\")\n");
         this.provides.put(box.getName(), Provides.KNOWLEDGE);
+        this.plan.add(new Box(title(box), Fate.WRITTEN, "Its knowledge, as text that can be edited."));
     }
 
     /**
@@ -651,6 +667,7 @@ public final class PyTetradScript {
             this.body.append("print(").append(python("Box \"" + box.getName() + "\" was not run: " + why))
                     .append(")\n");
             this.notWritten.add(title(box) + ": not run. " + why);
+            this.plan.add(new Box(title(box), Fate.NOT_RUN, why, true));
             return;
         }
 
@@ -728,6 +745,13 @@ public final class PyTetradScript {
         this.body.append("print(").append(python("Box \"" + box.getName() + "\", " + algorithmText + ":"))
                 .append(")\n");
         this.body.append("print(").append(variable).append("_graph)\n");
+
+        StringBuilder remark = new StringBuilder("Runs " + oneLine(algorithmText));
+        if (testText != null) remark.append(" with ").append(oneLine(testText));
+        if (scoreText != null) remark.append(" with ").append(oneLine(scoreText));
+        remark.append(" on ").append(quoted(dataParents.getFirst()));
+        if (knowledge != null) remark.append(", with the knowledge");
+        this.plan.add(new Box(title(box), Fate.WRITTEN, remark.append(".").toString(), true));
     }
 
     //=================================== PIECES ===================================//
@@ -740,12 +764,153 @@ public final class PyTetradScript {
     }
 
     /**
+     * What becomes of a box when a script is written.
+     */
+    public enum Fate {
+
+        /**
+         * The box is written as code, or for a note as a comment.
+         */
+        WRITTEN,
+
+        /**
+         * The box gives data to a search and is not written; the script stops there until the step is written by
+         * hand.
+         */
+        BY_HAND,
+
+        /**
+         * The box is a search that is not written; the script prints a remark in its place and goes on.
+         */
+        NOT_RUN,
+
+        /**
+         * The box is not in the script, since no search that is written depends on it.
+         */
+        LEFT_OUT
+    }
+
+    /**
+     * What becomes of one box.
+     *
+     * @param title  the box's name in quotes, with its type and model.
+     * @param fate   what becomes of it.
+     * @param remark what is written for it, or why it is not written; may be empty.
+     * @param search whether the box is a search box.
+     */
+    public record Box(String title, Fate fate, String remark, boolean search) {
+
+        /**
+         * A box that is not a search box.
+         *
+         * @param title  the box's name in quotes, with its type and model.
+         * @param fate   what becomes of it.
+         * @param remark what is written for it, or why it is not written; may be empty.
+         */
+        public Box(String title, Fate fate, String remark) {
+            this(title, fate, remark, false);
+        }
+    }
+
+    /**
+     * What a script of this kind is and is not, whatever the session. Shown to the user before a script is saved.
+     */
+    public static final List<String> LIMITS = List.of(
+            "It reruns searches, and nothing else. Estimators, checks, comparisons, regressions and the like are "
+            + "not in it.",
+            "It covers a search on one data box holding one data set, with or without one knowledge box.",
+            "A box that changes data, such as one that discretizes, selects, imputes or simulates, is not written "
+            + "as code. The script stops at that step until you write it in Python yourself.",
+            "The data are not in the script. It reads each data file by name, from the folder you say, with the "
+            + "settings the file was loaded with here. Changes made to the data by hand in Tetrad are not in it.",
+            "Each graph is printed, not saved.",
+            "It runs with py-tetrad, on the Tetrad that comes with py-tetrad, which may be older or newer than "
+            + "this one.");
+
+    /**
      * A script, with what in the session it does not cover.
      *
      * @param script the Python text.
      * @param notes  what the script does not cover, one remark each; empty if it covers every box.
+     * @param boxes  what becomes of each box of the session.
      */
-    public record Result(String script, List<String> notes) {
+    public record Result(String script, List<String> notes, List<Box> boxes) {
+
+        /**
+         * How many boxes meet the given fate.
+         *
+         * @param fate the fate.
+         * @return the number of boxes.
+         */
+        public int count(Fate fate) {
+            return (int) this.boxes.stream().filter(box -> box.fate() == fate).count();
+        }
+
+        /**
+         * Says, in plain text for the user to read before saving, what the script will hold: which boxes are
+         * written as code, which are left to be written by hand, which searches will not run, which boxes are
+         * left out, and what a script of this kind is in general.
+         *
+         * @param sessionName the session's name; may be null.
+         * @return the text.
+         */
+        public String preview(String sessionName) {
+            StringBuilder out = new StringBuilder();
+            int searches = (int) this.boxes.stream()
+                    .filter(box -> box.fate() == Fate.WRITTEN && box.search()).count();
+            int allSearches = (int) this.boxes.stream().filter(Box::search).count();
+
+            out.append("A py-tetrad script is a Python program that reruns this session's searches outside "
+                       + "Tetrad.\n");
+            out.append("For session ").append(sessionName == null || sessionName.isBlank() ? "(unnamed)"
+                    : "\"" + sessionName + "\"").append(" the script would hold ").append(searches)
+                    .append(" of the session's ").append(allSearches)
+                    .append(allSearches == 1 ? " search." : " searches.").append("\n");
+
+            if (searches == 0) {
+                out.append("So there is nothing in it to run.\n");
+            }
+
+            if (count(Fate.BY_HAND) > 0) {
+                out.append("It would not run to the end as saved: ").append(count(Fate.BY_HAND))
+                        .append(count(Fate.BY_HAND) == 1 ? " step is" : " steps are")
+                        .append(" left for you to write in Python.\n");
+            }
+
+            section(out, Fate.WRITTEN, "WRITTEN AS CODE");
+            section(out, Fate.BY_HAND, "LEFT FOR YOU TO WRITE BY HAND. The script stops at each of these until "
+                                       + "you write the step.");
+            section(out, Fate.NOT_RUN, "SEARCHES THE SCRIPT WILL NOT RUN");
+            section(out, Fate.LEFT_OUT, "LEFT OUT, since no search in the script depends on them");
+
+            out.append("\nWHAT A SCRIPT OF THIS KIND IS, FOR ANY SESSION\n");
+
+            for (String limit : LIMITS) {
+                out.append("  - ").append(limit).append("\n");
+            }
+
+            return out.toString();
+        }
+
+        private void section(StringBuilder out, Fate fate, String heading) {
+            if (count(fate) == 0) {
+                return;
+            }
+
+            out.append("\n").append(heading).append("\n");
+
+            for (Box box : this.boxes) {
+                if (box.fate() == fate) {
+                    out.append("  - ").append(box.title());
+
+                    if (!box.remark().isEmpty()) {
+                        out.append(": ").append(box.remark());
+                    }
+
+                    out.append("\n");
+                }
+            }
+        }
     }
 
     private void heading(BoxDescription box) {

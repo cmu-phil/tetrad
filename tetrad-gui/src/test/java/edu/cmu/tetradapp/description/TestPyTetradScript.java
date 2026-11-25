@@ -370,6 +370,76 @@ public class TestPyTetradScript {
     }
 
     /**
+     * What the user is shown before a script is saved: what becomes of each box, and what a script of this kind
+     * is in general.
+     */
+    @Test
+    public void testWhatTheUserIsShownBeforeSaving() {
+        PyTetradScript.Result result = script(dataBox("Data1")
+                + "[Box Discretized]\nType: Data\nModel: Discretize Data\nParents: Data1\nLocation: 1, 1\n\n"
+                + "[Box Graph1]\nType: Graph\nLocation: 1, 1\n\n"
+                + "[Box Estimator1]\nType: Estimator\nParents: Data1\nLocation: 1, 1\n\n"
+                + "[Box Note1]\nType: Note\nLocation: 1, 1\nBegin note\n    Second pass.\nEnd note\n\n"
+                + searchBox("Plain", "Data1", FGES, SEM_BIC)
+                + searchBox("On discretized", "Discretized", "Algorithm: PC (pc)", "Test: Fisher Z (fisher-z-test)")
+                + searchBox("With graph", "Data1, Graph1", FGES, SEM_BIC));
+
+        // Every box of the session is accounted for, once.
+        assertEquals(8, result.boxes().size());
+        assertEquals(4, result.count(PyTetradScript.Fate.WRITTEN));
+        assertEquals(1, result.count(PyTetradScript.Fate.BY_HAND));
+        assertEquals(1, result.count(PyTetradScript.Fate.NOT_RUN));
+        assertEquals(2, result.count(PyTetradScript.Fate.LEFT_OUT));
+
+        String preview = result.preview("study.tet");
+        System.out.println(preview);
+
+        assertTrue(preview.startsWith("A py-tetrad script is a Python program that reruns this session's searches "
+                                      + "outside Tetrad.\n"
+                                      + "For session \"study.tet\" the script would hold 2 of the session's 3 "
+                                      + "searches.\n"
+                                      + "It would not run to the end as saved: 1 step is left for you to write in "
+                                      + "Python.\n"));
+        assertTrue(preview.contains("""
+
+                WRITTEN AS CODE
+                  - "Data1" (Data): Reads the file "study.csv".
+                  - "Note1" (Note): Its text, as a comment.
+                  - "Plain" (Search): Runs FGES (fges) with Sem BIC Score (sem-bic-score) on "Data1".
+                  - "On discretized" (Search): Runs PC (pc) with Fisher Z (fisher-z-test) on "Discretized".
+
+                LEFT FOR YOU TO WRITE BY HAND. The script stops at each of these until you write the step.
+                  - "Discretized" (Data: Discretize Data): This kind of box is not turned into code.
+
+                SEARCHES THE SCRIPT WILL NOT RUN
+                  - "With graph" (Search): It takes input from "Graph1" (Graph), and a script is written only \
+                for a search on one data box, with or without a knowledge box.
+
+                LEFT OUT, since no search in the script depends on them
+                  - "Graph1" (Graph): A search takes it as input, and that search is not written.
+                  - "Estimator1" (Estimator)
+
+                WHAT A SCRIPT OF THIS KIND IS, FOR ANY SESSION
+                """));
+
+        for (String limit : PyTetradScript.LIMITS) {
+            assertTrue(preview.contains("  - " + limit + "\n"));
+        }
+
+        // A session the script covers whole: only what is written, and the general remarks.
+        String whole = script(dataBox("Data1") + searchBox("Search1", "Data1", FGES, SEM_BIC)).preview(null);
+        assertTrue(whole.contains("For session (unnamed) the script would hold 1 of the session's 1 search.\n"));
+        assertFalse(whole.contains("It would not run to the end"));
+        assertFalse(whole.contains("BY HAND"));
+        assertFalse(whole.contains("WILL NOT RUN"));
+        assertFalse(whole.contains("LEFT OUT"));
+
+        // A session with nothing to run.
+        assertTrue(script(dataBox("Data1")).preview("x").contains("would hold 0 of the session's 0 searches.\n"
+                                                                + "So there is nothing in it to run.\n"));
+    }
+
+    /**
      * Each box gets a Python name of its own, whatever it is called in the session.
      */
     @Test
