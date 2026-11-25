@@ -96,7 +96,7 @@ public class Pcmci implements Algorithm, TakesIndependenceWrapper, AcceptsKnowle
         }
 
         final int maxLag = TMath.max(1, parameters.getInt(Params.TIME_LAG));
-        final int maxCondSize = parameters.getInt(Params.DEPTH, 3);
+        final int maxCondSize = parameters.getInt(Params.DEPTH);
         final double alpha = parameters.getDouble(Params.ALPHA);
         final boolean verbose = parameters.getBoolean(Params.VERBOSE, false);
 

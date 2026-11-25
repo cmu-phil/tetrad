@@ -56,32 +56,18 @@ import static org.junit.Assert.assertTrue;
  * {@code parameters.getDouble("alpha")}, which takes the registered one; or, if the registered default is the one
  * that is wrong, to correct the definition.
  * <p>
- * A few reads are let through, each for a stated reason, in {@link #AWAITING_A_DECISION}. The test also fails if one
- * of those no longer differs, so that the list does not outlive its reasons.
+ * A read can be let through for a stated reason by naming it in {@link #AWAITING_A_DECISION}. The test also fails if
+ * a read named there no longer differs, so that the list does not outlive its reasons. Nothing is let through at
+ * present.
  *
  * @author Claude (Anthropic)
  */
 public class TestRegisteredDefaultsAreUsed {
 
     /**
-     * Reads let through for now, as "File.java: parameter", each with why.
+     * Reads let through for now, as "File.java: parameter", each with why. There are none.
      */
-    private static final Map<String, String> AWAITING_A_DECISION = new TreeMap<>(Map.of(
-            "SemIm.java: covLow",
-            "Registered 0, read as 0.1. With 0 and 0 the error covariance of a bidirected edge is exactly zero, so "
-            + "the registered pair may be the wrong one.",
-            "SemIm.java: covHigh",
-            "Registered 0, read as 0.2. See covLow.",
-            "Pcmci.java: depth",
-            "Registered -1, meaning no limit, read as 3. In PCMCI a negative depth skips the condition-selection "
-            + "step instead of lifting its limit, so the registered default does not mean here what it says.",
-            "GraphUtils.java: scaleFreeAlpha",
-            "Registered 0.05, read as 0.2. The Scale Free tab of the random graph editor keeps its values where "
-            + "this read does not look, so this default is what every such graph is made with. To be settled when "
-            + "the tab is connected.",
-            "GraphUtils.java: scaleFreeBeta", "Registered 0.9, read as 0.6. See scaleFreeAlpha.",
-            "GraphUtils.java: scaleFreeDeltaIn", "Registered 3, a whole number, read as 0.2. See scaleFreeAlpha.",
-            "GraphUtils.java: scaleFreeDeltaOut", "Registered 3, a whole number, read as 0.2. See scaleFreeAlpha."));
+    private static final Map<String, String> AWAITING_A_DECISION = new TreeMap<>(Map.of());
 
     /**
      * A read of a setting with a default: the receiver, the getter, the name as quoted text or a constant, and the

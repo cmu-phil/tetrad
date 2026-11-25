@@ -76,7 +76,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
         RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(this.params);
         RandomMimicParamsEditor randomMimicEditor = new RandomMimicParamsEditor(this.params);
-        RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
+        RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor(this.params);
 
         // construct the workbench.
         setLayout(new BorderLayout());
@@ -117,12 +117,14 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
             JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
             if (pane.getSelectedIndex() == 0) {
+                randomDagEditor.refreshNodeCounts();
                 Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "Dag");
             } else if (pane.getSelectedIndex() == 1) {
                 Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "Mim");
             } else if (pane.getSelectedIndex() == 2) {
                 Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "Mimic");
             } else if (pane.getSelectedIndex() == 3) {
+                randomScaleFreeEditor.refreshNodeCounts();
                 Preferences.userNodeForPackage(GraphUtils.class).put("randomGraphType", "ScaleFree");
             }
         });

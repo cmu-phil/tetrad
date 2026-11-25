@@ -79,10 +79,10 @@ public class GraphUtils {
         int numMeasuredMeasuredImpureParents = parameters.getInt("mimMeasuredMeasuredImpureParents", 0);
         int numMeasuredMeasuredImpureAssociations = parameters.getInt("mimMeasuredMeasuredImpureAssociations", 0);
         int numStructuralEdges = parameters.getInt("mimicNumStructuralEdges", 5);
-        double alpha = parameters.getDouble("scaleFreeAlpha", 0.2);
-        double beta = parameters.getDouble("scaleFreeBeta", 0.6);
-        double deltaIn = parameters.getDouble("scaleFreeDeltaIn", 0.2);
-        double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
+        double alpha = parameters.getDouble("scaleFreeAlpha");
+        double beta = parameters.getDouble("scaleFreeBeta");
+        double deltaIn = parameters.getDouble("scaleFreeDeltaIn");
+        double deltaOut = parameters.getDouble("scaleFreeDeltaOut");
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
         String randomGraphType = Preferences.userNodeForPackage(GraphUtils.class).get("randomGraphType", "Dag");

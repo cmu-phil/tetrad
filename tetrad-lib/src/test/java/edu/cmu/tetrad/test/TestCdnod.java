@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -82,6 +83,10 @@ public class TestCdnod {
 
     @Test
     public void testCdnodWithContext() throws InterruptedException {
+        // The model and the data are drawn at random. Without a seed of its own this test took whatever state the
+        // shared generator was left in by the tests before it, and failed for about 3 starting states in 40.
+        RandomUtil.getInstance().setSeed(17L);
+
         // Create a simple DAG with context: C -> X1 -> X2
         Graph dag = new EdgeListGraph();
         Node c = new ContinuousVariable("C");

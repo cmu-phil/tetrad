@@ -2637,8 +2637,8 @@ public final class SemIm implements Im, ISemIm {
                     return TMath.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
-                double covLow = getParams().getDouble("covLow", 0.1);
-                double covHigh = getParams().getDouble("covHigh", 0.2);
+                double covLow = getParams().getDouble("covLow");
+                double covHigh = getParams().getDouble("covHigh");
                 double value = new Split(covLow, covHigh).nextRandom();
                 if (getParams().getBoolean("covSymmetric", true)) {
                     return value;

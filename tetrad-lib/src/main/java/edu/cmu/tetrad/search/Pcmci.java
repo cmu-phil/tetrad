@@ -50,7 +50,7 @@ public final class Pcmci implements IGraphSearch {
         private final IndependenceTest test;
         private int maxLag = 3;
         private double alpha = 0.05;           // informational unless the test uses it internally
-        private int maxCondSize = 3;           // cap |S| in both phases
+        private int maxCondSize = 3;           // cap |S| in both phases; negative for no cap
         private boolean verbose = false;
         private boolean collapseToLag0 = true; // collapse lagged graph back to base nodes
 
@@ -264,10 +264,19 @@ public final class Pcmci implements IGraphSearch {
 
     // ----------------- core helpers ------------------
 
-    /** PC1-like shrinking of parent candidates for target v using rising conditioning size up to maxCondSize. */
+    /**
+     * PC1-like shrinking of parent candidates for target v using rising conditioning size up to maxCondSize. A
+     * negative maxCondSize means no limit, as it does where the conditioning sets of the second phase are capped;
+     * it used to skip this step altogether. The size stops rising once it passes the number of other candidates,
+     * since no conditioning set of that size can be drawn from them.
+     */
     private void shrinkByPC1(Node v, LinkedHashSet<Node> cand) throws InterruptedException {
         boolean removed;
-        for (int k = 0; k <= maxCondSize; k++) {
+        for (int k = 0; maxCondSize < 0 || k <= maxCondSize; k++) {
+            if (k > 0 && k >= cand.size()) {
+                break;
+            }
+
             do {
                 removed = false;
                 List<Node> order = new ArrayList<>(cand);

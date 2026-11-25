@@ -522,6 +522,15 @@ class RandomGraphEditor extends JPanel {
         return getNumMeasuredNodes() + getNumLatents();
     }
 
+    /**
+     * Shows the numbers of measured and latent nodes as they now stand in the parameters. The DAG tab and the Scale
+     * Free tab edit the same two numbers, so each is brought up to date when it is shown.
+     */
+    public void refreshNodeCounts() {
+        this.numNodesField.setValue(getNumMeasuredNodes());
+        this.numLatentsField.setValue(getNumLatents());
+    }
+
     private int getNumMeasuredNodes() {
         return this.parameters.getInt("newGraphNumMeasuredNodes", 10);
     }

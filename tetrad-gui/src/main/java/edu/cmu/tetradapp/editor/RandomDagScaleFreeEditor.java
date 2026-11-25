@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
@@ -42,12 +43,24 @@ class RandomDagScaleFreeEditor extends JPanel {
     private final DoubleTextField scaleFreeGammaField;
 
     /**
-     * Constructs a dialog to edit the given workbench randomization parameters. //     * @param preferredNumNodes an
-     * integer which, if greater than 1, will revise the number of nodes, //     * number of edges,a nd number of latent
-     * nodes. Useful if the interface suggests a number of nodes //     * that overrides the number of nodes set in the
-     * preferences.
+     * The parameters being edited: the ones the random graph is made from.
      */
-    public RandomDagScaleFreeEditor() {
+    private final Parameters parameters;
+
+    /**
+     * Constructs a panel to edit the scale-free settings of the given random graph parameters. The settings are
+     * kept in those parameters, where the graph maker reads them; they used to be kept in the machine's preferences,
+     * where it did not look, so that nothing set here had any effect. The numbers of measured and latent nodes are
+     * the ones the DAG tab edits.
+     *
+     * @param parameters the parameters the random graph is made from.
+     */
+    public RandomDagScaleFreeEditor(Parameters parameters) {
+        if (parameters == null) {
+            throw new NullPointerException("The parameters are null.");
+        }
+
+        this.parameters = parameters;
         this.numNodesField = new IntTextField(getNumMeasuredNodes(), 4);
         this.numLatentsField = new IntTextField(getNumLatents(), 4);
 
@@ -179,6 +192,15 @@ class RandomDagScaleFreeEditor extends JPanel {
         add(d, BorderLayout.CENTER);
     }
 
+    /**
+     * Shows the numbers of measured and latent nodes as they now stand in the parameters. The DAG tab and the Scale
+     * Free tab edit the same two numbers, so each is brought up to date when it is shown.
+     */
+    public void refreshNodeCounts() {
+        this.numNodesField.setValue(getNumMeasuredNodes());
+        this.numLatentsField.setValue(getNumLatents());
+    }
+
     private void setGamma() {
         this.scaleFreeGammaField.setValue(getScaleFreeGamma());
     }
@@ -193,7 +215,7 @@ class RandomDagScaleFreeEditor extends JPanel {
     }
 
     private int getNumMeasuredNodes() {
-        return Preferences.userRoot().getInt("newGraphNumMeasuredNodes", 5);
+        return this.parameters.getInt("newGraphNumMeasuredNodes", 5);
     }
 
     private void setNumMeasuredNodes(int numMeasuredNodes) {
@@ -201,7 +223,7 @@ class RandomDagScaleFreeEditor extends JPanel {
             throw new IllegalArgumentException("Number of nodes Must be greater than or equal to 2.");
         }
 
-        Preferences.userRoot().putInt("newGraphNumMeasuredNodes", numMeasuredNodes);
+        this.parameters.set("newGraphNumMeasuredNodes", numMeasuredNodes);
     }
 
     /**
@@ -210,7 +232,7 @@ class RandomDagScaleFreeEditor extends JPanel {
      * @return a int
      */
     public int getNumLatents() {
-        return Preferences.userRoot().getInt("newGraphNumLatents", 0);
+        return this.parameters.getInt("newGraphNumLatents", 0);
     }
 
     private void setNumLatents(int numLatentNodes) {
@@ -220,7 +242,7 @@ class RandomDagScaleFreeEditor extends JPanel {
                     numLatentNodes);
         }
 
-        Preferences.userRoot().putInt("newGraphNumLatents", numLatentNodes);
+        this.parameters.set("newGraphNumLatents", numLatentNodes);
     }
 
     /**
@@ -238,11 +260,11 @@ class RandomDagScaleFreeEditor extends JPanel {
      * @return a double
      */
     public double getScaleFreeAlpha() {
-        return Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
+        return this.parameters.getDouble("scaleFreeAlpha");
     }
 
     private void setScaleFreeAlpha(double scaleFreeAlpha) {
-        Preferences.userRoot().putDouble("scaleFreeAlpha", scaleFreeAlpha);
+        this.parameters.set("scaleFreeAlpha", scaleFreeAlpha);
     }
 
     /**
@@ -251,11 +273,11 @@ class RandomDagScaleFreeEditor extends JPanel {
      * @return a double
      */
     public double getScaleFreeBeta() {
-        return Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
+        return this.parameters.getDouble("scaleFreeBeta");
     }
 
     private void setScaleFreeBeta(double scaleFreeBeta) {
-        Preferences.userRoot().putDouble("scaleFreeBeta", scaleFreeBeta);
+        this.parameters.set("scaleFreeBeta", scaleFreeBeta);
     }
 
     private double getScaleFreeGamma() {
@@ -268,11 +290,11 @@ class RandomDagScaleFreeEditor extends JPanel {
      * @return a double
      */
     public double getScaleFreeDeltaIn() {
-        return Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
+        return this.parameters.getDouble("scaleFreeDeltaIn");
     }
 
     private void setScaleFreeDeltaIn(double scaleFreeDeltaIn) {
-        Preferences.userRoot().putDouble("scaleFreeDeltaIn", scaleFreeDeltaIn);
+        this.parameters.set("scaleFreeDeltaIn", scaleFreeDeltaIn);
     }
 
     /**
@@ -281,11 +303,11 @@ class RandomDagScaleFreeEditor extends JPanel {
      * @return a double
      */
     public double getScaleFreeDeltaOut() {
-        return Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
+        return this.parameters.getDouble("scaleFreeDeltaOut");
     }
 
     private void setScaleFreeDeltaOut(double scaleFreeDeltaOut) {
-        Preferences.userRoot().putDouble("scaleFreeDeltaOut", scaleFreeDeltaOut);
+        this.parameters.set("scaleFreeDeltaOut", scaleFreeDeltaOut);
     }
 }
 
