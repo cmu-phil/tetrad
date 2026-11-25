@@ -92,12 +92,12 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("initializationMode", "trinary").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(graph, lowerBound, upperBound);
-        } else if (params.getString("initializationMode", "trinary").equals("range")) {
-            lowerBound = params.getInt("minCategories", 2);
-            upperBound = params.getInt("maxCategories", 4);
+        } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
         } else {
             throw new IllegalStateException("Unrecognized type.");
@@ -164,12 +164,12 @@ public class BayesPmWrapper implements SessionModel {
         int lowerBound;
         int upperBound;
 
-        if (params.getString("initializationMode", "trinary").equals("trinary")) {
+        if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
             setBayesPm(new BayesPm(graph, bayesPm, lowerBound, upperBound));
-        } else if (params.getString("initializationMode", "trinary").equals("range")) {
-            lowerBound = params.getInt("minCategories", 2);
-            upperBound = params.getInt("maxCategories", 4);
+        } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
         } else {
             throw new IllegalStateException("Unrecognized type.");
@@ -425,8 +425,8 @@ public class BayesPmWrapper implements SessionModel {
         if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
         } else if (params.getString("bayesPmInitializationMode", "trinary").equals("range")) {
-            lowerBound = params.getInt("minCategories", 2);
-            upperBound = params.getInt("maxCategories", 4);
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
         } else {
             throw new IllegalStateException("Unrecognized type.");
         }
@@ -464,8 +464,8 @@ public class BayesPmWrapper implements SessionModel {
                 setBayesPm(new BayesPm(graph,
                         oldBayesPmWrapper.getBayesPm(), lowerBound, upperBound));
             } else if (string.equals("range")) {
-                lowerBound = params.getInt("minCategories", 2);
-                upperBound = params.getInt("maxCategories", 4);
+                lowerBound = params.getInt("lowerBoundNumVals", 2);
+                upperBound = params.getInt("upperBoundNumVals", 4);
                 setBayesPm(graph, lowerBound, upperBound);
             } else {
                 throw new IllegalStateException("Unrecognized type.");
