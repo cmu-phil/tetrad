@@ -112,11 +112,15 @@ public class SimpleDataLoader {
                                            String missingValueMarker, boolean hasHeader, Delimiter delimiter,
                                            boolean excludeFirstColumn)
             throws IOException {
+        // The comment marker and quote character must be set before the column names are read. They used to be set
+        // afterward, or not at all, so that a comment line at the top of the file was taken for the header and
+        // quoted names kept their quotes.
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        columnReader.setCommentMarker(commentMarker);
+        columnReader.setQuoteCharacter(quoteCharacter);
+
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
                 new int[]{1} : new int[]{}, true);
-
-        columnReader.setCommentMarker(commentMarker);
 
         TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
 
@@ -153,11 +157,15 @@ public class SimpleDataLoader {
                                         String missingValueMarker, boolean hasHeader, int maxNumCategories,
                                         Delimiter delimiter, boolean excludeFirstColumn)
             throws IOException {
+        // The comment marker and quote character must be set before the column names are read. They used to be set
+        // afterward, or not at all, so that a comment line at the top of the file was taken for the header and
+        // quoted names kept their quotes.
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        columnReader.setCommentMarker(commentMarker);
+        columnReader.setQuoteCharacter(quoteCharacter);
+
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
                 new int[]{1} : new int[]{}, false);
-
-        columnReader.setCommentMarker(commentMarker);
 
         TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
 
