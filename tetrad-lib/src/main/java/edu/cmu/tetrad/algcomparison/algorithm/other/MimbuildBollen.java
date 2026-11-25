@@ -47,7 +47,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Mimbuild (Bollen)",
         command = "mimbuild-bollen",
-        algoType = AlgType.search_for_structure_over_latents
+        algoType = AlgType.search_for_structure_over_latents,
+        dataType = DataType.Continuous
 )
 @Bootstrapping
 public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm {
@@ -94,13 +95,14 @@ public class MimbuildBollen implements Algorithm, ExtraLatentStructureAlgorithm 
     }
 
     /**
-     * Retrieves the data type required by the algorithm.
+     * The search requires a continuous data set, and says so here. This used to answer Mixed, so that discrete or
+     * mixed data was accepted up to the search and refused only there.
      *
-     * @return The data type required by the algorithm, which in this case is {@code DataType.Mixed}.
+     * @return Continuous
      */
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     /**

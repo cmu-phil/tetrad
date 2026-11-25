@@ -25,6 +25,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
+import edu.cmu.tetrad.algcomparison.algorithm.other.MimbuildBollen;
+import edu.cmu.tetrad.algcomparison.algorithm.other.MimbuildPca;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -177,6 +179,22 @@ public class TestDataKindMismatch {
         String message = refusal(new Fask(new SemBicScore()), mixed);
         assertTrue(message, message.startsWith("FASK cannot be run on this data as it is set up."));
         assertTrue(message, message.contains("the score chosen, Sem BIC Score, is for continuous data."));
+    }
+
+    /**
+     * MIMBUILD requires a continuous data set, and used to say it took any kind, so that discrete data got as far as
+     * the search before being refused with "Expecting a continuous dataset."
+     */
+    @Test
+    public void testMimbuildIsRefusedDiscreteDataByKind() {
+        assertEquals("Mimbuild (Bollen) is for continuous data, and the data set 'study' is discrete.\n"
+                     + "Choose an algorithm for discrete data in this Search box, or convert the data in a Data box"
+                     + " first.",
+                refusal(new MimbuildBollen(), discrete));
+
+        String message = refusal(new MimbuildPca(), mixed);
+        assertTrue(message, message.startsWith("Mimbuild (PCA) is for continuous data, and the data set 'study' is"
+                                               + " mixed"));
     }
 
     // ---- helpers ----

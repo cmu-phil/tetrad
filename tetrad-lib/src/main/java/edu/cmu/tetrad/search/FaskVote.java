@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
@@ -172,6 +173,20 @@ public class FaskVote {
      * @throws InterruptedException if one of the underlying searches is interrupted
      */
     public Graph search(Parameters parameters) throws InterruptedException {
+        // Each data set is searched by FASK with this score, whether or not external graphs supply the
+        // adjacencies, so the score must take the data. A score for continuous data fails on a discrete column
+        // with "Not a continuous data set.", which does not say that the score is what needs changing.
+        if (this.score.getDataType() == DataType.Continuous) {
+            for (DataSet dataSet : this.dataSets) {
+                if (!dataSet.isContinuous()) {
+                    throw new IllegalArgumentException("These data sets have discrete variables, and the score"
+                            + " chosen, " + this.score.getDescription() + ", is for continuous data.\n"
+                            + "FASK-Vote runs FASK on each data set with this score, so choose a score for mixed"
+                            + " data.");
+                }
+            }
+        }
+
         List<DataSet> standardized = standardizeDataSets(this.dataSets);
 
         Graph imagesGraph;

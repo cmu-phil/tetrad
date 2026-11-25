@@ -22,6 +22,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskPool;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskVote;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cstar;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FgesMb;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcMb;
@@ -40,6 +42,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.SkewE;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Tanh;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
@@ -47,9 +50,14 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.data.ContinuousDiscretizationSpec;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.DiscretizationSpec;
+import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -69,6 +77,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -384,6 +393,138 @@ public class TestRequiredInputs {
         assertEquals(DataType.Continuous, new Fask(new SemBicScore()).getDataType());
         assertEquals(DataType.Mixed, new Fask(new DegenerateGaussianBicScore()).getDataType());
         assertEquals(DataType.Continuous, new Fask().getDataType());
+    }
+
+    @Test
+    public void testMimbuildIsForContinuousData() {
+        assertEquals(DataType.Continuous, new MimbuildBollen().getDataType());
+        assertEquals(DataType.Continuous, new MimbuildPca().getDataType());
+    }
+
+    @Test
+    public void testFaskPoolAndFaskVoteTakeTheKindOfDataTheirScoreTakes() {
+        assertEquals(DataType.Continuous, new FaskPool(new SemBicScore()).getDataType());
+        assertEquals(DataType.Mixed, new FaskPool(new DegenerateGaussianBicScore()).getDataType());
+        assertEquals(DataType.Continuous, new FaskPool().getDataType());
+
+        assertEquals(DataType.Continuous, new FaskVote(new SemBicScore()).getDataType());
+        assertEquals(DataType.Mixed, new FaskVote(new DegenerateGaussianBicScore()).getDataType());
+        assertEquals(DataType.Continuous, new FaskVote().getDataType());
+    }
+
+    /**
+     * FASK-Pool and FASK-Vote take data sets with discrete variables when the adjacency search is IMaGES and the score
+     * is one for mixed data. An adjacency with a discrete variable is then left undirected. With any other adjacency
+     * search, including the default, or with a score for continuous data, they say what to change.
+     */
+    @Test
+    public void testFaskPoolAndFaskVoteOnMixedData() throws Exception {
+        List<DataModel> mixed = threeMixedDataSets();
+
+        for (String which : new String[]{"FASK-Pool", "FASK-Vote"}) {
+            Parameters images = new Parameters();
+            images.set(Params.FASK_POOL_ADJACENCY, 1);
+
+            Graph graph = quietly(() -> pooled(which, new DegenerateGaussianBicScore()).search(mixed, images));
+            assertTrue(which, graph.getNumEdges() > 0);
+
+            for (Edge edge : graph.getEdges()) {
+                boolean discrete = mixed.getFirst().getVariable(edge.getNode1().getName()) instanceof DiscreteVariable
+                        || mixed.getFirst().getVariable(edge.getNode2().getName()) instanceof DiscreteVariable;
+                if (discrete) assertFalse(which + ": " + edge, edge.isDirected());
+            }
+
+            // The default adjacency search is not IMaGES.
+            String byDefault = refusal(() -> quietly(() -> pooled(which, new DegenerateGaussianBicScore())
+                    .search(mixed, new Parameters())));
+            assertTrue(byDefault, byDefault.contains("adjacency method is for continuous data"));
+            assertTrue(byDefault, byDefault.contains("(" + Params.FASK_POOL_ADJACENCY + ") to 1, IMaGES"));
+
+            String wrongScore = refusal(() -> quietly(() -> pooled(which, new SemBicScore()).search(mixed, images)));
+            assertTrue(wrongScore, wrongScore.startsWith("These data sets have discrete variables, and the score chosen,"));
+            assertTrue(wrongScore, wrongScore.contains("is for continuous data."));
+            assertTrue(wrongScore, wrongScore.contains("hoose a score for mixed data"));
+        }
+    }
+
+    /**
+     * The other route for mixed data is to supply the adjacencies as an external graph. FASK-Pool then has no use for
+     * its score. FASK-Vote still runs FASK on each data set with the score, so it needs one for mixed data either way.
+     */
+    @Test
+    public void testFaskPoolAndFaskVoteOnMixedDataWithAnExternalGraph() throws Exception {
+        List<DataModel> mixed = threeMixedDataSets();
+        List<Node> v = mixed.getFirst().getVariables();
+        Graph given = new EdgeListGraph(v);
+        given.addUndirectedEdge(v.get(0), v.get(5));
+        given.addUndirectedEdge(v.get(2), v.get(3));
+        given.addUndirectedEdge(v.get(3), v.get(4));
+
+        FaskPool pool = new FaskPool(new SemBicScore());
+        pool.setExternalGraph(new SingleGraphAlg(given));
+        assertEquals(Set.of("X1-X6", "X3-X4", "X4-X5"), adjacencies(quietly(() -> pool.search(mixed, new Parameters()))));
+
+        FaskVote vote = new FaskVote(new DegenerateGaussianBicScore());
+        vote.setExternalGraph(new SingleGraphAlg(given));
+        assertEquals(Set.of("X1-X6", "X3-X4", "X4-X5"), adjacencies(quietly(() -> vote.search(mixed, new Parameters()))));
+
+        FaskVote wrongScore = new FaskVote(new SemBicScore());
+        wrongScore.setExternalGraph(new SingleGraphAlg(given));
+        String message = refusal(() -> quietly(() -> wrongScore.search(mixed, new Parameters())));
+        assertTrue(message, message.startsWith("These data sets have discrete variables, and the score chosen,"));
+        assertTrue(message, message.contains("FASK-Vote runs FASK on each data set with this score"));
+    }
+
+    private static MultiDataSetAlgorithm pooled(String which, ScoreWrapper score) {
+        return which.equals("FASK-Pool") ? new FaskPool(score) : new FaskVote(score);
+    }
+
+    /**
+     * Three samples from one model, with the first two variables cut at the median into two categories.
+     */
+    private static List<DataModel> threeMixedDataSets() throws Exception {
+        RandomUtil.getInstance().setSeed(11L);
+        Graph graph = RandomGraph.randomGraph(6, 0, 6, 100, 100, 100, false);
+        SemIm im = new SemIm(new SemPm(graph));
+        List<DataModel> dataSets = new ArrayList<>();
+
+        for (int k = 0; k < 3; k++) {
+            DataSet sample = im.simulateData(500, false);
+            Map<Node, DiscretizationSpec> specs = new HashMap<>();
+
+            for (int c = 0; c < 2; c++) {
+                double[] column = new double[sample.getNumRows()];
+                for (int r = 0; r < column.length; r++) column[r] = sample.getDouble(r, c);
+                Arrays.sort(column);
+                specs.put(sample.getVariable(c),
+                        new ContinuousDiscretizationSpec(new double[]{column[column.length / 2]}, List.of("0", "1")));
+            }
+
+            Discretizer discretizer = new Discretizer(sample, specs);
+            discretizer.setVariablesCopied(true);
+            DataSet mixed = discretizer.discretize();
+            assertTrue(mixed.isMixed());
+            dataSets.add(mixed);
+        }
+
+        return dataSets;
+    }
+
+    private interface Search {
+        Graph run() throws InterruptedException;
+    }
+
+    private static Graph quietly(Search search) {
+        PrintStream out = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+
+        try {
+            return search.run();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            System.setOut(out);
+        }
     }
 
     // ---- helpers ----

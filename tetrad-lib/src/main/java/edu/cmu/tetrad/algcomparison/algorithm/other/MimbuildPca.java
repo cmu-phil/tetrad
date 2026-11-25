@@ -47,7 +47,8 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Mimbuild (PCA)",
         command = "mimbuild-pca",
-        algoType = AlgType.search_for_structure_over_latents
+        algoType = AlgType.search_for_structure_over_latents,
+        dataType = DataType.Continuous
 )
 @Bootstrapping
 public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
@@ -92,13 +93,14 @@ public class MimbuildPca implements Algorithm, ExtraLatentStructureAlgorithm {
     }
 
     /**
-     * Retrieves the data type associated with this algorithm.
+     * The search requires a continuous data set, and says so here. This used to answer Mixed, so that discrete or
+     * mixed data was accepted up to the search and refused only there.
      *
-     * @return the data type used by this algorithm, represented as {@link DataType}.
+     * @return Continuous
      */
     @Override
     public DataType getDataType() {
-        return DataType.Mixed;
+        return DataType.Continuous;
     }
 
     /**

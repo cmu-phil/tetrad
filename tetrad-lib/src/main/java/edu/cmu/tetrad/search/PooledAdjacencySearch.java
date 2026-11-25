@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
@@ -37,6 +38,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
@@ -188,8 +190,9 @@ public class PooledAdjacencySearch {
             for (DataSet dataSet : standardized) {
                 if (!dataSet.isContinuous()) {
                     throw new IllegalArgumentException("The " + this.method + " adjacency method is for continuous"
-                            + " data, and these data sets have discrete variables. Use the IMAGES adjacency method"
-                            + " with a score for mixed data, or supply external graphs.");
+                            + " data, and these data sets have discrete variables.\n"
+                            + "Set the adjacency search parameter (" + Params.FASK_POOL_ADJACENCY + ") to 1, IMaGES,"
+                            + " and choose a score for mixed data, or supply external graphs.");
                 }
             }
         }
@@ -198,6 +201,19 @@ public class PooledAdjacencySearch {
             if (this.score == null) {
                 throw new IllegalStateException("The IMAGES adjacency method requires a score wrapper.");
             }
+
+            // A score for continuous data fails on a discrete column with "Not a continuous data set.", which
+            // does not say that the score is what needs changing.
+            if (this.score.getDataType() == DataType.Continuous) {
+                for (DataSet dataSet : standardized) {
+                    if (!dataSet.isContinuous()) {
+                        throw new IllegalArgumentException("These data sets have discrete variables, and the score"
+                                + " chosen, " + this.score.getDescription() + ", is for continuous data.\n"
+                                + "Choose a score for mixed data, or supply external graphs.");
+                    }
+                }
+            }
+
             List<DataModel> models = new ArrayList<>(standardized);
             Images images = new Images(this.score);
             images.setKnowledge(this.knowledge);

@@ -182,11 +182,14 @@ public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
     }
 
     /**
-     * {@inheritDoc}
+     * The kind of data FASK-Vote takes, which is the kind its score takes: with the IMaGES adjacency search and a score
+     * for mixed data, the data sets may have discrete variables. This used to answer Continuous whatever the score.
+     *
+     * @return the data type of the score, or Continuous if no score has been set
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return this.score == null ? DataType.Continuous : this.score.getDataType();
     }
 
     /**
