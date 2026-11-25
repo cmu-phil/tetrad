@@ -172,6 +172,11 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(saveSession);
         fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
+
+        // A legible text description of the session's boxes, choices and non-default settings; see
+        // SaveSessionDescriptionAction. Added 2026-11-25.
+        fileMenu.add(new JMenuItem(new SaveSessionDescriptionAction()));
+        fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
         JMenuItem menuItem = new JMenuItem("Save Session Workspace Image...");
