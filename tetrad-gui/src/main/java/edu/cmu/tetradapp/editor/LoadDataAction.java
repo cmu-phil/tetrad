@@ -128,13 +128,31 @@ final class LoadDataAction extends AbstractAction {
             return;
         }
 
+        // The list given to the editor must not be the editor's own: DataEditor.replace clears the editor's list
+        // before copying the given one into it, so handing it its own list emptied the box - "Keep" lost the data
+        // already there and the data just loaded. Fixed 2026-11-25 by keeping the old data in a list of its own.
+        dataModelList = new DataModelList();
+
         if (keepData) {
-            dataModelList = this.dataEditor.getDataModelList();
-        } else {
-            dataModelList = new DataModelList();
+            DataModelList kept = this.dataEditor.getDataModelList();
+            dataModelList.addAll(kept);
+
+            if (kept.getSelectedModel() != null) {
+                dataModelList.setSelectedModel(kept.getSelectedModel());
+            }
         }
 
         dataModelList.addAll(_dataModelList);
+
+        // Record how each file was read, so that a session description can say. Settings recorded for data that is
+        // being replaced are dropped. Added 2026-11-25.
+        DataWrapper dataWrapper = this.dataEditor.getDataWrapper();
+
+        if (!keepData) {
+            dataWrapper.clearLoadSettings();
+        }
+
+        loadData.getLoadSettings().forEach(dataWrapper::setLoadSettings);
 
         if (dataModelList.getSelectedModel() == null && !dataModelList.isEmpty()) {
             dataModelList.setSelectedModel(dataModelList.get(0));

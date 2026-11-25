@@ -83,6 +83,16 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     private Map<String, String> allParamSettings;
 
     /**
+     * For each data set of this box that was loaded from a file, how the file was read: the file's name and the
+     * settings chosen in the load dialog, as text, by the name of the data set. Kept so that a session description
+     * can say how the data were loaded. It holds only maps and strings, so no class is needed to read it. Added
+     * 2026-11-25; absent from sessions saved earlier, which read it as null (serialVersionUID is pinned).
+     *
+     * @serial May be null.
+     */
+    private Map<String, Map<String, String>> loadSettings;
+
+    /**
      * Change support for notifying open editors that the data model list has been replaced, e.g. by a background
      * process (see {@link #announceDataModelChange()}). Transient and lazily initialized so that the serialized form of
      * this class is unchanged and previously saved sessions still load.
@@ -556,6 +566,48 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
                                            + ", " + e.getMessage());
             throw e;
         }
+    }
+
+    /**
+     * Returns how the data set of the given name was read from its file, if it was loaded from a file in this box
+     * and that was recorded.
+     *
+     * @param dataSetName the name of the data set.
+     * @return the file's name and the load settings, as text, in the order the load dialog shows them, or null if
+     * nothing is recorded for a data set of that name. The map cannot be modified.
+     */
+    public Map<String, String> getLoadSettings(String dataSetName) {
+        if (this.loadSettings == null || dataSetName == null) {
+            return null;
+        }
+
+        Map<String, String> settings = this.loadSettings.get(dataSetName);
+        return settings == null ? null : Collections.unmodifiableMap(settings);
+    }
+
+    /**
+     * Records how the data set of the given name was read from its file.
+     *
+     * @param dataSetName the name of the data set.
+     * @param settings    the file's name and the load settings, as text, in the order to list them.
+     */
+    public void setLoadSettings(String dataSetName, Map<String, String> settings) {
+        if (dataSetName == null || settings == null) {
+            throw new NullPointerException("The data set name and the settings must not be null.");
+        }
+
+        if (this.loadSettings == null) {
+            this.loadSettings = new LinkedHashMap<>();
+        }
+
+        this.loadSettings.put(dataSetName, new LinkedHashMap<>(settings));
+    }
+
+    /**
+     * Forgets how the data sets of this box were read from their files, as when the data are replaced.
+     */
+    public void clearLoadSettings() {
+        this.loadSettings = null;
     }
 
     /**

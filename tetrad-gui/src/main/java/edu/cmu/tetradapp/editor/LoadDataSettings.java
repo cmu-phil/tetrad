@@ -1315,6 +1315,82 @@ public final class LoadDataSettings extends JPanel {
     }
 
     /**
+     * Returns the settings now chosen in this panel, as text, for a file loaded with them. The keys are the labels
+     * this panel shows and the values are the choices as this panel words them, so that a record of the settings
+     * can be matched against the panel by eye. Settings that do not bear on the chosen file type are left out, as
+     * is the metadata file if none was chosen. Only the name of a file is given, not its path. Added 2026-11-25 for
+     * session descriptions; see {@link edu.cmu.tetradapp.model.DataWrapper#getLoadSettings(String)}.
+     *
+     * @param file the file loaded.
+     * @return the settings, in the order this panel shows them.
+     */
+    public Map<String, String> describeSettings(File file) {
+        Map<String, String> settings = new LinkedHashMap<>();
+        boolean tabular = this.tabularRadioButton.isSelected();
+
+        settings.put("File", file.getName());
+
+        if (tabular) {
+            settings.put("First row variable names", isVarNamesFirstRow() ? "Yes" : "No");
+        }
+
+        if (tabular) {
+            settings.put("Data file type", "Tabular data");
+        } else if (this.covarianceLowerTriangleRadioButton.isSelected()) {
+            settings.put("Data file type", "Covariance data (lower triangle)");
+        } else {
+            settings.put("Data file type", "Covariance data (square)");
+        }
+
+        if (tabular && this.metadataFile != null) {
+            settings.put("Metadata JSON file", this.metadataFile.getName());
+        }
+
+        if (tabular) {
+            if (this.contRadioButton.isSelected()) {
+                settings.put("Data type", "Continuous");
+            } else if (this.discRadioButton.isSelected()) {
+                settings.put("Data type", "Discrete");
+            } else {
+                settings.put("Data type", "Mixed, max discrete categories " + getMaxNumOfDiscCategories());
+            }
+        }
+
+        if (this.whitespaceDelimiterRadioButton.isSelected()) {
+            settings.put("Value delimiter", "Whitespace");
+        } else {
+            settings.put("Value delimiter", String.valueOf(this.singleCharDelimiterComboBox.getSelectedItem()));
+        }
+
+        if (tabular) {
+            if (this.idUnlabeledFirstColRadioButton.isSelected()) {
+                settings.put("Case column to exclude/ignore", "First column");
+            } else if (this.idLabeledColRadioButton.isSelected()) {
+                settings.put("Case column to exclude/ignore", "Column labeled " + this.idStringField.getText());
+            } else {
+                settings.put("Case column to exclude/ignore", "None");
+            }
+        }
+
+        settings.put("Comment marker", getCommentMarker());
+
+        if (this.doubleQuoteRadioButton.isSelected()) {
+            settings.put("Quote character", "\"");
+        } else if (this.singleQuoteRadioButton.isSelected()) {
+            settings.put("Quote character", "'");
+        } else {
+            settings.put("Quote character", "None");
+        }
+
+        if (tabular) {
+            String marker = getMissingDataMarker();
+            settings.put("Missing value marker", marker == null || marker.isBlank() ? "None" : marker);
+        }
+
+        return settings;
+    }
+
+    /**
      * Kevin's data reader
      *
      * @param file a {@link java.io.File} object

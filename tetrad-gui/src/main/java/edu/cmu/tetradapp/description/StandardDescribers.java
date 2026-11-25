@@ -53,6 +53,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -240,8 +241,9 @@ public final class StandardDescribers {
 
     /**
      * Describes a data box: the name, size and kind of each data set, whether it has missing values, any knowledge
-     * the selected data set carries, and the parameters of the box whose values differ from their defaults. The
-     * data themselves are not written.
+     * the selected data set carries, and the parameters of the box whose values differ from their defaults. For a
+     * data set loaded from a file in this box, the file's name and the settings it was read with are given too, if
+     * they were recorded, under the labels the load dialog uses. The data themselves are not written.
      *
      * @param model the model, a {@link DataWrapper}.
      * @param node  the session node holding the model.
@@ -255,6 +257,14 @@ public final class StandardDescribers {
         for (int i = 0; i < Math.min(count, MAX_DATA_SETS_LISTED); i++) {
             DataModel dataModel = dataModels.get(i);
             out.field(DATA_SET, dataModel.getName() == null ? "unnamed" : dataModel.getName());
+
+            // How the file was read, if this data set was loaded from a file in this box.
+            Map<String, String> loadSettings = wrapper.getLoadSettings(dataModel.getName());
+
+            if (loadSettings != null) {
+                loadSettings.forEach(out::field);
+            }
+
             out.field(SHAPE, shape(dataModel));
 
             if (dataModel instanceof DataSet dataSet) {

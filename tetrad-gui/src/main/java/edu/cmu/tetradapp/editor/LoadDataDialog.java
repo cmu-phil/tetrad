@@ -41,8 +41,10 @@ import java.io.IOException;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -79,6 +81,11 @@ public final class LoadDataDialog extends JPanel {
      * The data model list.
      */
     private final DataModelList dataModelList;
+
+    /**
+     * The settings each file was loaded with, by the name of the data model made from it.
+     */
+    private final Map<String, Map<String, String>> loadSettings = new LinkedHashMap<>();
 
     /**
      * The text pane for the validation results.
@@ -938,6 +945,10 @@ public final class LoadDataDialog extends JPanel {
                 // Must setName() here, file names will be used by the spreadsheet - Zhou
                 dataModel.setName(this.loadedFiles.get(i).getName());
                 this.dataModelList.add(dataModel);
+
+                // Remember how the file was read, for session descriptions. Added 2026-11-25.
+                this.loadSettings.put(dataModel.getName(),
+                        this.loadDataSettings.describeSettings(this.loadedFiles.get(i)));
                 System.out.println("File index = " + i + " has been loaded successfully");
             }
         }
@@ -950,6 +961,16 @@ public final class LoadDataDialog extends JPanel {
      */
     public DataModelList getDataModels() {
         return this.dataModelList;
+    }
+
+    /**
+     * Returns the settings each file was loaded with, by the name of the data model made from it; see
+     * {@link LoadDataSettings#describeSettings(File)}.
+     *
+     * @return the settings, by data model name, in the order the files were loaded.
+     */
+    public Map<String, Map<String, String>> getLoadSettings() {
+        return this.loadSettings;
     }
 
     /**

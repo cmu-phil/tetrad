@@ -51,9 +51,16 @@ import edu.cmu.tetradapp.session.SessionNode;
 import org.junit.Test;
 
 import javax.swing.text.DefaultStyledDocument;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -288,6 +295,89 @@ public class TestSessionDescription {
         box = new SessionDescriber().describe(session, DATE).getBox("Search1");
         assertTrue(box.getChangedParameters().contains(new BoxDescription.ChangedParameter("seed", "42", "-1")));
         assertNull(box.get(StandardDescribers.SEED));
+    }
+
+    /**
+     * A data set loaded from a file: the file's name and the load settings are given, after the data set's name
+     * and before its shape, and they read back.
+     */
+    @Test
+    public void testDataLoadSettings() throws Exception {
+        SessionWrapper session = buildSession();
+        SessionNode node = ((SessionNodeWrapper) session.getNode("Data1")).getSessionNode();
+        DataWrapper wrapper = (DataWrapper) node.getModel();
+        assertNull("Nothing is recorded until a file is loaded.", wrapper.getLoadSettings("study.csv"));
+
+        Map<String, String> settings = new LinkedHashMap<>();
+        settings.put("File", "study.csv");
+        settings.put("First row variable names", "Yes");
+        settings.put("Data file type", "Tabular data");
+        settings.put("Data type", "Mixed, max discrete categories 3");
+        settings.put("Value delimiter", "Comma");
+        settings.put("Case column to exclude/ignore", "None");
+        settings.put("Comment marker", "//");
+        settings.put("Quote character", "\"");
+        settings.put("Missing value marker", "*");
+        wrapper.setLoadSettings("study.csv", settings);
+        wrapper.setLoadSettings("some other file.csv", Map.of("File", "some other file.csv"));
+
+        SessionDescription description = new SessionDescriber().describe(session, DATE);
+        BoxDescription box = description.getBox("Data1");
+        List<String> keys = new ArrayList<>();
+
+        for (BoxDescription.Item item : box.getItems()) {
+            if (item instanceof BoxDescription.Field field) {
+                keys.add(field.key());
+            }
+        }
+
+        assertEquals(List.of("Type", "Model", "Location", "Data set", "File", "First row variable names",
+                "Data file type", "Data type", "Value delimiter", "Case column to exclude/ignore", "Comment marker",
+                "Quote character", "Missing value marker", "Shape", "Missing values"), keys);
+        assertEquals("Comma", box.get("Value delimiter"));
+        assertEquals("//", box.get("Comment marker"));
+        assertEquals("\"", box.get("Quote character"));
+        assertEquals("*", box.get("Missing value marker"));
+
+        String text = SessionDescriptionWriter.toText(description);
+        SessionDescriptionParser.Result result = SessionDescriptionParser.parse(text);
+        assertEquals(List.of(), result.warnings());
+        assertEquals(description, result.description());
+
+        // Replacing the data forgets how the old data were loaded.
+        wrapper.clearLoadSettings();
+        assertNull(wrapper.getLoadSettings("study.csv"));
+        assertNull(new SessionDescriber().describe(session, DATE).getBox("Data1").get("File"));
+    }
+
+    /**
+     * The load settings are saved with the session and come back with it.
+     */
+    @Test
+    public void testLoadSettingsAreSavedWithTheSession() throws Exception {
+        DataWrapper wrapper = new DataWrapper(new Parameters());
+        wrapper.setDataModel(simulate());
+        Map<String, String> settings = new LinkedHashMap<>();
+        settings.put("File", "study.csv");
+        settings.put("Value delimiter", "Tab");
+        settings.put("Missing value marker", "*");
+        wrapper.setLoadSettings("study.csv", settings);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(wrapper);
+        }
+
+        DataWrapper read;
+
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+            read = (DataWrapper) in.readObject();
+        }
+
+        assertEquals(settings, read.getLoadSettings("study.csv"));
+        assertEquals(new ArrayList<>(settings.keySet()), new ArrayList<>(read.getLoadSettings("study.csv").keySet()));
+        assertNull(read.getLoadSettings("other.csv"));
     }
 
     @Test
