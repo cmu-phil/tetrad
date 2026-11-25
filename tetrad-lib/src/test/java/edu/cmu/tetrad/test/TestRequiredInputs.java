@@ -20,11 +20,15 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cstar;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FgesMb;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcMb;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.RestrictedBoss;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
+import edu.cmu.tetrad.algcomparison.algorithm.other.MimbuildBollen;
+import edu.cmu.tetrad.algcomparison.algorithm.other.MimbuildPca;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.FaskPw;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R1;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R2;
@@ -35,16 +39,24 @@ import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Skew;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.SkewE;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Tanh;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.RequiredInputs;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -56,6 +68,7 @@ import org.junit.Test;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,9 +82,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * An algorithm that cannot run without target variables, or without a graph to orient, says so when the input is
+ * An algorithm that cannot run without target variables, a graph to orient, or clusters says so when the input is
  * missing: which algorithm, what it needs, and where to give it. Before, a forgotten input ended in a null-pointer or
  * array-index error from inside the search, or, for Restricted-BOSS and PC-MB, in an answer to a different question.
+ * <p>
+ * Also here: an algorithm is offered only for the kinds of data it says it takes.
  *
  * @author Claude
  */
@@ -251,6 +266,124 @@ public class TestRequiredInputs {
     @Test
     public void testFaskPwIsDescribedAsItself() {
         assertTrue(new FaskPw().getDescription().startsWith("FASK-PW"));
+    }
+
+    // ---- clusters ----
+
+    @Test
+    public void testMimbuildRefusesMissingClusters() {
+        Map<String, Supplier<Algorithm>> searches = new LinkedHashMap<>();
+        searches.put("Mimbuild (Bollen)", MimbuildBollen::new);
+        searches.put("Mimbuild (PCA)", MimbuildPca::new);
+
+        for (Map.Entry<String, Supplier<Algorithm>> search : searches.entrySet()) {
+            String name = search.getKey();
+            String expected = RequiredInputs.blockSpecMessage(name);
+
+            assertTrue(expected, expected.startsWith(name + " needs clusters as well as data"));
+            assertTrue(expected, expected.contains("Latent Clusters box"));
+            assertTrue(expected, expected.contains("setBlockSpec"));
+
+            assertEquals(name, expected, refusal(() -> run(search.getValue().get(), new Parameters())));
+        }
+    }
+
+    @Test
+    public void testMimbuildRefusesClustersMadeForOtherData() {
+        DataSet other = data.subsetColumns(new int[]{0, 1, 2, 3});
+
+        MimbuildBollen bollen = new MimbuildBollen();
+        bollen.setBlockSpec(twoClusters(other, 2));
+        String message = refusal(() -> run(bollen, new Parameters()));
+        assertTrue(message, message.startsWith("The clusters given to Mimbuild (Bollen) were made for a different data set"));
+
+        MimbuildPca pca = new MimbuildPca();
+        pca.setBlockSpec(twoClusters(other, 2));
+        message = refusal(() -> run(pca, new Parameters()));
+        assertTrue(message, message.startsWith("The clusters given to Mimbuild (PCA) were made for a different data set"));
+    }
+
+    @Test
+    public void testMimbuildRunsWhenGivenClusters() {
+        MimbuildBollen bollen = new MimbuildBollen();
+        bollen.setBlockSpec(twoClusters(data, 3));
+        assertEquals(Set.of("L1", "L2"), names(run(bollen, new Parameters())));
+
+        MimbuildPca pca = new MimbuildPca();
+        pca.setBlockSpec(twoClusters(data, 3));
+        assertEquals(Set.of("L1", "L2"), names(run(pca, new Parameters())));
+    }
+
+    private static BlockSpec twoClusters(DataSet dataSet, int size) {
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<Node> latents = new ArrayList<>();
+
+        for (int b = 0; b < 2; b++) {
+            List<Integer> block = new ArrayList<>();
+            for (int i = 0; i < size; i++) block.add(b * size + i);
+            blocks.add(block);
+
+            ContinuousVariable latent = new ContinuousVariable("L" + (b + 1));
+            latent.setNodeType(NodeType.LATENT);
+            latents.add(latent);
+        }
+
+        return new BlockSpec(dataSet, blocks, latents);
+    }
+
+    // ---- the kind of data ----
+
+    /**
+     * The chooser offers an algorithm for the kinds of data in its annotation, and the Search box then refuses to run
+     * it on data its getDataType() does not take. For an algorithm whose kind is its own, and not that of a test or
+     * score chosen for it, the two must agree, or the algorithm is offered and then refused. PAG-Sampling-RFCI and
+     * Two-Step declared no kind, so were offered for every kind.
+     */
+    @Test
+    public void testAnAlgorithmIsOfferedOnlyForDataItTakes() {
+        List<String> offeredButRefused = new ArrayList<>();
+        int checked = 0;
+
+        for (AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> annotated
+                : AlgorithmAnnotations.getInstance().getAnnotatedClasses()) {
+            Class<?> c = annotated.clazz();
+
+            if (MultiDataSetAlgorithm.class.isAssignableFrom(c) || TakesIndependenceWrapper.class.isAssignableFrom(c)
+                    || TakesScoreWrapper.class.isAssignableFrom(c)) {
+                continue;
+            }
+
+            DataType takes;
+
+            try {
+                takes = ((Algorithm) c.getDeclaredConstructor().newInstance()).getDataType();
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                continue; // The kind comes from something that is not set on a bare instance.
+            }
+
+            checked++;
+            List<DataType> declared = Arrays.asList(annotated.annotation().dataType());
+
+            for (DataType kind : new DataType[]{DataType.Continuous, DataType.Discrete, DataType.Mixed}) {
+                boolean offered = declared.contains(DataType.All) || declared.contains(kind);
+                boolean taken = takes == DataType.Mixed || takes == kind;
+
+                if (offered && !taken) {
+                    offeredButRefused.add(annotated.annotation().command() + " for " + kind + " data (it takes "
+                            + takes + ")");
+                }
+            }
+        }
+
+        assertTrue("Too few algorithms were checked: " + checked, checked >= 10);
+        assertTrue("Offered for data they do not take: " + offeredButRefused, offeredButRefused.isEmpty());
+    }
+
+    @Test
+    public void testFaskTakesTheKindOfDataItsScoreTakes() {
+        assertEquals(DataType.Continuous, new Fask(new SemBicScore()).getDataType());
+        assertEquals(DataType.Mixed, new Fask(new DegenerateGaussianBicScore()).getDataType());
+        assertEquals(DataType.Continuous, new Fask().getDataType());
     }
 
     // ---- helpers ----

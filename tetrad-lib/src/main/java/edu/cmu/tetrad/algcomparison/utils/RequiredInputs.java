@@ -20,7 +20,9 @@
 package edu.cmu.tetrad.algcomparison.utils;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
@@ -31,9 +33,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Checks for the inputs that some algorithms cannot run without, beyond data: target variables, or a graph to work on.
- * Each check either returns the input ready to use or throws an IllegalArgumentException that says which algorithm
- * needs what, where to supply it, and, for target names, which names were not found and what the data's variables are.
+ * Checks for the inputs that some algorithms cannot run without, beyond data: target variables, a graph to work on, or
+ * clusters of measured variables. Each check either returns the input ready to use or throws an
+ * IllegalArgumentException that says which algorithm needs what, where to supply it, and, for target names, which
+ * names were not found and what the data's variables are.
  * <p>
  * These replace per-algorithm checks that disagreed with one another and, in several cases, were missing, so that a
  * forgotten input surfaced as a null-pointer or array-index error from deep inside the search.
@@ -136,6 +139,45 @@ public final class RequiredInputs {
                 + "In the interface, connect a Graph box holding the graph to this Search box, along with the Data box.\n"
                 + "In code, pass the algorithm that supplies the graph to the constructor or to setExternalGraph.\n"
                 + "SingleGraphAlg wraps a graph you already have.";
+    }
+
+    /**
+     * Returns the clusters of an algorithm that searches for structure among latent variables, refusing missing ones
+     * and ones made for another data set.
+     *
+     * @param algorithm the name of the algorithm, for the message
+     * @param blockSpec the clusters, or null if none were given
+     * @param dataSet   the data set being searched
+     * @return the clusters, which are not null and were made for this data set
+     * @throws IllegalArgumentException if the clusters are missing or were made for a different data set
+     */
+    public static BlockSpec blockSpec(String algorithm, BlockSpec blockSpec, DataSet dataSet) {
+        if (blockSpec == null) {
+            throw new IllegalArgumentException(blockSpecMessage(algorithm));
+        }
+
+        if (!dataSet.equals(blockSpec.dataSet())) {
+            throw new IllegalArgumentException("The clusters given to " + algorithm + " were made for a different data"
+                    + " set than the one being searched.\n"
+                    + "In the interface, connect the same Data box to the Latent Clusters box and to this Search box.\n"
+                    + "In code, make the BlockSpec from the data set that is passed to the search.");
+        }
+
+        return blockSpec;
+    }
+
+    /**
+     * The message for an algorithm that was not given the clusters it needs. Each sentence is on its own line, as for
+     * {@link #graphSourceMessage(String)}.
+     *
+     * @param algorithm the name of the algorithm
+     * @return the message
+     */
+    public static String blockSpecMessage(String algorithm) {
+        return algorithm + " needs clusters as well as data: which measured variables measure which latent variable.\n"
+                + "In the interface, connect a Latent Clusters box to this Search box, along with the Data box.\n"
+                + "In code, call setBlockSpec with a BlockSpec made from the same data set.\n"
+                + "BlockSpecTextCodec.parse makes one from text.";
     }
 
     private static String listed(List<String> names) {

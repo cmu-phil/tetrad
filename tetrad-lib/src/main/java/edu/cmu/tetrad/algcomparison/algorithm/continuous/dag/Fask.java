@@ -178,13 +178,17 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
     }
 
     /**
-     * Retrieves the data type of the dataset.
+     * The kind of data FASK takes, which is the kind its score takes: FASK handles continuous data and mixed data, and
+     * finds its adjacencies with the score.
+     * <p>
+     * This used to answer Continuous whatever the score, so that the interface, which offers FASK for mixed data,
+     * refused to run it on mixed data.
      *
-     * @return The data type of the dataset.
+     * @return the data type of the score, or Continuous if no score has been set
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return this.score == null ? DataType.Continuous : this.score.getDataType();
     }
 
     /**

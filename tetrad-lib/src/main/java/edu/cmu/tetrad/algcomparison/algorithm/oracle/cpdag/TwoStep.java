@@ -24,7 +24,10 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Two-Step (FastICA, cyclic)",
         command = "twostep",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.forbid_latent_common_causes,
+        // Declared so that the algorithm is offered only for the kind of data getDataType() says it takes. With no
+        // kind declared it was offered for discrete and mixed data too, and then refused when run.
+        dataType = DataType.Continuous
 )
 @Deprecated
 @Bootstrapping

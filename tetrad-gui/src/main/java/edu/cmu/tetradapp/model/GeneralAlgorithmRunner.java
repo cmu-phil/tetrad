@@ -817,8 +817,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                     (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
                                     (data.isMixed() && algDataType == DataType.Mixed);
                     if (!ok) {
-                        throw new IllegalArgumentException("The algorithm was not expecting that type of data: "
-                                + data.getName());
+                        throw new IllegalArgumentException(DataKindMismatch.message(algo, data));
                     }
                 }
 
@@ -914,7 +913,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                     (data.isMixed() && algDataType == DataType.Mixed);
 
                     if (!ok) {
-                        throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
+                        throw new IllegalArgumentException(DataKindMismatch.message(algo, data));
                     }
 
                     Graph graph;
