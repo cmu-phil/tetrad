@@ -85,13 +85,16 @@ public class TestSessionDescriptionSettings {
         data.getSessionNode().createModel(DataWrapper.class, false);
         ((DataWrapper) data.getSessionNode().getModel()).setDataModel(dataSet);
 
-        // Time lags: one whole number. The same box is also given the kinds of setting that take several lines,
+        // Time lags: one whole number, which has a registered default and so is listed as changed. A second
+        // whole number has none, and is listed as a setting. The same box is also given the kinds of setting
+        // that take several lines,
         // under the names the subset box keeps its own under: a list of names, text of several lines, and a
         // parameter with several values. (The subset box itself cannot be made without the Tetrad window.)
         SessionNodeWrapper lag = TestSessionDescription.addBox(session, "Data", "Lagged", 100, 240);
         TestSessionDescription.connect(session, data, lag);
         Parameters lagBag = bag(lag, TimeSeriesWrapper.class);
         lagBag.set("numTimeLags", 2);
+        lagBag.set("someCount", 2);
         lagBag.set(DataSubsetter.KEY_SELECTED_VAR_NAMES, (Object) new ArrayList<>(List.of("X1", "X3", "X4")));
         lagBag.set(DataSubsetter.KEY_ROW_SPEC, "1-150");
         lagBag.set("someNotes", "first line\n  second line, indented\nEnd text someNotes");
@@ -138,6 +141,7 @@ public class TestSessionDescriptionSettings {
         Parameters markovBag = bag(markov, MarkovCheckIndTestModel.class);
         markovBag.set("independenceTestClassParam", "Fisher Z Test");
         markovBag.set("fractionSampleParam", 0.8);
+        markovBag.set("someFraction", 0.8);
         markovBag.set(Params.ALPHA, 0.001);
 
         // The interface's own bookkeeping, data, and an object no description can hold.
@@ -163,8 +167,10 @@ public class TestSessionDescriptionSettings {
         System.out.println(SessionDescriptionWriter.toText(description));
 
         BoxDescription lagged = description.getBox("Lagged");
-        assertEquals(List.of("dataSubsetRowSpec = \"1-150\"", "numTimeLags = 2"),
+        assertEquals(List.of("dataSubsetRowSpec = \"1-150\"", "someCount = 2"),
                 lagged.getAll(StandardDescribers.SETTING));
+        assertEquals(List.of(new BoxDescription.ChangedParameter("numTimeLags", "2", "1")),
+                lagged.getChangedParameters());
         assertEquals(List.of("X1", "X3", "X4"),
                 lagged.getBlock(StandardDescribers.LIST_BLOCK + "dataSubsetSelectedVarNames"));
         assertEquals(List.of("first line", "  second line, indented", "End text someNotes"),
@@ -187,10 +193,11 @@ public class TestSessionDescriptionSettings {
         assertEquals("Markov Check", markov.get(BoxDescription.MODEL));
         assertEquals(List.of(
                         "conditioningSetTypeParam = MARKOV_BLANKET (enum edu.cmu.tetrad.search.ConditioningSetType)",
-                        "fractionSampleParam = 0.8",
-                        "independenceTestClassParam = \"Fisher Z Test\""),
+                        "independenceTestClassParam = \"Fisher Z Test\"",
+                        "someFraction = 0.8"),
                 markov.getAll(StandardDescribers.SETTING));
-        assertEquals(List.of(new BoxDescription.ChangedParameter("alpha", "0.001", "0.01")),
+        assertEquals(List.of(new BoxDescription.ChangedParameter("alpha", "0.001", "0.01"),
+                        new BoxDescription.ChangedParameter("fractionSampleParam", "0.8", "1.0")),
                 markov.getChangedParameters());
         assertEquals("Only the object that is neither data nor bookkeeping is reported.", List.of("someSpec"),
                 markov.getAll(StandardDescribers.NOT_DESCRIBED));
@@ -226,6 +233,7 @@ public class TestSessionDescriptionSettings {
 
         Parameters lag = node(rebuilt, "Lagged").getParam(TimeSeriesWrapper.class);
         assertEquals(Integer.valueOf(2), lag.getValues("numTimeLags")[0]);
+        assertEquals(Integer.valueOf(2), lag.getValues("someCount")[0]);
         assertEquals(new ArrayList<>(List.of("X1", "X3", "X4")),
                 lag.getValues(DataSubsetter.KEY_SELECTED_VAR_NAMES)[0]);
         assertEquals("1-150", lag.getValues(DataSubsetter.KEY_ROW_SPEC)[0]);
@@ -235,6 +243,7 @@ public class TestSessionDescriptionSettings {
         Parameters markov = node(rebuilt, "Markov1").getParam(MarkovCheckIndTestModel.class);
         assertEquals(ConditioningSetType.MARKOV_BLANKET, markov.getValues("conditioningSetTypeParam")[0]);
         assertEquals(Double.valueOf(0.8), markov.getValues("fractionSampleParam")[0]);
+        assertEquals(Double.valueOf(0.8), markov.getValues("someFraction")[0]);
         assertEquals("Fisher Z Test", markov.getValues("independenceTestClassParam")[0]);
         assertEquals(0.001, markov.getDouble(Params.ALPHA), 0.0);
 

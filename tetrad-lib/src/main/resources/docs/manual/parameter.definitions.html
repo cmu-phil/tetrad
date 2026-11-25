@@ -6,6 +6,16 @@ Source:
         the value type must be one of the following: Integer, Long, Double, String,
         Boolean.</p>
 
+    === a ===
+    <h3 class="parameter_description" id="a">a</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="a_short_desc">Log transform: the constant a in ln(a + x)</span></li>
+        <li>Long Description: <span id="a_long_desc">Used by the Log Transform data box. Each value x is replaced by ln(a + x), or by the log to the chosen base. When unlogging, the box applies exp(x) - a instead.</span></li>
+        <li>Default Value: <span id="a_default_value">10.0</span></li>
+        <li>Lower Bound: <span id="a_lower_bound">-1.7976931348623157E308</span></li>
+        <li>Upper Bound: <span id="a_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="a_value_type">Double</span></li>
+    </ul>
     === acceptanceProportion ===
     <h3 class="parameter_description" id="acceptanceProportion">acceptanceProportion</h3>
     <ul class="parameter_description_list">
@@ -494,6 +504,16 @@ Source:
             <span id="avgDegree_value_type">Double</span></li>
     </ul>
 
+    === base ===
+    <h3 class="parameter_description" id="base">base</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="base_short_desc">Log transform: base of the logarithm (0 = natural log)</span></li>
+        <li>Long Description: <span id="base_long_desc">Used by the Log Transform data box. The base of the logarithm. A value of 0 means the natural log, base e.</span></li>
+        <li>Default Value: <span id="base_default_value">0</span></li>
+        <li>Lower Bound: <span id="base_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="base_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="base_value_type">Integer</span></li>
+    </ul>
     === basisRankTransform ===
     <h3 class="parameter_description" id="basisRankTransform">basisRankTransform</h3>
     <ul class="parameter_description_list">
@@ -555,6 +575,16 @@ Source:
             <span id="basisType_value_type">Integer</span></li>
     </ul>
 
+    === bayesEstimatorCellPrior ===
+    <h3 class="parameter_description" id="bayesEstimatorCellPrior">bayesEstimatorCellPrior</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bayesEstimatorCellPrior_short_desc">Bayes estimator: prior pseudocount for each cell</span></li>
+        <li>Long Description: <span id="bayesEstimatorCellPrior_long_desc">Used by the Bayes estimator boxes. The prior count added to every cell of every conditional probability table before the table is estimated from the data.</span></li>
+        <li>Default Value: <span id="bayesEstimatorCellPrior_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="bayesEstimatorCellPrior_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bayesEstimatorCellPrior_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bayesEstimatorCellPrior_value_type">Double</span></li>
+    </ul>
     === betaHigh ===
     <h3 class="parameter_description" id="betaHigh">betaHigh</h3>
     <ul class="parameter_description_list">
@@ -1042,6 +1072,26 @@ Source:
             <span id="completeRuleSetUsed_value_type">Boolean</span></li>
     </ul>
 
+    === concatAddSourceColumn ===
+    <h3 class="parameter_description" id="concatAddSourceColumn">concatAddSourceColumn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="concatAddSourceColumn_short_desc">Concatenate data sets: yes if a source column should be added</span></li>
+        <li>Long Description: <span id="concatAddSourceColumn_long_desc">Used by the Concatenate Data Sets box. If yes, a column is added recording which data set each row came from.</span></li>
+        <li>Default Value: <span id="concatAddSourceColumn_default_value">false</span></li>
+        <li>Lower Bound: <span id="concatAddSourceColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="concatAddSourceColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="concatAddSourceColumn_value_type">Boolean</span></li>
+    </ul>
+    === concatSourceColumnName ===
+    <h3 class="parameter_description" id="concatSourceColumnName">concatSourceColumnName</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="concatSourceColumnName_short_desc">Concatenate data sets: name of the source column</span></li>
+        <li>Long Description: <span id="concatSourceColumnName_long_desc">Used by the Concatenate Data Sets box. The name given to the added column that records which data set each row came from. It has an effect only when a source column is added.</span></li>
+        <li>Default Value: <span id="concatSourceColumnName_default_value">source</span></li>
+        <li>Lower Bound: <span id="concatSourceColumnName_lower_bound"></span></li>
+        <li>Upper Bound: <span id="concatSourceColumnName_upper_bound"></span></li>
+        <li>Value Type: <span id="concatSourceColumnName_value_type">String</span></li>
+    </ul>
     === concurrentFAS ===
     <h3 class="parameter_description" id="concurrentFAS">concurrentFAS</h3>
     <ul class="parameter_description_list">
@@ -1244,6 +1294,36 @@ Source:
             <span id="correlationThreshold_value_type">Double</span></li>
     </ul>
 
+    === covarianceEstimateCeiling ===
+    <h3 class="parameter_description" id="covarianceEstimateCeiling">covarianceEstimateCeiling</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="covarianceEstimateCeiling_short_desc">Covariance estimate: the ceiling for the censored method</span></li>
+        <li>Long Description: <span id="covarianceEstimateCeiling_long_desc">Used by the Covariance Estimate data box, for the CENSORED method only. Every cell at this value is treated as at least this value rather than exactly this value. The ceiling applies to every column; columns that never reach it are unaffected.</span></li>
+        <li>Default Value: <span id="covarianceEstimateCeiling_default_value">100.0</span></li>
+        <li>Lower Bound: <span id="covarianceEstimateCeiling_lower_bound">-1.7976931348623157E308</span></li>
+        <li>Upper Bound: <span id="covarianceEstimateCeiling_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="covarianceEstimateCeiling_value_type">Double</span></li>
+    </ul>
+    === covarianceEstimateEssMode ===
+    <h3 class="parameter_description" id="covarianceEstimateEssMode">covarianceEstimateEssMode</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="covarianceEstimateEssMode_short_desc">Covariance estimate: the sample size the matrix carries</span></li>
+        <li>Long Description: <span id="covarianceEstimateEssMode_long_desc">Used by the Covariance Estimate data box. One of meanPairwise, minPairwise or fullN. meanPairwise is the mean, over pairs of variables, of the number of rows complete on both. minPairwise is the smallest such count, which is conservative. fullN is the row count, which overstates the evidence when values are missing.</span></li>
+        <li>Default Value: <span id="covarianceEstimateEssMode_default_value">meanPairwise</span></li>
+        <li>Lower Bound: <span id="covarianceEstimateEssMode_lower_bound"></span></li>
+        <li>Upper Bound: <span id="covarianceEstimateEssMode_upper_bound"></span></li>
+        <li>Value Type: <span id="covarianceEstimateEssMode_value_type">String</span></li>
+    </ul>
+    === covarianceEstimateMethod ===
+    <h3 class="parameter_description" id="covarianceEstimateMethod">covarianceEstimateMethod</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="covarianceEstimateMethod_short_desc">Covariance estimate: the estimation method</span></li>
+        <li>Long Description: <span id="covarianceEstimateMethod_long_desc">Used by the Covariance Estimate data box. One of EM, PAIRWISE or CENSORED. EM gives one covariance matrix from every row, assuming values are missing at random. PAIRWISE estimates each entry from the rows complete on its own pair, and the result need not be positive semidefinite. CENSORED is EM with every cell at the ceiling treated as at least the ceiling.</span></li>
+        <li>Default Value: <span id="covarianceEstimateMethod_default_value">EM</span></li>
+        <li>Lower Bound: <span id="covarianceEstimateMethod_lower_bound"></span></li>
+        <li>Upper Bound: <span id="covarianceEstimateMethod_upper_bound"></span></li>
+        <li>Value Type: <span id="covarianceEstimateMethod_value_type">String</span></li>
+    </ul>
     === covHigh ===
     <h3 class="parameter_description" id="covHigh">covHigh</h3>
     <ul class="parameter_description_list">
@@ -1529,6 +1609,16 @@ Source:
         <li>Value Type: <span id="daoSfOut_value_type">Boolean</span></li>
     </ul>
 
+    === dataShuffled ===
+    <h3 class="parameter_description" id="dataShuffled">dataShuffled</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="dataShuffled_short_desc">Split cases: yes if rows should be shuffled before splitting</span></li>
+        <li>Long Description: <span id="dataShuffled_long_desc">Used by the Split Cases data box. If yes, the rows are put in shuffled order before the data are split into subsets. If no, the original row order is used.</span></li>
+        <li>Default Value: <span id="dataShuffled_default_value">true</span></li>
+        <li>Lower Bound: <span id="dataShuffled_lower_bound"></span></li>
+        <li>Upper Bound: <span id="dataShuffled_upper_bound"></span></li>
+        <li>Value Type: <span id="dataShuffled_value_type">Boolean</span></li>
+    </ul>
     === dataType ===
     <h3 class="parameter_description" id="dataType">dataType</h3>
     <ul class="parameter_description_list">
@@ -2679,6 +2769,16 @@ Source:
             <span id="fofcAlpha_value_type">Double</span></li>
     </ul>
 
+    === fractionSampleParam ===
+    <h3 class="parameter_description" id="fractionSampleParam">fractionSampleParam</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fractionSampleParam_short_desc">Markov check: fraction of the rows used for each test</span></li>
+        <li>Long Description: <span id="fractionSampleParam_long_desc">Used by the Markov Check box. Each independence test is run on a random subsample holding this fraction of the rows. A value of 1 uses all of the rows.</span></li>
+        <li>Default Value: <span id="fractionSampleParam_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="fractionSampleParam_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="fractionSampleParam_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="fractionSampleParam_value_type">Double</span></li>
+    </ul>
     === gammaHigh ===
     <h3 class="parameter_description" id="gammaHigh">gammaHigh</h3>
     <ul class="parameter_description_list">
@@ -3472,6 +3572,26 @@ Source:
             <span id="imapAlpha_value_type">Double</span></li>
     </ul>
 
+    === imputationMethod ===
+    <h3 class="parameter_description" id="imputationMethod">imputationMethod</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="imputationMethod_short_desc">Multiple imputation: the imputation method</span></li>
+        <li>Long Description: <span id="imputationMethod_long_desc">Used by the Impute Missing Data box. One of AUTO, MVN_EM or MICE. AUTO uses the EM multivariate normal method for continuous data and chained equations otherwise. MVN_EM fits a saturated normal model by EM and then draws from each row&#x27;s conditional normal; it is for continuous data only. MICE is chained equations with predictive mean matching, for continuous, discrete or mixed data.</span></li>
+        <li>Default Value: <span id="imputationMethod_default_value">AUTO</span></li>
+        <li>Lower Bound: <span id="imputationMethod_lower_bound"></span></li>
+        <li>Upper Bound: <span id="imputationMethod_upper_bound"></span></li>
+        <li>Value Type: <span id="imputationMethod_value_type">String</span></li>
+    </ul>
+    === imputationSeed ===
+    <h3 class="parameter_description" id="imputationSeed">imputationSeed</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="imputationSeed_short_desc">Multiple imputation: random seed</span></li>
+        <li>Long Description: <span id="imputationSeed_long_desc">Used by the Impute Missing Data box. The seed for the random draws, so that imputations can be reproduced.</span></li>
+        <li>Default Value: <span id="imputationSeed_default_value">0</span></li>
+        <li>Lower Bound: <span id="imputationSeed_lower_bound">-9223372036854775808</span></li>
+        <li>Upper Bound: <span id="imputationSeed_upper_bound">9223372036854775807</span></li>
+        <li>Value Type: <span id="imputationSeed_value_type">Long</span></li>
+    </ul>
     === include_structure_model ===
     <h3 class="parameter_description" id="include_structure_model">include_structure_model</h3>
     <ul class="parameter_description_list">
@@ -3767,6 +3887,46 @@ Source:
         <li>Value Type: <span id="itr_value_type">Boolean</span></li>
     </ul>
 
+    === joinAllowOneToMany ===
+    <h3 class="parameter_description" id="joinAllowOneToMany">joinAllowOneToMany</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="joinAllowOneToMany_short_desc">Join data sets: yes if a right key may repeat</span></li>
+        <li>Long Description: <span id="joinAllowOneToMany_long_desc">Used by the Join Data Sets box. If yes, a key value may occur in more than one row of the right table, and each matching left row is emitted once per matching right row. If no, a repeated right key is an error.</span></li>
+        <li>Default Value: <span id="joinAllowOneToMany_default_value">false</span></li>
+        <li>Lower Bound: <span id="joinAllowOneToMany_lower_bound"></span></li>
+        <li>Upper Bound: <span id="joinAllowOneToMany_upper_bound"></span></li>
+        <li>Value Type: <span id="joinAllowOneToMany_value_type">Boolean</span></li>
+    </ul>
+    === joinLeftSuffix ===
+    <h3 class="parameter_description" id="joinLeftSuffix">joinLeftSuffix</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="joinLeftSuffix_short_desc">Join data sets: suffix for colliding left column names</span></li>
+        <li>Long Description: <span id="joinLeftSuffix_long_desc">Used by the Join Data Sets box. When the two tables both have a column of the same name that is not a key, this suffix is added to the name of the column from the left table.</span></li>
+        <li>Default Value: <span id="joinLeftSuffix_default_value">_left</span></li>
+        <li>Lower Bound: <span id="joinLeftSuffix_lower_bound"></span></li>
+        <li>Upper Bound: <span id="joinLeftSuffix_upper_bound"></span></li>
+        <li>Value Type: <span id="joinLeftSuffix_value_type">String</span></li>
+    </ul>
+    === joinRightSuffix ===
+    <h3 class="parameter_description" id="joinRightSuffix">joinRightSuffix</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="joinRightSuffix_short_desc">Join data sets: suffix for colliding right column names</span></li>
+        <li>Long Description: <span id="joinRightSuffix_long_desc">Used by the Join Data Sets box. When the two tables both have a column of the same name that is not a key, this suffix is added to the name of the column from the right table.</span></li>
+        <li>Default Value: <span id="joinRightSuffix_default_value">_right</span></li>
+        <li>Lower Bound: <span id="joinRightSuffix_lower_bound"></span></li>
+        <li>Upper Bound: <span id="joinRightSuffix_upper_bound"></span></li>
+        <li>Value Type: <span id="joinRightSuffix_value_type">String</span></li>
+    </ul>
+    === joinType ===
+    <h3 class="parameter_description" id="joinType">joinType</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="joinType_short_desc">Join data sets: the kind of join</span></li>
+        <li>Long Description: <span id="joinType_long_desc">Used by the Join Data Sets box. One of LEFT, INNER or FULL_OUTER. LEFT keeps every left row, and unmatched left rows get missing values in the right columns. INNER keeps only rows matched on both sides. FULL_OUTER also appends the unmatched right rows.</span></li>
+        <li>Default Value: <span id="joinType_default_value">LEFT</span></li>
+        <li>Lower Bound: <span id="joinType_lower_bound"></span></li>
+        <li>Upper Bound: <span id="joinType_upper_bound"></span></li>
+        <li>Value Type: <span id="joinType_value_type">String</span></li>
+    </ul>
     === kciAlpha ===
     <h3 class="parameter_description" id="kciAlpha">kciAlpha</h3>
     <ul class="parameter_description_list">
@@ -3980,6 +4140,26 @@ Source:
             <span id="lambda1_value_type">Double</span></li>
     </ul>
 
+    === latentClusterRunnerAlgorithm ===
+    <h3 class="parameter_description" id="latentClusterRunnerAlgorithm">latentClusterRunnerAlgorithm</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="latentClusterRunnerAlgorithm_short_desc">Latent clusters: the clustering algorithm</span></li>
+        <li>Long Description: <span id="latentClusterRunnerAlgorithm_long_desc">Used by the Latent Clusters box. One of TSC, FOFC, FTFC, GFFC or BPC.</span></li>
+        <li>Default Value: <span id="latentClusterRunnerAlgorithm_default_value">TSC</span></li>
+        <li>Lower Bound: <span id="latentClusterRunnerAlgorithm_lower_bound"></span></li>
+        <li>Upper Bound: <span id="latentClusterRunnerAlgorithm_upper_bound"></span></li>
+        <li>Value Type: <span id="latentClusterRunnerAlgorithm_value_type">String</span></li>
+    </ul>
+    === latentClusterRunnerTest ===
+    <h3 class="parameter_description" id="latentClusterRunnerTest">latentClusterRunnerTest</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="latentClusterRunnerTest_short_desc">Latent clusters: the test the clustering algorithm uses</span></li>
+        <li>Long Description: <span id="latentClusterRunnerTest_long_desc">Used by the Latent Clusters box. One of CCA, Bollen-Ting or Wishart, where the chosen algorithm offers a choice. TSC does not use this setting.</span></li>
+        <li>Default Value: <span id="latentClusterRunnerTest_default_value">CCA</span></li>
+        <li>Lower Bound: <span id="latentClusterRunnerTest_lower_bound"></span></li>
+        <li>Upper Bound: <span id="latentClusterRunnerTest_upper_bound"></span></li>
+        <li>Value Type: <span id="latentClusterRunnerTest_value_type">String</span></li>
+    </ul>
     === lcdNodBootstraps ===
     <h3 class="parameter_description" id="lcdNodBootstraps">lcdNodBootstraps</h3>
     <ul class="parameter_description_list">
@@ -4109,6 +4289,16 @@ Source:
         <li>Value Type: <span id="lowerBound_value_type">Double</span></li>
     </ul>
 
+    === lowerBoundNumVals ===
+    <h3 class="parameter_description" id="lowerBoundNumVals">lowerBoundNumVals</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lowerBoundNumVals_short_desc">Bayes parametric model: least number of categories per variable</span></li>
+        <li>Long Description: <span id="lowerBoundNumVals_long_desc">Used by the Bayes Parametric Model box when categories are assigned automatically in a range. Each variable is given a number of categories no smaller than this.</span></li>
+        <li>Default Value: <span id="lowerBoundNumVals_default_value">2</span></li>
+        <li>Lower Bound: <span id="lowerBoundNumVals_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="lowerBoundNumVals_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="lowerBoundNumVals_value_type">Integer</span></li>
+    </ul>
     === lvHeuristicOnly ===
     <h3 class="parameter_description" id="lvHeuristicOnly">
         lvHeuristicOnly</h3>
@@ -4639,6 +4829,36 @@ Source:
         <li>Value Type: <span id="mgmParam3_value_type">Double</span></li>
     </ul>
 
+    === miceNumDonors ===
+    <h3 class="parameter_description" id="miceNumDonors">miceNumDonors</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="miceNumDonors_short_desc">Multiple imputation, MICE only: number of donors</span></li>
+        <li>Long Description: <span id="miceNumDonors_long_desc">Used by the Impute Missing Data box, for the MICE method only. How many near donors a missing cell draws its value from.</span></li>
+        <li>Default Value: <span id="miceNumDonors_default_value">5</span></li>
+        <li>Lower Bound: <span id="miceNumDonors_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="miceNumDonors_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="miceNumDonors_value_type">Integer</span></li>
+    </ul>
+    === miceNumSweeps ===
+    <h3 class="parameter_description" id="miceNumSweeps">miceNumSweeps</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="miceNumSweeps_short_desc">Multiple imputation, MICE only: number of sweeps</span></li>
+        <li>Long Description: <span id="miceNumSweeps_long_desc">Used by the Impute Missing Data box, for the MICE method only. How many passes are made over the variables before a completed data set is kept.</span></li>
+        <li>Default Value: <span id="miceNumSweeps_default_value">5</span></li>
+        <li>Lower Bound: <span id="miceNumSweeps_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="miceNumSweeps_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="miceNumSweeps_value_type">Integer</span></li>
+    </ul>
+    === miceRowsPerPredictor ===
+    <h3 class="parameter_description" id="miceRowsPerPredictor">miceRowsPerPredictor</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="miceRowsPerPredictor_short_desc">Multiple imputation, MICE only: fewest observed rows per predictor (0 = no limit)</span></li>
+        <li>Long Description: <span id="miceRowsPerPredictor_long_desc">Used by the Impute Missing Data box, for the MICE method only. The fewest observed rows of a variable allowed per predictor used to impute it. If using every other variable would give fewer, only the variables most correlated with it, or with whether it is missing, are used. A value of 0 means no limit, so every other variable is always used.</span></li>
+        <li>Default Value: <span id="miceRowsPerPredictor_default_value">3</span></li>
+        <li>Lower Bound: <span id="miceRowsPerPredictor_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="miceRowsPerPredictor_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="miceRowsPerPredictor_value_type">Integer</span></li>
+    </ul>
     === mimbuildType ===
     <h3 class="parameter_description" id="mimbuildType">mimbuildType</h3>
     <ul class="parameter_description_list">
@@ -5131,6 +5351,66 @@ Source:
         <li>Value Type: <span id="missingEssMode_value_type">String</span></li>
     </ul>
 
+    === missingnessIndicatorDiscrete ===
+    <h3 class="parameter_description" id="missingnessIndicatorDiscrete">missingnessIndicatorDiscrete</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingnessIndicatorDiscrete_short_desc">Missingness indicators: yes if the indicators should be discrete</span></li>
+        <li>Long Description: <span id="missingnessIndicatorDiscrete_long_desc">Used by the Add Missingness Indicators box. If yes, the indicators are binary discrete variables, which needs a score that accepts mixed data. If no, they are continuous columns of zeros and ones, so that a continuous score can be used; that is a linear-probability approximation to a binary variable.</span></li>
+        <li>Default Value: <span id="missingnessIndicatorDiscrete_default_value">true</span></li>
+        <li>Lower Bound: <span id="missingnessIndicatorDiscrete_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingnessIndicatorDiscrete_upper_bound"></span></li>
+        <li>Value Type: <span id="missingnessIndicatorDiscrete_value_type">Boolean</span></li>
+    </ul>
+    === missingnessIndicatorForbidSelfMasking ===
+    <h3 class="parameter_description" id="missingnessIndicatorForbidSelfMasking">missingnessIndicatorForbidSelfMasking</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingnessIndicatorForbidSelfMasking_short_desc">Missingness indicators: yes if self-masking edges should be forbidden</span></li>
+        <li>Long Description: <span id="missingnessIndicatorForbidSelfMasking_long_desc">Used by the Add Missingness Indicators box. If yes, the attached knowledge forbids each variable to cause its own indicator. That edge cannot be scored, because a variable is observed only on the cases where its indicator says it was observed.</span></li>
+        <li>Default Value: <span id="missingnessIndicatorForbidSelfMasking_default_value">true</span></li>
+        <li>Lower Bound: <span id="missingnessIndicatorForbidSelfMasking_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingnessIndicatorForbidSelfMasking_upper_bound"></span></li>
+        <li>Value Type: <span id="missingnessIndicatorForbidSelfMasking_value_type">Boolean</span></li>
+    </ul>
+    === missingnessIndicatorKnowledge ===
+    <h3 class="parameter_description" id="missingnessIndicatorKnowledge">missingnessIndicatorKnowledge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingnessIndicatorKnowledge_short_desc">Missingness indicators: yes if tier knowledge should be attached</span></li>
+        <li>Long Description: <span id="missingnessIndicatorKnowledge_long_desc">Used by the Add Missingness Indicators box. If yes, knowledge is attached that puts the substantive variables in tier 0 and the indicators in tier 1, which forbids an indicator to be a cause of a substantive variable.</span></li>
+        <li>Default Value: <span id="missingnessIndicatorKnowledge_default_value">true</span></li>
+        <li>Lower Bound: <span id="missingnessIndicatorKnowledge_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingnessIndicatorKnowledge_upper_bound"></span></li>
+        <li>Value Type: <span id="missingnessIndicatorKnowledge_value_type">Boolean</span></li>
+    </ul>
+    === missingnessIndicatorMaxRate ===
+    <h3 class="parameter_description" id="missingnessIndicatorMaxRate">missingnessIndicatorMaxRate</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingnessIndicatorMaxRate_short_desc">Missingness indicators: largest missing rate that gets an indicator</span></li>
+        <li>Long Description: <span id="missingnessIndicatorMaxRate_long_desc">Used by the Add Missingness Indicators box. Variables missing on a larger fraction of cases than this get no indicator. A variable that is entirely missing is always skipped.</span></li>
+        <li>Default Value: <span id="missingnessIndicatorMaxRate_default_value">0.98</span></li>
+        <li>Lower Bound: <span id="missingnessIndicatorMaxRate_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="missingnessIndicatorMaxRate_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="missingnessIndicatorMaxRate_value_type">Double</span></li>
+    </ul>
+    === missingnessIndicatorMinRate ===
+    <h3 class="parameter_description" id="missingnessIndicatorMinRate">missingnessIndicatorMinRate</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingnessIndicatorMinRate_short_desc">Missingness indicators: smallest missing rate that gets an indicator</span></li>
+        <li>Long Description: <span id="missingnessIndicatorMinRate_long_desc">Used by the Add Missingness Indicators box. Variables missing on a smaller fraction of cases than this get no indicator, since such an indicator is nearly constant and carries almost no information.</span></li>
+        <li>Default Value: <span id="missingnessIndicatorMinRate_default_value">0.02</span></li>
+        <li>Lower Bound: <span id="missingnessIndicatorMinRate_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="missingnessIndicatorMinRate_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="missingnessIndicatorMinRate_value_type">Double</span></li>
+    </ul>
+    === missingnessRowPropensity ===
+    <h3 class="parameter_description" id="missingnessRowPropensity">missingnessRowPropensity</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingnessRowPropensity_short_desc">Inject missing data: per-case propensity (0 = independent deletion)</span></li>
+        <li>Long Description: <span id="missingnessRowPropensity_long_desc">Used by the Inject Missing Data box. The spread of a latent per-case propensity on the logit scale. A value of 0 deletes cells independently, scattering the losses evenly over cases. Larger values cluster the losses into fewer cases, as attrition does. The per-variable rates are held fixed as this changes, and the mechanism stays missing completely at random.</span></li>
+        <li>Default Value: <span id="missingnessRowPropensity_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="missingnessRowPropensity_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="missingnessRowPropensity_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="missingnessRowPropensity_value_type">Double</span></li>
+    </ul>
     === missingNumImputations ===
     <h3 class="parameter_description" id="missingNumImputations">missingNumImputations</h3>
     <ul class="parameter_description_list">
@@ -5390,6 +5670,16 @@ Source:
         <li>Value Type: <span id="numFfFeatures_value_type">Integer</span></li>
     </ul>
 
+    === numImputations ===
+    <h3 class="parameter_description" id="numImputations">numImputations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="numImputations_short_desc">Multiple imputation: number of completed data sets</span></li>
+        <li>Long Description: <span id="numImputations_long_desc">Used by the Impute Missing Data box. How many completed data sets to produce. A value of 1 is allowed, but a single completed data set presents imputed values as if they were measured; use 2 or more to see how much a result depends on them.</span></li>
+        <li>Default Value: <span id="numImputations_default_value">5</span></li>
+        <li>Lower Bound: <span id="numImputations_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="numImputations_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="numImputations_value_type">Integer</span></li>
+    </ul>
     === numLags ===
     <h3 class="parameter_description" id="numLags">numLags</h3>
     <ul class="parameter_description_list">
@@ -5456,6 +5746,16 @@ Source:
         <li>Value Type: <span id="numRandomizedSearchModels_value_type">Integer</span></li>
     </ul>
 
+    === numRestarts ===
+    <h3 class="parameter_description" id="numRestarts">numRestarts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="numRestarts_short_desc">SEM estimator: number of random restarts</span></li>
+        <li>Long Description: <span id="numRestarts_long_desc">Used by the SEM Estimator box. The number of random restarts made by the optimizers that search from a starting point. The best result is kept.</span></li>
+        <li>Default Value: <span id="numRestarts_default_value">1</span></li>
+        <li>Lower Bound: <span id="numRestarts_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="numRestarts_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="numRestarts_value_type">Integer</span></li>
+    </ul>
     === numRuns ===
     <h3 class="parameter_description" id="numRuns">numRuns</h3>
     <ul class="parameter_description_list">
@@ -5471,6 +5771,16 @@ Source:
         <li>Value Type: <span id="numRuns_value_type">Integer</span></li>
     </ul>
 
+    === numSplits ===
+    <h3 class="parameter_description" id="numSplits">numSplits</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="numSplits_short_desc">Split cases: number of subsets</span></li>
+        <li>Long Description: <span id="numSplits_long_desc">Used by the Split Cases data box. The number of subsets the rows are split into.</span></li>
+        <li>Default Value: <span id="numSplits_default_value">2</span></li>
+        <li>Lower Bound: <span id="numSplits_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="numSplits_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="numSplits_value_type">Integer</span></li>
+    </ul>
     === numStarts ===
     <h3 class="parameter_description" id="numStarts">numStarts</h3>
     <ul class="parameter_description_list">
@@ -5536,6 +5846,16 @@ Source:
             <span id="numThreads_value_type">Integer</span></li>
     </ul>
 
+    === numTimeLags ===
+    <h3 class="parameter_description" id="numTimeLags">numTimeLags</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="numTimeLags_short_desc">Time lag data: number of time lags</span></li>
+        <li>Long Description: <span id="numTimeLags_long_desc">Used by the time lag data box and the AR residuals data box. The number of lags included.</span></li>
+        <li>Default Value: <span id="numTimeLags_default_value">1</span></li>
+        <li>Lower Bound: <span id="numTimeLags_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="numTimeLags_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="numTimeLags_value_type">Integer</span></li>
+    </ul>
     === optimalAcrossBranches ===
     <h3 class="parameter_description" id="optimalAcrossBranches">optimalAcrossBranches</h3>
     <ul class="parameter_description_list">
@@ -6520,6 +6840,16 @@ Source:
         </li>
     </ul>
 
+    === prob ===
+    <h3 class="parameter_description" id="prob">prob</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="prob_short_desc">Inject missing data: default probability that a value is deleted</span></li>
+        <li>Long Description: <span id="prob_long_desc">Used by the Inject Missing Data box. The rate at which values are deleted, for variables the rate profile does not name. It is the rate for every variable when the rate profile is empty.</span></li>
+        <li>Default Value: <span id="prob_default_value">0.02</span></li>
+        <li>Lower Bound: <span id="prob_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="prob_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="prob_value_type">Double</span></li>
+    </ul>
     === probabilityOfEdge ===
     <h3 class="parameter_description" id="probabilityOfEdge">probabilityOfEdge</h3>
     <ul class="parameter_description_list">
@@ -7595,6 +7925,16 @@ Source:
             <span id="semImSimulationType_value_type">Boolean</span></li>
     </ul>
 
+    === semOptimizerType ===
+    <h3 class="parameter_description" id="semOptimizerType">semOptimizerType</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="semOptimizerType_short_desc">SEM estimator: the optimizer</span></li>
+        <li>Long Description: <span id="semOptimizerType_long_desc">Used by the SEM Estimator box. One of Regression, EM, Powell, Random Search or RICF.</span></li>
+        <li>Default Value: <span id="semOptimizerType_default_value">Regression</span></li>
+        <li>Lower Bound: <span id="semOptimizerType_lower_bound"></span></li>
+        <li>Upper Bound: <span id="semOptimizerType_upper_bound"></span></li>
+        <li>Value Type: <span id="semOptimizerType_value_type">String</span></li>
+    </ul>
     === sepsetFinderMethod ===
     <h3 class="parameter_description" id="sepsetFinderMethod">sepsetFinderMethod</h3>
     <ul class="parameter_description_list">
@@ -7876,6 +8216,16 @@ Source:
         <li>Value Type: <span id="structurePrior_value_type">Double</span></li>
     </ul>
 
+    === symmetricAlpha ===
+    <h3 class="parameter_description" id="symmetricAlpha">symmetricAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="symmetricAlpha_short_desc">Dirichlet prior: the pseudocount used for every cell</span></li>
+        <li>Long Description: <span id="symmetricAlpha_long_desc">Used by the Dirichlet Estimator box and the Dirichlet Bayes Instantiated Model box. Every pseudocount of the Dirichlet prior is set to this value.</span></li>
+        <li>Default Value: <span id="symmetricAlpha_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="symmetricAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="symmetricAlpha_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="symmetricAlpha_value_type">Double</span></li>
+    </ul>
     === symmetricFirstStep ===
     <h3 class="parameter_description" id="symmetricFirstStep">symmetricFirstStep</h3>
     <ul class="parameter_description_list">
@@ -7984,6 +8334,26 @@ Source:
         <li>Value Type: <span id="tetrad_test_fofc_value_type">Integer</span></li>
     </ul>
 
+    === thinRowsK ===
+    <h3 class="parameter_description" id="thinRowsK">thinRowsK</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="thinRowsK_short_desc">Thin rows: keep every kth row</span></li>
+        <li>Long Description: <span id="thinRowsK_long_desc">Used by the Thin Rows data box. Every kth row of each data set is kept, starting from the offset row.</span></li>
+        <li>Default Value: <span id="thinRowsK_default_value">2</span></li>
+        <li>Lower Bound: <span id="thinRowsK_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="thinRowsK_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="thinRowsK_value_type">Integer</span></li>
+    </ul>
+    === thinRowsOffset ===
+    <h3 class="parameter_description" id="thinRowsOffset">thinRowsOffset</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="thinRowsOffset_short_desc">Thin rows: offset of the first row kept (0 = first row)</span></li>
+        <li>Long Description: <span id="thinRowsOffset_long_desc">Used by the Thin Rows data box. The position of the first row that is kept, counting from 0.</span></li>
+        <li>Default Value: <span id="thinRowsOffset_default_value">0</span></li>
+        <li>Lower Bound: <span id="thinRowsOffset_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="thinRowsOffset_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="thinRowsOffset_value_type">Integer</span></li>
+    </ul>
     === thr ===
     <h3 class="parameter_description" id="thr">thr</h3>
     <ul class="parameter_description_list">
@@ -8158,6 +8528,16 @@ Source:
         <li>Value Type: <span id="timeout_value_type">Integer</span></li>
     </ul>
 
+    === tolerance ===
+    <h3 class="parameter_description" id="tolerance">tolerance</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="tolerance_short_desc">EM Bayes estimator: convergence tolerance</span></li>
+        <li>Long Description: <span id="tolerance_long_desc">Used by the EM Bayes Estimator box. The data are used to estimate the parameters of the Bayes instantiated model iteratively, until the distance between successive vectors of parameters is less than this.</span></li>
+        <li>Default Value: <span id="tolerance_default_value">0.0001</span></li>
+        <li>Lower Bound: <span id="tolerance_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="tolerance_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="tolerance_value_type">Double</span></li>
+    </ul>
     === topBracket ===
     <h3 class="parameter_description" id="topBracket">topBracket</h3>
     <ul class="parameter_description_list">
@@ -8513,6 +8893,26 @@ Source:
         <li>Value Type: <span id="twoCycleScreeningThreshold_value_type">Double</span></li>
     </ul>
 
+    === uniformityTestParam ===
+    <h3 class="parameter_description" id="uniformityTestParam">uniformityTestParam</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="uniformityTestParam_short_desc">Vertex check: the test of uniformity for the p-values</span></li>
+        <li>Long Description: <span id="uniformityTestParam_long_desc">Used by the Vertex Check box. One of kolmogorovSmirnoff, andersonDarling or wildBootstrap.</span></li>
+        <li>Default Value: <span id="uniformityTestParam_default_value">kolmogorovSmirnoff</span></li>
+        <li>Lower Bound: <span id="uniformityTestParam_lower_bound"></span></li>
+        <li>Upper Bound: <span id="uniformityTestParam_upper_bound"></span></li>
+        <li>Value Type: <span id="uniformityTestParam_value_type">String</span></li>
+    </ul>
+    === unlog ===
+    <h3 class="parameter_description" id="unlog">unlog</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="unlog_short_desc">Log transform: yes if the data should be unlogged instead</span></li>
+        <li>Long Description: <span id="unlog_long_desc">Used by the Log Transform data box. If yes, the inverse transform exp(x) - a is applied in place of the log transform.</span></li>
+        <li>Default Value: <span id="unlog_default_value">false</span></li>
+        <li>Lower Bound: <span id="unlog_lower_bound"></span></li>
+        <li>Upper Bound: <span id="unlog_upper_bound"></span></li>
+        <li>Value Type: <span id="unlog_value_type">Boolean</span></li>
+    </ul>
     === upperBound ===
     <h3 class="parameter_description" id="upperBound">upperBound</h3>
     <ul class="parameter_description_list">
@@ -8524,6 +8924,16 @@ Source:
         <li>Value Type: <span id="upperBound_value_type">Double</span></li>
     </ul>
 
+    === upperBoundNumVals ===
+    <h3 class="parameter_description" id="upperBoundNumVals">upperBoundNumVals</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="upperBoundNumVals_short_desc">Bayes parametric model: greatest number of categories per variable</span></li>
+        <li>Long Description: <span id="upperBoundNumVals_long_desc">Used by the Bayes Parametric Model box when categories are assigned automatically in a range. Each variable is given a number of categories no larger than this.</span></li>
+        <li>Default Value: <span id="upperBoundNumVals_default_value">4</span></li>
+        <li>Lower Bound: <span id="upperBoundNumVals_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="upperBoundNumVals_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="upperBoundNumVals_value_type">Integer</span></li>
+    </ul>
     === useAdaptiveZBins ===
     <h3 class="parameter_description" id="useAdaptiveZBins">useAdaptiveZBins</h3>
     <ul class="parameter_description_list">
