@@ -117,6 +117,7 @@ public class TestSessionDescriptionSelections {
             throw new IllegalStateException(e);
         }
 
+        model.setMarkovCheckerConditioningSetType(edu.cmu.tetrad.search.ConditioningSetType.LOCAL_MARKOV);
         model.getMarkovCheckerParameters().set(Params.ALPHA, 0.2);
         model.getMarkovCheckerParameters().set(Params.PENALTY_DISCOUNT, 7.0);
 
@@ -202,6 +203,10 @@ public class TestSessionDescriptionSelections {
                                  + "Grid Markov checker parameter: alpha = 0.2 (default 0.01)\n"));
         assertFalse(text.contains("Grid Markov checker parameter: penaltyDiscount"));
 
+        // Which independence facts the Markov checker tests, since it is not the usual choice.
+        assertTrue(text.contains("Changed: markovCheckerConditioningSetType = LOCAL_MARKOV (default "
+                                 + "ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION)\n"));
+
         // A setting the editor writes each time it opens and nothing reads is not passed off as a choice.
         SessionWrapper opened = buildSession();
         ((GridSearchModel) node(opened, "Grid1").getModel()).getParameters()
@@ -271,6 +276,8 @@ public class TestSessionDescriptionSelections {
         assertEquals("fisher-z-test", grid.getMarkovCheckerIndependenceWrapper().getClass()
                 .getAnnotation(edu.cmu.tetrad.annotation.TestOfIndependence.class).command());
         assertEquals(0.2, grid.getMarkovCheckerParameters().getDouble(Params.ALPHA), 0.0);
+        assertEquals(edu.cmu.tetrad.search.ConditioningSetType.LOCAL_MARKOV,
+                grid.getMarkovCheckerConditioningSetType());
         assertArrayEquals(new Object[]{0.01, 0.05}, grid.getParameters().getValues(Params.ALPHA));
 
         SessionDescription again = new SessionDescriber().describe(rebuilt, DATE);
@@ -336,6 +343,52 @@ public class TestSessionDescriptionSelections {
                 // As it should be.
             }
         }
+    }
+
+    /**
+     * The grid search box's Markov checker uses the conditioning sets chosen for it. Before, the box used one type
+     * whatever was chosen or stored, and nothing in the interface chose one.
+     */
+    @Test
+    public void testTheGridSearchMarkovCheckerConditioningSets() throws Exception {
+        edu.cmu.tetrad.search.ConditioningSetType usual
+                = edu.cmu.tetrad.search.ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
+
+        // A new box uses the usual type, and does not report it as a choice.
+        GridSearchModel fresh = new GridSearchModel(new Parameters());
+        assertEquals(usual, fresh.getMarkovCheckerConditioningSetType());
+
+        // What is set is what is used, by this box and by one made from its parameters.
+        for (edu.cmu.tetrad.search.ConditioningSetType type : edu.cmu.tetrad.search.ConditioningSetType.values()) {
+            GridSearchModel model = new GridSearchModel(new Parameters());
+            model.setMarkovCheckerConditioningSetType(type);
+            assertEquals(type, model.getMarkovCheckerConditioningSetType());
+            assertEquals(type.name(), model.getParameters().getString("markovCheckerConditioningSetType"));
+            assertEquals(type, new GridSearchModel(model.getParameters()).getMarkovCheckerConditioningSetType());
+        }
+
+        // A stored name this version of Tetrad does not have, as a session saved by an earlier version can hold,
+        // gives the usual type, and that is then what is stored.
+        Parameters old = new Parameters();
+        old.set("markovCheckerConditioningSetType", "ANDREWS_ORDERED_LOCAL_MARKOV_PROPERTY");
+        GridSearchModel fromOld = new GridSearchModel(old);
+        assertEquals(usual, fromOld.getMarkovCheckerConditioningSetType());
+        assertEquals(usual.name(), old.getString("markovCheckerConditioningSetType"));
+
+        // A description naming such a type is rebuilt with the usual one, and says so.
+        SessionWrapper session = buildSession();
+        String text = SessionDescriptionWriter.toText(new SessionDescriber().describe(session, DATE))
+                .replace("Changed: markovCheckerConditioningSetType = LOCAL_MARKOV (default",
+                        "Changed: markovCheckerConditioningSetType = RECURSIVE_MSEP (default");
+        SessionRebuilder.Result result = SessionRebuilder.rebuild(
+                SessionDescriptionParser.parse(text).description(), "study.tet");
+        SessionNode node = node(result.session(), "Grid1");
+        node.createModel(PendingDescription.modelClass(node), false);
+        List<String> notes = PendingDescription.apply(node);
+        assertEquals(usual, ((GridSearchModel) node.getModel()).getMarkovCheckerConditioningSetType());
+        assertTrue(notes.toString(), notes.stream().anyMatch(note -> note.contains(
+                "the Markov checker conditioning set type \"RECURSIVE_MSEP\" is not one this version of Tetrad "
+                + "has, so ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION is used.")));
     }
 
     /**

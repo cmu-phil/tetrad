@@ -253,7 +253,8 @@ public final class StandardDescribers {
      * Settings that record where the interface was left, not a choice about the analysis.
      */
     private static final Set<String> INTERFACE_STATE = Set.of("selectedTabParam", "simulationsDropdownPreference",
-            // Written by the grid search editor each time it opens, and read by nothing.
+            // Written by the grid search editor of 8.0.0 each time it opened, and read by nothing. A session saved
+            // then still holds it.
             "markovCheckerFactMode");
 
     /**

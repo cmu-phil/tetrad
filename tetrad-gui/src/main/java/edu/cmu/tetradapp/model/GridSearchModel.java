@@ -1842,18 +1842,22 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     /**
-     * Represents the type of conditioning set used in a Markov property verification process. This variable identifies
-     * the specific conditioning set type in the context of the Markov checker.
+     * Returns the type of conditioning set the Markov checker statistics of this box use: which independence facts
+     * of the graph are tested.
      * <p>
-     * The value is set to {@code ConditioningSetType.LOCAL_MARKOV} by default, indicating that the local Markov
-     * property is being utilized.
+     * The value is the one stored in the box's parameters under "markovCheckerConditioningSetType", which is what
+     * the editor's choice sets. If none is stored it is
+     * {@code ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION}. That is also what is used, and
+     * stored, where the stored name is not a type this version of Tetrad has, as can be so of a session saved by an
+     * earlier version.
      *
      * @return the conditioning set type used by the Markov checker.
      */
     public ConditioningSetType getMarkovCheckerConditioningSetType() {
         // Source of truth is parameters, so Grid Search execution and UI cannot diverge.
         try {
-            String s = ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION.name();// parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE, null);
+            String s = parameters.getString(PARAM_MARKOV_CHECKER_COND_SET_TYPE,
+                    ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION.name());
             if (s != null && !s.isBlank()) {
                 return ConditioningSetType.valueOf(s);
             }

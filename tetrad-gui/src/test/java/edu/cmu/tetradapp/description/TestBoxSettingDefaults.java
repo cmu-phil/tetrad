@@ -22,11 +22,13 @@ package edu.cmu.tetradapp.description;
 
 import edu.cmu.tetrad.data.JoinDatasets;
 import edu.cmu.tetrad.data.LongToWide;
+import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.sem.NNEstimatorParams;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.CovarianceEstimateDataWrapper;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.model.ImputeMissingDataWrapper;
 import edu.cmu.tetradapp.model.NNEstimatorModel;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
@@ -77,6 +79,7 @@ public class TestBoxSettingDefaults {
             "semOptimizerType", "symmetricAlpha", "thinRowsK", "thinRowsOffset", "tolerance",
             "uniformityTestParam", "unlog", "upperBoundNumVals",
             // Grid search, hybrid conditional Gaussian, long to wide and the NN estimator.
+            "markovCheckerConditioningSetType",
             "algcomparisonGraphType", "algcomparisonSaveCPDAGs", "algcomparisonSaveData",
             "algcomparisonSaveGraphs", "algcomparisonSavePAGs", "algcomparisonSetAlgorithmKnowledge",
             "algcomparisonShowUtilities", "algcomparisonSortByUtility", "hybridcg.alpha", "hybridcg.binPolicy",
@@ -199,7 +202,7 @@ public class TestBoxSettingDefaults {
         List<String> readWithAConstant = List.of("imputationMethod", "joinType", "covarianceEstimateMethod",
                 "uniformityTestParam", "longToWideDefaultAggregation", "nnSeed", "nnEdgeDrawsPerConfig",
                 "nnEdgeNullRefits", "nnEdgeRepeats", "nnEpochs", "nnHidden", "nnLearningRate", "nnMmdFeatures",
-                "nnShuffleFolds", "nnWeightDecay");
+                "nnShuffleFolds", "nnWeightDecay", "markovCheckerConditioningSetType");
 
         for (String name : NAMES) {
             if (readWithAConstant.contains(name)) continue;
@@ -220,6 +223,12 @@ public class TestBoxSettingDefaults {
                 registry.get("uniformityTestParam").getDefaultValue());
         assertEquals(LongToWide.Aggregation.FAIL.name(),
                 registry.get("longToWideDefaultAggregation").getDefaultValue());
+
+        // The grid search box's conditioning sets: what a new box uses is what is registered.
+        assertEquals(new GridSearchModel(new Parameters()).getMarkovCheckerConditioningSetType().name(),
+                registry.get("markovCheckerConditioningSetType").getDefaultValue());
+        assertEquals(ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION.name(),
+                registry.get("markovCheckerConditioningSetType").getDefaultValue());
 
         // The NN estimator takes its defaults from a fresh parameter object, and its seed from a constant.
         NNEstimatorParams nn = new NNEstimatorParams();

@@ -35,6 +35,7 @@ import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
 import edu.cmu.tetradapp.model.GridSearchModel;
@@ -196,12 +197,6 @@ public class GridSearchEditor extends JPanel {
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Markov checker fact-set selection (for independence implications).
-        // Canonical key used by Grid Search evaluation.
-        model.getParameters().set(
-                "markovCheckerFactMode",
-                model.getParameters().getString("markovCheckerFactMode", "ORDERED_LOCAL_MARKOV")
-        );
         comparisonTextArea.setText(model.getLastComparisonText());
         verboseOutputTextArea.setText(model.getLastVerboseOutputText());
 
@@ -2048,9 +2043,34 @@ public class GridSearchEditor extends JPanel {
 
         row2.add(Box.createHorizontalGlue());
 
+        // ---------- Row 3: which independence facts the Markov checker tests ----------
+        Box row3 = Box.createHorizontalBox();
+
+        row3.add(new JLabel("Markov Checker Conditioning Sets:"));
+        row3.add(Box.createHorizontalStrut(8));
+
+        // The same choices as in the Markov Check box, showing the one this box is using.
+        JComboBox<ConditioningSetType> conditioningSetTypeComboBox = new JComboBox<>(ConditioningSetType.values());
+        conditioningSetTypeComboBox.setSelectedItem(model.getMarkovCheckerConditioningSetType());
+        conditioningSetTypeComboBox.setMaximumSize(conditioningSetTypeComboBox.getPreferredSize());
+        conditioningSetTypeComboBox.setToolTipText("Which independence facts of each graph the Markov checker "
+                                                   + "statistics test. All Subsets (Global Markov) grows "
+                                                   + "exponentially with the number of variables.");
+        conditioningSetTypeComboBox.addActionListener(e -> {
+            ConditioningSetType chosen = (ConditioningSetType) conditioningSetTypeComboBox.getSelectedItem();
+
+            if (chosen != null) {
+                model.setMarkovCheckerConditioningSetType(chosen);
+            }
+        });
+        row3.add(conditioningSetTypeComboBox);
+        row3.add(Box.createHorizontalGlue());
+
         outer.add(row1);
         outer.add(Box.createVerticalStrut(8));
         outer.add(row2);
+        outer.add(Box.createVerticalStrut(8));
+        outer.add(row3);
 
         return outer;
     }

@@ -534,6 +534,17 @@ public final class PendingDescription {
             }
         }
 
+        // The Markov checker's conditioning sets come back with the box's other parameters. A name this version of
+        // Tetrad does not have is replaced by the box when it is made, and that is said here.
+        for (BoxDescription.ChangedParameter changed : box.getChangedParameters()) {
+            if (changed.name().equals("markovCheckerConditioningSetType")
+                && !changed.value().equals(grid.getMarkovCheckerConditioningSetType().name())) {
+                notes.add(name + ": the Markov checker conditioning set type \"" + changed.value() + "\" is not "
+                          + "one this version of Tetrad has, so "
+                          + grid.getMarkovCheckerConditioningSetType().name() + " is used.");
+            }
+        }
+
         // The parameters of the Markov checker's test, which the box keeps apart from its own.
         for (String line : box.getAll(StandardDescribers.GRID_MARKOV_PARAMETER)) {
             BoxDescription.ChangedParameter changed = BoxDescription.ChangedParameter.parse(line);
