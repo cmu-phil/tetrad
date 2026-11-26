@@ -703,10 +703,40 @@ public class BossTopK implements SuborderSearchTopK {
     }
 
     /**
-     * The split predicate, isolated so it can be retuned in one place. Given the per-slot total scores computed by a
-     * betterMutation step (before the best slot is applied), enqueue every alternative insertion slot whose total is
-     * strictly below the pursued best by less than delta. The pursued best slot and the "stay" (original) slot are
-     * excluded; the latter because re-running from the pre-move ordering would deterministically redo this move.
+     * How far below the pursued best a slot's total must be before it counts as below it at all. This is the
+     * tolerance the moves themselves use when comparing slots.
+     */
+    static final double TIE_TOLERANCE = 1e-6;
+
+    /**
+     * The split predicate, isolated so it can be retuned in one place: whether an alternative slot is set aside to be
+     * run later. It is when its total is below the pursued best by more than {@link #TIE_TOLERANCE} and by less than
+     * delta.
+     * <p>
+     * A slot within the tolerance of the best is a tie with it, and is not set aside. Such ties are common: moving a
+     * node past nodes it is not adjacent to leaves the total unchanged. In floating point an exact tie can still come
+     * out a hair below the best, and with a test of "greater than zero" rounding decided which ties were set aside.
+     * <p>
+     * This is a trade, not a pure saving. A tied ordering is the same model but a different place to start from, and
+     * in trials on simulated data the runs started from such ties sometimes ended at a better-scoring model. Leaving
+     * them out gave a third to a half as many runs and, in 3 of 20 data sets, a best model 20 to 33 BIC points worse.
+     * See the project note on BOSS threads and the Top-K split.
+     *
+     * @param best  the total of the pursued best slot
+     * @param slot  the total of the alternative slot
+     * @param delta the split width
+     * @return true if the alternative is to be set aside
+     */
+    static boolean isNearTie(double best, double slot, double delta) {
+        double diff = best - slot;
+        return diff > TIE_TOLERANCE && diff < delta;
+    }
+
+    /**
+     * Applies the split. Given the per-slot total scores computed by a betterMutation step (before the best slot is
+     * applied), enqueue every alternative insertion slot that {@link #isNearTie(double, double, double)} accepts: below
+     * the pursued best by less than delta, and not tied with it. The pursued best slot and the "stay" (original) slot
+     * are excluded; the latter because re-running from the pre-move ordering would deterministically redo this move.
      *
      * @param prefix       The fixed prefix.
      * @param suborder     The current order (node to move still in place).
@@ -737,8 +767,7 @@ public class BossTopK implements SuborderSearchTopK {
             // stays where it is. It is excluded like the original slot, for the same reason.
             if (ownSlot && j == originalSlot + 1) continue;
 
-            double diff = best - slotScores[j];
-            if (diff > 0.0 && diff < this.delta) {
+            if (isNearTie(best, slotScores[j], this.delta)) {
                 // Build the alternative ordering with nodeToMove at slot j (mirroring the move's index adjustment).
                 List<Node> alt = new ArrayList<>(suborder);
                 alt.remove(nodeToMove);
