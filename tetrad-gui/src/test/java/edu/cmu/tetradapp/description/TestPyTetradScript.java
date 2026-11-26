@@ -160,7 +160,17 @@ public class TestPyTetradScript {
                 search1_graph = search1_algorithm.search(data1, search1_parameters)
                 print('Box "Search1", FGES (fges):')
                 print(search1_graph)
+                save_graph(search1_graph, "search1_graph.txt")
                 """));
+
+        // The graph is saved as well as printed, in the form a Graph box loads, in a folder the user can set.
+        assertTrue(script.contains("OUTPUT_DIR = \".\"\n"));
+        assertTrue(script.contains("def save_graph(graph, file_name):\n"));
+        assertTrue(script.contains("    GraphSaveLoadUtils.saveGraph(graph, File(path), False)\n"));
+        assertTrue(script.contains("from edu.cmu.tetrad.graph import GraphSaveLoadUtils\n"));
+        assertTrue(script.contains("from java.io import File"));
+        assertTrue(script.indexOf("def save_graph(") < script.indexOf("save_graph(search1_graph"));
+        assertTrue(result.preview("study").contains("Its graph is saved as search1_graph.txt."));
         assertFalse("A parameter of another algorithm is not set.", script.contains("\"alpha\""));
         assertFalse(script.contains("\"numStarts\""));
         assertFalse(script.contains("raise NotImplementedError"));
@@ -405,8 +415,10 @@ public class TestPyTetradScript {
                 WRITTEN AS CODE
                   - "Data1" (Data): Reads the file "study.csv".
                   - "Note1" (Note): Its text, as a comment.
-                  - "Plain" (Search): Runs FGES (fges) with Sem BIC Score (sem-bic-score) on "Data1".
-                  - "On discretized" (Search): Runs PC (pc) with Fisher Z (fisher-z-test) on "Discretized".
+                  - "Plain" (Search): Runs FGES (fges) with Sem BIC Score (sem-bic-score) on "Data1". Its graph \
+                is saved as plain_graph.txt.
+                  - "On discretized" (Search): Runs PC (pc) with Fisher Z (fisher-z-test) on "Discretized". Its \
+                graph is saved as on_discretized_graph.txt.
 
                 LEFT FOR YOU TO WRITE BY HAND. The script stops at each of these until you write the step.
                   - "Discretized" (Data: Discretize Data): This kind of box is not turned into code.

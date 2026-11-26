@@ -112,6 +112,7 @@ public final class PyTetradScript {
     private boolean readsTabular;
     private boolean readsCovariance;
     private boolean usesJInt;
+    private boolean savesGraphs;
 
     private PyTetradScript(SessionDescription description) {
         this.description = description;
@@ -237,6 +238,10 @@ public final class PyTetradScript {
                 #     pip install git+https://github.com/cmu-phil/py-tetrad
                 # Then put this file in the folder the data files are in, or set DATA_DIR below.
                 #
+                # Each graph is printed, and saved as a text file that a Graph box in Tetrad can load.
+                # The files go in the folder the script is run from, unless OUTPUT_DIR is set below.
+                # Running the script again replaces them.
+                #
                 # The Tetrad that py-tetrad brings with it may be older or newer than the Tetrad the
                 # session was made in. If Python cannot find a class named here, that is the likely
                 # reason.
@@ -262,7 +267,7 @@ public final class PyTetradScript {
     }
 
     private void imports(StringBuilder script) {
-        if (this.readsTabular || this.readsCovariance) {
+        if (this.readsTabular || this.readsCovariance || this.savesGraphs) {
             script.append("import os\n\n");
         }
 
@@ -363,6 +368,25 @@ public final class PyTetradScript {
                         data = DataConvertUtils.toDataModel(reader.readInData())
                         data.setName(file_name)
                         return data
+
+                    """);
+        }
+
+        if (this.savesGraphs) {
+            script.append("""
+                    # The folder the graphs are saved in.
+                    OUTPUT_DIR = "."
+
+
+                    def save_graph(graph, file_name):
+                        \"""Saves a graph in Tetrad's text format, which a Graph box in Tetrad can load.
+
+                        To use the graph in Python instead, pytetrad.tools.translate has graph_to_matrix(graph),
+                        which gives a pandas table of its endpoints.\"""
+                        os.makedirs(OUTPUT_DIR, exist_ok=True)
+                        path = os.path.abspath(os.path.join(OUTPUT_DIR, file_name))
+                        GraphSaveLoadUtils.saveGraph(graph, File(path), False)
+                        print("Saved to " + path)
 
                     """);
         }
@@ -745,12 +769,18 @@ public final class PyTetradScript {
         this.body.append("print(").append(python("Box \"" + box.getName() + "\", " + algorithmText + ":"))
                 .append(")\n");
         this.body.append("print(").append(variable).append("_graph)\n");
+        this.body.append("save_graph(").append(variable).append("_graph, ")
+                .append(python(variable + "_graph.txt")).append(")\n");
+        this.savesGraphs = true;
+        javaImport("java.io", "File");
+        javaImport("edu.cmu.tetrad.graph", "GraphSaveLoadUtils");
 
         StringBuilder remark = new StringBuilder("Runs " + oneLine(algorithmText));
         if (testText != null) remark.append(" with ").append(oneLine(testText));
         if (scoreText != null) remark.append(" with ").append(oneLine(scoreText));
         remark.append(" on ").append(quoted(dataParents.getFirst()));
         if (knowledge != null) remark.append(", with the knowledge");
+        remark.append(". Its graph is saved as ").append(variable).append("_graph.txt");
         this.plan.add(new Box(title(box), Fate.WRITTEN, remark.append(".").toString(), true));
     }
 
@@ -823,7 +853,8 @@ public final class PyTetradScript {
             + "as code. The script stops at that step until you write it in Python yourself.",
             "The data are not in the script. It reads each data file by name, from the folder you say, with the "
             + "settings the file was loaded with here. Changes made to the data by hand in Tetrad are not in it.",
-            "Each graph is printed, not saved.",
+            "Each graph is printed, and saved as a text file that a Graph box can load. Running the script again "
+            + "replaces those files.",
             "It runs with py-tetrad, on the Tetrad that comes with py-tetrad, which may be older or newer than "
             + "this one.");
 
