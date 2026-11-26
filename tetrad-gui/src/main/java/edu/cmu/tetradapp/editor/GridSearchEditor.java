@@ -2061,11 +2061,29 @@ public class GridSearchEditor extends JPanel {
         // 1) Populate with the allowed tests (your existing filtering logic)
         populateTestTypes(comboBox);
 
-        // 2) Select a persisted value (whatever you store in params / model)
+        // 2) Show the test the box is using, if it is on offer. Otherwise the box showed the test last chosen on
+        // this machine, in any box, while its Markov checker went on using its own; and a box rebuilt from a
+        // session description showed a test other than the one described.
+        IndependenceWrapper current = model.getMarkovCheckerIndependenceWrapper();
+        boolean shown = false;
+
+        for (int i = 0; current != null && i < comboBox.getItemCount(); i++) {
+            IndependenceTestModel m = comboBox.getItemAt(i);
+
+            if (m != null && m.getIndependenceTest().clazz() == current.getClass()) {
+                comboBox.setSelectedIndex(i);
+                shown = true;
+                break;
+            }
+        }
+
+        // Otherwise select a persisted value (whatever you store in params / model)
         // Adjust this key/name getter to match what you already use.
         String last = model.getLastMarkovCheckerTest(); // or params.getString("algcomparisonMarkovCheckerTest", null)
 
-        if (last != null) {
+        if (shown) {
+            // Nothing more to choose.
+        } else if (last != null) {
             for (int i = 0; i < comboBox.getItemCount(); i++) {
                 IndependenceTestModel m = comboBox.getItemAt(i);
                 if (m != null && last.equals(m.getName())) {

@@ -21,11 +21,14 @@
 package edu.cmu.tetradapp.description;
 
 import edu.cmu.tetrad.data.JoinDatasets;
+import edu.cmu.tetrad.data.LongToWide;
+import edu.cmu.tetrad.sem.NNEstimatorParams;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.CovarianceEstimateDataWrapper;
 import edu.cmu.tetradapp.model.ImputeMissingDataWrapper;
+import edu.cmu.tetradapp.model.NNEstimatorModel;
 import edu.cmu.tetradapp.model.VertexCheckIndTestModel;
 import org.junit.Assume;
 import org.junit.Test;
@@ -72,7 +75,18 @@ public class TestBoxSettingDefaults {
             "missingnessIndicatorKnowledge", "missingnessIndicatorMaxRate", "missingnessIndicatorMinRate",
             "missingnessRowPropensity", "numImputations", "numRestarts", "numSplits", "numTimeLags", "prob",
             "semOptimizerType", "symmetricAlpha", "thinRowsK", "thinRowsOffset", "tolerance",
-            "uniformityTestParam", "unlog", "upperBoundNumVals");
+            "uniformityTestParam", "unlog", "upperBoundNumVals",
+            // Grid search, hybrid conditional Gaussian, long to wide and the NN estimator.
+            "algcomparisonGraphType", "algcomparisonSaveCPDAGs", "algcomparisonSaveData",
+            "algcomparisonSaveGraphs", "algcomparisonSavePAGs", "algcomparisonSetAlgorithmKnowledge",
+            "algcomparisonShowUtilities", "algcomparisonSortByUtility", "hybridcg.alpha", "hybridcg.binPolicy",
+            "hybridcg.bins", "hybridcg.defaultBins", "hybridcg.defaultRangeHigh", "hybridcg.defaultRangeLow",
+            "hybridcg.markSignificance", "hybridcg.maxCategories", "hybridcg.minCategories",
+            "hybridcg.percentDiscrete", "hybridcg.pmTypeMode", "hybridcg.shareVariance", "hybridcg.testAlpha",
+            "longToWideDefaultAggregation", "longToWideIncludeValueName", "longToWideKeepRowKeys",
+            "longToWideSanitizeNames", "longToWideSeparator", "nnEdgeDrawsPerConfig", "nnEdgeNullRefits",
+            "nnEdgeRepeats", "nnEpochs", "nnHidden", "nnLearningRate", "nnMmdFeatures", "nnRandomizeSeed",
+            "nnSeed", "nnShuffleFolds", "nnWeightDecay");
 
     /**
      * A read of a setting with its default given as a plain literal: a number, true or false, or quoted text.
@@ -179,11 +193,13 @@ public class TestBoxSettingDefaults {
 
         assertEquals("Registered defaults that differ from the ones the boxes use.", List.of(), differences);
 
-        // The four settings below are only ever read with a constant for the default; they are checked in
+        // The settings below are only ever read with a constant or a field for the default; they are checked in
         // testDefaultsGivenAsConstants. Every other one must have been met at least once, or this test is not
         // looking at what it thinks it is.
         List<String> readWithAConstant = List.of("imputationMethod", "joinType", "covarianceEstimateMethod",
-                "uniformityTestParam");
+                "uniformityTestParam", "longToWideDefaultAggregation", "nnSeed", "nnEdgeDrawsPerConfig",
+                "nnEdgeNullRefits", "nnEdgeRepeats", "nnEpochs", "nnHidden", "nnLearningRate", "nnMmdFeatures",
+                "nnShuffleFolds", "nnWeightDecay");
 
         for (String name : NAMES) {
             if (readWithAConstant.contains(name)) continue;
@@ -202,6 +218,41 @@ public class TestBoxSettingDefaults {
         assertEquals(JoinDatasets.JoinType.LEFT.name(), registry.get("joinType").getDefaultValue());
         assertEquals(VertexCheckIndTestModel.KOLMOGOROV_SMIRNOFF,
                 registry.get("uniformityTestParam").getDefaultValue());
+        assertEquals(LongToWide.Aggregation.FAIL.name(),
+                registry.get("longToWideDefaultAggregation").getDefaultValue());
+
+        // The NN estimator takes its defaults from a fresh parameter object, and its seed from a constant.
+        NNEstimatorParams nn = new NNEstimatorParams();
+        assertEquals(NNEstimatorModel.DEFAULT_SEED, registry.get(NNEstimatorModel.SEED).getDefaultValue());
+        assertEquals(nn.hidden, registry.get(NNEstimatorModel.HIDDEN).getDefaultValue());
+        assertEquals(nn.epochs, registry.get(NNEstimatorModel.EPOCHS).getDefaultValue());
+        assertEquals(nn.lr, registry.get(NNEstimatorModel.LEARNING_RATE).getDefaultValue());
+        assertEquals(nn.l2, registry.get(NNEstimatorModel.WEIGHT_DECAY).getDefaultValue());
+        assertEquals(nn.mmdFeatures, registry.get(NNEstimatorModel.MMD_FEATURES).getDefaultValue());
+        assertEquals(nn.edgeDrawsPerConfig, registry.get(NNEstimatorModel.EDGE_DRAWS_PER_CONFIG).getDefaultValue());
+        assertEquals(nn.edgeRepeats, registry.get(NNEstimatorModel.EDGE_REPEATS).getDefaultValue());
+        assertEquals(nn.edgeNullRefits, registry.get(NNEstimatorModel.EDGE_NULL_REFITS).getDefaultValue());
+        assertEquals(nn.shuffleFolds, registry.get(NNEstimatorModel.SHUFFLE_FOLDS).getDefaultValue());
+    }
+
+    /**
+     * The grid search box reads eight of its settings without giving a default, so what it gets when one has not
+     * been stored is the registered default. Its editor stores each when it opens, with these same values. Before
+     * they were registered, a box that was run without its editor having been opened, as a box rebuilt from a
+     * description can be, stopped with "was not actually boolean".
+     */
+    @Test
+    public void testGridSearchReadsWithoutADefault() {
+        Parameters parameters = new Parameters();
+
+        assertTrue(parameters.getBoolean("algcomparisonSaveData"));
+        assertTrue(parameters.getBoolean("algcomparisonSaveGraphs"));
+        assertFalse(parameters.getBoolean("algcomparisonSaveCPDAGs"));
+        assertFalse(parameters.getBoolean("algcomparisonSavePAGs"));
+        assertTrue(parameters.getBoolean("algcomparisonSortByUtility"));
+        assertFalse(parameters.getBoolean("algcomparisonShowUtilities"));
+        assertTrue(parameters.getBoolean("algcomparisonSetAlgorithmKnowledge"));
+        assertEquals("DAG", parameters.getString("algcomparisonGraphType"));
     }
 
     /**

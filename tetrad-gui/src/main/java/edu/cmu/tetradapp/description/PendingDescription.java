@@ -40,6 +40,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.SessionNodeConfig;
 import edu.cmu.tetradapp.app.SessionNodeModelConfig;
@@ -530,6 +531,27 @@ public final class PendingDescription {
             } else {
                 grid.setMarkovCheckerIndependenceWrapper(
                         (IndependenceWrapper) test.clazz().getConstructor().newInstance());
+            }
+        }
+
+        // The parameters of the Markov checker's test, which the box keeps apart from its own.
+        for (String line : box.getAll(StandardDescribers.GRID_MARKOV_PARAMETER)) {
+            BoxDescription.ChangedParameter changed = BoxDescription.ChangedParameter.parse(line);
+
+            if (changed == null) {
+                notes.add(name + ": the Markov checker parameter \"" + line + "\" could not be read, so it was "
+                          + "not set.");
+            } else if (!ParamDescriptions.getInstance().getNames().contains(changed.name())) {
+                notes.add(name + ": the Markov checker parameter \"" + changed.name() + "\" is not known to this "
+                          + "version of Tetrad, so its value " + changed.value() + " was not set.");
+            } else {
+                try {
+                    grid.getMarkovCheckerParameters().set(changed.name(), SessionRebuilder.valueOfKind(
+                            ParamDescriptions.getInstance().get(changed.name()).getDefaultValue(), changed.value()));
+                } catch (IllegalArgumentException e) {
+                    notes.add(name + ": the Markov checker parameter \"" + line + "\" was not set, since "
+                              + e.getMessage());
+                }
             }
         }
 

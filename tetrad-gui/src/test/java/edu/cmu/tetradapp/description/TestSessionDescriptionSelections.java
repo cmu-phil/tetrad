@@ -30,6 +30,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DiscretizationSpec;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.data.SplitCasesSpec;
+import edu.cmu.tetrad.data.UnmixSpec;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -37,6 +38,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.model.datamanip.CausalUnmix;
 import edu.cmu.tetradapp.model.datamanip.SelectionWrapper;
 import edu.cmu.tetradapp.model.datamanip.SelectionWrapper.SelectionSpec;
 import edu.cmu.tetradapp.model.datamanip.SplitCasesWrapper;
@@ -106,6 +108,17 @@ public class TestSessionDescriptionSelections {
         parameters.set(Params.PENALTY_DISCOUNT, 1.0, 2.0, 4.0);
         parameters.set(Params.ALPHA, 0.01, 0.05);
         parameters.set(Params.NUM_MEASURES, 20);
+
+        // The Markov checker's test, with an alpha of its own, and a parameter its test does not take.
+        try {
+            model.setMarkovCheckerIndependenceWrapper((edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper)
+                    PendingDescription.findTest("fisher-z-test").clazz().getConstructor().newInstance());
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+
+        model.getMarkovCheckerParameters().set(Params.ALPHA, 0.2);
+        model.getMarkovCheckerParameters().set(Params.PENALTY_DISCOUNT, 7.0);
 
         for (GridSearchModel.MyTableColumn column : model.getAllTableColumns()) {
             boolean statistic = column.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC;
@@ -183,6 +196,19 @@ public class TestSessionDescriptionSelections {
         assertTrue(text.contains("Values: alpha = 0.01, 0.05 (default 0.01)\n"));
         assertTrue(text.contains("Changed: numMeasures = 20 (default 10)\n"));
 
+        // The Markov checker's test and that test's own alpha, which is not the alpha of the algorithms. A
+        // parameter the test does not take is not listed.
+        assertTrue(text.contains("Grid Markov checker test: Fisher Z (fisher-z-test)\n"
+                                 + "Grid Markov checker parameter: alpha = 0.2 (default 0.01)\n"));
+        assertFalse(text.contains("Grid Markov checker parameter: penaltyDiscount"));
+
+        // A setting the editor writes each time it opens and nothing reads is not passed off as a choice.
+        SessionWrapper opened = buildSession();
+        ((GridSearchModel) node(opened, "Grid1").getModel()).getParameters()
+                .set("markovCheckerFactMode", "ORDERED_LOCAL_MARKOV");
+        assertFalse(SessionDescriptionWriter.toText(new SessionDescriber().describe(opened, DATE))
+                .contains("markovCheckerFactMode"));
+
         assertFalse(text, text.contains(StandardDescribers.NOT_DESCRIBED));
     }
 
@@ -240,6 +266,12 @@ public class TestSessionDescriptionSelections {
         assertArrayEquals(new Object[]{500, 1000}, grid.getParameters().getValues(Params.SAMPLE_SIZE));
         assertArrayEquals(new Object[]{1.0, 2.0, 4.0}, grid.getParameters().getValues(Params.PENALTY_DISCOUNT));
         assertEquals(20, grid.getParameters().getInt(Params.NUM_MEASURES));
+
+        // The Markov checker's test and its alpha, kept apart from the alpha values the box compares.
+        assertEquals("fisher-z-test", grid.getMarkovCheckerIndependenceWrapper().getClass()
+                .getAnnotation(edu.cmu.tetrad.annotation.TestOfIndependence.class).command());
+        assertEquals(0.2, grid.getMarkovCheckerParameters().getDouble(Params.ALPHA), 0.0);
+        assertArrayEquals(new Object[]{0.01, 0.05}, grid.getParameters().getValues(Params.ALPHA));
 
         SessionDescription again = new SessionDescriber().describe(rebuilt, DATE);
 
@@ -299,6 +331,85 @@ public class TestSessionDescriptionSelections {
                 "many rows; break after rows: 40; parts: a, b")) {
             try {
                 StandardDescribers.readSplitLine(bad);
+                fail(bad + " should not be read.");
+            } catch (IllegalArgumentException expected) {
+                // As it should be.
+            }
+        }
+    }
+
+    /**
+     * A causal unmix box says how many components it divides the rows into and which settings of the unmixing were
+     * changed, and a description of one gives the box the same specification back. The box is not run here, since
+     * running it opens a progress window.
+     */
+    @Test
+    public void testUnmixIsDescribedAndComesBack() throws Exception {
+        UnmixSpec byDefault = new UnmixSpec();
+        assertEquals(List.of("components: chosen by BIC from 1 to 4"), StandardDescribers.unmixLines(byDefault));
+
+        UnmixSpec spec = new UnmixSpec().setAutoSelectK(false).setK(3).setSupersetTopM(20)
+                .setSupersetScore(UnmixSpec.SupersetScore.SPEARMAN).setRobustScaleResiduals(false)
+                .setCovarianceMode(UnmixSpec.CovarianceMode.DIAGONAL).setRidge(0.01).setSaveDiagnostics(true);
+        spec.setLogIntermediate(true);
+        List<String> lines = StandardDescribers.unmixLines(spec);
+        assertEquals(List.of("components: 3", "supersetTopM = 20 (default 12)",
+                "supersetScore = SPEARMAN (default KENDALL)", "robustScaleResiduals = false (default true)",
+                "covarianceMode = DIAGONAL (default AUTO)", "ridge = 0.01 (default 0.001)",
+                "saveDiagnostics = true (default false)"), lines);
+
+        // The describer writes those lines for the box, ahead of what a data box says, and the specification is
+        // not left as a setting that could not be described.
+        SessionWrapper session = new SessionWrapper(new Session("study.tet"));
+        SessionNodeWrapper box = TestSessionDescription.addBox(session, "Data", "Unmixed", 100, 100);
+        box.getSessionNode().createModel(DataWrapper.class, false);
+        ((DataWrapper) box.getSessionNode().getModel()).setDataModel(mixedData());
+        bag(box, DataWrapper.class).set("unmixSpec", (Object) spec);
+        BoxDescription.Builder out = new BoxDescription.Builder("Unmixed");
+        StandardDescribers.describeUnmix(box.getSessionNode().getModel(), box.getSessionNode(), out);
+        BoxDescription described = out.build();
+        assertEquals(lines, described.getAll(StandardDescribers.UNMIX));
+        assertTrue(described.getAll(StandardDescribers.NOT_DESCRIBED).isEmpty());
+        assertEquals("study.csv", described.get(StandardDescribers.DATA_SET));
+
+        // A description of a causal unmix box, read back, gives the box that specification.
+        BoxDescription.Builder data = new BoxDescription.Builder("Data1").field(BoxDescription.TYPE, "Data")
+                .field(BoxDescription.MODEL, "Data");
+        BoxDescription.Builder unmix = new BoxDescription.Builder("Unmixed").field(BoxDescription.TYPE, "Data")
+                .field(BoxDescription.MODEL, "Causal Unmix").field(BoxDescription.PARENTS, "Data1");
+
+        for (String line : lines) {
+            unmix.field(StandardDescribers.UNMIX, line);
+        }
+
+        SessionDescription description = new SessionDescription(
+                new SessionDescriber().describe(session, DATE).getHeader(), List.of(data.build(), unmix.build()));
+        SessionRebuilder.Result result = SessionRebuilder.rebuild(
+                SessionDescriptionParser.parse(SessionDescriptionWriter.toText(description)).description(),
+                "study.tet");
+        assertEquals(List.of(), result.problems());
+        assertEquals(CausalUnmix.class, PendingDescription.modelClass(node(result.session(), "Unmixed")));
+
+        Object back = node(result.session(), "Unmixed").getParam(CausalUnmix.class).getValues("unmixSpec")[0];
+        assertTrue(back instanceof UnmixSpec);
+        assertEquals(lines, StandardDescribers.unmixLines((UnmixSpec) back));
+        assertFalse(((UnmixSpec) back).isAutoSelectK());
+        assertEquals(3, ((UnmixSpec) back).getK());
+        assertTrue(((UnmixSpec) back).isLogIntermediate());
+
+        // A range of components comes back as a range.
+        UnmixSpec range = new UnmixSpec();
+        StandardDescribers.readUnmixLine("components: chosen by BIC from 2 to 6", range);
+        assertTrue(range.isAutoSelectK());
+        assertEquals(2, range.getKmin());
+        assertEquals(6, range.getKmax());
+
+        for (String bad : List.of("components: several", "components: chosen by BIC from 4 to 2",
+                "components: chosen by BIC from 2", "components: 0", "supersetTopM = many (default 12)",
+                "supersetScore = PEARSON (default KENDALL)", "robustScaleResiduals = perhaps (default true)",
+                "randomSeed = 5 (default 13)", "no setting at all")) {
+            try {
+                StandardDescribers.readUnmixLine(bad, new UnmixSpec());
                 fail(bad + " should not be read.");
             } catch (IllegalArgumentException expected) {
                 // As it should be.

@@ -40,6 +40,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.SplitCasesSpec;
+import edu.cmu.tetrad.data.UnmixSpec;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -211,6 +212,12 @@ public final class StandardDescribers {
     public static final String SPLIT = "Split";
 
     /**
+     * The field saying how a causal unmix box divides the rows into components: how many components, and each
+     * setting of the unmixing that is not at its default.
+     */
+    public static final String UNMIX = "Unmix";
+
+    /**
      * The label for a parameter that has been given several values, as a grid search box does to compare them.
      */
     public static final String VALUES = "Values";
@@ -236,16 +243,25 @@ public final class StandardDescribers {
     public static final String GRID_MARKOV_TEST = "Grid Markov checker test";
 
     /**
+     * The field naming a parameter of a grid search box's Markov checker test whose value differs from its default.
+     * The box keeps these apart from its other parameters, so that the checker's test can be given an alpha, say,
+     * that is not the alpha of the algorithms being compared.
+     */
+    public static final String GRID_MARKOV_PARAMETER = "Grid Markov checker parameter";
+
+    /**
      * Settings that record where the interface was left, not a choice about the analysis.
      */
-    private static final Set<String> INTERFACE_STATE = Set.of("selectedTabParam", "simulationsDropdownPreference");
+    private static final Set<String> INTERFACE_STATE = Set.of("selectedTabParam", "simulationsDropdownPreference",
+            // Written by the grid search editor each time it opens, and read by nothing.
+            "markovCheckerFactMode");
 
     /**
      * Settings held as objects that a describer of their own writes out, so the general describer passes over
      * them.
      */
     private static final Set<String> DESCRIBED_ELSEWHERE = Set.of("discretizationSpecs", "selectionSpecs",
-            "splitCasesSpec", "algcomparison.selectedSimulation", "algcomparison.selectedSimulations",
+            "splitCasesSpec", "unmixSpec", "algcomparison.selectedSimulation", "algcomparison.selectedSimulations",
             "algcomparison.selectedAlgorithms", "algcomparison.selectedTableColumns");
 
     /**
@@ -425,9 +441,32 @@ public final class StandardDescribers {
     }
 
     /**
+     * Describes a causal unmix box: how many components it divides the rows into, the settings of the unmixing that
+     * are not at their defaults, and then what a data box says. The components themselves are results.
+     *
+     * @param model the model, a causal unmix wrapper.
+     * @param node  the session node holding the model.
+     * @param out   the description of the box.
+     */
+    public static void describeUnmix(Object model, SessionNode node, BoxDescription.Builder out) {
+        Parameters parameters = node.getParam(model.getClass());
+        Object spec = parameters == null || !parameters.getParametersNames().contains("unmixSpec")
+                ? null : parameters.getValues("unmixSpec")[0];
+
+        if (spec instanceof UnmixSpec unmixSpec) {
+            for (String line : unmixLines(unmixSpec)) {
+                out.field(UNMIX, line);
+            }
+        }
+
+        describeData(model, node, out);
+    }
+
+    /**
      * Describes a grid search box: the simulation it draws data from, unless it was given data; the algorithms it
-     * runs, each with its test and score; the columns of its table of results, in order; and then its parameters,
-     * of which those given several values to compare are listed with all their values.
+     * runs, each with its test and score; the columns of its table of results, in order; the test of its Markov
+     * checker, if it is not the usual one, and that test's parameters that were changed; and then the box's own
+     * parameters, of which those given several values to compare are listed with all their values.
      *
      * @param model the model, a {@link GridSearchModel}.
      * @param node  the session node holding the model.
@@ -459,6 +498,20 @@ public final class StandardDescribers {
             TestOfIndependence annotation = markovTest.getClass().getAnnotation(TestOfIndependence.class);
             out.field(GRID_MARKOV_TEST, annotation == null ? markovTest.getClass().getSimpleName()
                     : nameAndCommand(annotation.name(), annotation.command()));
+        }
+
+        // The Markov checker test's own parameters, whichever test it is.
+        if (markovTest != null) {
+            Parameters checker = grid.getMarkovCheckerParameters();
+
+            for (String name : new TreeSet<>(markovTest.getParameters())) {
+                if (isChanged(checker, name)) {
+                    out.field(GRID_MARKOV_PARAMETER, name + " = " + valueText(checker.getValues(name)[0])
+                                                     + " (default "
+                                                     + valueText(ParamDescriptions.getInstance().get(name).getDefaultValue())
+                                                     + ")");
+                }
+            }
         }
 
         Set<String> names = new TreeSet<>(parameters.getParametersNames());
@@ -920,6 +973,158 @@ public final class StandardDescribers {
             }
 
             return new SplitCasesSpec(rows, breaks, new ArrayList<>(names));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("a number in it could not be read.");
+        }
+    }
+
+    private static final String COMPONENTS = "components: ";
+    private static final String BY_BIC = "chosen by BIC from ";
+    private static final String BIC_TO = " to ";
+
+    /**
+     * A setting of a causal unmix specification that the box's editor offers and the unmixing uses, other than the
+     * number of components: its name, how it is read from a specification, and how a value given as text is set.
+     */
+    private record UnmixSetting(String name, java.util.function.Function<UnmixSpec, Object> get,
+                                java.util.function.BiConsumer<UnmixSpec, String> set) {
+    }
+
+    /**
+     * The settings, in the order the editor shows them. A specification also holds a graph learner, a PC alpha and
+     * collider style, a BOSS penalty discount and a random seed; the editor does not offer those and the box does
+     * not use them, so they are not written.
+     */
+    private static final List<UnmixSetting> UNMIX_SETTINGS = List.of(
+            new UnmixSetting("useParentSuperset", UnmixSpec::isUseParentSuperset,
+                    (spec, text) -> spec.setUseParentSuperset(trueOrFalse(text))),
+            new UnmixSetting("supersetTopM", UnmixSpec::getSupersetTopM,
+                    (spec, text) -> spec.setSupersetTopM(Integer.parseInt(text))),
+            new UnmixSetting("supersetScore", UnmixSpec::getSupersetScore,
+                    (spec, text) -> spec.setSupersetScore(oneOf(UnmixSpec.SupersetScore.class, text))),
+            new UnmixSetting("robustScaleResiduals", UnmixSpec::isRobustScaleResiduals,
+                    (spec, text) -> spec.setRobustScaleResiduals(trueOrFalse(text))),
+            new UnmixSetting("covarianceMode", UnmixSpec::getCovarianceMode,
+                    (spec, text) -> spec.setCovarianceMode(oneOf(UnmixSpec.CovarianceMode.class, text))),
+            new UnmixSetting("fullSigmaSafetyMargin", UnmixSpec::getFullSigmaSafetyMargin,
+                    (spec, text) -> spec.setFullSigmaSafetyMargin(Integer.parseInt(text))),
+            new UnmixSetting("kmeansRestarts", UnmixSpec::getKmeansRestarts,
+                    (spec, text) -> spec.setKmeansRestarts(Integer.parseInt(text))),
+            new UnmixSetting("emMaxIters", UnmixSpec::getEmMaxIters,
+                    (spec, text) -> spec.setEmMaxIters(Integer.parseInt(text))),
+            new UnmixSetting("ridge", UnmixSpec::getRidge,
+                    (spec, text) -> spec.setRidge(Double.parseDouble(text))),
+            new UnmixSetting("shrinkage", UnmixSpec::getShrinkage,
+                    (spec, text) -> spec.setShrinkage(Double.parseDouble(text))),
+            new UnmixSetting("annealSteps", UnmixSpec::getAnnealSteps,
+                    (spec, text) -> spec.setAnnealSteps(Integer.parseInt(text))),
+            new UnmixSetting("annealStartT", UnmixSpec::getAnnealStartT,
+                    (spec, text) -> spec.setAnnealStartT(Double.parseDouble(text))),
+            // The editor's one check box sets both of these, and the unmixing logs if either is set.
+            new UnmixSetting("saveDiagnostics", spec -> spec.isSaveDiagnostics() || spec.isLogIntermediate(),
+                    (spec, text) -> {
+                        spec.setSaveDiagnostics(trueOrFalse(text));
+                        spec.setLogIntermediate(trueOrFalse(text));
+                    }));
+
+    private static <E extends Enum<E>> E oneOf(Class<E> kind, String text) {
+        try {
+            return Enum.valueOf(kind, text);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("\"" + text + "\" is not one of "
+                                               + java.util.Arrays.toString(kind.getEnumConstants()) + ".");
+        }
+    }
+
+    private static boolean trueOrFalse(String text) {
+        if (!text.equalsIgnoreCase("true") && !text.equalsIgnoreCase("false")) {
+            throw new IllegalArgumentException("\"" + text + "\" is neither true nor false.");
+        }
+
+        return Boolean.parseBoolean(text);
+    }
+
+    /**
+     * Writes a causal unmix specification, as the values of "Unmix" fields: first how many components the rows are
+     * divided into, a number or a range to choose from by BIC, and then each setting that is not at its default,
+     * as a parameter of a box is written.
+     *
+     * @param spec the specification.
+     * @return the lines.
+     */
+    static List<String> unmixLines(UnmixSpec spec) {
+        UnmixSpec defaults = new UnmixSpec();
+        List<String> lines = new ArrayList<>();
+
+        lines.add(COMPONENTS + (spec.isAutoSelectK() ? BY_BIC + spec.getKmin() + BIC_TO + spec.getKmax()
+                : String.valueOf(spec.getK())));
+
+        for (UnmixSetting setting : UNMIX_SETTINGS) {
+            Object value = setting.get().apply(spec);
+            Object defaultValue = setting.get().apply(defaults);
+
+            if (!Objects.equals(value, defaultValue)) {
+                lines.add(setting.name() + " = " + value + " (default " + defaultValue + ")");
+            }
+        }
+
+        return lines;
+    }
+
+    /**
+     * Reads back one line of what {@link #unmixLines} wrote, into the given specification.
+     *
+     * @param text the value of an "Unmix" field.
+     * @param spec the specification to set.
+     * @throws IllegalArgumentException if the text cannot be read, with the reason.
+     */
+    static void readUnmixLine(String text, UnmixSpec spec) {
+        String line = text.strip();
+
+        try {
+            if (line.startsWith(COMPONENTS)) {
+                String components = line.substring(COMPONENTS.length()).strip();
+
+                if (components.startsWith(BY_BIC)) {
+                    String[] range = components.substring(BY_BIC.length()).split(BIC_TO);
+
+                    if (range.length != 2) {
+                        throw new IllegalArgumentException("it does not give a range of components.");
+                    }
+
+                    int low = Integer.parseInt(range[0].strip());
+                    int high = Integer.parseInt(range[1].strip());
+
+                    if (low < 1 || high < low) {
+                        throw new IllegalArgumentException("its range of components is not one.");
+                    }
+
+                    spec.setAutoSelectK(true).setKmin(low).setKmax(high);
+                } else {
+                    spec.setAutoSelectK(false).setK(Integer.parseInt(components));
+                }
+
+                return;
+            }
+
+            int equals = line.indexOf(" = ");
+            int defaultAt = line.lastIndexOf(" (default ");
+
+            if (equals <= 0) {
+                throw new IllegalArgumentException("it gives neither the components nor a setting.");
+            }
+
+            String name = line.substring(0, equals).strip();
+            String value = line.substring(equals + 3, defaultAt > equals ? defaultAt : line.length()).strip();
+
+            for (UnmixSetting setting : UNMIX_SETTINGS) {
+                if (setting.name().equals(name)) {
+                    setting.set().accept(spec, value);
+                    return;
+                }
+            }
+
+            throw new IllegalArgumentException("\"" + name + "\" is not a setting of the unmixing.");
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("a number in it could not be read.");
         }

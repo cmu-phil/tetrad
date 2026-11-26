@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.description;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.data.DiscretizationSpec;
 import edu.cmu.tetrad.data.SplitCasesSpec;
+import edu.cmu.tetrad.data.UnmixSpec;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -326,6 +327,24 @@ public final class SessionRebuilder {
             }
         }
 
+        // How a causal unmix box divides the rows into components.
+        List<String> unmix = box.getAll(StandardDescribers.UNMIX);
+
+        if (!unmix.isEmpty()) {
+            UnmixSpec spec = new UnmixSpec();
+
+            for (String line : unmix) {
+                try {
+                    StandardDescribers.readUnmixLine(line, spec);
+                } catch (IllegalArgumentException e) {
+                    problems.add(name + ": the unmixing setting \"" + line + "\" was not set, since "
+                                 + e.getMessage());
+                }
+            }
+
+            parameters.set("unmixSpec", (Object) spec);
+        }
+
         // Parameters given several values, as a grid search box gives the ones it compares.
         for (String values : box.getAll(StandardDescribers.VALUES)) {
             try {
@@ -336,6 +355,40 @@ public final class SessionRebuilder {
         }
 
         return parameters;
+    }
+
+    /**
+     * Reads a value given as text as the kind of value a registered default is.
+     *
+     * @param defaultValue the registered default of the parameter.
+     * @param text         the value, as a description writes it.
+     * @return the value.
+     * @throws IllegalArgumentException if the text cannot be read as that kind of value, with the reason.
+     */
+    static Object valueOfKind(Serializable defaultValue, String text) {
+        String value = text.strip();
+
+        try {
+            if (defaultValue instanceof Integer) {
+                return Integer.valueOf(value);
+            } else if (defaultValue instanceof Long) {
+                return Long.valueOf(value);
+            } else if (defaultValue instanceof Double) {
+                return Double.valueOf(value);
+            } else if (defaultValue instanceof Boolean) {
+                if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+                    throw new NumberFormatException();
+                }
+
+                return Boolean.valueOf(value);
+            } else if (defaultValue instanceof String) {
+                return text;
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("its value could not be read.");
+        }
+
+        throw new IllegalArgumentException("it has a kind of value that cannot be read from text.");
     }
 
     /**
