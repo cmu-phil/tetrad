@@ -284,11 +284,15 @@ public class BossTopK implements SuborderSearchTopK {
 
         try {
             // ---- Initial restarts (as in ordinary BOSS), each seeding the top-k / deferred machinery. ----
+            // One list is carried from start to start, as in Boss, so that each start after the first shuffles the
+            // order the last one ended at. Shuffling a fresh copy of the incoming order each time is just as random,
+            // but turns the same random draws into a different order, and so with one model kept and no splitting
+            // the result differed from BOSS's whenever there was more than one start.
+            List<Node> start = new ArrayList<>(suborder);
+
             for (int i = 0; i < this.numStarts; i++) {
 
                 double time = System.currentTimeMillis();
-
-                List<Node> start = new ArrayList<>(suborder);
 
                 if ((i == 0 && !this.useDataOrder) || i > 0) {
                     shuffle(start);
@@ -330,13 +334,13 @@ public class BossTopK implements SuborderSearchTopK {
                 this.enqueued.remove(key);
                 if (this.visited.contains(key)) continue;
 
-                List<Node> start = suborderFromPerm(d.perm);
-                makeValidKnowledgeOrder(start);
+                List<Node> branch = suborderFromPerm(d.perm);
+                makeValidKnowledgeOrder(branch);
 
-                score = runOneHillClimb(prefix, start);
+                score = runOneHillClimb(prefix, branch);
 
                 if (score > bestScore) {
-                    bestSuborder = new ArrayList<>(start);
+                    bestSuborder = new ArrayList<>(branch);
                     bestScore = score;
                 }
             }

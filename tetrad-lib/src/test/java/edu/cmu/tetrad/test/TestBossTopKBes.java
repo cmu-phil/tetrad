@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * BOSS Top-K with BES runs BES on the graph of the order its run arrived at.
@@ -81,21 +80,6 @@ public class TestBossTopKBes {
         return new PermutationSearchTopK(boss, 1, 0.0).search(false);
     }
 
-    private static double bic(Graph dag, DataSet data) {
-        SemBicScore score = score(data);
-        List<Node> variables = data.getVariables();
-        double total = 0;
-
-        for (Node node : dag.getNodes()) {
-            List<Node> parents = dag.getParents(node);
-            int[] indices = new int[parents.size()];
-            for (int i = 0; i < indices.length; i++) indices[i] = variables.indexOf(parents.get(i));
-            total += score.localScore(variables.indexOf(node), indices);
-        }
-
-        return total;
-    }
-
     /**
      * From the data order with one start, keeping one model and not splitting, BOSS Top-K is BOSS, with BES as
      * without.
@@ -122,22 +106,29 @@ public class TestBossTopKBes {
     }
 
     /**
-     * On these data sets, turning BES on does not give a lower-scoring result. It did in several of them when BES
-     * was run on another run's graph.
+     * The same holds with several starts, with BES and without: the two make the same random starts. Before, BOSS
+     * Top-K shuffled a fresh copy of the incoming order for each start, where BOSS shuffles the order its last start
+     * ended at, and the two gave different graphs in about half of these data sets.
      */
     @Test
-    public void testWithSeveralStartsBesDoesNotLowerTheScore() throws Exception {
+    public void testWithSeveralStartsItGivesWhatBossGives() throws Exception {
         PrintStream out = System.out;
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
 
         try {
-            for (int rep = 0; rep < 10; rep++) {
-                DataSet data = data(25, rep);
-                double with = bic(topK(data, true, 3, rep), data);
-                double without = bic(topK(data, false, 3, rep), data);
+            for (boolean useBes : new boolean[]{false, true}) {
+                for (int rep = 0; rep < 15; rep++) {
+                    DataSet data = data(12, rep);
 
-                assertTrue("Data set " + rep + ": with BES " + with + ", without " + without,
-                        with > without - 1e-6);
+                    RandomUtil.getInstance().setSeed(11L + rep);
+                    Boss boss = new Boss(score(data));
+                    boss.setUseDataOrder(true);
+                    boss.setUseBes(useBes);
+                    boss.setNumStarts(3);
+
+                    assertEquals("Data set " + rep + ", BES " + useBes, new PermutationSearch(boss).search(false),
+                            topK(data, useBes, 3, rep));
+                }
             }
         } finally {
             System.setOut(out);
