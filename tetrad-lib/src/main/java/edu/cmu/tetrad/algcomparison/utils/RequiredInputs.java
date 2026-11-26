@@ -137,6 +137,7 @@ public final class RequiredInputs {
     public static String graphSourceMessage(String algorithm) {
         return algorithm + " needs a graph as well as data: it orients the edges of that graph using the data.\n"
                 + "In the interface, connect a Graph box holding the graph to this Search box, along with the Data box.\n"
+                + "In causal-cmd, give the file holding the graph with --external-graph.\n"
                 + "In code, pass the algorithm that supplies the graph to the constructor or to setExternalGraph.\n"
                 + "SingleGraphAlg wraps a graph you already have.";
     }

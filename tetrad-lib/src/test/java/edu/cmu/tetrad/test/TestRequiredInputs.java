@@ -253,6 +253,7 @@ public class TestRequiredInputs {
 
             assertTrue(expected, expected.startsWith(name + " needs a graph as well as data"));
             assertTrue(expected, expected.contains("Graph box"));
+            assertTrue(expected, expected.contains("--external-graph"));
             assertTrue(expected, expected.contains("setExternalGraph"));
 
             assertEquals(name, expected, refusal(() -> run(search.getValue().get(), new Parameters())));

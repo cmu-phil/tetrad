@@ -686,6 +686,11 @@ public class Boss implements SuborderSearch {
         Graph graph = PermutationSearch.getGraph(all, this.parents, this.knowledge, true);
         this.bes.bes(graph, all, suborder);
         graph.paths().makeValidOrder(suborder);
+
+        // BES does not delete a required edge, and a valid order of the graph keeps a parent ahead of its child, so
+        // the order should still honor the required edges. That rests on the Meek rules having oriented every one
+        // of them, which they do only "if possible". Make it certain; an order already sound is left as it is.
+        RequiredEdgeOrder.repair(suborder, this.knowledge);
     }
 
     /**

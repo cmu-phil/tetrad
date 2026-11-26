@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.RequiredEdgeOrder;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -291,6 +292,10 @@ public class GraspTol {
                     return 0;
                 }
             });
+
+            // The sort compares only pairs joined by knowledge, which is not an ordering a sort can rely on, and can
+            // leave a required edge broken. Finish the job; an order already sound is left as it is.
+            RequiredEdgeOrder.repair(order, this.knowledge);
         }
     }
 
@@ -408,7 +413,12 @@ public class GraspTol {
                     continue;
                 }
 
-                if (violatesKnowledge(scorer.getPi())) continue;
+                // A move that knowledge refuses is undone, as in Grasp. It used to be left in place, so that the
+                // search carried on from an order that broke the knowledge.
+                if (violatesKnowledge(scorer.getPi())) {
+                    scorer.goToBookmark(currentDepth);
+                    continue;
+                }
 
                 double sNew = scorer.score();
 
@@ -547,6 +557,9 @@ public class GraspTol {
 
     private boolean violatesKnowledge(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
+            // A variable ahead of one required to precede it. Only forbidden edges were checked before.
+            if (RequiredEdgeOrder.breaksRequiredEdge(order, this.knowledge)) return true;
+
             for (int i = 0; i < order.size(); i++) {
                 for (int j = i + 1; j < order.size(); j++) {
                     if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {

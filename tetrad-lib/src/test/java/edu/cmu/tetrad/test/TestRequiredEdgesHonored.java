@@ -32,6 +32,7 @@ import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.PermutationSearchTopK;
 import edu.cmu.tetrad.search.Sp;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.work_in_progress.GraspTol;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -157,6 +158,59 @@ public class TestRequiredEdgesHonored {
             PermutationSearchTopK search = new PermutationSearchTopK(boss, 5, 0.0);
             search.setKnowledge(knowledge);
             return search.search(false);
+        }, 10, 30);
+    }
+
+    /**
+     * With BES the order is remade from the graph BES leaves. The required edges are still in the result, at one
+     * thread and at four, and with one start and with three.
+     */
+    @Test
+    public void testBossWithBes() throws Exception {
+        for (int numThreads : new int[]{1, 4}) {
+            for (int numStarts : new int[]{1, 3}) {
+                assertAllRequiredEdgesPresent("BOSS with BES, threads " + numThreads + ", starts " + numStarts,
+                        (data, knowledge) -> {
+                            Boss boss = new Boss(score(data));
+                            boss.setNumThreads(numThreads);
+                            boss.setUseDataOrder(true);
+                            boss.setUseBes(true);
+                            boss.setNumStarts(numStarts);
+                            PermutationSearch search = new PermutationSearch(boss);
+                            search.setKnowledge(knowledge);
+                            return search.search(false);
+                        }, 10, 15);
+            }
+        }
+    }
+
+    @Test
+    public void testBossTopKWithBes() throws Exception {
+        for (int numStarts : new int[]{1, 3}) {
+            assertAllRequiredEdgesPresent("BOSS Top-K with BES, starts " + numStarts, (data, knowledge) -> {
+                BossTopK boss = new BossTopK(score(data));
+                boss.setUseDataOrder(true);
+                boss.setUseBes(true);
+                boss.setNumStarts(numStarts);
+                PermutationSearchTopK search = new PermutationSearchTopK(boss, 5, 0.0);
+                search.setKnowledge(knowledge);
+                return search.search(false);
+            }, 10, 15);
+        }
+    }
+
+    /**
+     * GraspTol checked its moves against forbidden edges only, and left a refused move in place. A required edge was
+     * missing from its result in 60 of 60 searches with this chain, and in 40 of 60 with one required edge.
+     */
+    @Test
+    public void testGraspTol() throws Exception {
+        assertAllRequiredEdgesPresent("GraspTol", (data, knowledge) -> {
+            GraspTol grasp = new GraspTol(score(data));
+            grasp.setKnowledge(knowledge);
+            grasp.setUseDataOrder(true);
+            grasp.bestOrder(new ArrayList<>(data.getVariables()));
+            return grasp.getGraph(false);
         }, 10, 30);
     }
 

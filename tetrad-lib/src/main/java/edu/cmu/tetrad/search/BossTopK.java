@@ -1095,9 +1095,20 @@ public class BossTopK implements SuborderSearchTopK {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
 
+        // Bring this.parents up to date with the current suborder, so that BES starts from the graph this run
+        // arrived at, as in Boss. Without this BES was run on the graph of whichever order was last scored, the
+        // starting order on the first run and the previous run's result after that, and the order was then
+        // rearranged to fit that graph.
+        update(prefix, suborder);
+
         Graph graph = PermutationSearchTopK.getGraph(all, this.parents, this.knowledge, true);
         this.bes.bes(graph, all, suborder);
         graph.paths().makeValidOrder(suborder);
+
+        // BES does not delete a required edge, and a valid order of the graph keeps a parent ahead of its child, so
+        // the order should still honor the required edges. That rests on the Meek rules having oriented every one
+        // of them, which they do only "if possible". Make it certain; an order already sound is left as it is.
+        RequiredEdgeOrder.repair(suborder, this.knowledge);
     }
 
     /**
