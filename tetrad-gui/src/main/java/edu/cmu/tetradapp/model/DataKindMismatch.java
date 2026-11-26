@@ -61,6 +61,34 @@ final class DataKindMismatch {
     }
 
     /**
+     * Whether an algorithm that searches several data sets together cannot take one of them. Such an algorithm's kind
+     * of data is that of the test and score chosen for it; several report that they take all kinds whatever was
+     * chosen, so the test and the score are asked directly. An algorithm with neither is asked itself.
+     *
+     * @param algorithm the algorithm, with its test and score set if it takes them
+     * @param data      one of the data sets
+     * @return true if the test, the score, or (having neither) the algorithm does not take data of this kind
+     */
+    static boolean refuses(Algorithm algorithm, DataModel data) {
+        boolean asked = false;
+
+        if (algorithm instanceof TakesIndependenceWrapper takesTest && takesTest.getIndependenceWrapper() != null) {
+            asked = true;
+            if (!accepts(takesTest.getIndependenceWrapper().getDataType(), data)) return true;
+        }
+
+        if (algorithm instanceof TakesScoreWrapper takesScore && takesScore.getScoreWrapper() != null) {
+            asked = true;
+            if (!accepts(takesScore.getScoreWrapper().getDataType(), data)) return true;
+        }
+
+        if (asked) return false;
+
+        DataType own = algorithm.getDataType();
+        return own != DataType.All && !accepts(own, data);
+    }
+
+    /**
      * The message for an algorithm that cannot be run on the given data. Each sentence is on its own line.
      *
      * @param algorithm the algorithm, with its test and score set if it takes them

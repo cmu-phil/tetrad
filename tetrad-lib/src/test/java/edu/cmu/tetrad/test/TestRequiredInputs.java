@@ -211,6 +211,27 @@ public class TestRequiredInputs {
         }
     }
 
+    /**
+     * The search class behind PC-MB, called directly, refuses no targets and a null target with a message. A null
+     * target used to end in a null-pointer error from inside the search, and no targets in an empty graph.
+     */
+    @Test
+    public void testTheSearchClassBehindPcMbRefusesMissingAndNullTargets() {
+        edu.cmu.tetrad.search.test.IndTestFisherZ test = new edu.cmu.tetrad.search.test.IndTestFisherZ(data, 0.01);
+
+        String none = refusal(() -> quietly(() -> new edu.cmu.tetrad.search.PcMb(test, 3).search(new ArrayList<>())));
+        assertTrue(none, none.startsWith("PC-MB needs at least one target variable"));
+
+        List<Node> withNull = new ArrayList<>();
+        withNull.add(data.getVariable("X1"));
+        withNull.add(test.getVariable("X9"));
+        String missing = refusal(() -> quietly(() -> new edu.cmu.tetrad.search.PcMb(test, 3).search(withNull)));
+        assertTrue(missing, missing.startsWith("PC-MB was given a target that is null"));
+
+        Graph found = quietly(() -> new edu.cmu.tetrad.search.PcMb(test, 3).search(List.of(test.getVariable("X1"))));
+        assertTrue(found.containsNode(found.getNode("X1")));
+    }
+
     // ---- a graph to orient ----
 
     @Test

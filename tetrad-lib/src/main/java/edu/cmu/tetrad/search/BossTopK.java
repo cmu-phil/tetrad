@@ -953,9 +953,14 @@ public class BossTopK implements SuborderSearchTopK {
 
         for (int j = lastValidIndex; j >= 0; j--) {
 
-            // Constraint: neighborNode must precede nodeToMove.
-            if (j < suborder.size()) {
-                Node neighborNode = suborder.get(j);
+            // Constraint: neighborNode must precede nodeToMove. Slot j means "before the j-th of the other nodes",
+            // so the neighbor in question is the j-th node not counting nodeToMove: at or past nodeToMove's own
+            // place that is one further along the list. (The list used to be indexed by j itself, which to the
+            // right of nodeToMove named the node before the slot. In an order that respects the knowledge no node
+            // to the right is required to precede nodeToMove, so the wrong node was never one that mattered.)
+            int neighborIndex = j < originalPosition ? j : j + 1;
+            if (neighborIndex < suborder.size()) {
+                Node neighborNode = suborder.get(neighborIndex);
                 if (this.knowledge.isRequired(neighborNode.getName(), nodeToMove.getName())) {
                     firstValidIndex = j + 1;
                     break;

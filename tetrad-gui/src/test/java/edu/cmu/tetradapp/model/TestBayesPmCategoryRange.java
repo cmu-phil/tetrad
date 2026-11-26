@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * The Bayes parametric model box gives each variable the number of categories its parameter editor asks for,
@@ -173,5 +174,21 @@ public class TestBayesPmCategoryRange {
     public void testInstantiatedModelWithNoParent() {
         BayesImWrapper wrapper = new BayesImWrapper(new Parameters());
         assertEquals(0, wrapper.getBayesIm().getNumNodes());
+    }
+
+    /**
+     * The "copy" choice takes categories from an existing model and gives other variables a number from the range.
+     * With a graph as the only parent there is nothing to copy from, so every variable gets a number from the range.
+     * That case used to leave the box with no model at all.
+     */
+    @Test
+    public void testCopyWithNothingToCopyFromUsesTheRange() {
+        Parameters parameters = range(5, 5);
+        parameters.set("bayesPmInitializationMode", "copy");
+
+        BayesPmWrapper wrapper = new BayesPmWrapper(new GraphWrapper(dag()), parameters);
+
+        assertNotNull(wrapper.getBayesPm());
+        assertEquals(Set.of(5), categoryCounts(wrapper));
     }
 }

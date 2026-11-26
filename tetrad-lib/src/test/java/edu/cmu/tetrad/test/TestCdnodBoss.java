@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -65,6 +66,11 @@ public class TestCdnodBoss {
 
     @Test
     public void testCdnodBossWithContext() throws InterruptedException {
+        // The model and the data are drawn at random. Without a seed of its own this test took whatever state the
+        // shared generator was in, and failed for 7 starting seeds in 60: with a weak C -> X1 coefficient drawn, the
+        // search does not find that edge.
+        RandomUtil.getInstance().setSeed(17L);
+
         // Create a simple DAG with context: C -> X1 -> X2
         Graph dag = new EdgeListGraph();
         Node c = new ContinuousVariable("C");

@@ -172,9 +172,16 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
 
-        if (targets == null) {
-            throw new IllegalArgumentException(
-                    "Null targets name not permitted");
+        if (targets == null || targets.isEmpty()) {
+            throw new IllegalArgumentException("PC-MB needs at least one target variable, and none was given.");
+        }
+
+        for (Node target : targets) {
+            if (target == null) {
+                throw new IllegalArgumentException("PC-MB was given a target that is null. Each target must be one"
+                        + " of the variables of the test; a name that is not a variable's name gives null when"
+                        + " looked up.");
+            }
         }
 
         this.targets = targets;
@@ -203,8 +210,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         TetradLogger.getInstance().log("BEGINNING step 1 (prune targets).");
 
         for (Node target : getTargets()) {
-            if (target == null) throw new NullPointerException("Target not specified");
-
             graph.addNode(target);
             constructFan(target, graph);
 

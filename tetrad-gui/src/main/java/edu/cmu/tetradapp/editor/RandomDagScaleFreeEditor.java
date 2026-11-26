@@ -42,6 +42,14 @@ class RandomDagScaleFreeEditor extends JPanel {
 
     private final DoubleTextField scaleFreeGammaField;
 
+    private static final String GAMMA_NOTE = "Note: Gamma = 1 - Alpha - Beta; Alpha, Beta, Gamma > 0";
+    private static final String GAMMA_WARNING = "Alpha + Beta must be less than 1, so that Gamma > 0";
+
+    /**
+     * The line under Gamma. It turns into a warning, in red, while alpha and beta leave nothing for gamma.
+     */
+    private final JLabel gammaNote = new JLabel(GAMMA_NOTE);
+
     /**
      * The parameters being edited: the ones the random graph is made from.
      */
@@ -101,13 +109,24 @@ class RandomDagScaleFreeEditor extends JPanel {
             return value;
         });
 
+        // Alpha and beta must each be above 0 and below 1; a value outside that is not taken, as the graph maker
+        // would refuse it. Their sum must be below 1 too, but that is not enforced field by field, since getting from
+        // one valid pair to another can pass through a pair that is not: the note under Gamma says so in red instead.
         scaleFreeAlphaField.setFilter((value, oldValue) -> {
+            if (!(value > 0 && value < 1)) {
+                return oldValue;
+            }
+
             RandomDagScaleFreeEditor.this.setScaleFreeAlpha(value);
             RandomDagScaleFreeEditor.this.setGamma();
             return value;
         });
 
         scaleFreeBetaField.setFilter((value, oldValue) -> {
+            if (!(value > 0 && value < 1)) {
+                return oldValue;
+            }
+
             RandomDagScaleFreeEditor.this.setScaleFreeBeta(value);
             RandomDagScaleFreeEditor.this.setGamma();
             return value;
@@ -177,7 +196,7 @@ class RandomDagScaleFreeEditor extends JPanel {
         b1.add(b15a);
 
         Box b15b = Box.createHorizontalBox();
-        b15b.add(new JLabel("Note: Gamma = 1 - Alpha - Beta; Alpha, Beta, Gamma > 0"));
+        b15b.add(this.gammaNote);
         b1.add(b15b);
 
         Box b13 = Box.createHorizontalBox();
@@ -211,7 +230,17 @@ class RandomDagScaleFreeEditor extends JPanel {
     }
 
     private void setGamma() {
-        this.scaleFreeGammaField.setValue(getScaleFreeGamma());
+        double gamma = getScaleFreeGamma();
+        this.scaleFreeGammaField.setValue(gamma);
+
+        // The graph maker refuses a gamma of 0 or less. Say so here, where it can be put right.
+        if (gamma > 0) {
+            this.gammaNote.setText(GAMMA_NOTE);
+            this.gammaNote.setForeground(UIManager.getColor("Label.foreground"));
+        } else {
+            this.gammaNote.setText(GAMMA_WARNING);
+            this.gammaNote.setForeground(Color.RED);
+        }
     }
 
     /**

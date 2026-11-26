@@ -209,8 +209,13 @@ public class BayesPmWrapper implements SessionModel {
             upperBound = params.getInt("upperBoundNumVals", 4);
             setBayesPm(graph, lowerBound, upperBound);
         } else if (params.getString("bayesPmInitializationMode").equals("copy")) {
-//            setBayesPm(graph, pm, lowerBound, upperBound);
-        }else {
+            // "copy" takes each variable's categories from an existing Bayes PM and gives any variable not in it a
+            // number from the range. Here there is no existing Bayes PM, so every variable gets a number from the
+            // range. This branch used to set no model at all, leaving a box that failed when opened.
+            lowerBound = params.getInt("lowerBoundNumVals", 2);
+            upperBound = params.getInt("upperBoundNumVals", 4);
+            setBayesPm(graph, lowerBound, upperBound);
+        } else {
             throw new IllegalStateException("Unrecognized type.");
         }
     }

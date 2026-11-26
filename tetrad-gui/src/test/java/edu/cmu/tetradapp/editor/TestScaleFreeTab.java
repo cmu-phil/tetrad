@@ -25,7 +25,10 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import org.junit.Test;
 
+import javax.swing.JLabel;
+
 import java.awt.Component;
+import java.awt.Color;
 import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
@@ -147,5 +150,70 @@ public class TestScaleFreeTab {
         assertEquals(0.75, values.get(4).getValue(), 0.0);
         assertEquals(0.5, parameters.getDouble("scaleFreeDeltaIn"), 0.0);
         assertEquals(0.75, parameters.getDouble("scaleFreeDeltaOut"), 0.0);
+    }
+
+    /**
+     * Alpha and beta must each be above 0 and below 1, which is what the graph maker requires. A value outside that
+     * is not taken, and the field and the parameters keep what they had.
+     */
+    @Test
+    public void testAlphaAndBetaAreKeptBetweenZeroAndOne() {
+        Parameters parameters = new Parameters();
+        List<DoubleTextField> values = fields(new RandomDagScaleFreeEditor(parameters), DoubleTextField.class,
+                new ArrayList<>());
+
+        values.get(1).setValue(0.5);
+        values.get(0).setValue(0.3);
+
+        for (double refused : new double[]{0.0, -0.2, 1.0, 1.5, Double.NaN}) {
+            values.get(0).setValue(refused);
+            values.get(1).setValue(refused);
+            assertEquals(0.3, values.get(0).getValue(), 0.0);
+            assertEquals(0.5, values.get(1).getValue(), 0.0);
+            assertEquals(0.3, parameters.getDouble("scaleFreeAlpha"), 0.0);
+            assertEquals(0.5, parameters.getDouble("scaleFreeBeta"), 0.0);
+        }
+    }
+
+    /**
+     * Alpha and beta together must leave something for gamma. That is not refused field by field, since the way
+     * from one good pair to another can pass through a pair that is not; the line under Gamma says what is wrong
+     * while it is, and goes back to the plain note when it is put right.
+     */
+    @Test
+    public void testTheNoteWarnsWhileAlphaAndBetaLeaveNothingForGamma() {
+        Parameters parameters = new Parameters();
+        RandomDagScaleFreeEditor tab = new RandomDagScaleFreeEditor(parameters);
+        List<DoubleTextField> values = fields(tab, DoubleTextField.class, new ArrayList<>());
+
+        assertEquals(List.of("Note: Gamma = 1 - Alpha - Beta; Alpha, Beta, Gamma > 0"), notes(tab));
+
+        // From the defaults of 0.05 and 0.9, raising alpha first passes through a pair that sums to more than 1.
+        values.get(0).setValue(0.3);
+        assertEquals(0.3, parameters.getDouble("scaleFreeAlpha"), 0.0);
+        assertEquals(List.of("Alpha + Beta must be less than 1, so that Gamma > 0"), notes(tab));
+        assertEquals(Color.RED, noteLabels(tab).getFirst().getForeground());
+
+        values.get(1).setValue(0.5);
+        assertEquals(List.of("Note: Gamma = 1 - Alpha - Beta; Alpha, Beta, Gamma > 0"), notes(tab));
+        assertEquals(0.2, values.get(2).getValue(), 1e-12);
+    }
+
+    private static List<JLabel> noteLabels(Container tab) {
+        List<JLabel> labels = new ArrayList<>();
+
+        for (JLabel label : fields(tab, JLabel.class, new ArrayList<>())) {
+            if (label.getText() != null && label.getText().contains("Gamma") && label.getText().length() > 10) {
+                labels.add(label);
+            }
+        }
+
+        return labels;
+    }
+
+    private static List<String> notes(Container tab) {
+        List<String> texts = new ArrayList<>();
+        for (JLabel label : noteLabels(tab)) texts.add(label.getText());
+        return texts;
     }
 }

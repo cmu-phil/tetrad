@@ -21,6 +21,9 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskPool;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FciIod;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Ion;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
@@ -224,5 +227,120 @@ public class TestDataKindMismatch {
 
         fail("Expected the Search box to refuse the data.");
         return null;
+    }
+
+    // ---- several data sets searched together ----
+
+    private static List<DataSet> three(DataSet first) {
+        List<DataSet> dataSets = new java.util.ArrayList<>();
+
+        for (int i = 1; i <= 3; i++) {
+            DataSet copy = first.copy();
+            copy.setName("run" + i);
+            dataSets.add(copy);
+        }
+
+        return dataSets;
+    }
+
+    private static GeneralAlgorithmRunner several(Algorithm algorithm, List<DataSet> dataSets, Graph attached)
+            throws java.text.ParseException {
+        DataWrapper wrapper = new DataWrapper(dataSets.getFirst());
+        edu.cmu.tetrad.data.DataModelList list = new edu.cmu.tetrad.data.DataModelList();
+        list.addAll(dataSets);
+        wrapper.setDataModelList(list);
+
+        GeneralAlgorithmRunner runner = attached == null
+                ? new GeneralAlgorithmRunner(wrapper, new Parameters())
+                : new GeneralAlgorithmRunner(wrapper, new GraphWrapper(attached), new Parameters());
+        runner.setAlgorithm(algorithm);
+        return runner;
+    }
+
+    private static String refusalForSeveral(Algorithm algorithm, List<DataSet> dataSets) {
+        PrintStream out = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+
+        try {
+            several(algorithm, dataSets, null).execute();
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        } catch (java.text.ParseException e) {
+            throw new RuntimeException(e);
+        } finally {
+            System.setOut(out);
+        }
+
+        fail("Expected the Search box to refuse the data.");
+        return null;
+    }
+
+    /**
+     * A search over several data sets together had no check on the kind of data, and a test or score for another
+     * kind surfaced as "Data set must be continuous." or the like from inside the search. It is now named, with the
+     * data set, as for a search over one data set.
+     */
+    @Test
+    public void testASearchOverSeveralDataSetsNamesTheTestOrScore() {
+        String message = refusalForSeveral(new FciIod(new FisherZ()), three(discrete));
+        assertTrue(message, message.startsWith("IOD cannot be run on this data as it is set up.\nThe data set 'run"));
+        assertTrue(message, message.contains("is discrete, and the test chosen, Fisher Z, is for continuous data."));
+
+        message = refusalForSeveral(new FciIod(new ChiSquare()), three(continuous));
+        assertTrue(message, message.contains("is continuous, and the test chosen, Chi Square Test, is for discrete"
+                                             + " data."));
+
+        message = refusalForSeveral(new Ion(new FisherZ(), new BdeuScore()), three(continuous));
+        assertTrue(message, message.startsWith("ION cannot be run on this data as it is set up."));
+        assertTrue(message, message.contains("the score chosen, BDeu Score, is for discrete data."));
+        assertFalse(message, message.contains("the test chosen"));
+    }
+
+    /**
+     * IOD and ION say they take every kind of data, whatever test and score they hold. That is not read as taking
+     * none, and a matching test and score run.
+     */
+    @Test
+    public void testASearchOverSeveralDataSetsOfTheRightKindRuns() throws Exception {
+        assertFalse(DataKindMismatch.refuses(new FciIod(new FisherZ()), continuous));
+        assertFalse(DataKindMismatch.refuses(new FciIod(new ChiSquare()), discrete));
+        assertTrue(DataKindMismatch.refuses(new FciIod(new FisherZ()), discrete));
+        assertFalse(DataKindMismatch.refuses(new FaskPool(new DegenerateGaussianBicScore()), mixed));
+        assertTrue(DataKindMismatch.refuses(new FaskPool(new SemBicScore()), mixed));
+
+        PrintStream out = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+
+        try {
+            GeneralAlgorithmRunner runner = several(new FciIod(new FisherZ()), three(continuous), null);
+            runner.execute();
+            assertNotNull(runner.getGraph());
+        } finally {
+            System.setOut(out);
+        }
+    }
+
+    /**
+     * With a graph attached the check is not made. FASK-Pool, given its adjacencies, has no use for its score, and
+     * runs on mixed data with a score for continuous data, as it did before.
+     */
+    @Test
+    public void testFaskPoolWithAGraphAttachedIsNotRefusedForItsScore() throws Exception {
+        List<DataSet> dataSets = three(mixed);
+        List<Node> v = dataSets.getFirst().getVariables();
+        Graph given = new edu.cmu.tetrad.graph.EdgeListGraph(v);
+        given.addUndirectedEdge(v.get(2), v.get(3));
+        given.addUndirectedEdge(v.get(3), v.get(4));
+
+        PrintStream out = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+
+        try {
+            GeneralAlgorithmRunner runner = several(new FaskPool(new SemBicScore()), dataSets, given);
+            runner.execute();
+            assertEquals(2, runner.getGraph().getNumEdges());
+        } finally {
+            System.setOut(out);
+        }
     }
 }

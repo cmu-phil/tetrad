@@ -694,6 +694,18 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         sub.add(dataSets.get(j));
                     }
 
+                    // The kind of data is checked here as it is for a search over one data set, so that a test or
+                    // score for another kind is named, with the data set, before the search starts. Not when a graph
+                    // is attached: FASK-Pool, given its adjacencies, has no use for its score and runs whatever kind
+                    // the score is for, and the others make their own checks.
+                    if (this.sourceGraph == null) {
+                        for (DataModel data : sub) {
+                            if (DataKindMismatch.refuses(algo, data)) {
+                                throw new IllegalArgumentException(DataKindMismatch.message(algo, data));
+                            }
+                        }
+                    }
+
                     if (algo instanceof TakesGraph) {
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
                     }
