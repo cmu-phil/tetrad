@@ -155,6 +155,25 @@ public interface SuborderSearchTopK {
     void setDeferTies(boolean deferTies);
 
     /**
+     * Returns the number of hill-climb runs the last suborder search made: its starts, and one for each ordering that
+     * was set aside and then searched from.
+     *
+     * @return The number of runs (0 before a search has been run).
+     */
+    int getNumRuns();
+
+    /**
+     * Returns whether the cap on runs cut the last suborder search short: true if an ordering that was to be set
+     * aside was not searched from because of the cap. The models kept are then the best of those reached, not of all
+     * there are within the split threshold. A search that used up its cap exactly, with nothing left set aside, was
+     * not cut short.
+     *
+     * @return True if the cap left an ordering unsearched.
+     * @see #setMaxRuns(int)
+     */
+    boolean isStoppedByMaxRuns();
+
+    /**
      * Returns the number of top models actually available after a search. This is at most {@code k}, but may be smaller
      * if fewer distinct models were found.
      *

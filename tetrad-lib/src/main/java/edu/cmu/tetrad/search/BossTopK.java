@@ -227,6 +227,10 @@ public class BossTopK implements SuborderSearchTopK {
      * The number of hill-climb runs performed in the current search.
      */
     private int runCount = 0;
+    /**
+     * Whether, in the current search, the cap on runs kept an ordering that was to be set aside from being searched.
+     */
+    private boolean stoppedByMaxRuns = false;
 
 
     /**
@@ -276,6 +280,7 @@ public class BossTopK implements SuborderSearchTopK {
         this.enqueued = new HashSet<>();
         this.ranked = new ArrayList<>();
         this.runCount = 0;
+        this.stoppedByMaxRuns = false;
 
         List<Node> bestSuborder = null;
         double score, bestScore = Double.NEGATIVE_INFINITY;
@@ -342,6 +347,16 @@ public class BossTopK implements SuborderSearchTopK {
                 if (score > bestScore) {
                     bestSuborder = new ArrayList<>(branch);
                     bestScore = score;
+                }
+            }
+
+            // Anything still set aside and not searched from was left by the cap.
+            if (!this.stoppedByMaxRuns) {
+                for (ScoredPermutation d : this.deferred) {
+                    if (!this.visited.contains(key(d.perm))) {
+                        this.stoppedByMaxRuns = true;
+                        break;
+                    }
                 }
             }
         } finally {
@@ -604,6 +619,22 @@ public class BossTopK implements SuborderSearchTopK {
      * {@inheritDoc}
      */
     @Override
+    public int getNumRuns() {
+        return this.runCount;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isStoppedByMaxRuns() {
+        return this.stoppedByMaxRuns;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getNumTopK() {
         return this.ranked.size();
     }
@@ -778,7 +809,11 @@ public class BossTopK implements SuborderSearchTopK {
                             double[] slotScores, int firstValidSlot, int lastValidSlot, int originalSlot,
                             int bestSlot, boolean ownSlot) {
         if (this.delta <= 0.0) return;
-        if (this.runCount >= this.maxRuns) return;
+
+        // At the cap nothing more is set aside. Whether something would have been is still worked out, until the
+        // first such ordering is found, so that the search can say that the cap stopped it.
+        boolean atCap = this.runCount >= this.maxRuns;
+        if (atCap && this.stoppedByMaxRuns) return;
 
         double best = slotScores[bestSlot];
 
@@ -798,7 +833,14 @@ public class BossTopK implements SuborderSearchTopK {
                 if (pos > alt.size()) pos = alt.size();
                 alt.add(pos, nodeToMove);
 
-                enqueueDeferred(prefix, alt, slotScores[j]);
+                if (atCap) {
+                    if (!this.visited.contains(key(fullPerm(alt)))) {
+                        this.stoppedByMaxRuns = true;
+                        return;
+                    }
+                } else {
+                    enqueueDeferred(prefix, alt, slotScores[j]);
+                }
             }
         }
     }

@@ -137,6 +137,16 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
     private transient int searchesKept;
 
     /**
+     * The number of hill-climb runs the last search made.
+     */
+    private transient int numRuns;
+
+    /**
+     * Whether the cap on runs cut the last search short.
+     */
+    private transient boolean stoppedByMaxRuns;
+
+    /**
      * Constructs a new BOSS-TopK algorithm.
      */
     public BossTopK() {
@@ -204,11 +214,37 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
         return this.topOrders == null ? List.of() : Collections.unmodifiableList(this.topOrders);
     }
 
+    /**
+     * Returns the number of hill-climb runs the last search made: its starts, and one for each placement that was set
+     * aside and then searched from. With knowledge that puts every variable in a tier this is the sum over the
+     * tiers, and the cap on runs applies to each tier's search separately. It is 0 wherever {@link #getTopGraphs()}
+     * is empty.
+     *
+     * @return the number of runs
+     */
+    public synchronized int getNumRuns() {
+        return this.numRuns;
+    }
+
+    /**
+     * Returns whether the cap on runs, the maxRuns parameter, cut the last search short: true if a placement that
+     * was to be set aside was not searched from because of the cap. The models kept are then the best of those
+     * reached, not of all there are within the split delta. A search that used up its cap exactly, with nothing left
+     * set aside, was not cut short. It is false wherever {@link #getTopGraphs()} is empty.
+     *
+     * @return true if the cap left a placement unsearched
+     */
+    public synchronized boolean isStoppedByMaxRuns() {
+        return this.stoppedByMaxRuns;
+    }
+
     private synchronized void clearTopModels() {
         this.topGraphs = null;
         this.topScores = null;
         this.topOrders = null;
         this.searchesKept = 0;
+        this.numRuns = 0;
+        this.stoppedByMaxRuns = false;
     }
 
     private synchronized void keepTopModels(PermutationSearchTopK permutationSearch) {
@@ -229,6 +265,8 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
         this.topGraphs = graphs;
         this.topScores = scores;
         this.topOrders = orders;
+        this.numRuns = permutationSearch.getNumRuns();
+        this.stoppedByMaxRuns = permutationSearch.isStoppedByMaxRuns();
         this.searchesKept++;
     }
 
@@ -318,7 +356,13 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
         System.out.println("==================== BOSS-TopK: top models ====================");
         System.out.println("Requested k = " + permutationSearch.getK()
                 + ", split delta = " + permutationSearch.getDelta()
-                + ", models found = " + n);
+                + ", models found = " + n
+                + ", runs made = " + permutationSearch.getNumRuns());
+
+        if (permutationSearch.isStoppedByMaxRuns()) {
+            System.out.println("The cap on runs (maxRuns) stopped the search with placements still set aside, so "
+                    + "these are the best models of those reached.");
+        }
 
         System.out.println();
         System.out.println("---- Top permutations (best first) ----");

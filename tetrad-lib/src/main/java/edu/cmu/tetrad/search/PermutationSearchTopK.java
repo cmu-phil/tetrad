@@ -112,6 +112,16 @@ public class PermutationSearchTopK {
     private final double delta;
 
     /**
+     * The number of hill-climb runs made by the last search, summed over its suborder searches.
+     */
+    private int numRuns = 0;
+
+    /**
+     * Whether the cap on runs cut any suborder search of the last search short.
+     */
+    private boolean stoppedByMaxRuns = false;
+
+    /**
      * Constructs a new PermutationSearchTopK using the given SuborderSearch, retaining a single (top) model. This is
      * equivalent to {@code PermutationSearchTopK(suborderSearch, 1, 0.0)} and reproduces ordinary permutation-search
      * behavior.
@@ -256,6 +266,9 @@ public class PermutationSearchTopK {
             RandomUtil.getInstance().setSeed(this.seed);
         }
 
+        this.numRuns = 0;
+        this.stoppedByMaxRuns = false;
+
         List<String> notInTier = new ArrayList<>();
         for (Node node : variables) {
             notInTier.add(node.getName());
@@ -283,20 +296,29 @@ public class PermutationSearchTopK {
                     this.order.add(node);
                     if (!this.knowledge.isTierForbiddenWithin(i)) continue;
                     suborder = this.order.subList(start++, this.order.size());
-                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                    searchSuborder(prefix, suborder);
                 }
 
                 if (this.knowledge.isTierForbiddenWithin(i)) continue;
                 suborder = this.order.subList(start, this.order.size());
-                this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                searchSuborder(prefix, suborder);
                 start = this.order.size();
             }
         } else {
             prefix = Collections.emptyList();
-            this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
+            searchSuborder(prefix, this.order);
         }
 
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, cpdag, replicatingGraph);
+    }
+
+    /**
+     * Runs one suborder search and adds its runs to the count for this search.
+     */
+    private void searchSuborder(List<Node> prefix, List<Node> suborder) throws InterruptedException {
+        this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+        this.numRuns += this.suborderSearch.getNumRuns();
+        this.stoppedByMaxRuns |= this.suborderSearch.isStoppedByMaxRuns();
     }
 
     /**
@@ -454,6 +476,30 @@ public class PermutationSearchTopK {
      */
     public double getDelta() {
         return this.delta;
+    }
+
+    /**
+     * Returns the number of hill-climb runs the last search made: its starts, and one for each ordering that was set
+     * aside and then searched from. With knowledge that puts every variable in a tier, the tiers are searched one
+     * after another and this is the sum over them; the cap on runs applies to each of those searches separately.
+     *
+     * @return The number of runs (0 before a search has been run).
+     */
+    public int getNumRuns() {
+        return this.numRuns;
+    }
+
+    /**
+     * Returns whether the cap on runs cut the last search short: true if an ordering that was to be set aside was
+     * not searched from because of the cap. The models kept are then the best of those reached, not of all there are
+     * within the split threshold. A search that used up its cap exactly, with nothing left set aside, was not cut
+     * short.
+     *
+     * @return True if the cap left an ordering unsearched.
+     * @see #setMaxRuns(int)
+     */
+    public boolean isStoppedByMaxRuns() {
+        return this.stoppedByMaxRuns;
     }
 
     /**
