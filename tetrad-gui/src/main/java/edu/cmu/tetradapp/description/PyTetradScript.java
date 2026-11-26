@@ -70,13 +70,80 @@ public final class PyTetradScript {
     private static final String NOTE_BOX = "Note";
 
     /**
+     * The data box models whose step is written as code: the box's own class, made from the data of the box above
+     * and the box's settings. Each is one that takes its data from one data box, needs nothing but its settings,
+     * and has been run from a script and found to give the data the session had, or, for those that draw random
+     * numbers, to run. A model not listed here is left for the user to write.
+     */
+    static final Set<String> STEPS_WRITTEN = Set.of(
+            "edu.cmu.tetradapp.model.DataWrapper",
+            "edu.cmu.tetradapp.model.CorrMatrixConverter",
+            "edu.cmu.tetradapp.model.CovarianceEstimateDataWrapper",
+            "edu.cmu.tetradapp.model.AddMissingnessIndicatorsWrapper",
+            "edu.cmu.tetradapp.model.DataCenterer",
+            "edu.cmu.tetradapp.model.DataStandardizer",
+            "edu.cmu.tetradapp.model.ExtraCategoryInterpolatorWrapper",
+            "edu.cmu.tetradapp.model.GaussianCopulaCorrelationConverter",
+            "edu.cmu.tetradapp.model.ImputeMissingDataWrapper",
+            "edu.cmu.tetradapp.model.LinearizeTransform",
+            "edu.cmu.tetradapp.model.LogData",
+            "edu.cmu.tetradapp.model.LongToWideWrapper",
+            "edu.cmu.tetradapp.model.MissingDataInjectorWrapper",
+            "edu.cmu.tetradapp.model.ModeInterpolatorWrapper",
+            "edu.cmu.tetradapp.model.NonparanormalTransform",
+            "edu.cmu.tetradapp.model.datamanip.ArResidualsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.ConvertNumericalDiscreteToContinuousWrapper",
+            "edu.cmu.tetradapp.model.datamanip.CovMatrixWrapper",
+            "edu.cmu.tetradapp.model.datamanip.DiscretizationWrapper",
+            "edu.cmu.tetradapp.model.datamanip.ExpandColumnsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.FirstDifferencesWrapper",
+            "edu.cmu.tetradapp.model.datamanip.InverseMatrixWrapper",
+            "edu.cmu.tetradapp.model.datamanip.MeanInterpolatorWrapper",
+            "edu.cmu.tetradapp.model.datamanip.PermuteRowsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.RemoveConstantColumnsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.RemoveMissingValueCasesWrapper",
+            "edu.cmu.tetradapp.model.datamanip.ReorderColumnsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.SelectionWrapper",
+            "edu.cmu.tetradapp.model.datamanip.SimulateFromCovWrapper",
+            "edu.cmu.tetradapp.model.datamanip.SubsetContinuousVariablesWrapper",
+            "edu.cmu.tetradapp.model.datamanip.SubsetDiscreteVariablesWrapper",
+            "edu.cmu.tetradapp.model.datamanip.ThinRowsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper",
+            "edu.cmu.tetradapp.model.datamanip.TimeSeriesWrapper2");
+
+    /**
+     * Those of them that draw random numbers, so that the data the step gives in a script are not the data the
+     * session had.
+     */
+    static final Set<String> STEPS_RANDOM = Set.of(
+            "edu.cmu.tetradapp.model.MissingDataInjectorWrapper",
+            "edu.cmu.tetradapp.model.datamanip.PermuteRowsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.ReorderColumnsWrapper",
+            "edu.cmu.tetradapp.model.datamanip.SimulateFromCovWrapper");
+
+    /**
+     * Data box models that work from what was selected by hand in the box above, which a description does not
+     * hold.
+     */
+    static final Set<String> STEPS_BY_SELECTION = Set.of(
+            "edu.cmu.tetradapp.model.SelectedDataset",
+            "edu.cmu.tetradapp.model.datamanip.SubsetSelectedVariablesWrapper",
+            "edu.cmu.tetradapp.model.datamanip.RemoveSelectedVariablesWrapper");
+
+    /**
+     * Data box models that work behind a progress window, which a script does not have.
+     */
+    static final Set<String> STEPS_BEHIND_A_WINDOW = Set.of(
+            "edu.cmu.tetradapp.model.datamanip.CausalUnmix");
+
+    /**
      * Names the script uses itself, which a box's variable must not take.
      */
     private static final Set<String> RESERVED = Set.of("os", "jpype", "pytetrad", "read_tabular", "read_covariance",
             "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue", "def",
             "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is",
             "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield",
-            "match", "case", "type", "print", "java", "edu");
+            "match", "case", "type", "print", "java", "edu", "data_box", "save_graph");
 
     private final SessionDescription description;
 
@@ -113,6 +180,7 @@ public final class PyTetradScript {
     private boolean readsCovariance;
     private boolean usesJInt;
     private boolean savesGraphs;
+    private boolean makesDataBoxes;
 
     private PyTetradScript(SessionDescription description) {
         this.description = description;
@@ -170,8 +238,11 @@ public final class PyTetradScript {
                 knowledge(box);
             } else if (DATA_BOX.equals(type) && this.description.getParentNames(box).isEmpty()) {
                 loadedData(box);
-            } else if (DATA_BOX.equals(type) || SIMULATION_BOX.equals(type)) {
-                dataToWriteByHand(box, "This kind of box is not turned into code.");
+            } else if (DATA_BOX.equals(type)) {
+                derivedData(box);
+            } else if (SIMULATION_BOX.equals(type)) {
+                dataToWriteByHand(box, "A simulation draws new data each time it is run, so the data the session "
+                                       + "had cannot be made again from the box's settings.");
             } else {
                 // A box of another kind that a search takes as input; the search says so where it stands.
                 leftOut.add(title(box));
@@ -231,8 +302,9 @@ public final class PyTetradScript {
 
         script.append("""
                 #
-                # It loads the data, sets up the knowledge, and runs each search with the settings the
-                # session had. A parameter that is not set here is left at Tetrad's default.
+                # It loads the data, runs the steps that change the data, sets up the knowledge, and runs
+                # each search, with the settings the session had. A parameter that is not set here is
+                # left at Tetrad's default.
                 #
                 # To run it, install py-tetrad, which needs Java 21 or later:
                 #     pip install git+https://github.com/cmu-phil/py-tetrad
@@ -368,6 +440,18 @@ public final class PyTetradScript {
                         data = DataConvertUtils.toDataModel(reader.readInData())
                         data.setName(file_name)
                         return data
+
+                    """);
+        }
+
+        if (this.makesDataBoxes) {
+            script.append("""
+
+                    def data_box(data):
+                        \"""A Tetrad data box holding the given data, for a box's own step to be run on.\"""
+                        box = DataWrapper(Parameters())
+                        box.setDataModel(data)
+                        return box
 
                     """);
         }
@@ -538,6 +622,212 @@ public final class PyTetradScript {
         call(variable + " = " + function, arguments);
         this.provides.put(box.getName(), Provides.DATA);
         this.plan.add(new Box(title(box), Fate.WRITTEN, "Reads the file " + quoted(file) + "."));
+    }
+
+    /**
+     * A data box that takes its data from another box: the box's own class, made from the data of the box above and
+     * the settings the box had, where that is all the box needs; and otherwise left to be written by hand, with the
+     * reason.
+     */
+    private void derivedData(BoxDescription box) {
+        List<String> parents = this.description.getParentNames(box);
+        Class<?> model = PendingDescription.modelClass(DATA_BOX, box.get(BoxDescription.MODEL));
+        int dataSets = box.getAll(StandardDescribers.DATA_SET).size();
+        String why = null;
+
+        if (model == null) {
+            why = "The description does not say what kind of data box this is, or it is a kind this version of "
+                  + "Tetrad does not have.";
+        } else if (STEPS_BEHIND_A_WINDOW.contains(model.getName())) {
+            why = "This kind of box works behind a progress window, which a script does not have.";
+        } else if (STEPS_BY_SELECTION.contains(model.getName())) {
+            why = "This kind of box works from what was selected by hand in the box it takes its data from, which "
+                  + "a description does not hold.";
+        } else if (parents.size() != 1) {
+            why = "It takes input from " + parents.size() + " boxes, and a step is written only for a box that "
+                  + "takes its data from one data box.";
+        } else if (this.provides.get(parents.getFirst()) != Provides.DATA) {
+            BoxDescription parentBox = this.description.getBox(parents.getFirst());
+            why = "It takes input from " + (parentBox == null ? quoted(parents.getFirst()) : title(parentBox))
+                  + ", which is not a data box.";
+        } else if (!STEPS_WRITTEN.contains(model.getName()) || !importable(model) || !takesOneDataBox(model)) {
+            why = "This kind of box is not turned into code.";
+        } else if (dataSets != 1) {
+            why = dataSets == 0 ? "This box held no data when the session was described."
+                    : "This box holds " + dataSets + " data sets, and a script is written only for a box that "
+                      + "holds one.";
+        }
+
+        // The box's settings, as lines of Python. A setting of a kind that is not written leaves the whole step
+        // to be written by hand, since the step run without it would not be the step the session ran.
+        List<String> settings = new ArrayList<>();
+        List<String> discretize = new ArrayList<>();
+        List<String> select = new ArrayList<>();
+
+        for (BoxDescription.Item item : box.getItems()) {
+            if (why != null) {
+                break;
+            }
+
+            if (item instanceof BoxDescription.Block block) {
+                if (block.name().startsWith(StandardDescribers.TEXT_BLOCK)) {
+                    settings.add("_parameters.set("
+                                 + python(block.name().substring(StandardDescribers.TEXT_BLOCK.length()).strip())
+                                 + ", " + python(String.join("\n", block.lines())) + ")");
+                } else if (block.name().startsWith(StandardDescribers.LIST_BLOCK)
+                           || block.name().startsWith(StandardDescribers.VALUES_BLOCK)) {
+                    why = "Its setting " + quoted(block.name()) + " is a list, which is not written as code.";
+                }
+
+                continue;
+            }
+
+            BoxDescription.Field field = (BoxDescription.Field) item;
+
+            switch (field.key()) {
+                case BoxDescription.CHANGED -> {
+                    BoxDescription.ChangedParameter changed = BoxDescription.ChangedParameter.parse(field.value());
+                    String literal = changed == null ? null : parameterLiteral(changed.name(), changed.value());
+
+                    if (literal == null) {
+                        why = "Its setting " + quoted(field.value()) + " could not be read, or is not known to "
+                              + "this version of Tetrad.";
+                    } else {
+                        settings.add("_parameters.set(" + python(changed.name()) + ", " + literal + ")  # default "
+                                     + oneLine(changed.defaultValue()));
+                    }
+                }
+                case StandardDescribers.SETTING -> {
+                    int equals = field.value().indexOf(" = ");
+                    String literal = equals <= 0 ? null : settingLiteral(field.value().substring(equals + 3));
+
+                    if (literal == null) {
+                        why = "Its setting " + quoted(field.value()) + " is of a kind that is not written as code.";
+                    } else {
+                        settings.add("_parameters.set(" + python(field.value().substring(0, equals).strip()) + ", "
+                                     + literal + ")");
+                    }
+                }
+                case StandardDescribers.DISCRETIZE -> discretize.add(field.value());
+                case StandardDescribers.SELECT -> select.add(field.value());
+                case StandardDescribers.SPLIT, StandardDescribers.UNMIX, StandardDescribers.VALUES ->
+                        why = "Its setting " + quoted(field.key() + ": " + field.value()) + " is of a kind that is "
+                              + "not written as code.";
+                case StandardDescribers.NOT_DESCRIBED ->
+                        why = "Its setting " + quoted(field.value()) + " is of a kind a description cannot hold.";
+                default -> {
+                    // What the box says of its data, which is a result and not a setting.
+                }
+            }
+        }
+
+        if (why != null) {
+            dataToWriteByHand(box, why);
+            return;
+        }
+
+        String variable = variable(box);
+        String parent = this.variables.get(parents.getFirst());
+        boolean random = STEPS_RANDOM.contains(model.getName());
+        String modelName = oneLine(String.valueOf(box.get(BoxDescription.MODEL)));
+
+        heading(box);
+        comment(this.body, "# ", "# ", "The box's own step, " + modelName + ", run on the data from "
+                                       + quoted(parents.getFirst()) + " with the settings the box had.");
+
+        if (random) {
+            comment(this.body, "# ", "# ", "This step draws random numbers, so the data it gives here are not the "
+                                           + "data the session had.");
+        }
+
+        javaImport("edu.cmu.tetrad.util", "Parameters");
+        javaImport("edu.cmu.tetradapp.model", "DataWrapper");
+        this.makesDataBoxes = true;
+        this.body.append(variable).append("_parameters = Parameters()\n");
+
+        for (String setting : settings) {
+            this.body.append(variable).append(setting).append("\n");
+        }
+
+        choices(variable, "discretizationSpecs", "discretization", discretize);
+        choices(variable, "selectionSpecs", "selection", select);
+
+        this.body.append(variable).append(" = ").append(local(model)).append("(data_box(").append(parent)
+                .append("), ").append(variable).append("_parameters).getSelectedDataModel()\n");
+        this.provides.put(box.getName(), Provides.DATA);
+        this.plan.add(new Box(title(box), Fate.WRITTEN, "Runs the box's own step on the data from "
+                                                        + quoted(parents.getFirst())
+                                                        + (random ? ". It draws random numbers, so its data will "
+                                                                    + "not be the data the session had." : ".")));
+    }
+
+    /**
+     * Writes choices a box keeps as objects, from the lines the description gives them in: the lines as text, read
+     * by the reader a rebuilt session uses.
+     */
+    private void choices(String variable, String parameter, String reader, List<String> lines) {
+        if (lines.isEmpty()) {
+            return;
+        }
+
+        javaImport("edu.cmu.tetradapp.description", "DescribedChoices");
+        this.body.append(variable).append("_parameters.set(").append(python(parameter))
+                .append(", DescribedChoices.").append(reader).append("(\"\"\"\\\n");
+
+        for (String line : lines) {
+            this.body.append(line.replace("\\", "\\\\").replace("\"\"\"", "\\\"\\\"\\\"")).append("\n");
+        }
+
+        this.body.append("\"\"\"))\n");
+    }
+
+    /**
+     * Whether a data box model can be made from one data box and a parameter object.
+     */
+    private static boolean takesOneDataBox(Class<?> model) {
+        try {
+            return java.lang.reflect.Modifier.isPublic(model.getConstructor(
+                    edu.cmu.tetradapp.model.DataWrapper.class, edu.cmu.tetrad.util.Parameters.class).getModifiers());
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    /**
+     * The value of a setting that has no registered default, as Python that gives Tetrad a value of the same kind.
+     * The text is the value as a "Setting" field writes it, which says what kind of value it is.
+     *
+     * @return the Python text, or null if the value cannot be read or is of a kind that is not written.
+     */
+    private String settingLiteral(String text) {
+        Object value;
+
+        try {
+            value = SettingLiteral.read(text);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+
+        if (value instanceof String string) {
+            return python(string);
+        } else if (value instanceof Boolean truth) {
+            return truth ? "True" : "False";
+        } else if (value instanceof Integer whole) {
+            this.usesJInt = true;
+            return "JInt(" + whole + ")";
+        } else if (value instanceof Long whole) {
+            return String.valueOf(whole);
+        } else if (value instanceof Double number) {
+            if (number.isNaN()) {
+                return "float(\"nan\")";
+            } else if (number.isInfinite()) {
+                return number > 0 ? "float(\"inf\")" : "float(\"-inf\")";
+            }
+
+            return String.valueOf(number);
+        }
+
+        return null;
     }
 
     /**
@@ -849,8 +1139,13 @@ public final class PyTetradScript {
             "It reruns searches, and nothing else. Estimators, checks, comparisons, regressions and the like are "
             + "not in it.",
             "It covers a search on one data box holding one data set, with or without one knowledge box.",
-            "A box that changes data, such as one that discretizes, selects, imputes or simulates, is not written "
-            + "as code. The script stops at that step until you write it in Python yourself.",
+            "A box that changes data, such as one that discretizes, selects rows or standardizes, is written as "
+            + "the box's own step, run on the data from the box above. That is done for a box that takes its data "
+            + "from one data box, holds one data set, and needs nothing but its settings. A step that draws random "
+            + "numbers will not give the data the session had.",
+            "Other boxes that give data to a search are not written as code: a simulation, a box that takes "
+            + "several data boxes as input or holds several data sets, and a box that works from what was "
+            + "selected by hand. The script stops at such a step until you write it in Python yourself.",
             "The data are not in the script. It reads each data file by name, from the folder you say, with the "
             + "settings the file was loaded with here. Changes made to the data by hand in Tetrad are not in it.",
             "Each graph is printed, and saved as a text file that a Graph box can load. Running the script again "

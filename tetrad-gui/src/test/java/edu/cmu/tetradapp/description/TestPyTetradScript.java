@@ -332,29 +332,264 @@ public class TestPyTetradScript {
     }
 
     /**
-     * A box that changes the data stops the script until its step is written, since the searches after it would
-     * otherwise run on other data. The search on its result is written, on the variable the step is to leave.
+     * A data box that takes its data from another data box, as described when it holds one data set.
+     */
+    private static String stepBox(String name, String model, String parents, String... lines) {
+        StringBuilder box = new StringBuilder("[Box " + name + "]\nType: Data\nModel: " + model + "\nParents: "
+                                              + parents + "\nLocation: 1, 1\n");
+
+        for (String line : lines) {
+            box.append(line).append("\n");
+        }
+
+        return box.append("Data set: study.csv\nShape: 200 rows, 4 columns, continuous\nMissing values: none\n\n")
+                .toString();
+    }
+
+    /**
+     * A box that changes the data is written as the box's own class, made from the data of the box above and the
+     * settings the box had, and the search on its result is run on what that gives. A simulation is still left
+     * to be written by hand, and stops the script, since the searches after it would otherwise run on other data.
      */
     @Test
     public void testABoxThatChangesTheData() {
         PyTetradScript.Result result = script(dataBox("Data1")
-                + "[Box Discretized]\nType: Data\nModel: Discretize Data\nParents: Data1\nLocation: 1, 1\n"
-                + "Discretize: X2; categories: Low, High; breakpoints: 0.25; chosen by: Evenly Distributed Values\n\n"
+                + stepBox("Discretized", "Discretize Dataset", "Data1",
+                "Discretize: X2; categories: Low, High; breakpoints: 0.25; chosen by: Evenly Distributed Values",
+                "Discretize: X3; categories: a, b, c; breakpoints: -1.0, 1.0; chosen by: Evenly Distributed Values")
                 + "[Box Simulation1]\nType: Simulation\nLocation: 1, 1\n\n"
                 + searchBox("Search1", "Discretized", FGES, SEM_BIC)
                 + searchBox("Search2", "Simulation1", FGES, SEM_BIC));
         String script = result.script();
 
-        assertTrue(script.contains("# ---- Box \"Discretized\" (Data: Discretize Data), from Data1 ----\n"
-                                   + "# This kind of box is not turned into code.\n"
-                                   + "# What the session description says of it:\n"
-                                   + "#     Discretize: X2; categories: Low, High; breakpoints: 0.25; chosen by: "
-                                   + "Evenly\n#         Distributed Values\n"));
-        assertTrue(script.contains("raise NotImplementedError('The step for box \"Discretized\" has not been "
-                                   + "written.')\n"));
+        assertTrue(script.contains("""
+                # ---- Box "Discretized" (Data: Discretize Dataset), from Data1 ----
+                # The box's own step, Discretize Dataset, run on the data from "Data1" with the settings the
+                # box had.
+                discretized_parameters = Parameters()
+                discretized_parameters.set("discretizationSpecs", DescribedChoices.discretization(\"""\\
+                X2; categories: Low, High; breakpoints: 0.25; chosen by: Evenly Distributed Values
+                X3; categories: a, b, c; breakpoints: -1.0, 1.0; chosen by: Evenly Distributed Values
+                \"""))
+                discretized = DiscretizationWrapper(data_box(data1), discretized_parameters).getSelectedDataModel()
+                """));
+        assertTrue(script.contains("from edu.cmu.tetradapp.description import DescribedChoices\n"));
+        assertTrue(script.contains("from edu.cmu.tetradapp.model import DataWrapper\n"));
+        assertTrue(script.contains("from edu.cmu.tetradapp.model.datamanip import DiscretizationWrapper\n"));
+        assertTrue(script.contains("""
+                def data_box(data):
+                    \"""A Tetrad data box holding the given data, for a box's own step to be run on.\"""
+                    box = DataWrapper(Parameters())
+                    box.setDataModel(data)
+                    return box
+                """));
         assertTrue(script.contains("search1_graph = search1_algorithm.search(discretized, search1_parameters)\n"));
+
+        assertTrue(script.contains("# ---- Box \"Simulation1\" (Simulation) ----\n"
+                                   + "# A simulation draws new data each time it is run, so the data the session "
+                                   + "had cannot be\n# made again from the box's settings.\n"));
+        assertTrue(script.contains("raise NotImplementedError('The step for box \"Simulation1\" has not been "
+                                   + "written.')\n"));
         assertTrue(script.contains("search2_graph = search2_algorithm.search(simulation1, search2_parameters)\n"));
-        assertEquals(2, result.notes().size());
+        assertEquals(1, result.notes().size());
+
+        // A script with no such step does not import the box classes or define the helper.
+        String plain = script(dataBox("Data1") + searchBox("Search1", "Data1", FGES, SEM_BIC)).script();
+        assertFalse(plain.contains("tetradapp"));
+        assertFalse(plain.contains("data_box"));
+    }
+
+    /**
+     * The settings of a step are written as the parameter object is given them: a registered parameter that was
+     * changed as a value of its own kind, with its default remarked; a setting with no registered default as the
+     * kind of value its line says it is; and steps follow one another.
+     */
+    @Test
+    public void testTheSettingsOfAStep() {
+        String script = script(dataBox("Data1")
+                + stepBox("Thinned", "Thin Rows", "Data1", "Changed: thinRowsK = 3 (default 2)",
+                "Changed: thinRowsOffset = 1 (default 0)")
+                + stepBox("Logged", "Logarithmic Transform", "Thinned", "Changed: a = 2.5 (default 10.0)",
+                "Changed: unlog = true (default false)")
+                + stepBox("Chosen", "Selection Subset", "Logged", "Select: X1; intervals: [-0.5, 0.25]",
+                "Setting: removeSelectionVariables = false", "Setting: someCount = 4", "Setting: someSeed = 9L",
+                "Setting: someRate = 0.5", "Setting: someLabel = \"it's \\\"so\\\"\"")
+                + searchBox("Search1", "Chosen", FGES, SEM_BIC)).script();
+
+        assertTrue(script.contains("""
+                thinned_parameters = Parameters()
+                thinned_parameters.set("thinRowsK", JInt(3))  # default 2
+                thinned_parameters.set("thinRowsOffset", JInt(1))  # default 0
+                thinned = ThinRowsWrapper(data_box(data1), thinned_parameters).getSelectedDataModel()
+                """));
+        assertTrue(script.contains("""
+                logged_parameters = Parameters()
+                logged_parameters.set("a", 2.5)  # default 10.0
+                logged_parameters.set("unlog", True)  # default false
+                logged = LogData(data_box(thinned), logged_parameters).getSelectedDataModel()
+                """));
+        assertTrue(script.contains("""
+                chosen_parameters = Parameters()
+                chosen_parameters.set("removeSelectionVariables", False)
+                chosen_parameters.set("someCount", JInt(4))
+                chosen_parameters.set("someSeed", 9)
+                chosen_parameters.set("someRate", 0.5)
+                chosen_parameters.set("someLabel", "it's \\"so\\"")
+                chosen_parameters.set("selectionSpecs", DescribedChoices.selection(\"""\\
+                X1; intervals: [-0.5, 0.25]
+                \"""))
+                chosen = SelectionWrapper(data_box(logged), chosen_parameters).getSelectedDataModel()
+                """));
+        assertTrue(script.contains("from jpype import JArray, JInt\n"));
+        assertTrue(script.contains("search1_graph = search1_algorithm.search(chosen, search1_parameters)\n"));
+    }
+
+    /**
+     * A step that draws random numbers is written, and says that its data will not be the session's. A step is
+     * left to be written by hand, with the reason, where the box needs more than the data of one box and its
+     * settings, or where its result is not one data set.
+     */
+    @Test
+    public void testStepsThatAreNotTheSessions() {
+        String data = dataBox("Data1");
+        PyTetradScript.Result random = script(data + stepBox("Shuffled", "Permute Rows", "Data1")
+                                              + searchBox("Search1", "Shuffled", FGES, SEM_BIC));
+        assertTrue(random.script().contains("# This step draws random numbers, so the data it gives here are not "
+                                            + "the data the session\n# had.\n"));
+        assertTrue(random.script().contains("shuffled = PermuteRowsWrapper(data_box(data1), shuffled_parameters)"
+                                            + ".getSelectedDataModel()\n"));
+        assertEquals(List.of(), random.notes());
+        assertTrue(random.preview(null).contains("  - \"Shuffled\" (Data: Permute Rows): Runs the box's own step "
+                                                 + "on the data from \"Data1\". It draws random numbers, so its "
+                                                 + "data will not be the data the session had.\n"));
+
+        Map<String, String> reasons = new LinkedHashMap<>();
+        reasons.put(stepBox("Step", "Copy Selected Variables", "Data1"), "works from what was selected by hand");
+        reasons.put(stepBox("Step", "Causal Unmix", "Data1", "Unmix: components: 2"), "behind a progress window");
+        reasons.put(stepBox("Step", "Concatenate Datasets", "Data1, Data2"), "It takes input from 2 boxes");
+        reasons.put(stepBox("Step", "NTad Explorer", "Data1"), "This kind of box is not turned into code.");
+        reasons.put(stepBox("Step", "No Such Model", "Data1"), "does not say what kind of data box this is");
+        reasons.put(stepBox("Step", "Thin Rows", "Data1", "Changed: thinRowsK = many (default 2)"),
+                "Its setting \"thinRowsK = many (default 2)\" could not be read");
+        reasons.put(stepBox("Step", "Thin Rows", "Data1", "Not described: someObject"),
+                "Its setting \"someObject\" is of a kind a description cannot hold.");
+        reasons.put(stepBox("Step", "Thin Rows", "Data1", "Setting: mode = FAST (enum java.lang.Thread$State)"),
+                "is of a kind that is not written as code.");
+        reasons.put(stepBox("Step", "Thin Rows", "Data1", "Values: thinRowsK = 2, 3 (default 2)"),
+                "is of a kind that is not written as code.");
+        reasons.put("[Box Step]\nType: Data\nModel: Impute Missing Data\nParents: Data1\nLocation: 1, 1\n"
+                    + "Data set: a\nShape: 9 rows, 4 columns, continuous\nMissing values: none\n"
+                    + "Data set: b\nShape: 9 rows, 4 columns, continuous\nMissing values: none\n\n",
+                "This box holds 2 data sets");
+        reasons.put("[Box Step]\nType: Data\nModel: Thin Rows\nParents: Data1\nLocation: 1, 1\n\n",
+                "This box held no data when the session was described.");
+        reasons.put("[Box Graph1]\nType: Graph\nLocation: 1, 1\n\n[Box Step]\nType: Data\nModel: Thin Rows\n"
+                    + "Parents: Graph1\nLocation: 1, 1\nData set: a\nShape: 9 rows, 4 columns, continuous\n\n",
+                "It takes input from \"Graph1\" (Graph), which is not a data box.");
+
+        for (Map.Entry<String, String> entry : reasons.entrySet()) {
+            PyTetradScript.Result result = script(data + dataBox("Data2") + entry.getKey()
+                                                  + searchBox("Search1", "Step", FGES, SEM_BIC));
+            assertEquals(entry.getKey(), 1, result.count(PyTetradScript.Fate.BY_HAND));
+            assertTrue(entry.getKey() + result.notes(), result.notes().getFirst().contains(entry.getValue()));
+            assertTrue(result.script().contains("raise NotImplementedError('The step for box \"Step\" has not "
+                                                + "been written.')\n"));
+            assertTrue(result.script().contains("search1_graph = search1_algorithm.search(step, search1_parameters)"));
+        }
+    }
+
+    /**
+     * The choices a script hands to a step as text give the step what the session's box had: the same variables
+     * are cut at the same places, and the same rows are kept. A line that cannot be read is refused by name.
+     */
+    @Test
+    public void testChoicesReadAsAScriptReadsThem() throws Exception {
+        edu.cmu.tetrad.data.DataSet data = TestSessionDescription.simulate();
+
+        Map<edu.cmu.tetrad.graph.Node, edu.cmu.tetrad.data.DiscretizationSpec> cuts = new java.util.HashMap<>();
+        cuts.put(data.getVariable("X2"), new edu.cmu.tetrad.data.ContinuousDiscretizationSpec(
+                new double[]{-0.3, 0.6}, List.of("Low", "Mid", "High")));
+        cuts.put(data.getVariable("X4"), new edu.cmu.tetrad.data.ContinuousDiscretizationSpec(
+                new double[]{0.1}, List.of("No", "Yes")));
+        StringBuilder cutLines = new StringBuilder();
+
+        for (Map.Entry<edu.cmu.tetrad.graph.Node, edu.cmu.tetrad.data.DiscretizationSpec> entry : cuts.entrySet()) {
+            cutLines.append(StandardDescribers.discretizeLine(entry.getKey().getName(), entry.getValue()))
+                    .append("\n");
+        }
+
+        edu.cmu.tetrad.util.Parameters inSession = new edu.cmu.tetrad.util.Parameters();
+        inSession.set("discretizationSpecs", (Object) cuts);
+        edu.cmu.tetrad.util.Parameters inScript = new edu.cmu.tetrad.util.Parameters();
+        inScript.set("discretizationSpecs", (Object) DescribedChoices.discretization(cutLines.toString()));
+        assertEquals(new edu.cmu.tetradapp.model.datamanip.DiscretizationWrapper(new DataWrapper(data), inSession)
+                        .getSelectedDataModel(),
+                new edu.cmu.tetradapp.model.datamanip.DiscretizationWrapper(new DataWrapper(data), inScript)
+                        .getSelectedDataModel());
+
+        Map<edu.cmu.tetrad.graph.Node, edu.cmu.tetradapp.model.datamanip.SelectionWrapper.SelectionSpec> rows
+                = new java.util.HashMap<>();
+        rows.put(data.getVariable("X1"), edu.cmu.tetradapp.model.datamanip.SelectionWrapper.SelectionSpec
+                .continuous(List.of(new double[]{-0.5, 0.25}, new double[]{1.0, Double.POSITIVE_INFINITY})));
+        String rowLines = StandardDescribers.selectLine(data.getVariable("X1"), rows.get(data.getVariable("X1")));
+
+        inSession = new edu.cmu.tetrad.util.Parameters();
+        inSession.set("selectionSpecs", (Object) rows);
+        inScript = new edu.cmu.tetrad.util.Parameters();
+        inScript.set("selectionSpecs", (Object) DescribedChoices.selection(rowLines + "\n"));
+        edu.cmu.tetrad.data.DataSet kept = (edu.cmu.tetrad.data.DataSet) new edu.cmu.tetradapp.model.datamanip
+                .SelectionWrapper(new DataWrapper(data), inSession).getSelectedDataModel();
+        assertTrue(kept.getNumRows() > 0 && kept.getNumRows() < data.getNumRows());
+        assertEquals(kept, new edu.cmu.tetradapp.model.datamanip.SelectionWrapper(new DataWrapper(data), inScript)
+                .getSelectedDataModel());
+
+        try {
+            DescribedChoices.selection("X1; intervals: [2.0, 1.0]\n");
+            throw new AssertionError("A backward interval should not be read.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().startsWith("The selection \"X1; intervals: [2.0, 1.0]\" was "
+                                                                 + "not read, since "));
+        }
+
+        try {
+            DescribedChoices.discretization("X2\n");
+            throw new AssertionError("A line with no categories should not be read.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().startsWith("The discretization \"X2\" was not read, since "));
+        }
+    }
+
+    /**
+     * Each kind of box whose step is written is a model the Data box offers, that can be imported by name and is
+     * made from one data box and a parameter object; so that a class renamed or moved is noticed here and not when
+     * a script fails.
+     */
+    @Test
+    public void testTheStepsWrittenAreDataBoxModels() throws Exception {
+        java.util.Set<String> offered = new java.util.HashSet<>();
+
+        for (Class<?> model : edu.cmu.tetradapp.app.TetradApplicationConfig.getInstance()
+                .getSessionNodeConfig("Data").getModels()) {
+            offered.add(model.getName());
+        }
+
+        java.util.Set<String> named = new java.util.TreeSet<>(PyTetradScript.STEPS_WRITTEN);
+        named.addAll(PyTetradScript.STEPS_BY_SELECTION);
+        named.addAll(PyTetradScript.STEPS_BEHIND_A_WINDOW);
+
+        for (String name : named) {
+            assertTrue(name + " is not a model of the Data box.", offered.contains(name));
+        }
+
+        for (String name : PyTetradScript.STEPS_WRITTEN) {
+            Class<?> model = Class.forName(name);
+            assertTrue(name, java.lang.reflect.Modifier.isPublic(model.getModifiers()));
+            assertTrue(name, model.getEnclosingClass() == null);
+            model.getConstructor(DataWrapper.class, edu.cmu.tetrad.util.Parameters.class);
+        }
+
+        assertTrue(PyTetradScript.STEPS_WRITTEN.containsAll(PyTetradScript.STEPS_RANDOM));
+        assertEquals(34, PyTetradScript.STEPS_WRITTEN.size());
     }
 
     /**
@@ -386,17 +621,20 @@ public class TestPyTetradScript {
     @Test
     public void testWhatTheUserIsShownBeforeSaving() {
         PyTetradScript.Result result = script(dataBox("Data1")
-                + "[Box Discretized]\nType: Data\nModel: Discretize Data\nParents: Data1\nLocation: 1, 1\n\n"
+                + stepBox("Discretized", "Discretize Dataset", "Data1",
+                "Discretize: X2; categories: Low, High; breakpoints: 0.25; chosen by: Evenly Distributed Values")
+                + "[Box Simulation1]\nType: Simulation\nLocation: 1, 1\n\n"
                 + "[Box Graph1]\nType: Graph\nLocation: 1, 1\n\n"
                 + "[Box Estimator1]\nType: Estimator\nParents: Data1\nLocation: 1, 1\n\n"
                 + "[Box Note1]\nType: Note\nLocation: 1, 1\nBegin note\n    Second pass.\nEnd note\n\n"
                 + searchBox("Plain", "Data1", FGES, SEM_BIC)
                 + searchBox("On discretized", "Discretized", "Algorithm: PC (pc)", "Test: Fisher Z (fisher-z-test)")
+                + searchBox("On simulated", "Simulation1", FGES, SEM_BIC)
                 + searchBox("With graph", "Data1, Graph1", FGES, SEM_BIC));
 
         // Every box of the session is accounted for, once.
-        assertEquals(8, result.boxes().size());
-        assertEquals(4, result.count(PyTetradScript.Fate.WRITTEN));
+        assertEquals(10, result.boxes().size());
+        assertEquals(6, result.count(PyTetradScript.Fate.WRITTEN));
         assertEquals(1, result.count(PyTetradScript.Fate.BY_HAND));
         assertEquals(1, result.count(PyTetradScript.Fate.NOT_RUN));
         assertEquals(2, result.count(PyTetradScript.Fate.LEFT_OUT));
@@ -406,7 +644,7 @@ public class TestPyTetradScript {
 
         assertTrue(preview.startsWith("A py-tetrad script is a Python program that reruns this session's searches "
                                       + "outside Tetrad.\n"
-                                      + "For session \"study.tet\" the script would hold 2 of the session's 3 "
+                                      + "For session \"study.tet\" the script would hold 3 of the session's 4 "
                                       + "searches.\n"
                                       + "It would not run to the end as saved: 1 step is left for you to write in "
                                       + "Python.\n"));
@@ -414,14 +652,18 @@ public class TestPyTetradScript {
 
                 WRITTEN AS CODE
                   - "Data1" (Data): Reads the file "study.csv".
+                  - "Discretized" (Data: Discretize Dataset): Runs the box's own step on the data from "Data1".
                   - "Note1" (Note): Its text, as a comment.
                   - "Plain" (Search): Runs FGES (fges) with Sem BIC Score (sem-bic-score) on "Data1". Its graph \
                 is saved as plain_graph.txt.
                   - "On discretized" (Search): Runs PC (pc) with Fisher Z (fisher-z-test) on "Discretized". Its \
                 graph is saved as on_discretized_graph.txt.
+                  - "On simulated" (Search): Runs FGES (fges) with Sem BIC Score (sem-bic-score) on \
+                "Simulation1". Its graph is saved as on_simulated_graph.txt.
 
                 LEFT FOR YOU TO WRITE BY HAND. The script stops at each of these until you write the step.
-                  - "Discretized" (Data: Discretize Data): This kind of box is not turned into code.
+                  - "Simulation1" (Simulation): A simulation draws new data each time it is run, so the data \
+                the session had cannot be made again from the box's settings.
 
                 SEARCHES THE SCRIPT WILL NOT RUN
                   - "With graph" (Search): It takes input from "Graph1" (Graph), and a script is written only \
