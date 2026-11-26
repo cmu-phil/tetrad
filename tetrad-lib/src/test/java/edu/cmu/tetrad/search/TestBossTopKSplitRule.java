@@ -19,6 +19,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -27,9 +29,9 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * The rule BOSS Top-K uses to decide whether an alternative placement of a node is set aside to be run later: it is
- * when it scores below the placement being pursued by less than the split width, and is not tied with it. A tie is
- * anything within the tolerance the moves themselves use. Before, the test was "below by more than zero", and an exact
- * tie that rounding had left a hair below the best was set aside.
+ * when it scores below the placement being pursued by less than the split width. A placement that ties with the one
+ * being pursued, to within the tolerance the moves themselves use, is set aside or not as the defer-ties option says.
+ * Before, the test was "below by more than zero", and rounding decided which exact ties were set aside.
  *
  * @author Claude
  */
@@ -37,48 +39,63 @@ public class TestBossTopKSplitRule {
 
     private static final double BEST = -41690.576718711;
 
-    @Test
-    public void testATieWithTheBestIsNotSetAside() {
-        assertFalse(BossTopK.isNearTie(BEST, BEST, 2.0));
+    /**
+     * The neighbouring doubles on either side of the best, which is what adding the same terms in another order
+     * gives, and two wider gaps still inside the tolerance.
+     */
+    private static double[] ties() {
+        return new double[]{BEST, Math.nextDown(BEST), Math.nextDown(Math.nextDown(BEST)), Math.nextUp(BEST),
+                BEST - 1e-9, BEST - 5e-7, BEST + 1e-9, BEST + 5e-7};
     }
 
     @Test
-    public void testATieLeftAHairBelowByRoundingIsNotSetAside() {
-        // The neighbouring doubles just below the best, which is what adding the same terms in another order gives.
-        double below = BEST;
-        for (int i = 0; i < 4; i++) {
-            below = Math.nextDown(below);
-            assertTrue(below < BEST);
-            assertFalse(BossTopK.isNearTie(BEST, below, 2.0));
+    public void testATieIsSetAsideWhenTiesAreDeferred() {
+        for (double tie : ties()) {
+            assertTrue(Double.toString(tie), BossTopK.isNearTie(BEST, tie, 2.0, true));
         }
-
-        assertFalse(BossTopK.isNearTie(BEST, BEST - 1e-9, 2.0));
-        assertFalse(BossTopK.isNearTie(BEST, BEST - 5e-7, 2.0));
     }
 
     @Test
-    public void testAnAlternativeBelowTheBestByLessThanTheSplitWidthIsSetAside() {
-        assertTrue(BossTopK.isNearTie(BEST, BEST - 1e-5, 2.0));
-        assertTrue(BossTopK.isNearTie(BEST, BEST - 0.5, 2.0));
-        assertTrue(BossTopK.isNearTie(BEST, BEST - 1.999, 2.0));
+    public void testATieIsNotSetAsideWhenTiesAreLeftOut() {
+        for (double tie : ties()) {
+            assertFalse(Double.toString(tie), BossTopK.isNearTie(BEST, tie, 2.0, false));
+        }
     }
 
     @Test
-    public void testAnAlternativeBelowByTheSplitWidthOrMoreIsNotSetAside() {
-        assertFalse(BossTopK.isNearTie(BEST, BEST - 2.0, 2.0));
-        assertFalse(BossTopK.isNearTie(BEST, BEST - 50.0, 2.0));
+    public void testAnAlternativeBelowTheBestByLessThanTheSplitWidthIsSetAsideEitherWay() {
+        for (boolean deferTies : new boolean[]{true, false}) {
+            assertTrue(BossTopK.isNearTie(BEST, BEST - 1e-5, 2.0, deferTies));
+            assertTrue(BossTopK.isNearTie(BEST, BEST - 0.5, 2.0, deferTies));
+            assertTrue(BossTopK.isNearTie(BEST, BEST - 1.999, 2.0, deferTies));
+        }
     }
 
     @Test
-    public void testAnAlternativeAboveTheBestIsNotSetAside() {
-        assertFalse(BossTopK.isNearTie(BEST, BEST + 1e-9, 2.0));
-        assertFalse(BossTopK.isNearTie(BEST, BEST + 0.5, 2.0));
+    public void testAnAlternativeBelowByTheSplitWidthOrMoreIsNotSetAsideEitherWay() {
+        for (boolean deferTies : new boolean[]{true, false}) {
+            assertFalse(BossTopK.isNearTie(BEST, BEST - 2.0, 2.0, deferTies));
+            assertFalse(BossTopK.isNearTie(BEST, BEST - 50.0, 2.0, deferTies));
+        }
     }
 
     @Test
-    public void testNothingIsSetAsideWhenTheSplitWidthIsNoWiderThanTheTolerance() {
+    public void testAnAlternativeClearlyAboveTheBestIsNotSetAsideEitherWay() {
+        for (boolean deferTies : new boolean[]{true, false}) {
+            assertFalse(BossTopK.isNearTie(BEST, BEST + 1e-5, 2.0, deferTies));
+            assertFalse(BossTopK.isNearTie(BEST, BEST + 0.5, 2.0, deferTies));
+        }
+    }
+
+    @Test
+    public void testTheToleranceIsTheOneTheMovesUse() {
         assertEquals(1e-6, BossTopK.TIE_TOLERANCE, 0.0);
-        assertFalse(BossTopK.isNearTie(BEST, BEST - 5e-7, 1e-6));
-        assertFalse(BossTopK.isNearTie(BEST, BEST - 1e-3, 0.0));
+    }
+
+    @Test
+    public void testDeferringTiesIsTheRegisteredDefaultAndIsOfferedByTheAlgorithm() {
+        assertTrue(new Parameters().getBoolean(Params.SPLIT_DEFER_TIES));
+        assertTrue(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BossTopK().getParameters()
+                .contains(Params.SPLIT_DEFER_TIES));
     }
 }

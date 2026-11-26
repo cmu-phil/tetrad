@@ -426,6 +426,16 @@ public class PermutationSearchTopK {
         this.suborderSearch.setOptimalAcrossBranches(optimalAcrossBranches);
     }
 
+    /**
+     * Sets whether, when splitting, a placement that ties with the one being pursued is set aside to be run later
+     * like other near-tied placements. True (the default) takes more runs; false takes fewer.
+     *
+     * @param deferTies True to set tied placements aside as well.
+     */
+    public void setDeferTies(boolean deferTies) {
+        this.suborderSearch.setDeferTies(deferTies);
+    }
+
     // ---- Top-k accessors (intended for use from Python via JPype) -----------------------------------------------
 
     /**

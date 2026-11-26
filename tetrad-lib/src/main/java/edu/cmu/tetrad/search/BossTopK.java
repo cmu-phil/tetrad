@@ -188,6 +188,11 @@ public class BossTopK implements SuborderSearchTopK {
      */
     private boolean optimalAcrossBranches = false;
     /**
+     * If true (the default), a placement that ties with the one being pursued is set aside when splitting, like other
+     * near-tied placements. If false, ties are left out. See {@link #isNearTie(double, double, double, boolean)}.
+     */
+    private boolean deferTies = true;
+    /**
      * The bounded sorted set of top models, ordered by score ascending (so first() is the current worst).
      */
     private TreeSet<ScoredPermutation> topK;
@@ -586,6 +591,14 @@ public class BossTopK implements SuborderSearchTopK {
      * {@inheritDoc}
      */
     @Override
+    public void setDeferTies(boolean deferTies) {
+        this.deferTies = deferTies;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int getNumTopK() {
         return this.ranked.size();
     }
@@ -703,40 +716,44 @@ public class BossTopK implements SuborderSearchTopK {
     }
 
     /**
-     * How far below the pursued best a slot's total must be before it counts as below it at all. This is the
-     * tolerance the moves themselves use when comparing slots.
+     * How close to the pursued best a slot's total must be to count as tied with it. This is the tolerance the moves
+     * themselves use when comparing slots.
      */
     static final double TIE_TOLERANCE = 1e-6;
 
     /**
      * The split predicate, isolated so it can be retuned in one place: whether an alternative slot is set aside to be
-     * run later. It is when its total is below the pursued best by more than {@link #TIE_TOLERANCE} and by less than
-     * delta.
+     * run later. It is when its total is below the pursued best by less than delta. A slot within
+     * {@link #TIE_TOLERANCE} of the best, on either side, is a tie with it, and is set aside or not as deferTies says.
      * <p>
-     * A slot within the tolerance of the best is a tie with it, and is not set aside. Such ties are common: moving a
-     * node past nodes it is not adjacent to leaves the total unchanged. In floating point an exact tie can still come
-     * out a hair below the best, and with a test of "greater than zero" rounding decided which ties were set aside.
+     * Ties are common: moving a node past nodes it is not adjacent to leaves the total unchanged. A tied ordering is
+     * the same model but a different place to start a run from. With a test of "below by more than zero", rounding
+     * decided which ties were set aside, since an exact tie can come out a hair below the best in floating point. The
+     * choice is now explicit.
      * <p>
-     * This is a trade, not a pure saving. A tied ordering is the same model but a different place to start from, and
-     * in trials on simulated data the runs started from such ties sometimes ended at a better-scoring model. Leaving
-     * them out gave a third to a half as many runs and, in 3 of 20 data sets, a best model 20 to 33 BIC points worse.
-     * See the project note on BOSS threads and the Top-K split.
+     * It is a trade. In trials on simulated data (20 data sets of 12 and 25 variables, at caps of 200 and 3000 runs),
+     * setting ties aside reached the best score found by any rule in 35 of 40 searches and leaving them out in 27 of
+     * 40, where leaving them out took a third to a half as many runs and setting them aside up to eight times as
+     * many. Where the cap on runs is reached, setting ties aside can do worse. See the project note on BOSS threads
+     * and the Top-K split.
      *
-     * @param best  the total of the pursued best slot
-     * @param slot  the total of the alternative slot
-     * @param delta the split width
+     * @param best      the total of the pursued best slot
+     * @param slot      the total of the alternative slot
+     * @param delta     the split width
+     * @param deferTies true if a slot that ties with the best is set aside too
      * @return true if the alternative is to be set aside
      */
-    static boolean isNearTie(double best, double slot, double delta) {
+    static boolean isNearTie(double best, double slot, double delta, boolean deferTies) {
         double diff = best - slot;
-        return diff > TIE_TOLERANCE && diff < delta;
+        return diff > (deferTies ? -TIE_TOLERANCE : TIE_TOLERANCE) && diff < delta;
     }
 
     /**
      * Applies the split. Given the per-slot total scores computed by a betterMutation step (before the best slot is
-     * applied), enqueue every alternative insertion slot that {@link #isNearTie(double, double, double)} accepts: below
-     * the pursued best by less than delta, and not tied with it. The pursued best slot and the "stay" (original) slot
-     * are excluded; the latter because re-running from the pre-move ordering would deterministically redo this move.
+     * applied), enqueue every alternative insertion slot that {@link #isNearTie(double, double, double, boolean)}
+     * accepts: below the pursued best by less than delta, and, if ties are not being deferred, not tied with it. The
+     * pursued best slot and the "stay" (original) slot are excluded; the latter because re-running from the pre-move
+     * ordering would deterministically redo this move.
      *
      * @param prefix       The fixed prefix.
      * @param suborder     The current order (node to move still in place).
@@ -767,7 +784,7 @@ public class BossTopK implements SuborderSearchTopK {
             // stays where it is. It is excluded like the original slot, for the same reason.
             if (ownSlot && j == originalSlot + 1) continue;
 
-            if (isNearTie(best, slotScores[j], this.delta)) {
+            if (isNearTie(best, slotScores[j], this.delta, this.deferTies)) {
                 // Build the alternative ordering with nodeToMove at slot j (mirroring the move's index adjustment).
                 List<Node> alt = new ArrayList<>(suborder);
                 alt.remove(nodeToMove);

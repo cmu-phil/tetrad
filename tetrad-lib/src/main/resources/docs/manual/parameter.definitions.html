@@ -8090,6 +8090,23 @@ Source:
         <li>Value Type: <span id="skipNumRecords_value_type">Integer</span></li>
     </ul>
 
+    === splitDeferTies ===
+    <h3 class="parameter_description" id="splitDeferTies">splitDeferTies</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="splitDeferTies_short_desc">
+                Yes if placements that tie with the best are also deferred and explored
+            </span></li>
+        <li>Long Description: <span id="splitDeferTies_long_desc">
+                Applies when the split delta is above 0. A placement that ties with the move being made, to within 0.000001, gives the same model but a different ordering to start a run from. When Yes, such ties are deferred and explored like other near-tied placements; this takes more runs, and in trials found a better-scoring model more often. When No, they are left out; this takes fewer runs. With Yes, consider a higher cap on the number of runs for larger problems.
+        </span></li>
+        <li>Default Value: <span id="splitDeferTies_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="splitDeferTies_lower_bound"></span></li>
+        <li>Upper Bound: <span id="splitDeferTies_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="splitDeferTies_value_type">Boolean</span></li>
+    </ul>
+
     === splitDelta ===
     <h3 class="parameter_description" id="splitDelta">splitDelta</h3>
     <ul class="parameter_description_list">
@@ -8097,7 +8114,7 @@ Source:
                 Score gap below which near-tied orderings are deferred and explored (0 = off)
             </span></li>
         <li>Long Description: <span id="splitDelta_long_desc">
-                When an improving move beats an alternative placement by less than this amount, the alternative is deferred for separate exploration. An alternative that ties with the move, to within 0.000001, is not deferred.
+                When an improving move beats an alternative placement by less than this amount, the alternative is deferred for separate exploration. Whether an alternative that ties with the move is deferred too is set by splitDeferTies.
         </span></li>
         <li>Default
             Value: <span id="splitDelta_default_value">0.0</span></li>

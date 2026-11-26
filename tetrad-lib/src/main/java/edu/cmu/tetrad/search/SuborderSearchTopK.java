@@ -146,6 +146,15 @@ public interface SuborderSearchTopK {
     void setOptimalAcrossBranches(boolean optimalAcrossBranches);
 
     /**
+     * Sets whether, when splitting, a placement that ties with the one being pursued is set aside to be run later
+     * like other near-tied placements. Such a tie gives the same model but a different ordering to start from. True
+     * (the default) takes more runs; false takes fewer.
+     *
+     * @param deferTies True to set tied placements aside as well.
+     */
+    void setDeferTies(boolean deferTies);
+
+    /**
      * Returns the number of top models actually available after a search. This is at most {@code k}, but may be smaller
      * if fewer distinct models were found.
      *

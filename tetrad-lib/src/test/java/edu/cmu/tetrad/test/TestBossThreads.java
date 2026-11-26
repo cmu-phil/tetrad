@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * BOSS makes its moves with one method when it has one thread and with another when it has several. The two are
@@ -154,13 +155,14 @@ public class TestBossThreads {
      * bit.
      */
     private static List<String> topKModels(DataSet data, int numThreads, Knowledge knowledge, double delta,
-                                           boolean byCpdag) throws Exception {
+                                           boolean byCpdag, boolean deferTies) throws Exception {
         BossTopK boss = new BossTopK(score(data));
         boss.setNumThreads(numThreads);
         boss.setUseDataOrder(true);
         PermutationSearchTopK search = new PermutationSearchTopK(boss, 5, delta);
         search.setMaxRuns(200);
         search.setDedupByCpdag(byCpdag);
+        search.setDeferTies(deferTies);
         if (knowledge != null) {
             search.setKnowledge(knowledge);
         }
@@ -187,9 +189,14 @@ public class TestBossThreads {
             for (int rep = 0; rep < 6; rep++) {
                 DataSet data = data(numVariables, 7400L + 31L * numVariables + rep);
 
-                assertEquals(numVariables + " variables, data set " + rep
-                             + ": the models kept differ with the number of threads.",
-                        topKModels(data, 1, null, 2.0, false), topKModels(data, 4, null, 2.0, false));
+                // With ties set aside as well, and with ties left out.
+                for (boolean deferTies : new boolean[]{true, false}) {
+                    assertEquals(numVariables + " variables, data set " + rep + ", ties "
+                                 + (deferTies ? "deferred" : "left out")
+                                 + ": the models kept differ with the number of threads.",
+                            topKModels(data, 1, null, 2.0, false, deferTies),
+                            topKModels(data, 4, null, 2.0, false, deferTies));
+                }
             }
         }
     }
@@ -203,7 +210,7 @@ public class TestBossThreads {
             DataSet data = data(12, 8500L + rep);
 
             assertEquals("Data set " + rep + ": the models kept differ with the number of threads.",
-                    topKModels(data, 1, null, 5.0, true), topKModels(data, 4, null, 5.0, true));
+                    topKModels(data, 1, null, 5.0, true, true), topKModels(data, 4, null, 5.0, true, true));
         }
     }
 
@@ -223,7 +230,26 @@ public class TestBossThreads {
             knowledge.setRequired(variables.get(9).getName(), variables.get(12).getName());
 
             assertEquals("Data set " + rep + ": the models kept differ with the number of threads.",
-                    topKModels(data, 1, knowledge, 2.0, false), topKModels(data, 4, knowledge, 2.0, false));
+                    topKModels(data, 1, knowledge, 2.0, false, true),
+                    topKModels(data, 4, knowledge, 2.0, false, true));
         }
+    }
+    /**
+     * The defer-ties option does something: over a handful of data sets, setting tied placements aside as well gives
+     * a different list of models from leaving them out, at least once.
+     */
+    @Test
+    public void testTopKDeferringTiesChangesTheModelsKept() throws Exception {
+        int differ = 0;
+
+        for (int rep = 0; rep < 6; rep++) {
+            DataSet data = data(12, 7400L + 31L * 12 + rep);
+
+            if (!topKModels(data, 1, null, 2.0, false, true).equals(topKModels(data, 1, null, 2.0, false, false))) {
+                differ++;
+            }
+        }
+
+        assertTrue("Deferring ties made no difference to the models kept in any of six data sets.", differ > 0);
     }
 }

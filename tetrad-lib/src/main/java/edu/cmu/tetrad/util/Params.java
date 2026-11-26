@@ -1883,6 +1883,10 @@ public final class Params {
      */
     public static final String SKIP_NUM_RECORDS = "skipNumRecords";
     /**
+     * Constant <code>SPLIT_DEFER_TIES="splitDeferTies"</code>
+     */
+    public static final String SPLIT_DEFER_TIES = "splitDeferTies";
+    /**
      * Constant <code>SPLIT_DELTA="splitDelta"</code>
      */
     public static final String SPLIT_DELTA = "splitDelta";
