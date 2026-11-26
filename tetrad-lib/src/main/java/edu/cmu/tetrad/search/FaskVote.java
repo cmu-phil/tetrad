@@ -179,10 +179,19 @@ public class FaskVote {
         if (this.score.getDataType() == DataType.Continuous) {
             for (DataSet dataSet : this.dataSets) {
                 if (!dataSet.isContinuous()) {
+                    // Without external graphs the adjacency search runs too, and only IMaGES takes discrete
+                    // variables. Say so now, so that the caller is not sent back a second time.
+                    PooledAdjacencySearch.Method method = this.adjacencySearch.getMethod();
+                    boolean adjacencyToo = this.externalGraphs.isEmpty()
+                            && method != PooledAdjacencySearch.Method.IMAGES;
+
                     throw new IllegalArgumentException("These data sets have discrete variables, and the score"
                             + " chosen, " + this.score.getDescription() + ", is for continuous data.\n"
                             + "FASK-Vote runs FASK on each data set with this score, so choose a score for mixed"
-                            + " data.");
+                            + " data."
+                            + (adjacencyToo ? "\nThe " + method + " adjacency method is for continuous data as well,"
+                            + " so also set the adjacency search parameter (" + Params.FASK_POOL_ADJACENCY
+                            + ") to 1, IMaGES, or supply external graphs." : ""));
                 }
             }
         }

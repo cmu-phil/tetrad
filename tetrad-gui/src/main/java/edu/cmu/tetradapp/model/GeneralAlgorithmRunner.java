@@ -701,7 +701,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     if (this.sourceGraph == null) {
                         for (DataModel data : sub) {
                             if (DataKindMismatch.refuses(algo, data)) {
-                                throw new IllegalArgumentException(DataKindMismatch.message(algo, data));
+                                throw new IllegalArgumentException(
+                                        DataKindMismatch.message(algo, data, this.parameters));
                             }
                         }
                     }

@@ -465,6 +465,12 @@ public class TestRequiredInputs {
             assertTrue(wrongScore, wrongScore.startsWith("These data sets have discrete variables, and the score chosen,"));
             assertTrue(wrongScore, wrongScore.contains("is for continuous data."));
             assertTrue(wrongScore, wrongScore.contains("hoose a score for mixed data"));
+
+            // With the defaults both are wrong, and one message says so.
+            String bothWrong = refusal(() -> quietly(() -> pooled(which, new SemBicScore())
+                    .search(mixed, new Parameters())));
+            assertTrue(bothWrong, bothWrong.contains("hoose a score for mixed data"));
+            assertTrue(bothWrong, bothWrong.contains("(" + Params.FASK_POOL_ADJACENCY + ") to 1, IMaGES"));
         }
     }
 

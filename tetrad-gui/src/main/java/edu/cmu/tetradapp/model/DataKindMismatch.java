@@ -28,6 +28,8 @@ import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +98,21 @@ final class DataKindMismatch {
      * @return the message
      */
     static String message(Algorithm algorithm, DataModel data) {
+        return message(algorithm, data, null);
+    }
+
+    /**
+     * The message for an algorithm that cannot be run on the given data, given the parameters it would be run with.
+     * FASK-Pool and FASK-Vote choose their adjacency search by a parameter, and only one choice, IMaGES, takes data
+     * with discrete variables. When the score is refused for such data and another adjacency search is chosen, the
+     * message asks for both changes at once, so that the user is not sent back a second time.
+     *
+     * @param algorithm  the algorithm, with its test and score set if it takes them
+     * @param data       the data it was asked to search, which it does not accept
+     * @param parameters the parameters of the search, or null if they are not known
+     * @return the message
+     */
+    static String message(Algorithm algorithm, DataModel data, Parameters parameters) {
         String dataName = data.getName() == null || data.getName().isBlank()
                 ? "The data set" : "The data set '" + data.getName() + "'";
         String kind = data.isContinuous() ? "continuous" : data.isDiscrete() ? "discrete"
@@ -126,10 +143,17 @@ final class DataKindMismatch {
         }
 
         if (!chosen.isEmpty()) {
+            boolean adjacencyToo = parameters != null && !data.isContinuous()
+                                   && algorithm.getParameters().contains(Params.FASK_POOL_ADJACENCY)
+                                   && parameters.getInt(Params.FASK_POOL_ADJACENCY) != 1;
+
             return algorithmName + " cannot be run on this data as it is set up.\n"
                    + dataName + " " + isKind + ", and " + String.join(", and ", chosen) + ".\n"
                    + "Choose " + String.join(" and ", toChoose) + " for " + forThisData
-                   + " in this Search box, or convert the data in a Data box first.";
+                   + (adjacencyToo ? " and set the adjacency search parameter (" + Params.FASK_POOL_ADJACENCY
+                                     + ") to 1, IMaGES," : "")
+                   + " in this Search box, or convert the data in a Data box first."
+                   + (adjacencyToo ? "\nThe adjacency search now chosen is for continuous data." : "");
         }
 
         return algorithmName + " is " + takes(algorithm.getDataType()) + ", and " + lowerFirst(dataName) + " " + isKind

@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskPool;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskVote;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FciIod;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Ion;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
@@ -45,6 +46,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -318,6 +320,60 @@ public class TestDataKindMismatch {
         } finally {
             System.setOut(out);
         }
+    }
+
+    /**
+     * On mixed data FASK-Pool and FASK-Vote need two things changed from their defaults: a score for mixed data, and
+     * IMaGES as the adjacency search. The message used to name the score only, and the adjacency search was named on
+     * the next run. Both are now named at once, and a search set up as the message says runs.
+     */
+    @Test
+    public void testFaskPoolAndFaskVoteOnMixedDataAreToldBothChangesAtOnce() throws Exception {
+        String both = "Choose a score for mixed data and set the adjacency search parameter ("
+                      + Params.FASK_POOL_ADJACENCY + ") to 1, IMaGES, in this Search box, or convert the data in a"
+                      + " Data box first.\nThe adjacency search now chosen is for continuous data.";
+
+        for (Algorithm algorithm : new Algorithm[]{new FaskPool(new SemBicScore()), new FaskVote(new SemBicScore())}) {
+            String message = refusalForSeveral(algorithm, three(mixed));
+            assertTrue(message, message.contains("the score chosen, Sem BIC Score, is for continuous data.\n"));
+            assertTrue(message, message.endsWith(both));
+        }
+
+        PrintStream out = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+
+        try {
+            // As the message says: runs.
+            for (Algorithm algorithm : new Algorithm[]{new FaskPool(new DegenerateGaussianBicScore()),
+                    new FaskVote(new DegenerateGaussianBicScore())}) {
+                GeneralAlgorithmRunner runner = several(algorithm, three(mixed), null);
+                runner.getParameters().set(Params.FASK_POOL_ADJACENCY, 1);
+                runner.execute();
+                assertNotNull(runner.getGraph());
+            }
+
+            // With IMaGES already chosen, only the score is named.
+            GeneralAlgorithmRunner runner = several(new FaskPool(new SemBicScore()), three(mixed), null);
+            runner.getParameters().set(Params.FASK_POOL_ADJACENCY, 1);
+
+            try {
+                runner.execute();
+                fail("Expected the Search box to refuse the data.");
+            } catch (IllegalArgumentException e) {
+                assertTrue(e.getMessage(), e.getMessage().endsWith("Choose a score for mixed data in this Search box,"
+                                                                   + " or convert the data in a Data box first."));
+            }
+        } finally {
+            System.setOut(out);
+        }
+
+        // An algorithm with no such parameter is told about its test or score only.
+        String message = refusalForSeveral(new FciIod(new FisherZ()), three(mixed));
+        assertFalse(message, message.contains("adjacency search"));
+
+        // On continuous data a score for discrete data is the only thing wrong.
+        message = refusalForSeveral(new FaskPool(new BdeuScore()), three(continuous));
+        assertFalse(message, message.contains("adjacency search"));
     }
 
     /**

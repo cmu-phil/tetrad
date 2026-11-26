@@ -635,6 +635,15 @@ public class PooledAdjacencySearch {
     }
 
     /**
+     * Returns the adjacency method.
+     *
+     * @return the method
+     */
+    public Method getMethod() {
+        return this.method;
+    }
+
+    /**
      * Sets the alpha level for the FAS-style tests. Default: 0.05.
      *
      * @param fasAlpha the alpha level, in (0, 1)
