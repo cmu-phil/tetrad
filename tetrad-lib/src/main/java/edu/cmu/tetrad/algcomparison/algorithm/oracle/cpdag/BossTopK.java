@@ -43,6 +43,7 @@ import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,8 +52,9 @@ import java.util.List;
  * This is an algcomparison wrapper around {@link edu.cmu.tetrad.search.BossTopK} /
  * {@link edu.cmu.tetrad.search.PermutationSearchTopK}. It runs the top-k BOSS search and returns the single
  * top-scoring graph (so it behaves like the ordinary BOSS wrapper for comparison purposes). As a side effect it
- * prints, to the console, each of the top permutations found (with its score), followed by each of their graphs. A
- * later revision may return multiple graphs for display in the interface.
+ * prints, to the console, each of the top permutations found (with its score), followed by each of their graphs.
+ * After a search the models kept are also available, best first, from {@link #getTopGraphs()},
+ * {@link #getTopScores()} and {@link #getTopOrders()}.
  * <p>
  * The number of models retained ({@code topK}), the split threshold ({@code splitDelta}), and the run cap
  * ({@code maxRuns}) are read from the parameters with sensible defaults. Note that with {@code splitDelta == 0} and
@@ -113,6 +115,28 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * The graphs of the models kept by the last search, best first. Not saved with a session, so null in an algorithm
+     * read back from one until it is run again.
+     */
+    private transient List<Graph> topGraphs;
+
+    /**
+     * The scores of the models kept by the last search, in the same order.
+     */
+    private transient List<Double> topScores;
+
+    /**
+     * The variable orders of the models kept by the last search, in the same order.
+     */
+    private transient List<List<Node>> topOrders;
+
+    /**
+     * How many searches have kept their models since the models were last cleared. More than one means that the
+     * search was run on resamples, and the models held are those of whichever of them ran last.
+     */
+    private transient int searchesKept;
+
+    /**
      * Constructs a new BOSS-TopK algorithm.
      */
     public BossTopK() {
@@ -126,6 +150,86 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
      */
     public BossTopK(ScoreWrapper score) {
         this.score = score;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Runs the search and returns the top-scoring graph, as the other algorithms do. The models kept are then
+     * available from {@link #getTopGraphs()}, {@link #getTopScores()} and {@link #getTopOrders()}. With bootstrapping
+     * there are none to give: the search is run on each resample, and the models of one resample are not the models
+     * of the data.
+     */
+    @Override
+    public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
+        clearTopModels();
+
+        Graph graph = super.search(dataModel, parameters);
+
+        synchronized (this) {
+            if (this.searchesKept != 1) clearTopModels();
+        }
+
+        return graph;
+    }
+
+    /**
+     * Returns the graphs of the models kept by the last search, best first. The first is the graph the search
+     * returned. Each is a CPDAG or a DAG as the search was asked for. The list is empty before a search, after a
+     * search with bootstrapping, and in an algorithm read back from a saved session.
+     *
+     * @return the graphs, best first
+     */
+    public synchronized List<Graph> getTopGraphs() {
+        return this.topGraphs == null ? List.of() : Collections.unmodifiableList(this.topGraphs);
+    }
+
+    /**
+     * Returns the scores of the models kept by the last search, in the order of {@link #getTopGraphs()}. A higher
+     * score is better.
+     *
+     * @return the scores, best first
+     */
+    public synchronized List<Double> getTopScores() {
+        return this.topScores == null ? List.of() : Collections.unmodifiableList(this.topScores);
+    }
+
+    /**
+     * Returns the variable orders of the models kept by the last search, in the order of {@link #getTopGraphs()}.
+     * Each model's graph is the one the search builds from its order.
+     *
+     * @return the orders, best first
+     */
+    public synchronized List<List<Node>> getTopOrders() {
+        return this.topOrders == null ? List.of() : Collections.unmodifiableList(this.topOrders);
+    }
+
+    private synchronized void clearTopModels() {
+        this.topGraphs = null;
+        this.topScores = null;
+        this.topOrders = null;
+        this.searchesKept = 0;
+    }
+
+    private synchronized void keepTopModels(PermutationSearchTopK permutationSearch) {
+        List<Node> variables = permutationSearch.getVariables();
+        List<Graph> graphs = new ArrayList<>();
+        List<Double> scores = new ArrayList<>();
+        List<List<Node>> orders = new ArrayList<>();
+
+        for (int i = 0; i < permutationSearch.getNumModels(); i++) {
+            graphs.add(permutationSearch.getModelGraph(i));
+            scores.add(permutationSearch.getModelScore(i));
+
+            List<Node> order = new ArrayList<>();
+            for (int index : permutationSearch.getModelPermutation(i)) order.add(variables.get(index));
+            orders.add(Collections.unmodifiableList(order));
+        }
+
+        this.topGraphs = graphs;
+        this.topScores = scores;
+        this.topOrders = orders;
+        this.searchesKept++;
     }
 
     /**
@@ -193,6 +297,7 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
             LogUtilsSearch.stampWithBic(graph, dataModel);
 
             printTopModels(permutationSearch);
+            keepTopModels(permutationSearch);
 
             return graph;
         } catch (InterruptedException e) {
