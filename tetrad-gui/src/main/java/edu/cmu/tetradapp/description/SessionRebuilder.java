@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.description;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.data.DiscretizationSpec;
+import edu.cmu.tetrad.data.SplitCasesSpec;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -36,6 +37,7 @@ import edu.cmu.tetradapp.model.NoteModel;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.model.datamanip.SelectionWrapper;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.session.SessionNode;
 
@@ -296,7 +298,95 @@ public final class SessionRebuilder {
             parameters.set("discretizationSpecs", (Object) specs);
         }
 
+        // Which rows a selection box keeps.
+        List<String> select = box.getAll(StandardDescribers.SELECT);
+
+        if (!select.isEmpty()) {
+            Map<Node, SelectionWrapper.SelectionSpec> specs = new HashMap<>();
+
+            for (String line : select) {
+                try {
+                    StandardDescribers.readSelectLine(line, specs);
+                } catch (IllegalArgumentException e) {
+                    problems.add(name + ": the selection \"" + line + "\" was not set, since " + e.getMessage());
+                }
+            }
+
+            parameters.set("selectionSpecs", (Object) specs);
+        }
+
+        // How a split-cases box divides the rows.
+        String split = box.get(StandardDescribers.SPLIT);
+
+        if (split != null) {
+            try {
+                parameters.set("splitCasesSpec", (Object) StandardDescribers.readSplitLine(split));
+            } catch (IllegalArgumentException e) {
+                problems.add(name + ": the split \"" + split + "\" was not set, since " + e.getMessage());
+            }
+        }
+
+        // Parameters given several values, as a grid search box gives the ones it compares.
+        for (String values : box.getAll(StandardDescribers.VALUES)) {
+            try {
+                severalValues(values, parameters);
+            } catch (IllegalArgumentException e) {
+                problems.add(name + ": the values \"" + values + "\" were not set, since " + e.getMessage());
+            }
+        }
+
         return parameters;
+    }
+
+    /**
+     * Reads a "Values" field, a parameter's name and its several values, and sets them. Each value is read as the
+     * kind of value the parameter's registered default is.
+     */
+    private static void severalValues(String text, Parameters parameters) {
+        int equals = text.indexOf(" = ");
+        int defaultAt = text.lastIndexOf(" (default ");
+
+        if (equals <= 0 || defaultAt < equals) {
+            throw new IllegalArgumentException("it does not give a parameter and its values.");
+        }
+
+        String parameter = text.substring(0, equals).strip();
+
+        if (!ParamDescriptions.getInstance().getNames().contains(parameter)) {
+            throw new IllegalArgumentException("the parameter is not known to this version of Tetrad.");
+        }
+
+        Serializable defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
+        List<Object> values = new ArrayList<>();
+
+        try {
+            for (String piece : text.substring(equals + 3, defaultAt).split(",")) {
+                String value = piece.strip();
+
+                if (defaultValue instanceof Integer) {
+                    values.add(Integer.valueOf(value));
+                } else if (defaultValue instanceof Long) {
+                    values.add(Long.valueOf(value));
+                } else if (defaultValue instanceof Double) {
+                    values.add(Double.valueOf(value));
+                } else if (defaultValue instanceof Boolean) {
+                    if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+                        throw new NumberFormatException();
+                    }
+
+                    values.add(Boolean.valueOf(value));
+                } else if (defaultValue instanceof String) {
+                    values.add(value);
+                } else {
+                    throw new IllegalArgumentException("the parameter has a kind of value that cannot be read "
+                                                       + "from text.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("one of them could not be read.");
+        }
+
+        parameters.set(parameter, values.toArray());
     }
 
     /**

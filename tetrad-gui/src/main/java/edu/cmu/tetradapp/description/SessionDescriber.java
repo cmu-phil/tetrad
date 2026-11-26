@@ -29,6 +29,7 @@ import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.model.NoteModel;
@@ -39,6 +40,8 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
 import edu.cmu.tetradapp.model.datamanip.DiscretizationWrapper;
+import edu.cmu.tetradapp.model.datamanip.SelectionWrapper;
+import edu.cmu.tetradapp.model.datamanip.SplitCasesWrapper;
 import edu.cmu.tetradapp.session.SessionNode;
 
 import java.time.LocalDate;
@@ -89,6 +92,9 @@ public final class SessionDescriber {
         register(NoteModel.class, StandardDescribers::describeNote);
         register(Simulation.class, StandardDescribers::describeSimulation);
         register(DiscretizationWrapper.class, StandardDescribers::describeDiscretization);
+        register(SelectionWrapper.class, StandardDescribers::describeSelection);
+        register(SplitCasesWrapper.class, StandardDescribers::describeSplitCases);
+        register(GridSearchModel.class, StandardDescribers::describeGridSearch);
         register(RegressionRunner.class, (model, node, out) -> StandardDescribers.describeRegression(
                 ((RegressionRunner) model).getTargetName(), ((RegressionRunner) model).getRegressorNames(),
                 model, node, out));

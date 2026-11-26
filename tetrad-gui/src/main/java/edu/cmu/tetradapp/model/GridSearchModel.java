@@ -2329,6 +2329,24 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         /**
+         * Returns the class that makes the random graph.
+         *
+         * @return the random graph class.
+         */
+        public Class<? extends RandomGraph> getGraphClass() {
+            return graphClass;
+        }
+
+        /**
+         * Returns the class that simulates data from the graph.
+         *
+         * @return the simulation class.
+         */
+        public Class<? extends Simulation> getSimulationClass() {
+            return simulationClass;
+        }
+
+        /**
          * Creates and returns an instance of a Simulation object by constructing a RandomGraph
          * instance and passing it as an argument to the constructor of the specified Simulation class.
          *

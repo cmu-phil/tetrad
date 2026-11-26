@@ -50,6 +50,7 @@ import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.model.LogisticRegressionRunner;
 import edu.cmu.tetradapp.model.NoteModel;
@@ -294,6 +295,8 @@ public final class PendingDescription {
                 } else if (model instanceof GraphWrapper || model instanceof DagWrapper
                            || model instanceof SemGraphWrapper) {
                     applyGraph(name, box, model, notes);
+                } else if (model instanceof GridSearchModel grid) {
+                    applyGridSearch(name, box, grid, notes);
                 }
             } catch (Exception e) {
                 notes.add(name + ": the description could not be applied (" + e + ").");
@@ -440,6 +443,133 @@ public final class PendingDescription {
     /**
      * Returns the target a regression box's description names, if the data have a variable of that name.
      */
+    /**
+     * Gives a grid search box the simulation, the algorithms and the table columns its description names. The
+     * parameters, with the several values of those it compares, are already in the box's parameters.
+     */
+    @SuppressWarnings("unchecked")
+    private static void applyGridSearch(String name, BoxDescription box, GridSearchModel grid, List<String> notes)
+            throws Exception {
+        // The simulation: found again by the two classes named in brackets at the end of the line.
+        for (String line : box.getAll(StandardDescribers.GRID_SIMULATION)) {
+            int open = line.lastIndexOf('(');
+            int on = line.indexOf(StandardDescribers.GRID_ON, Math.max(open, 0));
+
+            if (open < 0 || on < 0 || !line.endsWith(")")) {
+                notes.add(name + ": the simulation \"" + line + "\" could not be read, so it was not chosen.");
+                continue;
+            }
+
+            try {
+                Class<?> simulation = Class.forName(line.substring(open + 1, on).strip());
+                Class<?> graph = Class.forName(line.substring(on + StandardDescribers.GRID_ON.length(),
+                        line.length() - 1).strip());
+
+                if (!edu.cmu.tetrad.algcomparison.simulation.Simulation.class.isAssignableFrom(simulation)
+                    || !edu.cmu.tetrad.algcomparison.graph.RandomGraph.class.isAssignableFrom(graph)) {
+                    throw new ClassNotFoundException();
+                }
+
+                GridSearchModel.SimulationSpec spec = new GridSearchModel.SimulationSpec("name",
+                        (Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph>) graph,
+                        (Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation>) simulation);
+                grid.removeLastSimulation();
+                grid.addSimulationSpec(spec);
+                grid.setSelectedSimulation(spec);
+            } catch (ClassNotFoundException e) {
+                notes.add(name + ": the simulation \"" + line + "\" is not one this version of Tetrad has, so it "
+                          + "was not chosen.");
+            }
+        }
+
+        // The algorithms, each with its test and score.
+        List<String> algorithms = box.getAll(StandardDescribers.GRID_ALGORITHM);
+
+        if (!algorithms.isEmpty()) {
+            grid.clearAlgorithms();
+        }
+
+        for (String line : algorithms) {
+            int testAt = line.indexOf(StandardDescribers.GRID_TEST);
+            int scoreAt = line.indexOf(StandardDescribers.GRID_SCORE);
+            int end = testAt >= 0 ? testAt : scoreAt >= 0 ? scoreAt : line.length();
+            String algorithmCommand = command(line.substring(0, end).strip());
+            String testCommand = testAt < 0 ? null
+                    : command(line.substring(testAt + StandardDescribers.GRID_TEST.length(),
+                    scoreAt > testAt ? scoreAt : line.length()).strip());
+            String scoreCommand = scoreAt < 0 ? null
+                    : command(line.substring(scoreAt + StandardDescribers.GRID_SCORE.length()).strip());
+
+            AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> algorithm
+                    = algorithmCommand == null ? null : findAlgorithm(algorithmCommand);
+            AnnotatedClass<TestOfIndependence> test = testCommand == null ? null : findTest(testCommand);
+            AnnotatedClass<Score> score = scoreCommand == null ? null : findScore(scoreCommand);
+
+            if (algorithm == null || (testAt >= 0 && test == null) || (scoreAt >= 0 && score == null)) {
+                notes.add(name + ": the algorithm \"" + line + "\" was not added, since "
+                          + (algorithm == null ? "the algorithm" : testAt >= 0 && test == null ? "its test"
+                        : "its score") + " is not known to this version of Tetrad.");
+                continue;
+            }
+
+            edu.cmu.tetradapp.ui.model.AlgorithmModel algorithmModel
+                    = new edu.cmu.tetradapp.ui.model.AlgorithmModel(algorithm);
+            grid.addAlgorithm(new GridSearchModel.AlgorithmSpec(algorithmModel.getName(), algorithmModel, test, score));
+        }
+
+        // The test of the Markov checker statistics, which the columns for those statistics are made with.
+        String markovTest = box.get(StandardDescribers.GRID_MARKOV_TEST);
+
+        if (markovTest != null) {
+            String markovCommand = command(markovTest);
+            AnnotatedClass<TestOfIndependence> test = markovCommand == null ? null : findTest(markovCommand);
+
+            if (test == null) {
+                notes.add(name + ": the Markov checker test \"" + markovTest + "\" is not known to this version "
+                          + "of Tetrad, so it was not set.");
+            } else {
+                grid.setMarkovCheckerIndependenceWrapper(
+                        (IndependenceWrapper) test.clazz().getConstructor().newInstance());
+            }
+        }
+
+        // The columns of the table, chosen from those the simulation and the algorithms now offer.
+        List<String> columns = box.getAll(StandardDescribers.GRID_COLUMN);
+
+        if (!columns.isEmpty()) {
+            List<GridSearchModel.MyTableColumn> offered = grid.getAllTableColumns();
+            List<GridSearchModel.MyTableColumn> chosen = new ArrayList<>();
+
+            for (String line : columns) {
+                boolean statistic = line.endsWith(StandardDescribers.GRID_STATISTIC);
+                boolean parameter = line.endsWith(StandardDescribers.GRID_PARAMETER);
+                String key = statistic ? line.substring(0, line.length() - StandardDescribers.GRID_STATISTIC.length())
+                        : parameter ? line.substring(0, line.length() - StandardDescribers.GRID_PARAMETER.length())
+                        : null;
+                GridSearchModel.MyTableColumn found = null;
+
+                for (GridSearchModel.MyTableColumn column : offered) {
+                    boolean isStatistic = column.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC;
+
+                    if (key != null && ((statistic && isStatistic && column.getColumnName().equals(key))
+                                        || (parameter && !isStatistic && column.getParameter().equals(key)))) {
+                        found = column;
+                        break;
+                    }
+                }
+
+                if (found == null) {
+                    notes.add(name + ": the table column \"" + line + "\" is not one the box offers, so it was "
+                              + "not added.");
+                } else if (!chosen.contains(found)) {
+                    chosen.add(found);
+                }
+            }
+
+            grid.setSelectedTableColumns(chosen);
+        }
+    }
+
     private static String regressionTarget(BoxDescription box, List<String> variableNames) {
         String target = box.get(StandardDescribers.TARGET);
         return target != null && variableNames != null && variableNames.contains(target) ? target : null;

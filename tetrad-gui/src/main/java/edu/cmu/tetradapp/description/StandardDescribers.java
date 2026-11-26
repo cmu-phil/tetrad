@@ -39,6 +39,7 @@ import edu.cmu.tetrad.data.DiscretizationSpec;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SplitCasesSpec;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -46,10 +47,12 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.model.NoteModel;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.model.datamanip.DiscretizationWrapper;
+import edu.cmu.tetradapp.model.datamanip.SelectionWrapper;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.session.SessionNode;
 
@@ -60,6 +63,8 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -196,6 +201,41 @@ public final class StandardDescribers {
     public static final String DISCRETIZE = "Discretize";
 
     /**
+     * The label for which rows a selection box keeps, by the values of one variable. One line for each variable.
+     */
+    public static final String SELECT = "Select";
+
+    /**
+     * The label for how a split-cases box divides the rows.
+     */
+    public static final String SPLIT = "Split";
+
+    /**
+     * The label for a parameter that has been given several values, as a grid search box does to compare them.
+     */
+    public static final String VALUES = "Values";
+
+    /**
+     * The label for the simulation a grid search box draws its data from.
+     */
+    public static final String GRID_SIMULATION = "Grid simulation";
+
+    /**
+     * The label for an algorithm a grid search box runs, with its test and score. One line for each.
+     */
+    public static final String GRID_ALGORITHM = "Grid algorithm";
+
+    /**
+     * The label for a column of a grid search box's table of results. One line for each, in order.
+     */
+    public static final String GRID_COLUMN = "Grid column";
+
+    /**
+     * The label for the test a grid search box's Markov checker statistics use, when it is not the usual one.
+     */
+    public static final String GRID_MARKOV_TEST = "Grid Markov checker test";
+
+    /**
      * Settings that record where the interface was left, not a choice about the analysis.
      */
     private static final Set<String> INTERFACE_STATE = Set.of("selectedTabParam", "simulationsDropdownPreference");
@@ -204,7 +244,9 @@ public final class StandardDescribers {
      * Settings held as objects that a describer of their own writes out, so the general describer passes over
      * them.
      */
-    private static final Set<String> DESCRIBED_ELSEWHERE = Set.of("discretizationSpecs");
+    private static final Set<String> DESCRIBED_ELSEWHERE = Set.of("discretizationSpecs", "selectionSpecs",
+            "splitCasesSpec", "algcomparison.selectedSimulation", "algcomparison.selectedSimulations",
+            "algcomparison.selectedAlgorithms", "algcomparison.selectedTableColumns");
 
     /**
      * The largest number of data sets listed for one box.
@@ -324,6 +366,104 @@ public final class StandardDescribers {
         }
 
         describeData(model, node, out);
+    }
+
+    /**
+     * Describes a selection box: which rows it keeps, one line for each variable the rows are selected by, and then
+     * what a data box says. A row is kept if it passes every line.
+     *
+     * @param model the model, a {@link SelectionWrapper}.
+     * @param node  the session node holding the model.
+     * @param out   the description of the box.
+     */
+    public static void describeSelection(Object model, SessionNode node, BoxDescription.Builder out) {
+        Parameters parameters = node.getParam(model.getClass());
+        Object specs = parameters == null || !parameters.getParametersNames().contains("selectionSpecs")
+                ? null : parameters.getValues("selectionSpecs")[0];
+
+        if (specs instanceof Map<?, ?> map) {
+            Map<String, String> lines = new TreeMap<>();
+
+            // The names of a discrete variable's categories are taken from the box's data where the variable is
+            // still there, since the variable a specification is kept under may be a stand-in with a name only.
+            DataModel selected = ((DataWrapper) model).getSelectedDataModel();
+
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() instanceof Node variable
+                    && entry.getValue() instanceof SelectionWrapper.SelectionSpec spec) {
+                    Node inData = selected instanceof DataSet dataSet ? dataSet.getVariable(variable.getName()) : null;
+                    lines.put(variable.getName(), selectLine(inData != null ? inData : variable, spec));
+                }
+            }
+
+            for (String line : lines.values()) {
+                out.field(SELECT, line);
+            }
+        }
+
+        describeData(model, node, out);
+    }
+
+    /**
+     * Describes a split-cases box: how many rows it was set up for, after which rows it breaks them, and what the
+     * parts are called; and then what a data box says. Whether the rows are shuffled first is among the settings.
+     *
+     * @param model the model, a split-cases wrapper.
+     * @param node  the session node holding the model.
+     * @param out   the description of the box.
+     */
+    public static void describeSplitCases(Object model, SessionNode node, BoxDescription.Builder out) {
+        Parameters parameters = node.getParam(model.getClass());
+        Object spec = parameters == null || !parameters.getParametersNames().contains("splitCasesSpec")
+                ? null : parameters.getValues("splitCasesSpec")[0];
+
+        if (spec instanceof SplitCasesSpec splitSpec) {
+            out.field(SPLIT, splitLine(splitSpec));
+        }
+
+        describeData(model, node, out);
+    }
+
+    /**
+     * Describes a grid search box: the simulation it draws data from, unless it was given data; the algorithms it
+     * runs, each with its test and score; the columns of its table of results, in order; and then its parameters,
+     * of which those given several values to compare are listed with all their values.
+     *
+     * @param model the model, a {@link GridSearchModel}.
+     * @param node  the session node holding the model.
+     * @param out   the description of the box.
+     */
+    public static void describeGridSearch(Object model, SessionNode node, BoxDescription.Builder out) {
+        GridSearchModel grid = (GridSearchModel) model;
+        Parameters parameters = grid.getParameters();
+
+        if (grid.getSuppliedData() == null && parameters.get("algcomparison.selectedSimulations") instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof GridSearchModel.SimulationSpec spec) {
+                    out.field(GRID_SIMULATION, gridSimulationLine(spec));
+                }
+            }
+        }
+
+        for (GridSearchModel.AlgorithmSpec spec : grid.getSelectedAlgorithms()) {
+            out.field(GRID_ALGORITHM, gridAlgorithmLine(spec));
+        }
+
+        for (GridSearchModel.MyTableColumn column : grid.getSelectedTableColumns()) {
+            out.field(GRID_COLUMN, gridColumnLine(column));
+        }
+
+        IndependenceWrapper markovTest = grid.getMarkovCheckerIndependenceWrapper();
+
+        if (markovTest != null && !(markovTest instanceof edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLrt)) {
+            TestOfIndependence annotation = markovTest.getClass().getAnnotation(TestOfIndependence.class);
+            out.field(GRID_MARKOV_TEST, annotation == null ? markovTest.getClass().getSimpleName()
+                    : nameAndCommand(annotation.name(), annotation.command()));
+        }
+
+        Set<String> names = new TreeSet<>(parameters.getParametersNames());
+        changedParameters(out, parameters, names);
+        otherSettings(out, parameters, names);
     }
 
     /**
@@ -612,6 +752,234 @@ public final class StandardDescribers {
         }
     }
 
+    private static final String INTERVALS = "; intervals: ";
+    private static final String CATEGORY_NUMBERS = "; category numbers: ";
+    private static final String CATEGORY_NAMES = "; names: ";
+    private static final Pattern INTERVAL = Pattern.compile("\\[\\s*([^,\\]]+),\\s*([^\\]]+)\\]");
+
+    /**
+     * Writes which rows a selection box keeps by the values of one variable, as the value of a "Select" field. For
+     * a continuous variable: its name and the intervals a value may lie in, ends included. For a discrete variable:
+     * its name, the numbers of the categories kept, counting from 0, and their names where they are known.
+     *
+     * @param variable the variable.
+     * @param spec     the variable's selection specification.
+     * @return the text.
+     */
+    static String selectLine(Node variable, SelectionWrapper.SelectionSpec spec) {
+        if (spec.isContinuous()) {
+            List<String> intervals = new ArrayList<>();
+
+            for (double[] interval : spec.getContinuousIntervals()) {
+                intervals.add("[" + valueText(interval[0]) + ", " + valueText(interval[1]) + "]");
+            }
+
+            return variable.getName() + INTERVALS + String.join(", ", intervals);
+        }
+
+        List<Integer> kept = new ArrayList<>(new TreeSet<>(spec.getAcceptedCategories()));
+        List<String> numbers = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+
+        for (int index : kept) {
+            numbers.add(String.valueOf(index));
+
+            if (variable instanceof DiscreteVariable discrete && index >= 0 && index < discrete.getNumCategories()) {
+                names.add(discrete.getCategory(index));
+            }
+        }
+
+        return variable.getName() + CATEGORY_NUMBERS + String.join(", ", numbers)
+               + (names.size() == kept.size() ? CATEGORY_NAMES + String.join(", ", names) : "");
+    }
+
+    /**
+     * Reads back what {@link #selectLine} wrote, and puts it in the given map as the selection box keeps it. The
+     * box matches specifications to variables by name, so a variable made here from the name alone serves as the
+     * key. The names of categories are for the reader and are not read; the numbers are.
+     *
+     * @param text  the value of a "Select" field.
+     * @param specs the map to add to.
+     * @throws IllegalArgumentException if the text cannot be read, with the reason.
+     */
+    static void readSelectLine(String text, Map<Node, SelectionWrapper.SelectionSpec> specs) {
+        int intervalsAt = text.indexOf(INTERVALS);
+        int numbersAt = text.indexOf(CATEGORY_NUMBERS);
+
+        try {
+            if (intervalsAt > 0) {
+                List<double[]> intervals = new ArrayList<>();
+                Matcher matcher = INTERVAL.matcher(text.substring(intervalsAt + INTERVALS.length()));
+
+                while (matcher.find()) {
+                    double low = Double.parseDouble(matcher.group(1).strip());
+                    double high = Double.parseDouble(matcher.group(2).strip());
+
+                    if (low > high) {
+                        throw new IllegalArgumentException("an interval in it ends before it starts.");
+                    }
+
+                    intervals.add(new double[]{low, high});
+                }
+
+                if (intervals.isEmpty()) {
+                    throw new IllegalArgumentException("it gives no interval.");
+                }
+
+                specs.put(new ContinuousVariable(text.substring(0, intervalsAt).strip()),
+                        SelectionWrapper.SelectionSpec.continuous(intervals));
+            } else if (numbersAt > 0) {
+                String rest = text.substring(numbersAt + CATEGORY_NUMBERS.length());
+                int namesAt = rest.indexOf(CATEGORY_NAMES);
+                Set<Integer> kept = new LinkedHashSet<>();
+                int largest = -1;
+
+                for (String piece : pieces(namesAt < 0 ? rest : rest.substring(0, namesAt))) {
+                    int index = Integer.parseInt(piece);
+
+                    if (index < 0) {
+                        throw new IllegalArgumentException("there is no category number " + index + ".");
+                    }
+
+                    kept.add(index);
+                    largest = Math.max(largest, index);
+                }
+
+                if (kept.isEmpty()) {
+                    throw new IllegalArgumentException("it keeps no category.");
+                }
+
+                specs.put(new DiscreteVariable(text.substring(0, numbersAt).strip(), largest + 1),
+                        SelectionWrapper.SelectionSpec.discrete(kept));
+            } else {
+                throw new IllegalArgumentException("it gives neither intervals nor categories.");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("a number in it could not be read.");
+        }
+    }
+
+    private static final String ROWS = " rows; break after rows: ";
+    private static final String PARTS = "; parts: ";
+    private static final String NO_BREAKS = "none";
+
+    /**
+     * Writes how a split-cases box divides the rows, as the value of a "Split" field: the number of rows it was set
+     * up for, the rows after which a new part starts, and the names of the parts.
+     *
+     * @param spec the split.
+     * @return the text.
+     */
+    static String splitLine(SplitCasesSpec spec) {
+        List<String> breaks = new ArrayList<>();
+
+        for (int breakpoint : spec.getBreakpoints()) {
+            breaks.add(String.valueOf(breakpoint));
+        }
+
+        return spec.getSampleSize() + ROWS + (breaks.isEmpty() ? NO_BREAKS : String.join(", ", breaks))
+               + PARTS + String.join(", ", spec.getSplitNames());
+    }
+
+    /**
+     * Reads back what {@link #splitLine} wrote.
+     *
+     * @param text the value of a "Split" field.
+     * @return the split.
+     * @throws IllegalArgumentException if the text cannot be read, with the reason.
+     */
+    static SplitCasesSpec readSplitLine(String text) {
+        int rowsAt = text.indexOf(ROWS);
+        int partsAt = text.indexOf(PARTS);
+
+        if (rowsAt <= 0 || partsAt < rowsAt) {
+            throw new IllegalArgumentException("it does not give the rows, the breaks and the parts.");
+        }
+
+        try {
+            int rows = Integer.parseInt(text.substring(0, rowsAt).strip());
+            String breaksText = text.substring(rowsAt + ROWS.length(), partsAt).strip();
+            List<String> breakTexts = breaksText.equals(NO_BREAKS) ? List.of() : pieces(breaksText);
+            List<String> names = pieces(text.substring(partsAt + PARTS.length()));
+            int[] breaks = new int[breakTexts.size()];
+            int last = 0;
+
+            for (int i = 0; i < breaks.length; i++) {
+                breaks[i] = Integer.parseInt(breakTexts.get(i));
+
+                if (breaks[i] < last || breaks[i] > rows) {
+                    throw new IllegalArgumentException("its breaks are not in order within the " + rows + " rows.");
+                }
+
+                last = breaks[i];
+            }
+
+            if (names.size() != breaks.length + 1) {
+                throw new IllegalArgumentException(names.size() + " parts do not go with " + breaks.length
+                                                   + " breaks.");
+            }
+
+            return new SplitCasesSpec(rows, breaks, new ArrayList<>(names));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("a number in it could not be read.");
+        }
+    }
+
+    static final String GRID_ON = " on ";
+    static final String GRID_TEST = "; test: ";
+    static final String GRID_SCORE = "; score: ";
+    static final String GRID_STATISTIC = " (statistic)";
+    static final String GRID_PARAMETER = " (parameter)";
+
+    /**
+     * Writes a grid search box's simulation: what it says of itself, and then, in brackets, the class that
+     * simulates and the class that makes the graph, by which it is found again.
+     */
+    private static String gridSimulationLine(GridSearchModel.SimulationSpec spec) {
+        String said;
+
+        try {
+            said = oneLine(spec.getSimulationImpl().getDescription());
+        } catch (RuntimeException e) {
+            said = spec.getSimulationClass().getSimpleName();
+        }
+
+        return said + " (" + spec.getSimulationClass().getName() + GRID_ON + spec.getGraphClass().getName() + ")";
+    }
+
+    /**
+     * Writes one of a grid search box's algorithms as a search box's are written, with its test and score after it
+     * on the same line.
+     */
+    private static String gridAlgorithmLine(GridSearchModel.AlgorithmSpec spec) {
+        edu.cmu.tetrad.annotation.Algorithm algorithm = spec.getAlgorithm().getAlgorithm().annotation();
+        StringBuilder line = new StringBuilder(nameAndCommand(algorithm.name(), algorithm.command()));
+
+        if (spec.getTest() != null) {
+            line.append(GRID_TEST).append(nameAndCommand(spec.getTest().annotation().name(),
+                    spec.getTest().annotation().command()));
+        }
+
+        if (spec.getScore() != null) {
+            line.append(GRID_SCORE).append(nameAndCommand(spec.getScore().annotation().name(),
+                    spec.getScore().annotation().command()));
+        }
+
+        return line.toString();
+    }
+
+    /**
+     * Writes one column of a grid search box's table: a statistic by its abbreviation, or a parameter by its name.
+     */
+    private static String gridColumnLine(GridSearchModel.MyTableColumn column) {
+        return column.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC
+                ? column.getColumnName() + GRID_STATISTIC : column.getParameter() + GRID_PARAMETER;
+    }
+
+    private static String oneLine(String text) {
+        return text == null ? "" : text.replaceAll("\\s+", " ").strip();
+    }
+
     private static List<String> pieces(String text) {
         List<String> pieces = new ArrayList<>();
 
@@ -666,8 +1034,42 @@ public final class StandardDescribers {
                 Object value = parameters.getValues(name)[0];
                 Object defaultValue = ParamDescriptions.getInstance().get(name).getDefaultValue();
                 out.changed(name, valueText(value), valueText(defaultValue));
+            } else if (hasSeveralValues(parameters, name)) {
+                List<String> values = new ArrayList<>();
+
+                for (Object value : parameters.getValues(name)) {
+                    values.add(valueText(value));
+                }
+
+                out.field(VALUES, name + " = " + String.join(", ", values) + " (default "
+                                  + valueText(ParamDescriptions.getInstance().get(name).getDefaultValue()) + ")");
             }
         }
+    }
+
+    /**
+     * Says whether a registered parameter has been given more than one value, each a plain number, truth value or
+     * piece of text. A grid search box does this to a parameter whose values it is to compare.
+     */
+    private static boolean hasSeveralValues(Parameters parameters, String name) {
+        if (!parameters.getParametersNames().contains(name)
+            || !ParamDescriptions.getInstance().getNames().contains(name)) {
+            return false;
+        }
+
+        Object[] values = parameters.getValues(name);
+
+        if (values == null || values.length < 2) {
+            return false;
+        }
+
+        for (Object value : values) {
+            if (!isPlain(value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

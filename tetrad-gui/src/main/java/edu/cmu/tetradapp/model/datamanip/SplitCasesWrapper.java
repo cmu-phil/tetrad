@@ -89,6 +89,22 @@ public class SplitCasesWrapper extends DataWrapper {
 
         SplitCasesSpec spec = (SplitCasesSpec) params.get("splitCasesSpec", null);
         int numSplits = params.getInt("numSplits", 2);
+
+        // The split is set up in the box's settings for the data it is given. It can be for other data if the box
+        // was made from a session description, or without its settings being opened.
+        if (spec == null) {
+            throw new IllegalArgumentException("No split has been set up for this box. Open its settings and choose "
+                                               + "the number of splits.");
+        }
+
+        if (spec.getSampleSize() != dataSet.getNumRows() || spec.getSplitNames().size() < numSplits
+            || spec.getBreakpoints().length < numSplits - 1) {
+            throw new IllegalArgumentException("The split in this box was set up for " + spec.getSampleSize()
+                                               + " rows in " + spec.getSplitNames().size() + " parts, and the data"
+                                               + " have " + dataSet.getNumRows() + " rows, to be split in "
+                                               + numSplits + ". Open its settings and set the split up again.");
+        }
+
         int sampleSize = spec.getSampleSize();
         int[] breakpoints = spec.getBreakpoints();
         List<String> splitNames = spec.getSplitNames();
