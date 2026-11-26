@@ -310,11 +310,15 @@ public final class LoadDataSettings extends JPanel {
     private StringTextField missingStringField;
 
     /**
-     * The "None" choice for the quote character and the "Other" choice for the missing value marker. Fields, as the
-     * other choices are, so that {@link #applySettings(Map)} can select them.
+     * The "None" choice for the quote character. A field, as the other choices are, so that
+     * {@link #applySettings(Map)} can select it.
      */
     private JRadioButton noneQuoteRadioButton;
 
+    /**
+     * The "Other" choice for the missing value marker. A field, as the other choices are, so that
+     * {@link #applySettings(Map)} can select it.
+     */
     private JRadioButton missingValueOtherRadioButton;
 
     //================================CONSTRUCTOR=======================//

@@ -39,23 +39,71 @@ public final class FcitOracleDeletionAudit {
 
     /** Distinguishes a search result from a conversion or configuration limitation. */
     public enum Verdict {
-        FOUND, NO_DELETION, LIMIT_REACHED, INVALID_IMAP,
-        NO_ZHANG_MAG, UNSUPPORTED_MAG
+        /**
+         * The search found an oracle-certified deletion of one adjacency, from the state's Zhang MAG or from a
+         * Markov-equivalent representative of it.
+         */
+        FOUND,
+        /** The search visited every representative it could reach and found no certified deletion. */
+        NO_DELETION,
+        /** The search stopped at its cap on representatives. This is not evidence that no deletion exists. */
+        LIMIT_REACHED,
+        /** The state's Zhang MAG implies an m-separation that the oracle denies, so it is not an I-map. */
+        INVALID_IMAP,
+        /** No Zhang MAG could be built from the state's PAG, so the search was not run. */
+        NO_ZHANG_MAG,
+        /**
+         * The Zhang MAG has a node that is not measured, or an edge that is neither directed nor bidirected, so the
+         * search was not run.
+         */
+        UNSUPPORTED_MAG
     }
 
-    /** A change of PAG skeleton between two observed states. */
+    /**
+     * A change of PAG skeleton between two observed states. An adjacency is written as the two node names, in
+     * alphabetical order, joined by "--".
+     *
+     * @param fromState the index of the earlier state in the report's list of states
+     * @param toState   the index of the later state in the report's list of states
+     * @param removed   the adjacencies of the earlier state that are not in the later one
+     * @param added     the adjacencies of the later state that are not in the earlier one
+     */
     public record Transition(int fromState, int toState, List<String> removed,
                              List<String> added) {
+        /**
+         * Says whether this transition removed exactly one adjacency and added none.
+         *
+         * @return true if exactly one adjacency was removed and none was added
+         */
         public boolean singleEdgeDeletion() {
             return removed.size() == 1 && added.isEmpty();
         }
 
+        /**
+         * Says whether this transition removed more than one adjacency and added none.
+         *
+         * @return true if more than one adjacency was removed and none was added
+         */
         public boolean batchDeletion() {
             return removed.size() > 1 && added.isEmpty();
         }
     }
 
-    /** The oracle's judgment on one *committed* PAG, via a Zhang MAG. */
+    /**
+     * The oracle's judgment on one *committed* PAG, via a Zhang MAG. The three counts are zero when the search was
+     * not run.
+     *
+     * @param state                        the index of this state in the report's list of states
+     * @param adjacencyCount               the number of edges in the state's PAG
+     * @param verdict                      what the search concluded, or why it was not run
+     * @param oracleRemovablePair          the adjacency the witness removes, when the verdict is FOUND
+     * @param witness                      the certified deletion, when the verdict is FOUND
+     * @param requiresRepresentativeChange true if the witness deletes from a representative other than the state's
+     *                                     own Zhang MAG
+     * @param representativesVisited       the number of Markov-equivalent DMAGs the search visited
+     * @param deletionAttempts             the number of single-adjacency deletions the search tried
+     * @param oracleQueries                the number of questions put to the oracle, repeats not counted
+     */
     public record StateResult(int state, int adjacencyCount, Verdict verdict,
                               Optional<String> oracleRemovablePair,
                               Optional<OracleDmagDeletionSearch.Step> witness,
@@ -64,22 +112,48 @@ public final class FcitOracleDeletionAudit {
                               int oracleQueries) {
     }
 
-    /** Immutable, offline comparison. State zero is the initial PAG when recorded. */
+    /**
+     * Immutable, offline comparison. State zero is the initial PAG when recorded.
+     *
+     * @param initialObserved true if an initial PAG was recorded before the first commit
+     * @param commitsObserved the number of commits recorded
+     * @param transitions     the changes of skeleton between consecutive states, in order
+     * @param states          the oracle's judgment on each state, in order; the last is the final PAG
+     */
     public record Report(boolean initialObserved, int commitsObserved,
                          List<Transition> transitions, List<StateResult> states) {
+        /**
+         * Returns the oracle's judgment on the last state, which is the final PAG.
+         *
+         * @return the result for the last state
+         */
         public StateResult finalState() {
             return states.getLast();
         }
 
+        /**
+         * Counts the transitions that removed exactly one adjacency and added none.
+         *
+         * @return the number of single-edge deletions
+         */
         public long singleEdgeCommits() {
             return transitions.stream().filter(Transition::singleEdgeDeletion).count();
         }
 
+        /**
+         * Counts the transitions that removed more than one adjacency and added none.
+         *
+         * @return the number of batch deletions
+         */
         public long batchCommits() {
             return transitions.stream().filter(Transition::batchDeletion).count();
         }
 
-        /** A compact console summary for small-graph IntelliJ oracle experiments. */
+        /**
+         * A compact console summary for small-graph IntelliJ oracle experiments.
+         *
+         * @return a one-line summary of the commits and of the judgment on the final state
+         */
         public String summary() {
             StateResult last = finalState();
             return "FCIT oracle comparison: " + commitsObserved + " commits ("
@@ -95,13 +169,26 @@ public final class FcitOracleDeletionAudit {
     private Graph initial;
     private final List<Graph> commits = new ArrayList<>();
 
-    /** Optional seed PAG, supplied externally before any commit. No oracle queries here. */
+    /** Creates an audit with nothing recorded. */
+    public FcitOracleDeletionAudit() {
+    }
+
+    /**
+     * Optional seed PAG, supplied externally before any commit. No oracle queries here. Commits recorded so far are
+     * dropped.
+     *
+     * @param pag the PAG before FCIT's first commit; a copy is kept
+     */
     public void recordInitialPag(Graph pag) {
         initial = new EdgeListGraph(Objects.requireNonNull(pag, "pag"));
         commits.clear();
     }
 
-    /** Called after a successful FCIT commit. Records a defensive copy only. */
+    /**
+     * Called after a successful FCIT commit. Records a defensive copy only.
+     *
+     * @param pag the PAG as it stands after the commit
+     */
     public void recordCommit(Graph pag) {
         commits.add(new EdgeListGraph(Objects.requireNonNull(pag, "pag")));
     }
@@ -111,6 +198,11 @@ public final class FcitOracleDeletionAudit {
      * Without an externally supplied initial PAG, the first observed commit is
      * the first state; the first deletion cannot then be counted as a transition.
      *
+     * @param finalPag       the PAG that FCIT returned; it is added as the last state unless it equals the last
+     *                       recorded one
+     * @param oracle         the independence test against which deletions are certified
+     * @param deletionSearch the bounded search run on each state's Zhang MAG
+     * @return the transitions between states and the oracle's judgment on each state
      * @throws InterruptedException when oracle evaluation is interrupted
      */
     public Report analyze(Graph finalPag, IndependenceTest oracle,

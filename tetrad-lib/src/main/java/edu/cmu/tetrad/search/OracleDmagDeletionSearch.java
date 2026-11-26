@@ -43,14 +43,40 @@ import java.util.Set;
 public final class OracleDmagDeletionSearch {
 
     /** Describes whether the bounded search found a valid step. */
-    public enum Status { FOUND, NO_DELETION, LIMIT_REACHED, INVALID_START }
+    public enum Status {
+        /** A deletion of one adjacency was found and certified against the oracle. */
+        FOUND,
+        /** Every representative the search could reach was visited, and none allows a certified deletion. */
+        NO_DELETION,
+        /** The cap on representatives was reached first. This is not evidence that no deletion exists. */
+        LIMIT_REACHED,
+        /** The input DMAG implies an m-separation that the oracle denies, so it is not an I-map. */
+        INVALID_START
+    }
 
-    /** One verified deletion, with a representative before and a DMAG after. */
+    /**
+     * One verified deletion, with a representative before and a DMAG after.
+     *
+     * @param representative       the DMAG, Markov equivalent to the input, from which the adjacency was deleted
+     * @param after                the DMAG after the deletion
+     * @param removed              the edge that was deleted, as it stood in the representative
+     * @param checkedIndependences the number of elementary m-separations implied by the DMAG after the deletion,
+     *                             each of which the oracle confirmed
+     */
     public record Step(Graph representative, Graph after, Edge removed,
                        int checkedIndependences) {
     }
 
-    /** A bounded search outcome. LIMIT_REACHED is not evidence of nonexistence. */
+    /**
+     * A bounded search outcome. LIMIT_REACHED is not evidence of nonexistence.
+     *
+     * @param status                 whether a deletion was found, and if not, why the search stopped
+     * @param step                   the verified deletion when the status is FOUND, and empty otherwise
+     * @param representativesVisited the number of Markov-equivalent DMAGs visited
+     * @param deletionAttempts       the number of single-adjacency deletions tried, including those rejected
+     *                               without asking the oracle
+     * @param oracleQueries          the number of questions put to the oracle, repeats not counted
+     */
     public record Result(Status status, Optional<Step> step, int representativesVisited,
                          int deletionAttempts, int oracleQueries) {
     }
@@ -63,6 +89,13 @@ public final class OracleDmagDeletionSearch {
         this(8, 2_000);
     }
 
+    /**
+     * Creates a search with the given limits.
+     *
+     * @param maxVertices        the largest number of vertices accepted in an input DMAG, from 2 to 10
+     * @param maxRepresentatives the cap on the number of Markov-equivalent DMAGs visited, at least 1
+     * @throws IllegalArgumentException if either limit is out of range
+     */
     public OracleDmagDeletionSearch(int maxVertices, int maxRepresentatives) {
         if (maxVertices < 2 || maxVertices > 10 || maxRepresentatives < 1) {
             throw new IllegalArgumentException("Invalid small-graph search limits");
@@ -76,6 +109,9 @@ public final class OracleDmagDeletionSearch {
      * An invalid oracle judgment fails closed (throws), rather than approving a step.
      * The input graph is not mutated.
      *
+     * @param input  a legal DMAG over measured variables, with no more vertices than this search accepts
+     * @param oracle an independence test over variables with the same names as the DMAG's
+     * @return the outcome, with the verified deletion if one was found
      * @throws InterruptedException if the test or caller is interrupted
      */
     public Result findDeletion(Graph input, IndependenceTest oracle) throws InterruptedException {

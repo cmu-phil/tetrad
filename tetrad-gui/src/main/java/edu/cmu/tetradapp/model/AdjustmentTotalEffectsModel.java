@@ -164,6 +164,13 @@ public final class AdjustmentTotalEffectsModel implements SessionModel, GraphSou
     private String outcomesText = "*";
 
     /**
+     * Creates the stub with its default field values. Nothing in Tetrad calls this; instances come from sessions
+     * saved under the old class name; see {@link #readResolve()}.
+     */
+    public AdjustmentTotalEffectsModel() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
