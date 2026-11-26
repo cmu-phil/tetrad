@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.search.utils.RequiredEdgeOrder;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -1161,6 +1162,10 @@ public class BossTopK implements SuborderSearchTopK {
                 }
             }
         }
+
+        // The pass above can leave a required edge broken, where moving one variable forward carries it past
+        // another that must precede it. Finish the job; an order already sound is left as it is.
+        RequiredEdgeOrder.repair(order, this.knowledge);
     }
 
 

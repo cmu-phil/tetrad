@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.search.utils.RequiredEdgeOrder;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
@@ -289,6 +290,10 @@ public class Sp implements SuborderSearch {
                 else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
                 else return 0;
             });
+
+            // The sort compares only pairs joined by a required edge, which is not an ordering a sort can rely on,
+            // and can leave a required edge broken. Finish the job; an order already sound is left as it is.
+            RequiredEdgeOrder.repair(order, this.knowledge);
         }
     }
 

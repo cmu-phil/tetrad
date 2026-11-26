@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.search.utils.RequiredEdgeOrder;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -545,6 +546,10 @@ public class Grasp {
                 }
             }
         }
+
+        // The pass above can leave a required edge broken, where moving one variable forward carries it past
+        // another that must precede it. Finish the job; an order already sound is left as it is.
+        RequiredEdgeOrder.repair(order, this.knowledge);
     }
 
     /**
