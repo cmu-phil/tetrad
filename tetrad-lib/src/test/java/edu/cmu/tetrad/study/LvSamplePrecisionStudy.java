@@ -38,7 +38,9 @@ import java.util.concurrent.*;
  * Against the true DAG, the causal reading with no selection bias: an arrowhead at y on x *-> y is right iff y is
  * not an ancestor of x, and a tail at x on x --> y is right iff x is an ancestor of y.</p>
  *
- * <p>Besides plain configurations there are three post-processed kinds, all done here and not in Tetrad proper:</p>
+ * <p>Besides plain configurations there are three post-processed kinds. The first two are done here and not in
+ * Tetrad proper; the third is Tetrad's Endpointwise ensemble,
+ * {@link GraphSampling#createEndpointwiseDisplayGraph}:</p>
  * <ul>
  * <li>{@code notails:Alg} - every tail demoted to a circle.</li>
  * <li>{@code consensus:Alg} with override lists separated by semicolons - one run per list; an edge is reported iff
@@ -251,7 +253,8 @@ public class LvSamplePrecisionStudy {
                 if (kind.equals("bootmaj")) {
                     return GraphSampling.createDisplayGraph(sampling, ResamplingEdgeEnsemble.Majority);
                 }
-                return endpointwise(sampling, Double.parseDouble(parts[1].trim()), Double.parseDouble(parts[2].trim()));
+                return GraphSampling.createEndpointwiseDisplayGraph(sampling, Double.parseDouble(parts[1].trim()),
+                        Double.parseDouble(parts[2].trim()));
             }
             default:
                 throw new IllegalArgumentException("Unknown kind: " + kind);
@@ -286,55 +289,6 @@ public class LvSamplePrecisionStudy {
             }
 
             if (adjacentInAll) out.addEdge(new Edge(x, y, markAtX, markAtY));
-        }
-
-        return out;
-    }
-
-    /**
-     * Endpoint-wise bootstrap composite from a sampling graph. In an edge-type name the first letter is the mark at
-     * node 1 and the second the mark at node 2.
-     */
-    static Graph endpointwise(Graph sampling, double tAdj, double tMark) {
-        Graph out = new EdgeListGraph(sampling.getNodes());
-
-        for (Edge e : sampling.getEdges()) {
-            List<EdgeTypeProbability> etps = e.getEdgeTypeProbabilities();
-            if (etps == null || etps.isEmpty()) continue;
-            double nil = 0, arrow1 = 0, tail1 = 0, arrow2 = 0, tail2 = 0, total = 0;
-
-            for (EdgeTypeProbability etp : etps) {
-                double p = etp.getProbability();
-                total += p;
-                switch (etp.getEdgeType()) {
-                    case nil -> nil += p;
-                    case ta -> {
-                        tail1 += p;
-                        arrow2 += p;
-                    }
-                    case at -> {
-                        arrow1 += p;
-                        tail2 += p;
-                    }
-                    case ca -> arrow2 += p;
-                    case ac -> arrow1 += p;
-                    case aa -> {
-                        arrow1 += p;
-                        arrow2 += p;
-                    }
-                    case tt -> {
-                        tail1 += p;
-                        tail2 += p;
-                    }
-                    default -> {
-                    }
-                }
-            }
-
-            if (total - nil < tAdj) continue;
-            Endpoint m1 = arrow1 >= tMark ? Endpoint.ARROW : tail1 >= tMark ? Endpoint.TAIL : Endpoint.CIRCLE;
-            Endpoint m2 = arrow2 >= tMark ? Endpoint.ARROW : tail2 >= tMark ? Endpoint.TAIL : Endpoint.CIRCLE;
-            out.addEdge(new Edge(e.getNode1(), e.getNode2(), m1, m2));
         }
 
         return out;

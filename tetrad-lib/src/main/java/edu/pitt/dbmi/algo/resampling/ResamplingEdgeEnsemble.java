@@ -57,5 +57,15 @@ public enum ResamplingEdgeEnsemble {
      * legality guarantee (e.g., a legal CPDAG or PAG). See GraphSampling.selectMedianEnsembleGraph. Added 2026-8-13.
      */
     Median,
+
+    /**
+     * Decide the adjacency and each of the two endpoint marks separately. An edge is kept iff it is present in at
+     * least a given fraction of the resamples; an arrowhead or tail is kept at an endpoint iff that mark sits at that
+     * endpoint in at least a given (higher) fraction of all the resamples; any other endpoint of a kept edge is a
+     * circle. A precision-oriented summary that says less where the resamples disagree; like the other composites
+     * it is generally not a legal member of the algorithm's output class. See
+     * GraphSampling.createEndpointwiseDisplayGraph. Added 2026-11-27.
+     */
+    Endpointwise,
 }
 

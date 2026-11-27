@@ -39,6 +39,32 @@ import java.util.stream.Collectors;
  */
 public final class GraphSampling {
 
+    /**
+     * Preferences key for the Endpointwise ensemble's adjacency threshold.
+     */
+    public static final String ENDPOINTWISE_ADJACENCY_THRESHOLD_PREF = "edge.ensemble.endpointwise.adjacency";
+
+    /**
+     * Preferences key for the Endpointwise ensemble's mark threshold.
+     */
+    public static final String ENDPOINTWISE_MARK_THRESHOLD_PREF = "edge.ensemble.endpointwise.mark";
+
+    /**
+     * Default adjacency threshold for the Endpointwise ensemble.
+     */
+    public static final double ENDPOINTWISE_ADJACENCY_THRESHOLD_DEFAULT = 0.5;
+
+    /**
+     * Default mark threshold for the Endpointwise ensemble.
+     */
+    public static final double ENDPOINTWISE_MARK_THRESHOLD_DEFAULT = 0.9;
+
+    /**
+     * Frequencies are counts over the number of resamples, summed as doubles; this keeps a frequency that equals a
+     * threshold exactly (45 of 50 against 0.9) from falling short of it by rounding.
+     */
+    private static final double FREQUENCY_TOLERANCE = 1e-9;
+
     private GraphSampling() {
     }
 
@@ -65,6 +91,13 @@ public final class GraphSampling {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
+        if (ensemble == ResamplingEdgeEnsemble.Endpointwise) {
+            Preferences prefs = Preferences.userRoot();
+            return createEndpointwiseDisplayGraph(graph,
+                    prefs.getDouble(ENDPOINTWISE_ADJACENCY_THRESHOLD_PREF, ENDPOINTWISE_ADJACENCY_THRESHOLD_DEFAULT),
+                    prefs.getDouble(ENDPOINTWISE_MARK_THRESHOLD_PREF, ENDPOINTWISE_MARK_THRESHOLD_DEFAULT));
+        }
+
         EdgeListGraph ensembleGraph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
@@ -88,6 +121,115 @@ public final class GraphSampling {
 
         setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
         return ensembleGraph;
+    }
+
+    /**
+     * Creates the Endpointwise composite of a sampling graph: the adjacency and each of the two endpoint marks of an
+     * edge are decided separately from the edge-type frequencies of its node pair.
+     *
+     * <ul>
+     * <li>An edge is kept iff the pair is adjacent in at least {@code adjacencyThreshold} of the resamples.</li>
+     * <li>An endpoint of a kept edge is an arrowhead (a tail) iff an arrowhead (a tail) sits at that endpoint in at
+     * least {@code markThreshold} of ALL the resamples. Resamples in which the pair is not adjacent count against
+     * the mark, as do resamples with a different mark there.</li>
+     * <li>Any other endpoint of a kept edge is a circle, read as "not settled by the resamples". This holds whatever
+     * the output class of the search, so a composite of CPDAGs can show circles too.</li>
+     * </ul>
+     *
+     * <p>The other composites vote on the whole edge type, so an edge whose two marks are each stable but whose
+     * joint type is split is either dropped or shown with its most frequent type, unstable mark included. Voting
+     * endpoint by endpoint keeps the adjacency and the stable mark and withholds only the unstable one. The result
+     * says less than a member graph does and is aimed at precision of what it does say. Like the other composites it
+     * is generally NOT a legal member of the algorithm's output class (for a PAG search, generally not a legal PAG),
+     * so it is for reading, not for handing to procedures that require a legal graph; no PAG edge specialization
+     * markups are attached for the same reason.</p>
+     *
+     * <p>Each kept edge carries the full list of edge-type probabilities of its node pair, as the other display
+     * graphs do, and is built without flipping, so callers should pass the result through
+     * {@link GraphUtils#fixDirections(Graph)} before display.</p>
+     *
+     * @param graph              the sampling graph, as stored under "samplingGraph" on a bootstrap search result
+     * @param adjacencyThreshold the least fraction of resamples in which a pair must be adjacent for its edge to be
+     *                           kept, in [0, 1]
+     * @param markThreshold      the least fraction of all resamples in which a mark must sit at an endpoint to be
+     *                           kept, in (0.5, 1]; above one half so that an arrowhead and a tail cannot both qualify
+     * @return the Endpointwise composite
+     * @throws IllegalArgumentException if a threshold is out of range
+     */
+    public static Graph createEndpointwiseDisplayGraph(Graph graph, double adjacencyThreshold, double markThreshold) {
+        if (Double.isNaN(adjacencyThreshold) || adjacencyThreshold < 0.0 || adjacencyThreshold > 1.0) {
+            throw new IllegalArgumentException("The adjacency threshold must be in [0, 1]: " + adjacencyThreshold);
+        }
+
+        if (Double.isNaN(markThreshold) || markThreshold <= 0.5 || markThreshold > 1.0) {
+            throw new IllegalArgumentException("The mark threshold must be in (0.5, 1]: " + markThreshold);
+        }
+
+        EdgeListGraph ensembleGraph = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : graph.getEdges()) {
+            List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
+            if (edgeTypeProbabilities == null || edgeTypeProbabilities.isEmpty()) {
+                // Not a resampled edge; pass it through, as createDisplayGraph does.
+                ensembleGraph.addEdge(edge);
+                continue;
+            }
+
+            // In an edge type the first letter is the mark at node 1 and the second the mark at node 2.
+            double adjacent = 0.0, arrow1 = 0.0, tail1 = 0.0, arrow2 = 0.0, tail2 = 0.0;
+
+            for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+                double p = etp.getProbability();
+                EdgeType edgeType = etp.getEdgeType();
+                if (edgeType == EdgeType.nil) continue;
+                adjacent += p;
+
+                switch (edgeType) {
+                    case ta -> {
+                        tail1 += p;
+                        arrow2 += p;
+                    }
+                    case at -> {
+                        arrow1 += p;
+                        tail2 += p;
+                    }
+                    case ca -> arrow2 += p;
+                    case ac -> arrow1 += p;
+                    case aa -> {
+                        arrow1 += p;
+                        arrow2 += p;
+                    }
+                    case tt -> {
+                        tail1 += p;
+                        tail2 += p;
+                    }
+                    default -> {
+                        // cc: a circle at both ends, which supports neither an arrowhead nor a tail.
+                    }
+                }
+            }
+
+            if (adjacent + FREQUENCY_TOLERANCE < adjacencyThreshold) {
+                continue;
+            }
+
+            Endpoint endpoint1 = endpointwiseMark(arrow1, tail1, markThreshold);
+            Endpoint endpoint2 = endpointwiseMark(arrow2, tail2, markThreshold);
+
+            // No flipping, so that the edge-type probabilities stay aligned with node 1 and node 2.
+            Edge ensembleEdge = new Edge(edge.getNode1(), edge.getNode2(), endpoint1, endpoint2, false);
+            edgeTypeProbabilities.forEach(ensembleEdge::addEdgeTypeProbability);
+            ensembleGraph.addEdge(ensembleEdge);
+        }
+
+        setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
+        return ensembleGraph;
+    }
+
+    private static Endpoint endpointwiseMark(double arrow, double tail, double markThreshold) {
+        if (arrow + FREQUENCY_TOLERANCE >= markThreshold) return Endpoint.ARROW;
+        if (tail + FREQUENCY_TOLERANCE >= markThreshold) return Endpoint.TAIL;
+        return Endpoint.CIRCLE;
     }
 
 //    /**

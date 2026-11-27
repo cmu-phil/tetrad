@@ -25,6 +25,8 @@ import edu.cmu.tetrad.util.GraphSampling;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +120,8 @@ public class EnsembleMenu extends JMenu {
                 ResamplingEdgeEnsemble.Highest,
                 ResamplingEdgeEnsemble.Majority,
                 ResamplingEdgeEnsemble.Preserved,
-                ResamplingEdgeEnsemble.Threshold}) {
+                ResamplingEdgeEnsemble.Threshold,
+                ResamplingEdgeEnsemble.Endpointwise}) {
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(ensemble.name());
             items.put(ensemble, item);
             group.add(item);
@@ -127,11 +130,20 @@ public class EnsembleMenu extends JMenu {
 
         syncSelection();
 
+        // Only the result of a search run with resampling carries a sampling graph to choose a display from. For
+        // any other graph every choice used to fail with an exception that reached only the console.
+        if (!(graphWorkbench.getGraph() instanceof EdgeListGraph graph)
+            || graph.getAncillaryGraph("samplingGraph") == null) {
+            setEnabled(false);
+            setToolTipText("Available for the result of a search run with resampling.");
+        }
+
         items.get(ResamplingEdgeEnsemble.Median).addActionListener(action -> showMedian());
         items.get(ResamplingEdgeEnsemble.Highest).addActionListener(action -> showComposite(ResamplingEdgeEnsemble.Highest));
         items.get(ResamplingEdgeEnsemble.Majority).addActionListener(action -> showComposite(ResamplingEdgeEnsemble.Majority));
         items.get(ResamplingEdgeEnsemble.Preserved).addActionListener(action -> showComposite(ResamplingEdgeEnsemble.Preserved));
         items.get(ResamplingEdgeEnsemble.Threshold).addActionListener(action -> showThreshold());
+        items.get(ResamplingEdgeEnsemble.Endpointwise).addActionListener(action -> showEndpointwise());
     }
 
     /**
@@ -228,6 +240,77 @@ public class EnsembleMenu extends JMenu {
         ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
 
         resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+        syncSelection();
+
+        graphWorkbench.setGraph(GraphUtils.fixDirections(displayGraph));
+    }
+
+    /**
+     * Shows the Endpointwise composite: the adjacency and each endpoint mark are decided separately, with a
+     * threshold for each that the user sets here. The thresholds are remembered in the preferences. Added
+     * 2026-11-27.
+     */
+    private void showEndpointwise() {
+        Graph samplingGraph = getSamplingGraph();
+        Preferences prefs = Preferences.userRoot();
+
+        JTextField adjacencyField = new JTextField(String.valueOf(prefs.getDouble(
+                GraphSampling.ENDPOINTWISE_ADJACENCY_THRESHOLD_PREF,
+                GraphSampling.ENDPOINTWISE_ADJACENCY_THRESHOLD_DEFAULT)), 6);
+        JTextField markField = new JTextField(String.valueOf(prefs.getDouble(
+                GraphSampling.ENDPOINTWISE_MARK_THRESHOLD_PREF,
+                GraphSampling.ENDPOINTWISE_MARK_THRESHOLD_DEFAULT)), 6);
+
+        JPanel fields = new JPanel(new GridLayout(2, 2, 8, 6));
+        fields.add(new JLabel("Edge threshold (0 to 1):"));
+        fields.add(adjacencyField);
+        fields.add(new JLabel("Mark threshold (above 0.5, up to 1):"));
+        fields.add(markField);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
+        panel.add(new JLabel("<html>An edge is kept if it is present in at least the edge threshold's fraction"
+                             + " of the resamples.<br>An arrowhead or tail is kept if it sits at that endpoint in"
+                             + " at least the mark threshold's<br>fraction of all the resamples. Any other endpoint"
+                             + " of a kept edge is shown as a circle,<br>meaning not settled by the resamples."
+                             + "<br><br>The result is a summary, mark by mark. It is generally not a legal graph of"
+                             + " the<br>search's type.</html>"), BorderLayout.NORTH);
+        panel.add(fields, BorderLayout.CENTER);
+
+        Graph displayGraph;
+
+        while (true) {
+            int response = JOptionPane.showConfirmDialog(graphWorkbench, panel, "Endpointwise",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+            if (response != JOptionPane.OK_OPTION) {
+                // Cancelled: keep the previously shown ensemble checked.
+                syncSelection();
+                return;
+            }
+
+            try {
+                double adjacencyThreshold = Double.parseDouble(adjacencyField.getText().trim());
+                double markThreshold = Double.parseDouble(markField.getText().trim());
+
+                // Range checks are the library's; an out-of-range value comes back as IllegalArgumentException.
+                displayGraph = GraphSampling.createEndpointwiseDisplayGraph(samplingGraph, adjacencyThreshold,
+                        markThreshold);
+
+                prefs.putDouble(GraphSampling.ENDPOINTWISE_ADJACENCY_THRESHOLD_PREF, adjacencyThreshold);
+                prefs.putDouble(GraphSampling.ENDPOINTWISE_MARK_THRESHOLD_PREF, markThreshold);
+                break;
+            } catch (IllegalArgumentException e) {
+                // NumberFormatException is an IllegalArgumentException, so this covers unparseable text too.
+                JOptionPane.showMessageDialog(graphWorkbench,
+                        "The edge threshold must be a number from 0 to 1, and the mark threshold a number\n"
+                        + "above 0.5 and at most 1.",
+                        "Endpointwise", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+        ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
+
+        resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Endpointwise;
         syncSelection();
 
         graphWorkbench.setGraph(GraphUtils.fixDirections(displayGraph));

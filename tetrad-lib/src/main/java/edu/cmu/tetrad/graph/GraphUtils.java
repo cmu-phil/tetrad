@@ -558,8 +558,8 @@ public final class GraphUtils {
     /**
      * Returns a copy of the graph whose nodes are fresh objects (see {@link #copyNode}), equal to the originals and
      * in the same positions, with the same edges (including their properties, edge type probabilities, and display
-     * attributes), underlines, ambiguous triples, and graph attributes. Unlike {@link #replaceNodes}, latent nodes
-     * are copied too.
+     * attributes), underlines, ambiguous triples, graph attributes, and ancillary graphs (detached onto the same node
+     * copies). Unlike {@link #replaceNodes}, latent nodes are copied too.
      *
      * <p>Use this on a graph that is about to become the graph of a session box and whose nodes are shared with
      * something else: a search result, whose nodes are usually the data set's variable objects, or the graph of
@@ -571,19 +571,37 @@ public final class GraphUtils {
      * @return the copy
      */
     public static Graph detachNodes(Graph graph) {
-        Map<String, Node> copies = new HashMap<>();
-        Graph detached = new EdgeListGraph();
+        return detachNodes(graph, new HashMap<>());
+    }
+
+    /**
+     * Detaches the graph onto the given node copies, by name, making a copy for any node not yet in the map. The
+     * ancillary graphs of the graph are detached onto the same copies, so that the whole family shares one set of
+     * node objects, as it did before detaching.
+     */
+    private static Graph detachNodes(Graph graph, Map<String, Node> copies) {
+        EdgeListGraph detached = new EdgeListGraph();
 
         for (Node node : graph.getNodes()) {
-            Node copy = copyNode(node);
-            copies.put(node.getName(), copy);
+            Node copy = copies.get(node.getName());
+
+            if (copy == null) {
+                copy = copyNode(node);
+                copies.put(node.getName(), copy);
+            }
+
             detached.addNode(copy);
         }
 
         for (Edge edge : graph.getEdges()) {
             Node a = copies.get(edge.getNode1().getName());
             Node b = copies.get(edge.getNode2().getName());
-            Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
+
+            // An edge's type probabilities are listed relative to its node 1 and node 2, so an edge that carries
+            // them must not be flipped here; the edges of a bootstrap sampling graph are built unflipped and many
+            // of them point left.
+            boolean resampled = !edge.getEdgeTypeProbabilities().isEmpty();
+            Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2(), !resampled);
 
             for (Property property : edge.getProperties()) {
                 newEdge.addProperty(property);
@@ -612,6 +630,16 @@ public final class GraphUtils {
         for (Triple t : graph.getAmbiguousTriples()) {
             detached.addAmbiguousTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
                     copies.get(t.getZ().getName()));
+        }
+
+        // The ancillary graphs: for a bootstrap search result, the sampling graph and the median member graph that
+        // the Ensemble Display menu works from. They used to be dropped here, which left that menu with nothing to
+        // show for any search result in the interface. Each stored ancillary graph is a copy made when it was set,
+        // so this recursion ends.
+        if (graph instanceof EdgeListGraph source) {
+            for (String name : source.getAncillaryGraphNames()) {
+                detached.setAncillaryGraph(name, detachNodes(source.getAncillaryGraph(name), copies));
+            }
         }
 
         detached.transferAttributes(graph);

@@ -1739,6 +1739,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * Returns the names of the ancillary graphs that have been set.
+     *
+     * @return The names, in no particular order; empty if none has been set.
+     */
+    public Set<String> getAncillaryGraphNames() {
+        // The nullity check is for graphs read from sessions saved by 7.6.8, as in the copy constructor.
+        return ancillaryGraphs == null ? new HashSet<>() : new HashSet<>(ancillaryGraphs.keySet());
+    }
+
+    /**
      * Returns the ancillary graph with the given name, or null if no ancillary graph by that name has been set.
      *
      * @param name The name of the ancillary graph.
